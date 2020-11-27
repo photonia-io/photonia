@@ -21,7 +21,7 @@ class ImageUploader < Shrine
     {
       public: true,
       host: 'https://' + ENV['PHOTONIA_S3_BUCKET']
-    }
+    } if Rails.env.production?
   }
 
   Attacher.derivatives do |original|

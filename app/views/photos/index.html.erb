@@ -1,6 +1,8 @@
-<p>Fotografii</p>
+<% content_for(:page_title, 'Photos' + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
+<h1>Photos</h1>
 <ul>
   <% @photos.each do |photo| %>
   <li><a href="<%= photo_path(photo) %>"><img src="<%= photo.image_url(:thumbnail) %>" /><%= photo.name %></a></li>
   <% end %>
 </ul>
+<%== pagy_nav(@pagy) %>
