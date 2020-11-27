@@ -42,7 +42,7 @@ jobs:
           command: bundle exec rails db:schema:load --trace
       # Run rspec in parallel
       - ruby/rspec-test
-      - ruby/rubocop-check
+      # - ruby/rubocop-check
 
 workflows:
   version: 2
