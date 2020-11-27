@@ -10,8 +10,8 @@ jobs:
       - image: cimg/ruby:2.6-node
     steps:
       - checkout
-      - ruby/install-deps
-      # Store bundle cache
+      - ruby/install-deps:
+          with-cache: true
       - node/install-packages:
           pkg-manager: yarn
           cache-key: "yarn.lock"
