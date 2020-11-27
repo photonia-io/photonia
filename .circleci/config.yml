@@ -27,9 +27,6 @@ jobs:
       BUNDLE_JOBS: "3"
       BUNDLE_RETRY: "3"
       PHOTONIA_DATABASE_URL: "postgres://photonia@127.0.0.1/"
-      PGHOST: 127.0.0.1
-      PGUSER: photonia
-      PGPASSWORD: ""
       RAILS_ENV: test
     steps:
       - checkout
