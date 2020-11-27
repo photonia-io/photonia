@@ -51,4 +51,10 @@ namespace :flickr do
     puts ''
     puts not_found
   end
+
+  desc "Sets the privacy of Flickr photos according to the original JSON"
+  task privacy: :environment do
+    affected_rows = ActiveRecord::Base.connection.update("UPDATE photos SET privacy = (flickr_json->>'privacy')::photo_privacy")
+    puts "#{affected_rows} photos updated"
+  end
 end
