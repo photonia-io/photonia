@@ -8,7 +8,7 @@
     <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
 
-    <script async defer data-domain="photos.rusiczki.net" src="http://link7.ro:8000/js/plausible.js"></script>
+    <%= ENV['PHOTONIA_TRACKING_CODE'] %>
   </head>
 
   <body>
