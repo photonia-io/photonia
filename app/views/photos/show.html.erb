@@ -1,3 +1,4 @@
+<% content_for(:page_title, @photo.name) %>
 <h1><%= @photo.name %></h1>
 <p><%= @photo.description %></p>
 <img src="<%= @photo.image_url(:large) %>" />
