@@ -32,6 +32,7 @@ gem 'aws-sdk-s3', '~> 1.14'
 gem 'faraday'
 gem 'friendly_id', '~> 5.4.0'
 gem 'image_processing', '~> 1.8'
+gem 'pagy', '~> 3.5'
 gem 'shrine', '~> 3.0'
 
 group :development, :test do
@@ -41,6 +42,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
   gem 'rubocop'
+  gem 'rubocop-rails'
 end
 
 group :development do

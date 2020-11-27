@@ -1,6 +1,8 @@
 class PhotosController < ApplicationController
+  include Pagy::Backend
+
   def index
-    @photos = Photo.all.order(date_taken: :desc).limit(100)
+    @pagy, @photos = pagy(Photo.all.order(date_taken: :desc))
   end
 
   def show
