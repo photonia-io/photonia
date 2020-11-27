@@ -1,0 +1,6 @@
+<p>Fotografii</p>
+<ul>
+  <% @photos.each do |photo| %>
+  <li><a href="<%= photo_path(photo) %>"><img src="<%= photo.image_url(:thumbnail) %>" /><%= photo.name %></a></li>
+  <% end %>
+</ul>

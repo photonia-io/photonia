@@ -1,0 +1,5 @@
+<h1><%= @photo.name %></h1>
+<p><%= @photo.description %></p>
+<img src="<%= @photo.image_url(:large) %>" />
+<p>Date taken: <%= @photo.date_taken %></p>
+<p>Date posted: <%= @photo.flickr_date_imported %></p>
