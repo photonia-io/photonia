@@ -42,11 +42,3 @@ append :linked_dirs, '.bundle', 'log'
 
 set :passenger_restart_with_touch, true
 set :rvm_ruby_version, '2.6.6'
-
-namespace :rake do
-  desc "Run a task on a remote server."
-  # run like: cap staging rake:invoke task="a_namespace:a_certain_task"
-  task :invoke do
-    run("cd #{deploy_to}/current; /usr/bin/env rake #{ENV['task']} RAILS_ENV=#{rails_env}")
-  end
-end
