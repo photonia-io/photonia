@@ -4,5 +4,7 @@ class Photo < ApplicationRecord
 
   include ImageUploader::Attachment(:image)
 
+  acts_as_taggable_on :tags
+
   default_scope { where(privacy: 'public') }
 end

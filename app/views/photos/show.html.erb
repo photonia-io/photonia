@@ -2,5 +2,8 @@
 <h1><%= @photo.name %></h1>
 <p><%= @photo.description %></p>
 <img src="<%= @photo.image_url(:large) %>" />
+<p>Tags: <% @photo.tags.each do |tag| %>
+<a href="<%= tag_path(tag) %>"><%= tag.name %></a>
+<% end %></p>
 <p>Date taken: <%= @photo.date_taken %></p>
 <p>Date posted: <%= @photo.flickr_date_imported %></p>

@@ -1,10 +1,10 @@
 <h1>Latest photo</h1>
-<h2><%= @latest_photo.name %></h2>
+<h2><a href="<%= photo_path(@latest_photo) %>"><%= @latest_photo.name %></a></h2>
 <p><%= @latest_photo.description %></p>
-<img src="<%= @latest_photo.image_url(:large) %>" />
+<a href="<%= photo_path(@latest_photo) %>"><img src="<%= @latest_photo.image_url(:large) %>" /></a>
 <p><a href="<%= photos_path %>">See all photos...</a></p>
 <h1>Random photo</h1>
-<h2><%= @random_photo.name %></h2>
+<h2><a href="<%= photo_path(@random_photo) %>"><%= @random_photo.name %></a></h2>
 <p><%= @random_photo.description %></p>
-<img src="<%= @random_photo.image_url(:medium) %>" />
+<a href="<%= photo_path(@random_photo) %>"><img src="<%= @random_photo.image_url(:medium) %>" /></a>
 <p><a href="<%= photos_path %>">See all photos...</a></p>
