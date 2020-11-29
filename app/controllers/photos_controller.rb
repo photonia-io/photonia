@@ -6,6 +6,6 @@ class PhotosController < ApplicationController
   end
 
   def show
-    @photo = Photo.friendly.find(params[:id])
+    @photo = Photo.includes(:tags).friendly.find(params[:id])
   end
 end

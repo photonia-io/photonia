@@ -52,9 +52,21 @@ namespace :flickr do
     puts not_found
   end
 
-  desc "Sets the privacy of Flickr photos according to the original JSON"
-  task privacy: :environment do
+  desc 'Sets the privacy of Flickr photos according to the original JSON'
+  task import_privacy: :environment do
     affected_rows = ActiveRecord::Base.connection.update("UPDATE photos SET privacy = (flickr_json->>'privacy')::photo_privacy")
     puts "#{affected_rows} photos updated"
+  end
+
+  desc 'Import tags from Flickr'
+  task import_tags: :environment do
+    Photo.unscoped.all.each do |photo|
+      tags = photo.flickr_json['tags'].each.pluck('tag')
+      photo.tag_list = tags
+      photo.save
+      putc '.'
+    end
+    ActsAsTaggableOn::Tag.update_all(source: 'flickr')
+    puts ''
   end
 end
