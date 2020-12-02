@@ -1,0 +1,26 @@
+<% content_for(:page_title, 'Tags') %>
+<h1>Tags</h1>
+<h2>Most used</h2>
+<ul>
+  <% @most_used.each_with_index do |tag, index| %>
+  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @most_used.size - 1 %>, <% end %>
+  <% end %>
+</ul>
+<h2>Least used</h2>
+<ul>
+  <% @least_used.each_with_index do |tag, index| %>
+  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @least_used.size - 1 %>, <% end %>
+  <% end %>
+</ul>
+<h2>Most used AI tags</h2>
+<ul>
+  <% @rekognition_most_used.each_with_index do |tag, index| %>
+  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @rekognition_most_used.size - 1 %>, <% end %>
+  <% end %>
+</ul>
+<h2>Least used AI tags</h2>
+<ul>
+  <% @rekognition_least_used.each_with_index do |tag, index| %>
+  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @rekognition_least_used.size - 1 %>, <% end %>
+  <% end %>
+</ul>

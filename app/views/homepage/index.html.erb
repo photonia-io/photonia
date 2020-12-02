@@ -8,3 +8,5 @@
 <p><%= @random_photo.description %></p>
 <a href="<%= photo_path(@random_photo) %>"><img src="<%= @random_photo.image_url(:medium) %>" /></a>
 <p><a href="<%= photos_path %>">See all photos...</a></p>
+<h2>Tags</h2>
+<p><a href="<%= tags_path %>">See tags page...</a></p>
