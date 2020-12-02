@@ -69,4 +69,13 @@ namespace :flickr do
     ActsAsTaggableOn::Tag.update_all(source: 'flickr')
     puts ''
   end
+
+  desc 'Fix tagging'
+  task fix_tagging: :environment do
+    tagging_source = TaggingSource.find_by(name: 'Flickr')
+    ActsAsTaggableOn::Tagging.update_all(
+      tagger_type: tagging_source.class.name,
+      tagger_id: tagging_source.id
+    )
+  end
 end
