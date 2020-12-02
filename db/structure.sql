@@ -27,7 +27,7 @@ CREATE TYPE public.photo_privacy AS ENUM (
 CREATE TYPE public.tag_source AS ENUM (
     'photonia',
     'flickr',
-    'clarifai'
+    'rekognition'
 );
 
 
@@ -102,7 +102,8 @@ CREATE TABLE public.photos (
     flickr_json jsonb,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy
+    privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
+    rekognition_response jsonb
 );
 
 
@@ -132,6 +133,37 @@ ALTER SEQUENCE public.photos_id_seq OWNED BY public.photos.id;
 CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
+
+
+--
+-- Name: tagging_sources; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tagging_sources (
+    id bigint NOT NULL,
+    name character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: tagging_sources_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tagging_sources_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tagging_sources_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tagging_sources_id_seq OWNED BY public.tagging_sources.id;
 
 
 --
@@ -220,6 +252,13 @@ ALTER TABLE ONLY public.photos ALTER COLUMN id SET DEFAULT nextval('public.photo
 
 
 --
+-- Name: tagging_sources id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tagging_sources ALTER COLUMN id SET DEFAULT nextval('public.tagging_sources_id_seq'::regclass);
+
+
+--
 -- Name: taggings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -266,6 +305,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: tagging_sources tagging_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tagging_sources
+    ADD CONSTRAINT tagging_sources_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: taggings taggings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -307,6 +354,13 @@ CREATE INDEX index_friendly_id_slugs_on_sluggable_type_and_sluggable_id ON publi
 --
 
 CREATE INDEX index_photos_on_exif ON public.photos USING gin (exif);
+
+
+--
+-- Name: index_photos_on_rekognition_response; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_photos_on_rekognition_response ON public.photos USING gin (rekognition_response);
 
 
 --
@@ -418,6 +472,10 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20201127215925'),
 ('20201127215926'),
 ('20201129082610'),
-('20201129084036');
+('20201129084036'),
+('20201129204208'),
+('20201202140043'),
+('20201202140044'),
+('20201202144952');
 
 

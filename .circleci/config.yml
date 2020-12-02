@@ -18,15 +18,15 @@ jobs:
   test:
     docker:
       - image: cimg/ruby:2.6-node
-      - image: circleci/postgres:9.5-alpine
+      - image: circleci/postgres:11
         environment:
           POSTGRES_USER: photonia
           POSTGRES_DB: photonia_test
-          POSTGRES_PASSWORD: ""
+          POSTGRES_PASSWORD: password
     environment:
       BUNDLE_JOBS: "3"
       BUNDLE_RETRY: "3"
-      PHOTONIA_DATABASE_URL: "postgres://photonia@127.0.0.1/"
+      PHOTONIA_DATABASE_URL: "postgres://photonia:password@127.0.0.1/"
       RAILS_ENV: test
     steps:
       - checkout
@@ -38,10 +38,13 @@ jobs:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
+          name: Install PostgreSQL client
+          command: sudo apt update && sudo apt install postgresql-client
+      - run:
           name: Database setup
           command: bundle exec rails db:schema:load --trace
       # Run rspec in parallel
-      - ruby/rspec-test
+      # - ruby/rspec-test
       # - ruby/rubocop-check
 
 workflows:
