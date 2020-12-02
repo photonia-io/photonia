@@ -22,11 +22,11 @@ jobs:
         environment:
           POSTGRES_USER: photonia
           POSTGRES_DB: photonia_test
-          POSTGRES_PASSWORD: ""
+          POSTGRES_PASSWORD: password
     environment:
       BUNDLE_JOBS: "3"
       BUNDLE_RETRY: "3"
-      PHOTONIA_DATABASE_URL: "postgres://photonia@127.0.0.1/"
+      PHOTONIA_DATABASE_URL: "postgres://photonia:password@127.0.0.1/"
       RAILS_ENV: test
     steps:
       - checkout
