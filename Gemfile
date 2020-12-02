@@ -29,6 +29,7 @@ gem 'jbuilder', '~> 2.7'
 gem 'bootsnap', '>= 1.4.2', require: false
 
 gem 'acts-as-taggable-on', '~> 6.0'
+gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'faraday'
 gem 'friendly_id', '~> 5.4.0'

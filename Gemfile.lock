@@ -73,6 +73,9 @@ GEM
     aws-sdk-kms (1.39.0)
       aws-sdk-core (~> 3, >= 3.109.0)
       aws-sigv4 (~> 1.1)
+    aws-sdk-rekognition (1.47.0)
+      aws-sdk-core (~> 3, >= 3.109.0)
+      aws-sigv4 (~> 1.1)
     aws-sdk-s3 (1.85.0)
       aws-sdk-core (~> 3, >= 3.109.0)
       aws-sdk-kms (~> 1)
@@ -308,6 +311,7 @@ PLATFORMS
 
 DEPENDENCIES
   acts-as-taggable-on (~> 6.0)
+  aws-sdk-rekognition
   aws-sdk-s3 (~> 1.14)
   bootsnap (>= 1.4.2)
   byebug
