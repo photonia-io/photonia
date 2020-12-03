@@ -60,22 +60,16 @@ namespace :flickr do
 
   desc 'Import tags from Flickr'
   task import_tags: :environment do
-    Photo.unscoped.all.each do |photo|
-      tags = photo.flickr_json['tags'].each.pluck('tag')
-      photo.tag_list = tags
-      photo.save
-      putc '.'
-    end
-    ActsAsTaggableOn::Tag.update_all(source: 'flickr')
-    puts ''
-  end
-
-  desc 'Fix tagging'
-  task fix_tagging: :environment do
     tagging_source = TaggingSource.find_by(name: 'Flickr')
-    ActsAsTaggableOn::Tagging.update_all(
-      tagger_type: tagging_source.class.name,
-      tagger_id: tagging_source.id
-    )
+
+    Photo.unscoped.all.each do |photo|
+      flickr_tag_list = photo.flickr_json['tags'].map { |t| t['tag'].downcase }.join(',')
+      if flickr_tag_list != ''
+        tagging_source.tag(photo, with: flickr_tag_list, on: :tags)
+        puts "Photo #{photo.id} / #{photo.slug} - Tagged with: #{flickr_tag_list}"
+      else
+        puts "Photo #{photo.id} / #{photo.slug} - Not tagged"
+      end
+    end
   end
 end
