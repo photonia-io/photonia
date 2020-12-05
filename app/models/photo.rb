@@ -7,4 +7,12 @@ class Photo < ApplicationRecord
   acts_as_taggable_on :tags
 
   default_scope { where(privacy: 'public') }
+
+  def next
+    Photo.where('date_taken > ?', date_taken).order(:date_taken).first
+  end
+
+  def prev
+    Photo.where('date_taken < ?', date_taken).order(date_taken: :desc).first
+  end
 end

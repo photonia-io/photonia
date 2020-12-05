@@ -1,12 +1,57 @@
 <% content_for(:page_title, @photo.name) %>
-<h1><%= @photo.name %></h1>
-<p><%= @photo.description %></p>
-<img src="<%= @photo.image_url(:large) %>" />
-<p>Tags: <% @tags.each do |tag| %>
-<a href="<%= tag_path(tag) %>"><%= tag.name %></a>
-<% end %></p>
-<p>AI Tags: <% @rekognition_tags.each do |tag| %>
-<a href="<%= tag_path(tag) %>"><%= tag.name %></a>
-<% end %></p>
-<p>Date taken: <%= @photo.date_taken %></p>
-<p>Date posted: <%= @photo.flickr_date_imported %></p>
+<div class="level mb-4">
+  <div class="level-left">
+    <h1 class="title level-item"><%= @photo.name %></h1>
+  </div>
+  <div class="level-right">
+    <% if @photo.prev %>
+      <div class="level-item">
+        <a href="<%= photo_path(@photo.prev) %>" class="button is-light">
+          <span class="icon"><i class="fas fa-chevron-left"></i></span> <span>Previous</span>
+          <img src="<%= @photo.prev.image_url(:thumbnail) %>" class="image is-24x24 ml-3">
+        </a>
+      </div>
+    <% end %>
+    <% if @photo.next %>
+      <div class="level-item">
+        <a href="<%= photo_path(@photo.next) %>" class="button is-light">
+          <img src="<%= @photo.next.image_url(:thumbnail) %>" class="image is-24x24 mr-3">
+          <span>Next</span> <span class="icon"><i class="fas fa-chevron-right"></i></span>
+        </a>
+      </div>
+    <% end %>
+  </div>
+</div>
+<hr class="is-hidden-touch mt-2 mb-4">
+<div class="columns is-1">
+  <div class="column is-three-quarters">
+    <img src="<%= @photo.image_url(:large) %>" />
+    <% if @photo.description.strip != '' %>
+      <h2 class="heading">Description</h2>
+      <div class="content">
+        <%= @photo.description %>
+      </div>
+    <% end %>
+  </div>
+  <div class="column">
+    <h3 class="heading"><span class="icon"><i class="fas fa-camera"></i></span> Date Taken</h3>
+    <p class="content"><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
+
+    <h3 class="heading"><span class="icon"><i class="fas fa-arrow-circle-up"></i></span> Date Posted</h3>
+    <p class="content"><%= @photo.flickr_date_imported.strftime('%B %e, %Y') %></p>
+
+    <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h2>
+    <div class="tags">
+      <% @tags.each do |tag| %>
+        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
+      <% end %>
+    </div>
+
+    <h3 class="heading"><span class="icon"><i class="fas fa-robot"></i></span> AI Tags</h2>
+    <div class="tags">
+      <% @rekognition_tags.each do |tag| %>
+        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><span class="icon"><i class="fas fa-robot"></i></span><%= tag.name %></a>
+      <% end %>
+    </div>
+  </div>
+</div>
