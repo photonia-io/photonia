@@ -36,6 +36,7 @@ gem 'friendly_id', '~> 5.4.0'
 gem 'image_processing', '~> 1.8'
 gem 'pagy', '~> 3.5'
 gem 'shrine', '~> 3.0'
+gem 'skylight'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

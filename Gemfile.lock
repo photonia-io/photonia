@@ -264,6 +264,10 @@ GEM
     shrine (3.3.0)
       content_disposition (~> 1.0)
       down (~> 5.1)
+    skylight (4.3.2)
+      skylight-core (= 4.3.2)
+    skylight-core (4.3.2)
+      activesupport (>= 4.2.0)
     spring (2.1.1)
     spring-watcher-listen (2.0.1)
       listen (>= 2.7, < 4.0)
@@ -310,6 +314,7 @@ GEM
 
 PLATFORMS
   ruby
+  x86_64-linux
 
 DEPENDENCIES
   acts-as-taggable-on (~> 6.0)
@@ -339,6 +344,7 @@ DEPENDENCIES
   sass-rails (>= 6)
   selenium-webdriver
   shrine (~> 3.0)
+  skylight
   spring
   spring-watcher-listen (~> 2.0.0)
   turbolinks (~> 5)
@@ -351,4 +357,4 @@ RUBY VERSION
    ruby 2.6.6p146
 
 BUNDLED WITH
-   2.1.4
+   2.2.2

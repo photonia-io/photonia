@@ -37,3 +37,6 @@ yarn-debug.log*
 
 # Ignore flickr directory with private data and photos
 /flickr/
+
+# Ignore .env file
+.env
