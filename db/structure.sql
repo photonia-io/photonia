@@ -1,3 +1,13 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
 --
 -- Name: photo_privacy; Type: TYPE; Schema: public; Owner: -
 --
@@ -18,6 +28,71 @@ CREATE TYPE public.tag_source AS ENUM (
     'flickr',
     'rekognition'
 );
+
+
+--
+-- Name: romanian_unnaccented; Type: TEXT SEARCH CONFIGURATION; Schema: public; Owner: -
+--
+
+CREATE TEXT SEARCH CONFIGURATION public.romanian_unnaccented (
+    PARSER = pg_catalog."default" );
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR asciiword WITH romanian_stem;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR word WITH romanian_stem;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR numword WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR email WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR url WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR host WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR sfloat WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR version WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR hword_numpart WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR hword_part WITH romanian_stem;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR hword_asciipart WITH romanian_stem;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR numhword WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR asciihword WITH romanian_stem;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR hword WITH romanian_stem;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR url_path WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR file WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR "float" WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR "int" WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.romanian_unnaccented
+    ADD MAPPING FOR uint WITH simple;
 
 
 SET default_tablespace = '';
@@ -90,9 +165,7 @@ CREATE TABLE public.photos (
     image_data jsonb,
     flickr_json jsonb,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL,
-    privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
-    rekognition_response jsonb
+    updated_at timestamp(6) without time zone NOT NULL
 );
 
 
@@ -343,13 +416,6 @@ CREATE INDEX index_friendly_id_slugs_on_sluggable_type_and_sluggable_id ON publi
 --
 
 CREATE INDEX index_photos_on_exif ON public.photos USING gin (exif);
-
-
---
--- Name: index_photos_on_rekognition_response; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_photos_on_rekognition_response ON public.photos USING gin (rekognition_response);
 
 
 --
