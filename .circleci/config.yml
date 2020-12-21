@@ -39,7 +39,7 @@ jobs:
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
           name: Install PostgreSQL client
-          command: sudo apt install -y postgresql-client || true
+          command: sudo apt update && sudo apt install -y postgresql-client || true
       - run:
           name: Database setup
           command: bundle exec rails db:schema:load --trace
