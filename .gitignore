@@ -37,3 +37,9 @@ yarn-debug.log*
 
 # Ignore flickr directory with private data and photos
 /flickr/
+
+# Ignore .env file
+.env
+
+# Ignore skylight.io configuration file
+/config/skylight.yml
