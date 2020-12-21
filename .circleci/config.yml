@@ -37,15 +37,18 @@ jobs:
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
-      # - run:
-      #     name: Install PostgreSQL client
-      #     command: sudo apt update && sudo apt install postgresql-client
+      - run:
+          name: Install PostgreSQL client
+          command: sudo apt install -y postgresql-client || true
       - run:
           name: Database setup
           command: bundle exec rails db:schema:load --trace
       # Run rspec in parallel
-      - ruby/rspec-test
+      # - ruby/rspec-test
       # - ruby/rubocop-check
+      - run:
+          name: rspec
+          comand: bundle exec rspec
 
 workflows:
   version: 2
