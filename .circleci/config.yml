@@ -38,10 +38,8 @@ jobs:
       - run:
           name: Install PostgreSQL client
           command: |
-            curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-            echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-            sudo apt-get update
-            sudo apt-get install -y postgresql-client-11
+            sudo apt update
+            sudo apt install -y postgresql-client
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
