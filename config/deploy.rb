@@ -22,7 +22,7 @@ set :deploy_to, ENV['PHOTONIA_DEPLOY_PATH']
 
 # Default value for :linked_files is []
 # append :linked_files, "config/database.yml"
-append :linked_files, 'config/master.key'
+append :linked_files, 'config/master.key', 'config/skylight.yml'
 
 # Default value for linked_dirs is []
 # append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"
