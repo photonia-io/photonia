@@ -40,3 +40,6 @@ yarn-debug.log*
 
 # Ignore .env file
 .env
+
+# Ignore skylight.io configuration file
+/config/skylight.yml
