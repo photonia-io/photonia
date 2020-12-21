@@ -43,12 +43,12 @@ jobs:
       - run:
           name: Database setup
           command: bundle exec rails db:schema:load --trace
+      - run:
+          name: rspec
+          command: bundle exec rspec
       # Run rspec in parallel
       # - ruby/rspec-test
       # - ruby/rubocop-check
-      - run:
-          name: rspec
-          comand: bundle exec rspec
 
 workflows:
   version: 2
