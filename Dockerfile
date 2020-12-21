@@ -7,13 +7,18 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg -o /root/yarn-pubkey.gpg &
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
 RUN apt-get update && apt-get install -y --no-install-recommends nodejs yarn
 
-# rails
+# Create and switch to app directory
 RUN mkdir /photonia
-COPY . /photonia
 WORKDIR /photonia
 
-RUN yarn install --check-files
+# bundle install
+COPY Gemfile* ./
 RUN gem install bundler
-RUN bundle install
+RUN bundle install --jobs 5
+
+# yarn install
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install
 
 CMD bundle exec rails server -b 0.0.0.0
