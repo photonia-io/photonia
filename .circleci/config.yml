@@ -54,7 +54,7 @@ jobs:
       - ruby/install-deps
       - add_ssh_keys:
           fingerprints:
-            - {{ DEPLOY_SSH_KEY_FINGERPRINT }}
+            - $DEPLOY_SSH_KEY_FINGERPRINT
       - run:
           name: Capistrano Deploy
           command: bundle exec cap production deploy
