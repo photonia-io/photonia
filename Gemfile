@@ -31,6 +31,8 @@ gem 'bootsnap', '>= 1.4.2', require: false
 gem 'acts-as-taggable-on', '~> 6.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
+gem 'elasticsearch-model'
+gem 'elasticsearch-rails'
 gem 'faraday'
 gem 'friendly_id', '~> 5.4.0'
 gem 'image_processing', '~> 1.8'
@@ -41,6 +43,7 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'pry'
+  gem 'rspec'
   gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
   gem 'rubocop'
@@ -63,6 +66,8 @@ end
 group :test do
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 2.15'
+  gem 'database_cleaner'
+  gem 'elasticsearch-extensions'
   gem 'selenium-webdriver'
   # Easy installation and use of web drivers to run system tests with browsers
   gem 'webdrivers'

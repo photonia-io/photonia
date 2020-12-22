@@ -4,6 +4,17 @@ class Photo < ApplicationRecord
 
   include ImageUploader::Attachment(:image)
 
+  include Elasticsearch::Model
+  include Elasticsearch::Model::Callbacks
+
+  settings index: { number_of_shards: 1 } do
+    mappings dynamic: 'false' do
+      indexes :name
+      indexes :description
+      indexes :tags
+    end
+  end
+
   acts_as_taggable_on :tags
 
   default_scope { where(privacy: 'public') }

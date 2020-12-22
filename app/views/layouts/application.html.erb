@@ -69,16 +69,16 @@
 
     <div class="navbar-end">
       <div class="navbar-item">
-        <div class="field has-addons">
-          <p class="control">
-            <input class="input" type="text" placeholder="Find a photo">
-          </p>
-          <p class="control">
-            <button class="button">
-              Search
-            </button>
-          </p>
-        </div>
+        <%= form_tag(photos_path, method: :get) do %>
+          <div class="field has-addons">
+            <p class="control">
+              <%= text_field_tag(:q, params[:q], class: 'input', placeholder: 'Find a photo') %>
+            </p>
+            <p class="control">
+              <input type="submit" class="button" value="Search">
+            </p>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
@@ -90,5 +90,13 @@
         <%= yield %>
       </div>
     </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="content">
+          <p><strong>Photonia</strong> is written by <a href="https://rusiczki.net">Janos Rusiczki</a>.</p>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>
