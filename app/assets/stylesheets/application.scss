@@ -12,4 +12,8 @@
  *
  *= require_tree .
  *= require_self
- */
+  */
+@import 'bulma/bulma';
+.tag span.icon {
+  margin-right: 0.3em !important;
+}
