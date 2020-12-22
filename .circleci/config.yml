@@ -46,6 +46,18 @@ jobs:
       # Run rspec in parallel
       - ruby/rspec-test
       # - ruby/rubocop-check
+  deploy:
+    docker:
+      - image: cimg/ruby:2.6-node
+    steps:
+      - checkout
+      - ruby/install-deps
+      - add_ssh_keys:
+          fingerprints:
+            - {{ DEPLOY_SSH_KEY_FINGERPRINT }}
+      - run:
+          name: Capistrano Deploy
+          command: bundle exec cap production deploy
 
 workflows:
   version: 2
@@ -55,3 +67,9 @@ workflows:
       - test:
           requires:
             - build
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
