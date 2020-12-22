@@ -118,6 +118,7 @@ GEM
     diff-lcs (1.4.4)
     down (5.2.0)
       addressable (~> 2.5)
+    ed25519 (1.2.4)
     erubi (1.10.0)
     faraday (1.1.0)
       multipart-post (>= 1.2, < 3)
@@ -327,6 +328,7 @@ DEPENDENCIES
   capistrano-rails
   capistrano-rvm
   capybara (>= 2.15)
+  ed25519
   faraday
   friendly_id (~> 5.4.0)
   image_processing (~> 1.8)

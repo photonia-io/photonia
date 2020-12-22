@@ -45,6 +45,7 @@ group :development, :test do
   gem 'capistrano-passenger'
   gem 'capistrano-rails'
   gem 'capistrano-rvm'
+  gem 'ed25519'
   gem 'pry'
   gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
