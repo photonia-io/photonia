@@ -41,6 +41,10 @@ gem 'skylight'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'capistrano', '~> 3.14', require: false
+  gem 'capistrano-passenger'
+  gem 'capistrano-rails'
+  gem 'capistrano-rvm'
   gem 'pry'
   gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
@@ -49,10 +53,6 @@ group :development, :test do
 end
 
 group :development do
-  gem 'capistrano', '~> 3.14', require: false
-  gem 'capistrano-passenger'
-  gem 'capistrano-rails'
-  gem 'capistrano-rvm'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen', '~> 3.2'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
