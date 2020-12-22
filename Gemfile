@@ -12,7 +12,7 @@ gem 'puma', '~> 4.1'
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 6'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
-gem 'webpacker', '~> 4.0'
+gem 'webpacker', '~> 5.2'
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
@@ -36,10 +36,17 @@ gem 'friendly_id', '~> 5.4.0'
 gem 'image_processing', '~> 1.8'
 gem 'pagy', '~> 3.5'
 gem 'shrine', '~> 3.0'
+gem 'skylight'
 
 group :development, :test do
+  gem 'bcrypt_pbkdf'
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'capistrano', '~> 3.14', require: false
+  gem 'capistrano-passenger'
+  gem 'capistrano-rails'
+  gem 'capistrano-rvm'
+  gem 'ed25519'
   gem 'pry'
   gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
@@ -48,10 +55,6 @@ group :development, :test do
 end
 
 group :development do
-  gem 'capistrano', '~> 3.14', require: false
-  gem 'capistrano-passenger'
-  gem 'capistrano-rails'
-  gem 'capistrano-rvm'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen', '~> 3.2'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring

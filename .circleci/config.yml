@@ -24,10 +24,11 @@ jobs:
           POSTGRES_DB: photonia_test
           POSTGRES_PASSWORD: password
     environment:
-      BUNDLE_JOBS: "3"
+      BUNDLE_JOBS: "5"
       BUNDLE_RETRY: "3"
       PHOTONIA_DATABASE_URL: "postgres://photonia:password@127.0.0.1/"
       RAILS_ENV: test
+      PAGER: cat
     steps:
       - checkout
       - ruby/install-deps
@@ -35,23 +36,40 @@ jobs:
           pkg-manager: yarn
           cache-key: "yarn.lock"
       - run:
+          name: Install PostgreSQL client
+          command: |
+            sudo apt update
+            sudo apt install -y postgresql-client
+      - run:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
-      - run:
-          name: Install PostgreSQL client
-          command: sudo apt update && sudo apt install postgresql-client
-      - run:
-          name: Database setup
-          command: bundle exec rails db:schema:load --trace
       # Run rspec in parallel
-      # - ruby/rspec-test
+      - ruby/rspec-test
       # - ruby/rubocop-check
+  deploy:
+    docker:
+      - image: cimg/ruby:2.6-node
+    steps:
+      - checkout
+      - ruby/install-deps
+      - add_ssh_keys:
+          fingerprints:
+            - $DEPLOY_SSH_KEY_FINGERPRINT
+      - run:
+          name: Capistrano Deploy
+          command: bundle exec cap production deploy
 
 workflows:
   version: 2
-  build_and_test:
+  build_test_deploy:
     jobs:
       - build
       - test:
           requires:
             - build
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
