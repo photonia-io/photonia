@@ -39,12 +39,14 @@ gem 'shrine', '~> 3.0'
 gem 'skylight'
 
 group :development, :test do
+  gem 'bcrypt_pbkdf'
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capistrano', '~> 3.14', require: false
   gem 'capistrano-passenger'
   gem 'capistrano-rails'
   gem 'capistrano-rvm'
+  gem 'ed25519'
   gem 'pry'
   gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
