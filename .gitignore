@@ -43,3 +43,6 @@ yarn-debug.log*
 
 # Ignore skylight.io configuration file
 /config/skylight.yml
+
+# Ignore generated sitemap
+/public/sitemap.xml.gz
