@@ -52,6 +52,8 @@ group :development, :test do
   gem 'rspec_junit_formatter' # for CircleCI
   gem 'rubocop'
   gem 'rubocop-rails'
+  gem 'sitemap_generator'
+  gem 'whenever', require: false
 end
 
 group :development do
