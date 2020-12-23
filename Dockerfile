@@ -12,7 +12,8 @@ RUN mkdir /photonia
 WORKDIR /photonia
 
 # bundle install
-COPY Gemfile* ./
+COPY Gemfile .
+COPY Gemfile.lock .
 RUN gem install bundler
 RUN bundle install --jobs 5
 

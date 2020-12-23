@@ -28,8 +28,11 @@ services:
       - '3000:3000'
     env_file:
       - .env
+    environment:
+      HISTFILE: /root/history/.bash_history
     volumes:
       - .:/photonia
+      - photonia-bash-history:/root/history/.bash_history
 
   # sidekiq:
   #   build:
@@ -46,4 +49,5 @@ services:
 
 volumes:
   photonia-postgres:
+  photonia-bash-history:
   # photonia-redis:

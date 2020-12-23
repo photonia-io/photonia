@@ -1,26 +1,47 @@
 <% content_for(:page_title, 'Tags') %>
-<h1>Tags</h1>
-<h2>Most used</h2>
-<ul>
+<h1 class="title">Tags</h1>
+<hr class="is-hidden-touch mt-2 mb-4">
+<h2 class="title is-4">Most used</h2>
+<div class="field is-grouped is-grouped-multiline mb-2">
   <% @most_used.each_with_index do |tag, index| %>
-  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @most_used.size - 1 %>, <% end %>
+    <div class="control">
+      <div class="tags has-addons">
+        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
+        <span class="tag"><%= tag.taggings_count %></span>
+      </div>
+    </div>
   <% end %>
-</ul>
-<h2>Least used</h2>
-<ul>
+</div>
+<h2 class="title is-4">Least used</h2>
+<div class="field is-grouped is-grouped-multiline mb-2">
   <% @least_used.each_with_index do |tag, index| %>
-  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @least_used.size - 1 %>, <% end %>
+    <div class="control">
+      <div class="tags has-addons">
+        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
+        <span class="tag"><%= tag.taggings_count %></span>
+      </div>
+    </div>
   <% end %>
-</ul>
-<h2>Most used AI tags</h2>
-<ul>
+</div>
+<h2 class="title is-4">Most used AI tags</h2>
+<div class="field is-grouped is-grouped-multiline mb-2">
   <% @rekognition_most_used.each_with_index do |tag, index| %>
-  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @rekognition_most_used.size - 1 %>, <% end %>
+    <div class="control">
+      <div class="tags has-addons">
+        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
+        <span class="tag"><%= tag.taggings_count %></span>
+      </div>
+    </div>
   <% end %>
-</ul>
-<h2>Least used AI tags</h2>
-<ul>
+</div>
+<h2 class="title is-4">Least used AI tags</h2>
+<div class="field is-grouped is-grouped-multiline mb-2">
   <% @rekognition_least_used.each_with_index do |tag, index| %>
-  <a href="<%= tag_path(tag) %>"><%= tag.name %></a> (<%= tag.taggings_count %>)<% if index != @rekognition_least_used.size - 1 %>, <% end %>
+    <div class="control">
+      <div class="tags has-addons">
+        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
+        <span class="tag"><%= tag.taggings_count %></span>
+      </div>
+    </div>
   <% end %>
-</ul>
+</div>

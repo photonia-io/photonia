@@ -1,8 +1,15 @@
 <% content_for(:page_title, 'Photos' + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
-<h1>Photos</h1>
-<ul>
+<h1 class="title">Photos</h1>
+<hr class="is-hidden-touch mt-2 mb-4">
+<div class="columns is-1 is-variable is-multiline">
   <% @photos.each do |photo| %>
-  <li><a href="<%= photo_path(photo) %>"><img src="<%= photo.image_url(:thumbnail) %>" /><%= photo.name %></a></li>
+    <div class="column is-one-quarter">
+      <a href="<%= photo_path(photo) %>">
+        <img src="<%= photo.image_url(:medium) %>" class="image is-fullwidth" />
+        <%= photo.name %>
+      </a>
+    </div>
   <% end %>
-</ul>
-<%== pagy_nav(@pagy) %>
+</div>
+<hr class="mt-1 mb-4">
+<%== pagy_bulma_nav(@pagy) %>
