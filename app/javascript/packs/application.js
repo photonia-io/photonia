@@ -16,4 +16,5 @@ require("channels")
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
 
-require('packs/bulma/menu.js')
+require('packs/bulma/menu')
+require('packs/bulma/delete_button')
