@@ -10,6 +10,20 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: unaccent; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION unaccent; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
+
+
+--
 -- Name: photo_privacy; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -29,6 +43,22 @@ CREATE TYPE public.tag_source AS ENUM (
     'flickr',
     'rekognition'
 );
+
+
+--
+-- Name: photos_trigger(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.photos_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  new.tsv :=
+    to_tsvector('pg_catalog.english', unaccent(new.name)) ||
+    to_tsvector('pg_catalog.english', unaccent(new.description));
+  return new;
+end
+$$;
 
 
 SET default_tablespace = '';
@@ -104,7 +134,8 @@ CREATE TABLE public.photos (
     updated_at timestamp(6) without time zone NOT NULL,
     privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
     rekognition_response jsonb,
-    user_id bigint
+    user_id bigint,
+    tsv tsvector
 );
 
 
@@ -511,6 +542,13 @@ CREATE INDEX taggings_taggable_context_idx ON public.taggings USING btree (tagga
 
 
 --
+-- Name: photos tsvupdate; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tsvupdate BEFORE INSERT OR UPDATE ON public.photos FOR EACH ROW EXECUTE PROCEDURE public.photos_trigger();
+
+
+--
 -- Name: taggings fk_rails_9fcd2e236b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -549,6 +587,9 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20201202140044'),
 ('20201202144952'),
 ('20201226121349'),
-('20201226180141');
+('20201226180141'),
+('20201229204909'),
+('20201229211939'),
+('20201229212934');
 
 

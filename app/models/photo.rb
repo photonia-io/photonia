@@ -4,6 +4,17 @@ class Photo < ApplicationRecord
 
   include ImageUploader::Attachment(:image)
 
+  include PgSearch::Model
+  pg_search_scope :search,
+                  against: [:name, :description],
+                  ignoring: :accents,
+                  using: {
+                    tsearch: {
+                      dictionary: 'english',
+                      tsvector_column: 'tsv'
+                    }
+                  }
+
   acts_as_taggable_on :tags
 
   default_scope { where(privacy: 'public') }
