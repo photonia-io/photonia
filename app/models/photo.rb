@@ -8,6 +8,8 @@ class Photo < ApplicationRecord
 
   default_scope { where(privacy: 'public') }
 
+  belongs_to :user
+
   def next
     Photo.where('date_taken > ?', date_taken).order(:date_taken).first
   end

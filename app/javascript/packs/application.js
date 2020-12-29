@@ -16,4 +16,9 @@ require("channels")
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
 
-require('packs/bulma/menu.js')
+require('helpers/bulma')
+
+import setupCSRFToken from 'helpers/csrf'
+window.addEventListener('DOMContentLoaded', setupCSRFToken)
+
+require('photos/show')

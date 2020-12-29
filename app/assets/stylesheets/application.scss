@@ -17,3 +17,11 @@
 .tag span.icon {
   margin-right: 0.3em !important;
 }
+
+*[contenteditable="true"]:hover {
+  background-color: yellow;
+}
+
+*[contenteditable="true"]:focus {
+  background-color: white !important;
+}

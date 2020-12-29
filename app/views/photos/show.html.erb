@@ -1,7 +1,11 @@
 <% content_for(:page_title, @photo.name) %>
 <div class="level mb-4">
   <div class="level-left">
-    <h1 class="title level-item"><%= @photo.name %></h1>
+    <% if policy(@photo).update? %>
+      <h1 id="photo-name" class="title level-item" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
+    <% else %>
+      <h1 class="title level-item"><%= @photo.name.presence || '(no title)' %></h1>
+    <% end %>
   </div>
   <div class="level-right">
     <% if @photo.prev %>
@@ -26,10 +30,14 @@
 <div class="columns is-1">
   <div class="column is-three-quarters">
     <img src="<%= @photo.image_url(:large) %>" />
-    <% if @photo.description.strip != '' %>
+    <% if @photo.description.presence || policy(@photo).update? %>
       <h2 class="heading">Description</h2>
       <div class="content">
-        <%= @photo.description %>
+        <% if policy(@photo).update? %>
+          <div id="photo-description" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.description.presence || '(no description)' %></div>
+        <% else %>
+          <%= @photo.description %>
+        <% end %>
       </div>
     <% end %>
   </div>
