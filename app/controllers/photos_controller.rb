@@ -2,7 +2,12 @@ class PhotosController < ApplicationController
   include Pagy::Backend
 
   def index
-    @pagy, @photos = pagy(Photo.all.order(date_taken: :desc))
+    photos = if params[:q].present?
+      Photo.search(params[:q])
+    else
+      Photo.all.order(date_taken: :desc)
+    end
+    @pagy, @photos = pagy(photos)
   end
 
   def show
