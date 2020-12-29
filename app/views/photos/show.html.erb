@@ -2,11 +2,7 @@
 <div class="level mb-4">
   <div class="level-left">
     <% if policy(@photo).update? %>
-      <span class="level-item">
-      <h1 id="photo-name" class="title" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
-      </span>
-      <span class="level-item">
-      </span>
+      <h1 id="photo-name" class="title level-item" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
     <% else %>
       <h1 class="title level-item"><%= @photo.name.presence || '(no title)' %></h1>
     <% end %>
@@ -38,7 +34,7 @@
       <h2 class="heading">Description</h2>
       <div class="content">
         <% if policy(@photo).update? %>
-          <span id="photo-description" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.description.presence || '(no description)' %></span>
+          <div id="photo-description" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.description.presence || '(no description)' %></div>
         <% else %>
           <%= @photo.description %>
         <% end %>
