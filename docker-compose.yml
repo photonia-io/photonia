@@ -6,10 +6,10 @@ services:
     image: postgres:11
     environment:
       POSTGRES_PASSWORD: password
-    ports: 
+    ports:
       - '5432:5432'
     volumes:
-      - photonia-postgres:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
 
   # redis:
   #   image: redis:5.0.7
@@ -32,7 +32,8 @@ services:
       HISTFILE: /root/history/.bash_history
     volumes:
       - .:/photonia
-      - photonia-bash-history:/root/history/.bash_history
+      - bundle:/root/.bundle
+      - bash_history:/root/history/
 
   # sidekiq:
   #   build:
@@ -40,7 +41,7 @@ services:
   #     args:
   #       USER_ID: "${USER_ID:-1000}"
   #       GROUP_ID: "${GROUP_ID:-1000}"
-  #   command: bundle exec sidekiq 
+  #   command: bundle exec sidekiq
   #   depends_on:
   #     - postgres
   #     - redis
@@ -48,6 +49,7 @@ services:
   #     - .env
 
 volumes:
-  photonia-postgres:
-  photonia-bash-history:
+  postgres:
+  bash_history:
+  bundle:
   # photonia-redis:

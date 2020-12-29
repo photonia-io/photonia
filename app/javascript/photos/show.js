@@ -3,7 +3,7 @@ const { default: axios } = require("axios");
 var oldPhotoName = '';
 var oldPhotoDescription = '';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbolinks:load', () => {
   photoName = document.getElementById('photo-name');
 
   photoName.addEventListener('focus', () => {
