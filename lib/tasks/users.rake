@@ -7,4 +7,12 @@ namespace :users do
   task :create, [:email, :password] => [:environment] do |_t, args|
     User.create(email: args[:email], password: args[:password], password_confirmation: args[:password])
   end
+
+# Usage: rails users:assign_photos[user@email.com]
+
+  desc 'Assigns all photos to a user'
+  task :assign_photos, [:email] => [:environment] do |_t, args|
+    user = User.find_by(email: args[:email])
+    Photo.unscoped.update_all(user_id: user.id)
+  end
 end

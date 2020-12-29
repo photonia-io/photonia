@@ -103,7 +103,8 @@ CREATE TABLE public.photos (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
-    rekognition_response jsonb
+    rekognition_response jsonb,
+    user_id bigint
 );
 
 
@@ -419,6 +420,13 @@ CREATE UNIQUE INDEX index_photos_on_slug ON public.photos USING btree (slug);
 
 
 --
+-- Name: index_photos_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_photos_on_user_id ON public.photos USING btree (user_id);
+
+
+--
 -- Name: index_taggings_on_context; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -511,6 +519,14 @@ ALTER TABLE ONLY public.taggings
 
 
 --
+-- Name: photos fk_rails_c79d76afc0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.photos
+    ADD CONSTRAINT fk_rails_c79d76afc0 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -532,6 +548,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20201202140043'),
 ('20201202140044'),
 ('20201202144952'),
-('20201226121349');
+('20201226121349'),
+('20201226180141');
 
 

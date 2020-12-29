@@ -4,4 +4,6 @@ class User < ApplicationRecord
   # :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :validatable
   devise :database_authenticatable, :rememberable
+
+  has_many :photos
 end
