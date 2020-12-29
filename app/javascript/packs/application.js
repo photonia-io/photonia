@@ -19,6 +19,6 @@ require("channels")
 require('helpers/bulma')
 
 import setupCSRFToken from 'helpers/csrf'
-window.addEventListener('DOMContentLoaded', setupCSRFToken)
+window.addEventListener('turbolinks:load', setupCSRFToken)
 
 require('photos/show')
