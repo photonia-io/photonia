@@ -36,10 +36,10 @@ jobs:
           pkg-manager: yarn
           cache-key: "yarn.lock"
       - run:
-          name: Install PostgreSQL client
+          name: Install PostgreSQL client & lib exif
           command: |
             sudo apt update
-            sudo apt install -y postgresql-client
+            sudo apt install -qq postgresql-client libexif-dev
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m

@@ -129,6 +129,7 @@ GEM
       addressable (~> 2.5)
     ed25519 (1.2.4)
     erubi (1.10.0)
+    exif (2.2.0)
     faraday (1.2.0)
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
@@ -355,6 +356,7 @@ DEPENDENCIES
   capybara (>= 2.15)
   devise
   ed25519
+  exif
   faraday
   friendly_id (~> 5.4.0)
   image_processing (~> 1.8)
