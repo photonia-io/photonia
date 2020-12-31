@@ -10,6 +10,11 @@ jobs:
       - image: cimg/ruby:2.6-node
     steps:
       - checkout
+      - run:
+          name: Install libexif-dev
+          command: |
+            sudo apt update
+            sudo apt install -qq libexif-dev
       - ruby/install-deps:
           with-cache: true
       - node/install-packages:
@@ -36,7 +41,7 @@ jobs:
           pkg-manager: yarn
           cache-key: "yarn.lock"
       - run:
-          name: Install PostgreSQL client & lib exif
+          name: Install PostgreSQL client & libexif-dev
           command: |
             sudo apt update
             sudo apt install -qq postgresql-client libexif-dev
