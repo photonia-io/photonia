@@ -12,13 +12,15 @@ class CreateTriggerTsvupdate < ActiveRecord::Migration[6.0]
 
       CREATE TRIGGER tsvupdate BEFORE INSERT OR UPDATE
       ON photos FOR EACH ROW EXECUTE FUNCTION photos_trigger();
-      UPDATE photos SET name = name; /* update existing colums */
+
+      UPDATE photos SET name = name; /* update existing records */
     SQL
   end
 
   def down
     execute <<~SQL
-      DROP TRIGGER tsvupdate ON photos;
+      DROP TRIGGER IF EXISTS tsvupdate ON photos;
+      DROP FUNCTION IF EXISTS photos_trigger;
     SQL
   end
 end

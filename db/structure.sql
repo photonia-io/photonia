@@ -52,10 +52,15 @@ CREATE TYPE public.tag_source AS ENUM (
 CREATE FUNCTION public.photos_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
+declare
+  photo_tags record;
+
 begin
+  select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags';
   new.tsv :=
-    to_tsvector('pg_catalog.english', unaccent(new.name)) ||
-    to_tsvector('pg_catalog.english', unaccent(new.description));
+    setweight(to_tsvector('pg_catalog.english', unaccent(new.name)), 'A') ||
+    setweight(to_tsvector('pg_catalog.english', unaccent(new.description)), 'A') ||
+    setweight(to_tsvector('pg_catalog.english', unaccent(photo_tags.name)), 'B');
   return new;
 end
 $$;
@@ -590,6 +595,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20201226180141'),
 ('20201229204909'),
 ('20201229211939'),
-('20201229212934');
+('20201229212934'),
+('20201230100525');
 
 
