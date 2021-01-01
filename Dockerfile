@@ -1,5 +1,5 @@
 # Dockerfile - Development environment
-FROM ruby:2.6.6
+FROM ruby:3.0.0
 LABEL maintainer="janos.rusiczki@gmail.com"
 
 # nodejs
