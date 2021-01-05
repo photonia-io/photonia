@@ -31,7 +31,7 @@ namespace :flickr do
           serial_number: photo_hash['id'],
           flickr_views: photo_hash['count_views'],
           flickr_faves: photo_hash['count_faves'],
-          flickr_date_imported: photo_hash['date_imported'],
+          imported_at: photo_hash['date_imported'],
           flickr_photopage: photo_hash['photopage'],
           flickr_original: photo_hash['original'],
           flickr_json: photo_hash

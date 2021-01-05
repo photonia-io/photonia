@@ -40,6 +40,7 @@ gem 'pagy', '~> 3.5'
 gem 'pg_search'
 gem 'pundit'
 gem 'shrine', '~> 3.0'
+gem 'sidekiq'
 gem 'skylight'
 
 group :development, :test do

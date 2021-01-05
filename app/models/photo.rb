@@ -21,7 +21,7 @@ class Photo < ApplicationRecord
 
   belongs_to :user
 
-  before_validation :set_serial_number, prepend: true
+  before_validation :set_fields, prepend: true
 
   def next
     Photo.where('date_taken > ?', date_taken).order(:date_taken).first
@@ -33,10 +33,14 @@ class Photo < ApplicationRecord
 
   private
 
-  def set_serial_number
+  def set_fields
     if self.serial_number == nil
       maximum_serial_number = Photo.unscoped.maximum('serial_number') || 1_000_000_000
       self.serial_number = maximum_serial_number + rand(1..10_000_000)
+    end
+
+    if self.imported_at == nil
+      self.imported_at = Time.now
     end
   end
 end
