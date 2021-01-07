@@ -1,19 +1,22 @@
+# frozen_string_literal: true
+
+# PhotosController - deals with displaying, adding, updating and deleting photos
 class PhotosController < ApplicationController
   include Pagy::Backend
 
   def index
     photos = if params[:q].present?
-      Photo.search(params[:q])
-    else
-      Photo.all.order(date_taken: :desc)
-    end
+               Photo.search(params[:q])
+             else
+               Photo.all.order(date_taken: :desc)
+             end
     @pagy, @photos = pagy(photos)
   end
 
   def show
     @photo = Photo.friendly.find(params[:id])
-    @tags = @photo.tags.not_tagged_by_rekognition
-    @rekognition_tags = @photo.tags.tagged_by_rekognition
+    @tags = @photo.tags.rekognition(false)
+    @rekognition_tags = @photo.tags.rekognition(false)
   end
 
   def new
@@ -24,14 +27,9 @@ class PhotosController < ApplicationController
   def create
     @photo = Photo.new(photo_params)
     authorize @photo
+
     @photo.user = current_user
-
-    if exif = @photo.image.metadata['exif']
-      @photo.date_taken = DateTime.strptime(exif.date_time, '%Y:%m:%d %H:%M:%S') if(exif.date_time)
-      @photo.image.metadata.except!('exif')
-    end
-
-    @photo.date_taken = Time.now() unless @photo.date_taken
+    @photo.populate_exif_fields
 
     if @photo.valid?
       @photo.save

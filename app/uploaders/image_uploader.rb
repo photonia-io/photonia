@@ -23,7 +23,7 @@ class ImageUploader < Shrine
   plugin :url_options, store: lambda { |_file, _options|
     {
       public: true,
-      host: 'https://' + ENV['PHOTONIA_S3_BUCKET']
+      host: "https://#{ENV['PHOTONIA_S3_BUCKET']}"
     } if Rails.env.production?
   }
 
@@ -46,14 +46,20 @@ class ImageUploader < Shrine
     }
   end
 
-  def generate_location(io, record: nil, **context)
-    derivative = context[:derivative] ? "-#{context[:derivative]}" : '-original'
+  def generate_location(_io, record: nil, **context)
     uuid = SecureRandom.uuid
-    record_name = record.name.presence || record.slug.presence || uuid
-    filename = record_name.gsub(/[Țț]/, 't').gsub(/[Șș]/, 's').parameterize +
-               derivative +
+    filename = record_name(record, uuid).gsub(/[Țț]/, 't').gsub(/[Șș]/, 's').parameterize +
+               derivative_suffix(context) +
                File.extname(context[:metadata]['filename'])
     record_slug = record.slug.presence || uuid
     "#{record.class.name.downcase}/#{record_slug}/#{filename}"
+  end
+
+  def derivative_suffix(context)
+    context[:derivative] ? "-#{context[:derivative]}" : '-original'
+  end
+
+  def record_name(record, uuid)
+    record.name.presence || record.slug.presence || uuid
   end
 end

@@ -15,6 +15,8 @@ services:
     image: redis:5.0.7
     ports:
       - '6379:6379'
+    sysctls:
+      net.core.somaxconn: '511'
     volumes:
       - redis:/var/lib/redis/data
 
@@ -51,6 +53,7 @@ services:
       - .env
     volumes:
       - .:/photonia
+      - bundle:/root/.bundle
 
 volumes:
   postgres:
