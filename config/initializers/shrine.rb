@@ -6,6 +6,7 @@ if Rails.env.test?
   require 'shrine/storage/memory'
 
   Shrine.storages = {
+    cache: Shrine::Storage::Memory.new,
     store: Shrine::Storage::Memory.new
   }
 else
@@ -19,9 +20,29 @@ else
   }
 
   Shrine.storages = {
+    cache: Shrine::Storage::S3.new(prefix: 'cache', **s3_options),
     store: Shrine::Storage::S3.new(**s3_options)
   }
 end
 
 Shrine.plugin :activerecord
 Shrine.plugin :derivatives
+
+Shrine.plugin :backgrounding
+
+Shrine::Attacher.promote_block do
+  PromoteJob.perform_later(
+    self.class.name,
+    record.class.name,
+    record.id,
+    name,
+    file_data
+  )
+end
+
+Shrine::Attacher.destroy_block do
+  DestroyJob.perform_later(
+    self.class.name,
+    data
+  )
+end

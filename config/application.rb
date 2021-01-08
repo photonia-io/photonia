@@ -17,5 +17,7 @@ module Photonia
     # the framework and any gems in your application.
 
     config.active_record.schema_format = :sql
+
+    config.active_job.queue_adapter = :sidekiq
   end
 end
