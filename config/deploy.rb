@@ -42,3 +42,5 @@ append :linked_dirs, '.bundle', 'log'
 
 set :passenger_restart_with_touch, true
 set :rvm_ruby_version, '2.6.6'
+
+set :sidekiq_service_unit_name, 'sidekiq-photonia'

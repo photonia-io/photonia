@@ -39,7 +39,10 @@ gem 'image_processing', '~> 1.8'
 gem 'pagy', '~> 3.5'
 gem 'pg_search'
 gem 'pundit'
+gem 'redis'
+gem 'redis-namespace'
 gem 'shrine', '~> 3.0'
+gem 'sidekiq'
 gem 'skylight'
 
 group :development, :test do
@@ -50,6 +53,7 @@ group :development, :test do
   gem 'capistrano-passenger'
   gem 'capistrano-rails'
   gem 'capistrano-rvm'
+  gem 'capistrano-sidekiq'
   gem 'ed25519'
   gem 'pry'
   gem 'rspec-rails'

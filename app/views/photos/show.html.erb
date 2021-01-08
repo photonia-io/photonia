@@ -46,7 +46,7 @@
     <p class="content"><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
 
     <h3 class="heading"><span class="icon"><i class="fas fa-arrow-circle-up"></i></span> Date Posted</h3>
-    <p class="content"><%= @photo.flickr_date_imported.strftime('%B %e, %Y') %></p>
+    <p class="content"><%= @photo.imported_at.strftime('%B %e, %Y') %></p>
 
     <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h2>
     <div class="tags">

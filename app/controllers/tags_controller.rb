@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
+# TagsController - deals with displaying tags
 class TagsController < ApplicationController
   include Pagy::Backend
 
   def index
-    @most_used = ActsAsTaggableOn::Tag.joins(:taggings).distinct(:taggings_count).not_tagged_by_rekognition.most_used(100)
-    @least_used = ActsAsTaggableOn::Tag.joins(:taggings).distinct(:taggings_count).not_tagged_by_rekognition.least_used(100)
-    @rekognition_most_used = ActsAsTaggableOn::Tag.joins(:taggings).distinct(:taggings_count).tagged_by_rekognition.most_used(100)
-    @rekognition_least_used = ActsAsTaggableOn::Tag.joins(:taggings).distinct(:taggings_count).tagged_by_rekognition.least_used(100)
+    @most_used = ActsAsTaggableOn::Tag.photonia_most_used
+    @least_used = ActsAsTaggableOn::Tag.photonia_least_used
+    @rekognition_most_used = ActsAsTaggableOn::Tag.photonia_most_used(rekognition: true)
+    @rekognition_least_used = ActsAsTaggableOn::Tag.photonia_least_used(rekognition: true)
   end
 
   def show
