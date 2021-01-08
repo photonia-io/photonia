@@ -241,6 +241,8 @@ GEM
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     redis (4.2.5)
+    redis-namespace (1.8.0)
+      redis (>= 3.0.4)
     regexp_parser (1.8.2)
     responders (3.0.1)
       actionpack (>= 5.0)
@@ -392,6 +394,8 @@ DEPENDENCIES
   puma (~> 5.1)
   pundit
   rails (~> 6.1.0, >= 6.0.3.4)
+  redis
+  redis-namespace
   rspec-rails
   rspec_junit_formatter
   rubocop
