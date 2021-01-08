@@ -1,8 +1,10 @@
-# config valid for current version and patch releases of Capistrano
-lock "~> 3.14.1"
+# frozen_string_literal: true
 
-set :application, "photonia"
-set :repo_url, "git@github.com:janosrusiczki/photonia.git"
+# config valid for current version and patch releases of Capistrano
+lock '~> 3.15.0'
+
+set :application, 'photonia'
+set :repo_url, 'git@github.com:janosrusiczki/photonia.git'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
