@@ -51,19 +51,7 @@ CREATE TYPE public.tag_source AS ENUM (
 
 CREATE FUNCTION public.photos_trigger() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-declare
-  photo_tags record;
-
-begin
-  select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags';
-  new.tsv :=
-    setweight(to_tsvector('pg_catalog.english', unaccent(new.name)), 'A') ||
-    setweight(to_tsvector('pg_catalog.english', unaccent(new.description)), 'A') ||
-    setweight(to_tsvector('pg_catalog.english', unaccent(photo_tags.name)), 'B');
-  return new;
-end
-$$;
+    AS $$ declare photo_tags record; begin select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags'; new.tsv := setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.name, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.description, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_tags.name, ''))), 'B'); return new; end $$;
 
 
 SET default_tablespace = '';
@@ -599,6 +587,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20201230100525'),
 ('20210103163610'),
 ('20210103163930'),
-('20210104115821');
+('20210104115821'),
+('20210108215322');
 
 
