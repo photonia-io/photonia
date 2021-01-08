@@ -73,16 +73,16 @@
 
           <div class="navbar-end">
             <div class="navbar-item">
-              <div class="field has-addons">
-                <p class="control">
-                  <input class="input" type="text" placeholder="Find a photo">
-                </p>
-                <p class="control">
-                  <button class="button">
-                    Search
-                  </button>
-                </p>
-              </div>
+              <%= form_tag(photos_path, method: :get) do %>
+                <div class="field has-addons">
+                  <p class="control">
+                    <%= text_field_tag(:q, params[:q], class: 'input', placeholder: 'Find a photo') %>
+                  </p>
+                  <p class="control">
+                    <input type="submit" class="button" value="Search">
+                  </p>
+                </div>
+              <% end %>
             </div>
           </div>
         </div>
@@ -110,7 +110,9 @@
     <footer class="footer">
       <div class="content has-text-centered">
         <p>
-          Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a> written by <a href="https://www.rusiczki.net">János Rusiczki</a> | Photos are &copy; <a href="https://www.rusiczki.net">János Rusiczki</a>
+          Photos &copy; <a href="https://www.rusiczki.net">János Rusiczki</a>
+          |
+          Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a>
         </p>
       </div>
     </footer>
