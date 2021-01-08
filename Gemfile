@@ -43,7 +43,9 @@ gem 'redis'
 gem 'redis-namespace'
 gem 'shrine', '~> 3.0'
 gem 'sidekiq'
+gem 'sitemap_generator'
 gem 'skylight'
+gem 'whenever', require: false
 
 group :development, :test do
   gem 'bcrypt_pbkdf'
@@ -56,12 +58,10 @@ group :development, :test do
   gem 'capistrano-sidekiq'
   gem 'ed25519'
   gem 'pry'
-  gem 'rspec-rails'
   gem 'rspec_junit_formatter' # for CircleCI
+  gem 'rspec-rails'
   gem 'rubocop'
   gem 'rubocop-rails'
-  gem 'sitemap_generator'
-  gem 'whenever', require: false
 end
 
 group :development do
