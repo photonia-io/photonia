@@ -13,7 +13,10 @@
  *= require_tree .
  *= require_self
   */
+
 @import 'bulma/bulma';
+@import 'bulma-block-list/src/block-list';
+
 .tag span.icon {
   margin-right: 0.3em !important;
 }

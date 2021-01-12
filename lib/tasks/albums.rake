@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-namespace :tags do
+namespace :albums do
   desc 'Resets tag tables'
   task reset: :environment do
     ActiveRecord::Base.connection.execute(
       <<~SQL.squish
-        TRUNCATE TABLE taggings RESTART IDENTITY CASCADE;
-        TRUNCATE TABLE tags RESTART IDENTITY CASCADE;
+        TRUNCATE TABLE albums_photos RESTART IDENTITY CASCADE;
+        TRUNCATE TABLE albums RESTART IDENTITY CASCADE;
       SQL
     )
   end

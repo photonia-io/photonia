@@ -51,12 +51,81 @@ CREATE TYPE public.tag_source AS ENUM (
 
 CREATE FUNCTION public.photos_trigger() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ declare photo_tags record; begin select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags'; new.tsv := setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.name, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.description, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_tags.name, ''))), 'B'); return new; end $$;
+    AS $$ declare photo_tags record; photo_albums record; begin select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags'; select string_agg(albums.title, ' ') as title into photo_albums from albums inner join albums_photos on albums.id = albums_photos.album_id where albums_photos.photo_id = new.id; new.tsv := setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.name, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.description, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_tags.name, ''))), 'B') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_albums.title, ''))), 'B'); return new; end $$;
 
 
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: albums; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.albums (
+    id bigint NOT NULL,
+    slug character varying,
+    title character varying,
+    description text,
+    serial_number bigint,
+    flickr_views integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: albums_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.albums_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: albums_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.albums_id_seq OWNED BY public.albums.id;
+
+
+--
+-- Name: albums_photos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.albums_photos (
+    id bigint NOT NULL,
+    album_id bigint NOT NULL,
+    photo_id bigint NOT NULL,
+    cover boolean DEFAULT false,
+    ordering integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: albums_photos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.albums_photos_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: albums_photos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.albums_photos_id_seq OWNED BY public.albums_photos.id;
+
 
 --
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
@@ -296,6 +365,20 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: albums id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums ALTER COLUMN id SET DEFAULT nextval('public.albums_id_seq'::regclass);
+
+
+--
+-- Name: albums_photos id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums_photos ALTER COLUMN id SET DEFAULT nextval('public.albums_photos_id_seq'::regclass);
+
+
+--
 -- Name: friendly_id_slugs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -335,6 +418,22 @@ ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: albums_photos albums_photos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums_photos
+    ADD CONSTRAINT albums_photos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: albums albums_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums
+    ADD CONSTRAINT albums_pkey PRIMARY KEY (id);
 
 
 --
@@ -399,6 +498,20 @@ ALTER TABLE ONLY public.tags
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: index_albums_photos_on_album_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_albums_photos_on_album_id ON public.albums_photos USING btree (album_id);
+
+
+--
+-- Name: index_albums_photos_on_photo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_albums_photos_on_photo_id ON public.albums_photos USING btree (photo_id);
 
 
 --
@@ -558,6 +671,22 @@ ALTER TABLE ONLY public.photos
 
 
 --
+-- Name: albums_photos fk_rails_cf9aac895b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums_photos
+    ADD CONSTRAINT fk_rails_cf9aac895b FOREIGN KEY (photo_id) REFERENCES public.photos(id);
+
+
+--
+-- Name: albums_photos fk_rails_eb249493ab; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums_photos
+    ADD CONSTRAINT fk_rails_eb249493ab FOREIGN KEY (album_id) REFERENCES public.albums(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -588,6 +717,9 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20210103163610'),
 ('20210103163930'),
 ('20210104115821'),
-('20210108215322');
+('20210108215322'),
+('20210109083341'),
+('20210109204633'),
+('20210109214524');
 
 

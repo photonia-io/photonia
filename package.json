@@ -8,6 +8,7 @@
     "@rails/webpacker": "4.3.0",
     "axios": "^0.21.1",
     "bulma": "^0.9.1",
+    "bulma-block-list": "^0.4.1",
     "turbolinks": "^5.2.0",
     "vue": "^2.6.12",
     "vue-loader": "^15.9.6",
