@@ -1,6 +1,9 @@
 <% content_for(:page_title, "Album: #{@album.title}" + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
 <h1 class="title">Album: <%= @album.title %></h1>
 <hr class="is-hidden-touch mt-2 mb-4">
+<% if @album.description.present? %>
+<div class="box"><%= @album.description %></div>
+<% end %>
 <div class="columns is-1 is-variable is-multiline">
   <% @photos.each do |photo| %>
     <div class="column is-one-quarter">
