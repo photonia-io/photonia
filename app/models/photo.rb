@@ -23,6 +23,8 @@ class Photo < ApplicationRecord
   default_scope { where(privacy: 'public') }
 
   belongs_to :user
+  has_many :albums_photos, dependent: :destroy
+  has_many :albums, through: :albums_photos
 
   before_validation :set_fields, prepend: true
 
@@ -32,6 +34,22 @@ class Photo < ApplicationRecord
 
   def prev
     Photo.where('date_taken < ?', date_taken).order(date_taken: :desc).first
+  end
+
+  def next_in_album(album)
+    AlbumsPhoto.order(:ordering).find_by(
+      'ordering > ? AND album_id = ?',
+      albums_photos.select { |ap| ap.album_id == album.id }.first.ordering,
+      album.id
+    )&.photo
+  end
+
+  def prev_in_album(album)
+    AlbumsPhoto.order(ordering: :desc).find_by(
+      'ordering < ? AND album_id = ?',
+      albums_photos.select { |ap| ap.album_id == album.id }.first.ordering,
+      album.id
+    )&.photo
   end
 
   def populate_exif_fields

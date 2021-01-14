@@ -41,7 +41,50 @@
       </div>
     <% end %>
   </div>
-  <div class="column">
+  <div id="sidebar" class="column">
+    <% if @photo.albums.any? %>
+      <h3 class="heading"><span class="icon"><i class="fas fa-book"></i></span> Albums</h3>
+      <ul class="block-list is-small has-radius pb-4">
+      <% @photo.albums.each do |album| %>
+        <li>
+          <h4 class="is-size-6 mb-2"><a href="<%= album_path(album) %>"><%= album.title %></a></h4>
+          <div class="columns is-variable is-1 is-mobile">
+            <div class="column is-half">
+              <% if(@prev = @photo.prev_in_album(album)) %>
+                <a href="<%= photo_path(@prev) %>" class="button is-fullwidth is-image-button">
+                  <img src="<%= @prev.image_url(:thumbnail) %>" class="image is-fullwidth mb-2">
+                  <span class="icon-text is-hidden-desktop-only is-hidden-tablet-only">
+                    <span class="icon"><i class="fas fa-chevron-left"></i></span>
+                    <span>Previous</span>
+                  </span>
+                </a>
+              <% else %>
+                <button class="button is-fullwidth" disabled>
+                  <span class="icon"><i class="fas fa-chevron-left"></i></span> <span>Previous</span>
+                </button>
+              <% end %>
+            </div>
+            <div class="column is-half">
+              <% if(@next = @photo.next_in_album(album)) %>
+                <a href="<%= photo_path(@next) %>" class="button is-fullwidth is-image-button">
+                  <img src="<%= @next.image_url(:thumbnail) %>" class="image is-fullwidth mb-2">
+                  <span class="icon-text is-hidden-desktop-only is-hidden-tablet-only">
+                    <span>Nexta</span>
+                    <span class="icon"><i class="fas fa-chevron-right"></i></span>
+                  </span>
+                </a>
+              <% else %>
+                <button class="button is-fullwidth" disabled>
+                  <span>Next</span> <span class="icon"><i class="fas fa-chevron-right"></i></span>
+                </button>
+              <% end %>
+            </div>
+          </div>
+        </li>
+      <% end %>
+      </ul>
+    <% end %>
+
     <h3 class="heading"><span class="icon"><i class="fas fa-camera"></i></span> Date Taken</h3>
     <p class="content"><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
 

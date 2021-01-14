@@ -20,4 +20,14 @@ namespace :flickr do
       end
     end
   end
+
+  task :import_albums do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'flickr:import_albums'
+        end
+      end
+    end
+  end
 end

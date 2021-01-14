@@ -34,4 +34,8 @@ SitemapGenerator::Sitemap.create do
   ActsAsTaggableOn::Tag.find_each do |tag|
     add tag_path(tag), priority: 0.3, changefreq: 'monthly', lastmod: tag.updated_at
   end
+
+  Album.find_each do |album|
+    add album_path(album), priority: 0.5, changefreq: 'monthly', lastmod: album.updated_at
+  end
 end

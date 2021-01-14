@@ -1,1 +1,17 @@
-placeholder
+<% content_for(:page_title, 'Albums' + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
+<h1 class="title">Albums</h1>
+<hr class="is-hidden-touch mt-2 mb-4">
+<div class="columns is-1 is-variable is-multiline">
+  <% @albums.each do |album| %>
+    <div class="column is-one-quarter">
+      <a href="<%= album_path(album) %>">
+        <% if(cover_photo_url = album&.photos&.first&.image_url(:medium)) %>
+          <img src="<%= cover_photo_url %>" class="image is-fullwidth" />
+        <% end %>
+        <%= album.title %>
+      </a> (<%= album.albums_photos.size %> <%= album.albums_photos.size == 1 ? 'photo' : 'photos' %>)
+    </div>
+  <% end %>
+</div>
+<hr class="mt-1 mb-4">
+<%== pagy_bulma_nav(@pagy) %>
