@@ -14,7 +14,7 @@ class PhotosController < ApplicationController
   end
 
   def show
-    @photo = Photo.friendly.find(params[:id])
+    @photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(params[:id])
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
   end

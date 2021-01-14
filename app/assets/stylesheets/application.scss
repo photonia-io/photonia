@@ -13,7 +13,12 @@
  *= require_tree .
  *= require_self
   */
+
+$box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1);
+
 @import 'bulma/bulma';
+@import 'bulma-block-list/src/block-list';
+
 .tag span.icon {
   margin-right: 0.3em !important;
 }
@@ -24,4 +29,13 @@
 
 *[contenteditable="true"]:focus {
   background-color: white !important;
+}
+
+.button.is-image-button {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  min-height: 2.25em;
+  white-space: unset;
+  height: auto;
+  flex-direction: column;
 }
