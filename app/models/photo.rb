@@ -54,7 +54,7 @@ class Photo < ApplicationRecord
 
   def populate_exif_fields
     if (exif = image.metadata['exif'])
-      self.date_taken = DateTime.strptime(exif.date_time, '%Y:%m:%d %H:%M:%S') if exif.date_time
+      self.date_taken = DateTime.strptime(exif.date_time_original, '%Y:%m:%d %H:%M:%S') if exif.date_time_original
       image.metadata.except!('exif') # temporary or else to_json conversion fails
     end
 
