@@ -5,7 +5,7 @@
     "@rails/actioncable": "^6.1.1",
     "@rails/activestorage": "^6.1.1",
     "@rails/ujs": "^6.1.1",
-    "@rails/webpacker": "4.3.0",
+    "@rails/webpacker": "5.2.1",
     "axios": "^0.21.1",
     "bulma": "jgthms/bulma",
     "bulma-block-list": "^0.4.2",
