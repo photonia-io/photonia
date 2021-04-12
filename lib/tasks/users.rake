@@ -4,11 +4,11 @@
 
 namespace :users do
   desc 'Create a user'
-  task :create, [:email, :password] => [:environment] do |_t, args|
+  task :create, %i[email password] => [:environment] do |_t, args|
     User.create(email: args[:email], password: args[:password], password_confirmation: args[:password])
   end
 
-# Usage: rails users:assign_photos[user@email.com]
+  # Usage: rails users:assign_photos[user@email.com]
 
   desc 'Assigns all photos to a user'
   task :assign_photos, [:email] => [:environment] do |_t, args|
