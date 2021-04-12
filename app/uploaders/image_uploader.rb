@@ -21,10 +21,12 @@ class ImageUploader < Shrine
   }
 
   plugin :url_options, store: lambda { |_file, _options|
-    {
-      public: true,
-      host: "https://#{ENV['PHOTONIA_S3_BUCKET']}"
-    } if Rails.env.production?
+    if Rails.env.production?
+      {
+        public: true,
+        host: "https://#{ENV['PHOTONIA_S3_BUCKET']}"
+      }
+    end
   }
 
   add_metadata do |io|
