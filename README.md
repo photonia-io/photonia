@@ -10,4 +10,4 @@ A photo hosting service tailored to my needs.
 
 ## Setup
 
-sudo apt install libpq-dev
+    sudo apt install libpq-dev
