@@ -1,24 +1,13 @@
-# README
+# Photonia
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A photo hosting service tailored to my needs.
 
-Things you may want to cover:
+## Features
 
-* Ruby version
+* Importing photos and metadata exported from Flickr
+* The photos are stored on Amazon S3
+* Amazon Rekognition is run on each photo
 
-* System dependencies
+## Setup
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+sudo apt install libpq-dev
