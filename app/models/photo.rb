@@ -55,7 +55,8 @@ class Photo < ApplicationRecord
   def populate_exif_fields
     if (exif = image.metadata['exif'])
       self.date_taken = DateTime.strptime(exif.date_time_original, '%Y:%m:%d %H:%M:%S') if exif.date_time_original
-      image.metadata.except!('exif') # temporary or else to_json conversion fails
+      Hash.include CoreExtensions::Hash::Sanitizer
+      image.metadata['exif'] = image.metadata['exif'].to_h.sanitize_invalid_byte_sequence!
     end
 
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
