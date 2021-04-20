@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class CreateTriggerTsvupdateV2 < ActiveRecord::Migration[6.0]
   def up
-    execute <<~SQL
+    execute <<~SQL.squish
       DROP TRIGGER IF EXISTS tsvupdate ON photos;
       DROP FUNCTION IF EXISTS photos_trigger;
 
@@ -26,7 +28,7 @@ class CreateTriggerTsvupdateV2 < ActiveRecord::Migration[6.0]
   end
 
   def down
-    execute <<~SQL
+    execute <<~SQL.squish
       DROP TRIGGER IF EXISTS tsvupdate ON photos;
       DROP FUNCTION IF EXISTS photos_trigger;
     SQL

@@ -1,5 +1,42 @@
 # frozen_string_literal: true
 
+# == Schema Information
+#
+# Table name: photos
+#
+#  id                   :bigint           not null, primary key
+#  date_taken           :datetime
+#  description          :text
+#  exif                 :jsonb
+#  flickr_faves         :integer
+#  flickr_json          :jsonb
+#  flickr_original      :string
+#  flickr_photopage     :string
+#  flickr_views         :integer
+#  image_data           :jsonb
+#  imported_at          :datetime
+#  license              :string
+#  name                 :string
+#  privacy              :enum             default("public")
+#  rekognition_response :jsonb
+#  serial_number        :bigint           not null
+#  slug                 :string
+#  tsv                  :tsvector
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  user_id              :bigint
+#
+# Indexes
+#
+#  index_photos_on_exif                  (exif) USING gin
+#  index_photos_on_rekognition_response  (rekognition_response) USING gin
+#  index_photos_on_slug                  (slug) UNIQUE
+#  index_photos_on_user_id               (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
+#
 # Photo model, uuuh :)
 class Photo < ApplicationRecord
   extend FriendlyId
@@ -29,11 +66,11 @@ class Photo < ApplicationRecord
   before_validation :set_fields, prepend: true
 
   def next
-    Photo.where('date_taken > ?', date_taken).order(:date_taken).first
+    Photo.where('imported_at > ?', imported_at).order(:imported_at).first
   end
 
   def prev
-    Photo.where('date_taken < ?', date_taken).order(date_taken: :desc).first
+    Photo.where('imported_at < ?', imported_at).order(imported_at: :desc).first
   end
 
   def next_in_album(album)
@@ -55,7 +92,8 @@ class Photo < ApplicationRecord
   def populate_exif_fields
     if (exif = image.metadata['exif'])
       self.date_taken = DateTime.strptime(exif.date_time_original, '%Y:%m:%d %H:%M:%S') if exif.date_time_original
-      image.metadata.except!('exif') # temporary or else to_json conversion fails
+      Hash.include CoreExtensions::Hash::Sanitizer
+      image.metadata['exif'] = image.metadata['exif'].to_h.sanitize_invalid_byte_sequence!
     end
 
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp

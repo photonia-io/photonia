@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :tagging_sources do
   desc 'Add Tagging Source'
   task create: :environment do
