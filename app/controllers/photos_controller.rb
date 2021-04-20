@@ -8,7 +8,7 @@ class PhotosController < ApplicationController
     photos = if params[:q].present?
                Photo.search(params[:q])
              else
-               Photo.all.order(date_taken: :desc)
+               Photo.all.order(imported_at: :desc)
              end
     @pagy, @photos = pagy(photos)
   end
