@@ -43,6 +43,6 @@ append :linked_dirs, '.bundle', 'log', 'flickr'
 # set :ssh_options, verify_host_key: :secure
 
 set :passenger_restart_with_touch, true
-set :rvm_ruby_version, '2.6.6'
+set :rvm_ruby_version, '2.6.7'
 
 set :sidekiq_service_unit_name, 'sidekiq-photonia'
