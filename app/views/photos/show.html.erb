@@ -92,10 +92,21 @@
     <p class="content"><%= @photo.imported_at.strftime('%B %e, %Y') %></p>
 
     <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h2>
-    <div class="tags">
+    <div class="tags<%= user_signed_in? ? ' mb-0' : '' %>">
       <% @tags.each do |tag| %>
         <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
       <% end %>
+    </div>
+    <div class="field has-addons">
+      <div class="control has-icons-left is-expanded">
+        <input class="input is-small" type="text" placeholder="Enter a tag">
+        <span class="icon is-small is-left">
+          <i class="fas fa-tag"></i>
+        </span>
+      </div>
+      <div class="control">
+        <a class="button is-info is-small">Add</a>
+      </div>
     </div>
 
     <h3 class="heading"><span class="icon"><i class="fas fa-robot"></i></span> AI Tags</h2>

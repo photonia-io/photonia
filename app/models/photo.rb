@@ -86,6 +86,20 @@ class Photo < ApplicationRecord
     }
   end
 
+  def add_tag(tag_name)
+    return if all_tags_list.include?(tag_name)
+
+    tag_list.add(tag_name)
+    save
+  end
+
+  def get_tags
+    {
+      tags: @photo.tags.rekognition(false).pluck[:name],
+      rekognition_tags: @photo.tags.rekognition(true).pluck[:name]
+    }
+  end
+
   private
 
   def set_fields
