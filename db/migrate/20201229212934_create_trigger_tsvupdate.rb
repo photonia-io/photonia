@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class CreateTriggerTsvupdate < ActiveRecord::Migration[6.0]
   def up
-    execute <<~SQL
+    execute <<~SQL.squish
       CREATE FUNCTION photos_trigger() RETURNS trigger AS $$
       begin
         new.tsv :=
@@ -18,7 +20,7 @@ class CreateTriggerTsvupdate < ActiveRecord::Migration[6.0]
   end
 
   def down
-    execute <<~SQL
+    execute <<~SQL.squish
       DROP TRIGGER IF EXISTS tsvupdate ON photos;
       DROP FUNCTION IF EXISTS photos_trigger;
     SQL
