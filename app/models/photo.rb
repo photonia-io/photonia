@@ -101,27 +101,14 @@ class Photo < ApplicationRecord
     self
   end
 
-  def label_instances
-    label_instances = []
+  def label_instance_collection
+    lic = LabelInstanceCollection.new
     rekognition_response['labels'].each do |label|
       next unless (instances = label['instances'].presence)
 
-      instances.each do |instance|
-        label_instances << {
-          'name' => label['name'],
-          'bounding_box' => instance['bounding_box']
-        }
-      end
+      lic.add(label, instances)
     end
-    label_instances
-  end
-
-  def main_instance_center
-    bounding_box = label_instances.first['bounding_box']
-    {
-      top: bounding_box['top'] + bounding_box['height'] / 2,
-      left: bounding_box['left'] + bounding_box['width'] / 2
-    }
+    lic
   end
 
   private
