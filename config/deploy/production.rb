@@ -9,7 +9,7 @@
 # server "example.com", user: "deploy", roles: %w{app web}, other_property: :other_value
 # server "db.example.com", user: "deploy", roles: %w{db}
 
-server ENV['PHOTONIA_DEPLOY_HOST'], user: ENV['PHOTONIA_DEPLOY_USER'], roles: %w[app db web]
+server ENV['PHOTONIA_DEPLOY_HOST'], port: ENV['PHOTONIA_DEPLOY_PORT'], user: ENV['PHOTONIA_DEPLOY_USER'], roles: %w[app db web]
 
 # role-based syntax
 # ==================
