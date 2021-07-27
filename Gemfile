@@ -56,7 +56,7 @@ group :development, :test do
   gem 'capistrano', '~> 3.14', require: false
   gem 'capistrano-passenger'
   gem 'capistrano-rails'
-  gem 'capistrano-rvm'
+  gem 'capistrano-rbenv'
   gem 'capistrano-sidekiq'
   gem 'ed25519'
   gem 'pry'
