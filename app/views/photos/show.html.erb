@@ -29,7 +29,56 @@
 <hr class="is-hidden-touch mt-2 mb-4">
 <div class="columns is-1">
   <div class="column is-three-quarters">
-    <img src="<%= @photo.image_url(:large) %>" />
+    <style>
+      #image-wrapper {
+        position: relative;
+      }
+      #image-wrapper > img {
+        vertical-align: top;
+        width: 100%;
+        opacity: 0;
+      }
+      #image-wrapper > .labels {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: 0.3s;
+      }
+
+      #image-wrapper:hover > .labels {
+        opacity: 1;
+      }
+
+      .label {
+        cursor: pointer;
+        border: 2px dotted green; position: absolute;
+        transition: 0.3s;
+      }
+
+      .label:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .label > p {
+        font-size: 10px;
+      }
+    </style>
+    <div id="image-wrapper" style="background: no-repeat url(<%= @photo.image_url(:large) %>) 50% / 100%">
+      <img src="<%= @photo.image_url(:large) %>" />
+      <% if @photo&.label_instance_collection&.label_instances %>
+        <div class="labels">
+          <% @photo.label_instance_collection.label_instances.each do |li| %>
+            <div class="label" style="top: <%= li.bounding_box.top * 100 %>%; left: <%= li.bounding_box.left * 100 %>%; width: <%= li.bounding_box.width * 100 %>%; height: <%= li.bounding_box.height * 100 %>%;">
+              <p><%= li.name %></p>
+            </div>
+          <% end %>
+          <div style="border: 3px solid red; position: absolute; top: <%= @photo.label_instance_collection.center_of_gravity[:top] * 100 %>%; left: <%= @photo.label_instance_collection.center_of_gravity[:left] * 100 %>%; width: 2px; height: 2px;"></div>
+          <div style="border: 1px solid blue; position: absolute; top: <%= @photo.thumbnail[:top] * 100 %>%; left: <%= @photo.thumbnail[:left] * 100 %>%; width: <%= @photo.thumbnail[:width] * 100 %>%; height: <%= @photo.thumbnail[:height] * 100 %>%;"></div>
+        </div>
+      <% end %>
+    </div>
     <% if @photo.description.presence || policy(@photo).update? %>
       <h2 class="heading">Description</h2>
       <div class="content">

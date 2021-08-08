@@ -30,6 +30,7 @@ class PhotosController < ApplicationController
 
     @photo.user = current_user
     @photo.populate_exif_fields
+    @photo.sanitize_exif
 
     if @photo.valid?
       @photo.save
