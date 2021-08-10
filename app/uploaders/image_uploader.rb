@@ -10,7 +10,7 @@ class ImageUploader < Shrine
   plugin :determine_mime_type
   plugin :cached_attachment_data
   plugin :store_dimensions, analyzer: :mini_magick
-  plugin :add_metadata
+  plugin :tempfile
 
   plugin :upload_options, store: lambda { |_io, options|
     if options[:derivative]
@@ -28,15 +28,6 @@ class ImageUploader < Shrine
       }
     end
   }
-
-  add_metadata do |io|
-    begin
-      exif = Exif::Data.new(io)
-    rescue Exif::NotReadable # not a valid image
-      next { exif: nil }
-    end
-    { exif: exif }
-  end
 
   Attacher.derivatives do |original|
     magick = ImageProcessing::MiniMagick.source(original)

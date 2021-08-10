@@ -89,19 +89,17 @@ class Photo < ApplicationRecord
     )&.photo
   end
 
-  def exif
-    image.metadata['exif']
-  end
-
-  def sanitize_exif
-    return unless exif
-
-    Hash.include CoreExtensions::Hash::Sanitizer
-    image.metadata['exif'] = exif.to_h.sanitize_invalid_byte_sequence!
+  def exif(file)
+    Exif::Data.new(file.tempfile)
   end
 
   def populate_exif_fields
-    self.date_taken = DateTime.strptime(exif.date_time_original, '%Y:%m:%d %H:%M:%S') if exif&.date_time_original
+    file = image_attacher.file
+    file.open do
+      if exif(file)&.date_time_original
+        self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
+      end
+    end
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
     self
   end
