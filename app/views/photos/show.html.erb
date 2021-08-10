@@ -12,14 +12,14 @@
       <div class="level-item">
         <a href="<%= photo_path(@photo.prev) %>" class="button is-light">
           <span class="icon"><i class="fas fa-chevron-left"></i></span> <span>Previous</span>
-          <img src="<%= @photo.prev.image_url(:thumbnail) %>" class="image is-24x24 ml-3">
+          <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>" class="image is-24x24 ml-3">
         </a>
       </div>
     <% end %>
     <% if @photo.next %>
       <div class="level-item">
         <a href="<%= photo_path(@photo.next) %>" class="button is-light">
-          <img src="<%= @photo.next.image_url(:thumbnail) %>" class="image is-24x24 mr-3">
+          <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>" class="image is-24x24 mr-3">
           <span>Next</span> <span class="icon"><i class="fas fa-chevron-right"></i></span>
         </a>
       </div>
@@ -67,15 +67,17 @@
     </style>
     <div id="image-wrapper" style="background: no-repeat url(<%= @photo.image_url(:large) %>) 50% / 100%">
       <img src="<%= @photo.image_url(:large) %>" />
-      <% if @photo&.label_instance_collection&.label_instances %>
+      <% if @photo.label_instances.present? %>
         <div class="labels">
-          <% @photo.label_instance_collection.label_instances.each do |li| %>
+          <% @photo.label_instances.each do |li| %>
             <div class="label" style="top: <%= li.bounding_box.top * 100 %>%; left: <%= li.bounding_box.left * 100 %>%; width: <%= li.bounding_box.width * 100 %>%; height: <%= li.bounding_box.height * 100 %>%;">
               <p><%= li.name %></p>
             </div>
           <% end %>
-          <div style="border: 3px solid red; position: absolute; top: <%= @photo.label_instance_collection.center_of_gravity[:top] * 100 %>%; left: <%= @photo.label_instance_collection.center_of_gravity[:left] * 100 %>%; width: 2px; height: 2px;"></div>
-          <div style="border: 1px solid blue; position: absolute; top: <%= @photo.thumbnail[:top] * 100 %>%; left: <%= @photo.thumbnail[:left] * 100 %>%; width: <%= @photo.thumbnail[:width] * 100 %>%; height: <%= @photo.thumbnail[:height] * 100 %>%;"></div>
+          <% if @photo.intelligent_thumbnail %>
+            <div style="border: 3px solid red; position: absolute; top: <%= @photo.label_instance_collection.center_of_gravity[:top] * 100 %>%; left: <%= @photo.label_instance_collection.center_of_gravity[:left] * 100 %>%; width: 2px; height: 2px;"></div>
+            <div style="border: 1px solid blue; position: absolute; top: <%= @photo.intelligent_thumbnail[:top] * 100 %>%; left: <%= @photo.intelligent_thumbnail[:left] * 100 %>%; width: <%= @photo.intelligent_thumbnail[:width] * 100 %>%; height: <%= @photo.intelligent_thumbnail[:height] * 100 %>%;"></div>
+          <% end %>
         </div>
       <% end %>
     </div>
@@ -101,7 +103,7 @@
             <div class="column is-half">
               <% if(@prev = @photo.prev_in_album(album)) %>
                 <a href="<%= photo_path(@prev) %>" class="button is-fullwidth is-image-button">
-                  <img src="<%= @prev.image_url(:thumbnail) %>" class="image is-fullwidth mb-2">
+                  <img src="<%= @prev.image_url(:thumbnail_intelligent).presence || @prev.image_url(:thumbnail_square) %>" class="image is-fullwidth mb-2">
                   <span class="icon-text is-hidden-desktop-only is-hidden-tablet-only">
                     <span class="icon"><i class="fas fa-chevron-left"></i></span>
                     <span>Previous</span>
@@ -116,7 +118,7 @@
             <div class="column is-half">
               <% if(@next = @photo.next_in_album(album)) %>
                 <a href="<%= photo_path(@next) %>" class="button is-fullwidth is-image-button">
-                  <img src="<%= @next.image_url(:thumbnail) %>" class="image is-fullwidth mb-2">
+                  <img src="<%= @next.image_url(:thumbnail_intelligent).presence || @next.image_url(:thumbnail_square) %>" class="image is-fullwidth mb-2">
                   <span class="icon-text is-hidden-desktop-only is-hidden-tablet-only">
                     <span>Next</span>
                     <span class="icon"><i class="fas fa-chevron-right"></i></span>

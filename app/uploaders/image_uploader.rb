@@ -35,7 +35,8 @@ class ImageUploader < Shrine
       extralarge: magick.resize_to_limit!(2048, 2048),
       large: magick.resize_to_limit!(1024, 1024),
       medium: magick.resize_to_limit!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE']),
-      thumbnail: magick.resize_to_fill!(150, 150)
+      medium_square: magick.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE']),
+      thumbnail_square: magick.resize_to_fill!(150, 150)
     }
   end
 

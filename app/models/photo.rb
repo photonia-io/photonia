@@ -113,15 +113,32 @@ class Photo < ApplicationRecord
 
       lic.add(label, instances)
     end
+
     lic
   end
 
-  def thumbnail
+  def label_instances
+    label_instance_collection&.label_instances
+  end
+
+  def pixel_width
+    image.metadata['width']
+  end
+
+  def pixel_height
+    image.metadata['height']
+  end
+
+  def ratio
+    pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
+  end
+
+  def intelligent_thumbnail
+    return unless label_instances.present? && ratio > 1.02
+
     cog = label_instance_collection.center_of_gravity
     cog_left = cog[:left]
     cog_top = cog[:top]
-    pixel_width = image.metadata['width']
-    pixel_height = image.metadata['height']
     cog_x = (pixel_width * cog_left).to_i
     cog_y = (pixel_height * cog_top).to_i
     distances = {
@@ -130,7 +147,8 @@ class Photo < ApplicationRecord
       s: pixel_height - cog_y,
       e: cog_x
     }
-    closest_pole, min_distance = distances.min_by { |_, distance| distance }
+    # closest_pole, min_distance = distances.min_by { |_, distance| distance }
+    _, min_distance = distances.min_by { |_, distance| distance }
     # if(min_distance >= ENV['PHOTONIA_MEDIUM_SIDE'])
       {
         x: x = cog_x - min_distance,
@@ -145,30 +163,35 @@ class Photo < ApplicationRecord
     # end
   end
 
-  def intelligent_medium
-    attacher = photo.image_attacher
+  def add_intelligent_derivatives
+    return if label_instances.blank?
 
-    return unless attacher.derivatives.key?(:medium)
+    image_attacher.add_derivative(
+      :medium_intelligent,
+      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE'])
+    )
 
-    old_medium = attacher.derivatives[:medium]
-    intelligent_medium = attacher.file.download do |original|
-      ImageProcessing::MiniMagick
-        .source(original)
-        .resize_to_limit!(600, 600)
-    end
+    image_attacher.add_derivative(
+      :thumbnail_intelligent,
+      intelligent_crop.resize_to_fill!(150, 150)
+    )
 
-    attacher.add_derivative(:medium, intelligent_medium)
-
-    begin
-      attacher.atomic_persist               # persist changes if attachment has not changed in the meantime
-      old_medium.delete                     # delete old derivative
-    rescue Shrine::AttachmentChanged,       # attachment has changed
-           ActiveRecord::RecordNotFound     # record has been deleted
-      attacher.derivatives[:medium].delete  # delete now orphaned derivative
-    end
+    image_attacher.atomic_promote
   end
 
   private
+
+  def intelligent_crop
+    original = image_attacher.file.download
+    ImageProcessing::MiniMagick
+      .source(original)
+      .crop(
+        intelligent_thumbnail[:x],
+        intelligent_thumbnail[:y],
+        intelligent_thumbnail[:pixel_width],
+        intelligent_thumbnail[:pixel_height]
+      )
+  end
 
   def set_fields
     if serial_number.nil?

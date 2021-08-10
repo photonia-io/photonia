@@ -5,8 +5,8 @@
   <% @photos.each do |photo| %>
     <div class="column is-one-quarter">
       <a href="<%= photo_path(photo) %>">
-        <img src="<%= photo.image_url(:medium) %>" class="image is-fullwidth" />
-        <%= photo.name %>
+        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" class="image is-fullwidth" />
+        <%= photo.name.presence || '(no title)' %>
       </a>
     </div>
   <% end %>
