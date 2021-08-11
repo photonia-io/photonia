@@ -7,7 +7,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.6-node
+      - image: cimg/ruby:2.6.7-node
     steps:
       - checkout
       - run:
@@ -22,7 +22,7 @@ jobs:
           cache-key: "yarn.lock"
   test:
     docker:
-      - image: cimg/ruby:2.6-node
+      - image: cimg/ruby:2.6.7-node
       - image: circleci/postgres:11
         environment:
           POSTGRES_USER: photonia
