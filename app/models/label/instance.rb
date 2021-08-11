@@ -9,11 +9,11 @@ module Label
     def initialize(label, instance)
       @name = label['name']
       @confidence = instance['confidence']
-      @bounding_box = Label::Instance::BoundingBox.new(instance['bounding_box'])
+      @bounding_box = Photo::BoundingBox.new(instance['bounding_box'])
     end
 
     def center
-      Label::Instance::Point.new(
+      Photo::Point.new(
         @bounding_box.top + @bounding_box.height / 2,
         @bounding_box.left + @bounding_box.width / 2
       )
