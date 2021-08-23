@@ -6,6 +6,7 @@
 #
 #  id                   :bigint           not null, primary key
 #  date_taken           :datetime
+#  derivatives_version  :string           default("original")
 #  description          :text
 #  exif                 :jsonb
 #  flickr_faves         :integer
@@ -37,7 +38,6 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-# Photo model, uuuh :)
 class Photo < ApplicationRecord
   extend FriendlyId
   friendly_id :serial_number, use: :slugged

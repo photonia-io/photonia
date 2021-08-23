@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Links photos to albums
+
 # == Schema Information
 #
 # Table name: albums_photos
@@ -22,7 +24,6 @@
 #  fk_rails_...  (album_id => albums.id)
 #  fk_rails_...  (photo_id => photos.id)
 #
-# The model that links photos to albums
 class AlbumsPhoto < ApplicationRecord
   belongs_to :album
   belongs_to :photo

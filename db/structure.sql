@@ -56,8 +56,6 @@ CREATE FUNCTION public.photos_trigger() RETURNS trigger
 
 SET default_tablespace = '';
 
-SET default_with_oids = false;
-
 --
 -- Name: albums; Type: TABLE; Schema: public; Owner: -
 --
@@ -197,7 +195,8 @@ CREATE TABLE public.photos (
     privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
     rekognition_response jsonb,
     user_id bigint,
-    tsv tsvector
+    tsv tsvector,
+    derivatives_version character varying DEFAULT 'original'::character varying
 );
 
 
@@ -720,6 +719,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20210108215322'),
 ('20210109083341'),
 ('20210109204633'),
-('20210109214524');
+('20210109214524'),
+('20210823184309');
 
 
