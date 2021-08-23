@@ -16,7 +16,7 @@ class NewDerivativesStep1Job < ApplicationJob
       attacher.add_derivative(:thumbnail_square, thumbnail_square)
     end
 
-    unless attacher.derivatives.key?(:thumbnail_square)
+    unless attacher.derivatives.key?(:medium_square)
       medium_square = attacher.file.download do |original|
         ImageProcessing::MiniMagick
           .source(original)
