@@ -2,7 +2,7 @@ class NewDerivativesStep1Job < ApplicationJob
   queue_as :default
 
   def perform(photo_id)
-    photo = Photo.find(photo_id)
+    photo = Photo.unscoped.find(photo_id)
     attacher = photo.image_attacher
 
     attacher.remove_derivative(:thumbnail, delete: true) if attacher.derivatives.key?(:thumbnail)
