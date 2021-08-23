@@ -53,7 +53,7 @@ jobs:
       # - ruby/rubocop-check
   deploy:
     docker:
-      - image: cimg/ruby:2.6-node
+      - image: cimg/ruby:2.6.7-node
     steps:
       - checkout
       - ruby/install-deps
