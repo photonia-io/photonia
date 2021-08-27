@@ -5,7 +5,7 @@
   <% @albums.each do |album| %>
     <div class="column is-one-quarter">
       <a href="<%= album_path(album) %>">
-        <% if cover_photo_url = album&.photos&.first&.image_url(:medium_intelligent).presence || album&.photos&.first&.image_url(:medium) %>
+        <% if cover_photo_url = album&.photos&.first&.image_url(:medium_intelligent).presence || album&.photos&.first&.image_url(:medium_square) %>
           <img src="<%= cover_photo_url %>" class="image is-fullwidth" />
         <% end %>
         <%= album.title %>

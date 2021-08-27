@@ -1,4 +1,11 @@
+# Place it in:
+#
 # /home/username/.config/systemd/user/sidekiq-photonia.service
+#
+# Example commands:
+#
+# systemctl --user start sidekiq-photonia.service
+# systemctl --user status sidekiq-photonia.service
 #
 # This file tells systemd how to run Sidekiq as a 24/7 long-running daemon.
 #

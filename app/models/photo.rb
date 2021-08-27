@@ -6,6 +6,7 @@
 #
 #  id                   :bigint           not null, primary key
 #  date_taken           :datetime
+#  derivatives_version  :string           default("original")
 #  description          :text
 #  exif                 :jsonb
 #  flickr_faves         :integer
@@ -37,7 +38,6 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-# Photo model, uuuh :)
 class Photo < ApplicationRecord
   extend FriendlyId
   friendly_id :serial_number, use: :slugged
@@ -133,6 +133,32 @@ class Photo < ApplicationRecord
     pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
   end
 
+  def add_intelligent_derivatives
+    # Log Intelligent Derivatives Attempt
+
+    if label_instances.blank?
+      # Log Error: No Label Instances
+      return
+    end
+
+    unless intelligent_thumbnail
+      # Log Error: No Thumbnail (Probably square)
+      return
+    end
+
+    image_attacher.add_derivative(
+      :medium_intelligent,
+      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE'])
+    )
+
+    image_attacher.add_derivative(
+      :thumbnail_intelligent,
+      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_THUMBNAIL_SIDE'], ENV['PHOTONIA_THUMBNAIL_SIDE'])
+    )
+
+    image_attacher.atomic_promote
+  end
+
   def intelligent_thumbnail
     return unless label_instances.present? && ratio > 1.02
 
@@ -161,22 +187,6 @@ class Photo < ApplicationRecord
         height: min_distance.to_f * 2 / pixel_height
       }
     # end
-  end
-
-  def add_intelligent_derivatives
-    return if label_instances.blank?
-
-    image_attacher.add_derivative(
-      :medium_intelligent,
-      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE'])
-    )
-
-    image_attacher.add_derivative(
-      :thumbnail_intelligent,
-      intelligent_crop.resize_to_fill!(150, 150)
-    )
-
-    image_attacher.atomic_promote
   end
 
   private
