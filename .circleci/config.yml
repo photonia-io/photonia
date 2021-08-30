@@ -17,8 +17,7 @@ jobs:
             sudo apt install -qq libexif-dev
       - ruby/install-deps:
           with-cache: true
-      - node/install-packages:
-          pkg-manager: yarn
+      - node/install:
           install-yarn: true
   test:
     docker:
@@ -37,9 +36,8 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps
-      - node/install-packages:
-          pkg-manager: yarn
-          cache-key: "yarn.lock"
+      - node/install:
+          install-yarn: true
       - run:
           name: Install PostgreSQL client & libexif-dev
           command: |
