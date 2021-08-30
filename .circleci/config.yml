@@ -19,7 +19,7 @@ jobs:
           with-cache: true
       - node/install-packages:
           pkg-manager: yarn
-          cache-key: "yarn.lock"
+          install-yarn: true
   test:
     docker:
       - image: cimg/ruby:2.6.7-node
