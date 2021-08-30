@@ -19,7 +19,6 @@ jobs:
           with-cache: true
       - node/install-packages:
           pkg-manager: yarn
-          install-yarn: true
   test:
     docker:
       - image: cimg/ruby:2.6.7-node
@@ -39,7 +38,6 @@ jobs:
       - ruby/install-deps
       - node/install-packages:
           pkg-manager: yarn
-          cache-key: "yarn.lock"
       - run:
           name: Install PostgreSQL client & libexif-dev
           command: |
