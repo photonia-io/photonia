@@ -202,7 +202,7 @@ GEM
     nokogiri (1.12.4-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
-    pagy (3.12.0)
+    pagy (4.11.0)
     parallel (1.20.1)
     parser (3.0.2.0)
       ast (~> 2.4.1)
@@ -404,7 +404,7 @@ DEPENDENCIES
   image_processing (~> 1.8)
   jbuilder (~> 2.7)
   listen (~> 3.2)
-  pagy (~> 3.5)
+  pagy (~> 4)
   pg (>= 0.18, < 2.0)
   pg_search
   pry
@@ -437,4 +437,4 @@ RUBY VERSION
    ruby 2.6.7p197
 
 BUNDLED WITH
-   2.2.24
+   2.2.26
