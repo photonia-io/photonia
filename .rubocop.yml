@@ -1,4 +1,7 @@
 require: rubocop-rails
 
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+
 AllCops:
   NewCops: enable

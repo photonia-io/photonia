@@ -13,7 +13,6 @@
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #
-# The album model
 class Album < ApplicationRecord
   extend FriendlyId
   friendly_id :serial_number, use: :slugged

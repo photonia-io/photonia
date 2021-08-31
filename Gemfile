@@ -30,7 +30,7 @@ gem 'jbuilder', '~> 2.7'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 7.0'
+gem 'acts-as-taggable-on', '~> 8.1'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
@@ -56,7 +56,7 @@ group :development, :test do
   gem 'capistrano', '~> 3.14', require: false
   gem 'capistrano-passenger'
   gem 'capistrano-rails'
-  gem 'capistrano-rvm'
+  gem 'capistrano-rbenv'
   gem 'capistrano-sidekiq'
   gem 'ed25519'
   gem 'pry'

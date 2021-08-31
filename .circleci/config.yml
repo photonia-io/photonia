@@ -1,13 +1,13 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@1.1.2
-  node: circleci/node@2
+  ruby: circleci/ruby@1.1.4
+  node: circleci/node@4
 
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.6-node
+      - image: cimg/ruby:2.6.7-node
     steps:
       - checkout
       - run:
@@ -19,10 +19,9 @@ jobs:
           with-cache: true
       - node/install-packages:
           pkg-manager: yarn
-          cache-key: "yarn.lock"
   test:
     docker:
-      - image: cimg/ruby:2.6-node
+      - image: cimg/ruby:2.6.7-node
       - image: circleci/postgres:11
         environment:
           POSTGRES_USER: photonia
@@ -39,7 +38,6 @@ jobs:
       - ruby/install-deps
       - node/install-packages:
           pkg-manager: yarn
-          cache-key: "yarn.lock"
       - run:
           name: Install PostgreSQL client & libexif-dev
           command: |
@@ -53,7 +51,7 @@ jobs:
       # - ruby/rubocop-check
   deploy:
     docker:
-      - image: cimg/ruby:2.6-node
+      - image: cimg/ruby:2.6.7-node
     steps:
       - checkout
       - ruby/install-deps

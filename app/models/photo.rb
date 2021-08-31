@@ -6,6 +6,7 @@
 #
 #  id                   :bigint           not null, primary key
 #  date_taken           :datetime
+#  derivatives_version  :string           default("original")
 #  description          :text
 #  exif                 :jsonb
 #  flickr_faves         :integer
@@ -37,7 +38,6 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-# Photo model, uuuh :)
 class Photo < ApplicationRecord
   extend FriendlyId
   friendly_id :serial_number, use: :slugged
@@ -89,42 +89,119 @@ class Photo < ApplicationRecord
     )&.photo
   end
 
+  def exif(file)
+    Exif::Data.new(file.tempfile)
+  end
+
   def populate_exif_fields
-    if (exif = image.metadata['exif'])
-      self.date_taken = DateTime.strptime(exif.date_time_original, '%Y:%m:%d %H:%M:%S') if exif.date_time_original
-      Hash.include CoreExtensions::Hash::Sanitizer
-      image.metadata['exif'] = image.metadata['exif'].to_h.sanitize_invalid_byte_sequence!
+    file = image_attacher.file
+    file.open do
+      if exif(file)&.date_time_original
+        self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
+      end
     end
-
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
-
     self
   end
 
-  def label_instances
-    label_instances = []
+  def label_instance_collection
+    return unless rekognition_response
+
+    lic = Label::Instance::Collection.new
     rekognition_response['labels'].each do |label|
       next unless (instances = label['instances'].presence)
 
-      instances.each do |instance|
-        label_instances << {
-          'name' => label['name'],
-          'bounding_box' => instance['bounding_box']
-        }
-      end
+      lic.add(label, instances)
     end
-    label_instances
+
+    lic
   end
 
-  def main_instance_center
-    bounding_box = label_instances.first['bounding_box']
-    {
-      top: bounding_box['top'] + bounding_box['height'] / 2,
-      left: bounding_box['left'] + bounding_box['width'] / 2
+  def label_instances
+    label_instance_collection&.label_instances
+  end
+
+  def pixel_width
+    image.metadata['width']
+  end
+
+  def pixel_height
+    image.metadata['height']
+  end
+
+  def ratio
+    pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
+  end
+
+  def add_intelligent_derivatives
+    # Log Intelligent Derivatives Attempt
+
+    if label_instances.blank?
+      # Log Error: No Label Instances
+      return
+    end
+
+    unless intelligent_thumbnail
+      # Log Error: No Thumbnail (Probably square)
+      return
+    end
+
+    image_attacher.add_derivative(
+      :medium_intelligent,
+      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE'])
+    )
+
+    image_attacher.add_derivative(
+      :thumbnail_intelligent,
+      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_THUMBNAIL_SIDE'], ENV['PHOTONIA_THUMBNAIL_SIDE'])
+    )
+
+    image_attacher.atomic_promote
+  end
+
+  def intelligent_thumbnail
+    return unless label_instances.present? && ratio > 1.02
+
+    cog = label_instance_collection.center_of_gravity
+    cog_left = cog[:left]
+    cog_top = cog[:top]
+    cog_x = (pixel_width * cog_left).to_i
+    cog_y = (pixel_height * cog_top).to_i
+    distances = {
+      n: cog_y,
+      w: pixel_width - cog_x,
+      s: pixel_height - cog_y,
+      e: cog_x
     }
+    # closest_pole, min_distance = distances.min_by { |_, distance| distance }
+    _, min_distance = distances.min_by { |_, distance| distance }
+    # if(min_distance >= ENV['PHOTONIA_MEDIUM_SIDE'])
+      {
+        x: x = cog_x - min_distance,
+        y: y = cog_y - min_distance,
+        pixel_width: min_distance * 2,
+        pixel_height: min_distance * 2,
+        top: y.to_f / pixel_height,
+        left: x.to_f / pixel_width,
+        width: min_distance.to_f * 2 / pixel_width,
+        height: min_distance.to_f * 2 / pixel_height
+      }
+    # end
   end
 
   private
+
+  def intelligent_crop
+    original = image_attacher.file.download
+    ImageProcessing::MiniMagick
+      .source(original)
+      .crop(
+        intelligent_thumbnail[:x],
+        intelligent_thumbnail[:y],
+        intelligent_thumbnail[:pixel_width],
+        intelligent_thumbnail[:pixel_height]
+      )
+  end
 
   def set_fields
     if serial_number.nil?
