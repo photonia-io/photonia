@@ -37,6 +37,7 @@ gem 'devise'
 gem 'exif'
 gem 'faraday'
 gem 'friendly_id', '~> 5.4.0'
+gem 'graphql'
 gem 'image_processing', '~> 1.8'
 gem 'pagy', '~> 3.5'
 gem 'pg_search'
@@ -69,6 +70,7 @@ end
 
 group :development do
   gem 'annotate'
+  gem 'graphiql-rails'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen', '~> 3.2'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
