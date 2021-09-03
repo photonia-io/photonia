@@ -4,13 +4,13 @@ import Navigation from '../navigation.vue'
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
+import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
+
 document.addEventListener('DOMContentLoaded', () => {
   // routes and router start
 
   const cj = window.configuration_json
   const cjda = cj.data.attributes
-
-  console.log(cjda.photos_path)
 
   const routes = [
     { path: cjda.root_path, component: () => import('../root.vue') },
@@ -25,6 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const router = new VueRouter({
     mode: 'history',
     routes
+  })
+
+  // Apollo
+
+  const apolloClient = new ApolloClient({
+    link: createHttpLink({ uri: cjda.graphql_url }),
+    cache: new InMemoryCache(),
   })
 
   // go for Vue!
