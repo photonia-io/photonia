@@ -1,5 +1,5 @@
 // Copied from the Bulma documentation
-document.addEventListener('turbolinks:load', () => {
+document.addEventListener('load', () => {
   // Get all "navbar-burger" elements
   const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
   // Check if there are any navbar burgers

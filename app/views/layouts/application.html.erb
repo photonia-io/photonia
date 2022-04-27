@@ -6,88 +6,37 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= javascript_pack_tag 'application' %>
+    <%= javascript_pack_tag 'photonia' %>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
 
+    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
     <%= ENV['PHOTONIA_TRACKING_CODE']&.html_safe %>
+
+    <%= javascript_tag nonce: true do %>
+      window.configuration_json = <%= @configuration_json.html_safe %>
+      window.gql_queries = <%= @gql_queries.html_safe %>
+      <% if(@gql_cached_query) %>
+        window.gql_cached_query = "<%= j(@gql_cached_query.html_safe) %>"
+      <% end %>
+      <% if(@gql_cached_result) %>
+        window.gql_cached_result = <%= @gql_cached_result.html_safe %>
+      <% end %>
+    <% end %>
   </head>
 
   <body>
-    <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="<%= root_path %>">
-            <img src="/photonia-logo.png" width="156" height="30">
-          </a>
-          <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="photonia-navigation">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
+    <div id='app'>
+      <app-navigation></app-navigation>
+      <section class="section pt-5">
+        <div class="container is-dark">
+          <router-view></router-view>
         </div>
-
-        <div id="photonia-navigation" class="navbar-menu">
-          <div class="navbar-start">
-            <a href="<%= photos_path %>" class="navbar-item">
-              <span class="icon"><i class="fas fa-image"></i></span>
-              <span>Photos</span>
-            </a>
-
-            <a href="<%= albums_path %>" class="navbar-item">
-              <span class="icon"><i class="fas fa-book"></i></span>
-              <span>Albums</span>
-            </a>
-
-            <a href="<%= tags_path %>" class="navbar-item">
-              <span class="icon"><i class="fas fa-tag"></i></span>
-              <span>Tags</span>
-            </a>
-
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">
-                More
-              </a>
-
-              <div class="navbar-dropdown">
-                <a class="navbar-item">
-                  About
-                </a>
-                <a class="navbar-item">
-                  Contact
-                </a>
-                <hr class="navbar-divider">
-                <% if user_signed_in? %>
-                  <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %>
-                  <%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'navbar-item' %>
-                <% else %>
-                  <a href="<%= new_user_session_path %>" class="navbar-item">
-                    Login
-                  </a>
-                <% end %>
-              </div>
-            </div>
-          </div>
-
-          <div class="navbar-end">
-            <div class="navbar-item">
-              <%= form_tag(photos_path, method: :get) do %>
-                <div class="field has-addons">
-                  <p class="control">
-                    <%= text_field_tag(:q, params[:q], class: 'input', placeholder: 'Find a photo') %>
-                  </p>
-                  <p class="control">
-                    <input type="submit" class="button" value="Search">
-                  </p>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
+      </section>
+      <app-footer></app-footer>
+    </div>
 
     <section class="section pt-5">
       <% if notice %>
@@ -106,16 +55,5 @@
         <%= yield %>
       </div>
     </section>
-
-    <footer class="footer">
-      <div class="content has-text-centered">
-        <p>
-          Photos &copy; <a href="https://www.rusiczki.net">János Rusiczki</a>
-        </p>
-        <p>
-          Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a>
-        </p>
-      </div>
-    </footer>
   </body>
 </html>

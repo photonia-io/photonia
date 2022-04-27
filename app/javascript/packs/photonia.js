@@ -1,10 +1,20 @@
 import Vue from 'vue/dist/vue.esm'
-import Navigation from '../navigation.vue'
+import AppNavigation from '../navigation.vue'
+import AppFooter from '../footer.vue'
 
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
+import VueApollo from 'vue-apollo'
+Vue.use(VueApollo)
+
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
+import { setContext } from "@apollo/client/link/context"
+import { createApolloProvider } from '@vue/apollo-option'
+
+Vue.prototype.gql_queries = window.gql_queries
+Vue.prototype.gql_cached_query = window.gql_cached_query
+Vue.prototype.gql_cached_result = window.gql_cached_result
 
 document.addEventListener('DOMContentLoaded', () => {
   // routes and router start
@@ -13,13 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const cjda = cj.data.attributes
 
   const routes = [
-    { path: cjda.root_path, component: () => import('../root.vue') },
-    { path: cjda.photos_path, name: 'photo-index', component: () => import('../photos/index.vue') },
-    { path: cjda.photos_path + '/:id', name: 'photo-show', component: () => import('../photos/show.vue') },
-    { path: cjda.albums_path, name: 'album-index', component: () => import('../albums/show.vue') },
-    { path: cjda.albums_path + '/:id', name: 'album-show', component: () => import('../albums/show.vue') },
-    { path: cjda.tags_path, name: 'tag-index', component: () => import('../tags/show.vue') },
-    { path: cjda.tags_path + '/:id', name: 'tag-show', component: () => import('../tags/show.vue') },
+    { path: cjda.root_path, name: 'root', component: () => import('../homepage/index.vue') },
+    { path: cjda.photos_path, name: 'photos-index', component: () => import('../photos/index.vue') },
+    { path: cjda.photos_path + '/:id', name: 'photos-show', component: () => import('../photos/show.vue') },
+    { path: cjda.albums_path, name: 'albums-index', component: () => import('../albums/index.vue') },
+    { path: cjda.albums_path + '/:id', name: 'albums-show', component: () => import('../albums/show.vue') },
+    { path: cjda.tags_path, name: 'tags-index', component: () => import('../tags/index.vue') },
+    { path: cjda.tags_path + '/:id', name: 'tags-show', component: () => import('../tags/show.vue') },
   ]
 
   const router = new VueRouter({
@@ -29,16 +39,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Apollo
 
+  const httpLink = createHttpLink({ uri: cjda.graphql_url })
+  const authLink = setContext((_, { headers }) => {
+    const csrfToken = document.
+      querySelector('meta[name="csrf-token"]').
+      attributes.content.value;
+
+    // get the authentication token from local storage if it exists
+    // const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+    return {
+      headers: {
+        ...headers,
+        'X-CSRF-Token': csrfToken,
+        // authorization: authToken ? `Bearer ${authToken}` : '',
+      },
+    };
+  });
+
   const apolloClient = new ApolloClient({
-    link: createHttpLink({ uri: cjda.graphql_url }),
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
+    // connectToDevTools: true,
+  })
+
+  const apolloProvider = createApolloProvider({
+    defaultClient: apolloClient,
   })
 
   // go for Vue!
 
   const app = new Vue({
     el: '#app',
+    apolloProvider,
     router,
-    components: { Navigation }
+    components: { AppNavigation, AppFooter }
   })
 })

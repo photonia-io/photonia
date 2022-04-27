@@ -178,6 +178,8 @@ GEM
     jbuilder (2.11.2)
       activesupport (>= 5.0.0)
     jmespath (1.4.0)
+    jsonapi-serializer (2.2.0)
+      activesupport (>= 4.2)
     listen (3.7.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -200,10 +202,6 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.12.4)
       mini_portile2 (~> 2.6.1)
-      racc (~> 1.4)
-    nokogiri (1.12.4-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.12.4-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     pagy (3.12.0)
@@ -350,9 +348,6 @@ GEM
       net-ssh (>= 2.8.0)
     thor (1.1.0)
     tilt (2.0.10)
-    turbolinks (5.2.1)
-      turbolinks-source (~> 5.2)
-    turbolinks-source (5.2.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.0.0)
@@ -409,7 +404,8 @@ DEPENDENCIES
   graphql
   image_processing (~> 1.8)
   jbuilder (~> 2.7)
-  listen (~> 3.2)
+  jsonapi-serializer
+  listen
   pagy (~> 3.5)
   pg (>= 0.18, < 2.0)
   pg_search
@@ -431,8 +427,7 @@ DEPENDENCIES
   sitemap_generator
   skylight
   spring
-  spring-watcher-listen (~> 2.0.0)
-  turbolinks (~> 5)
+  spring-watcher-listen
   tzinfo-data
   web-console (>= 3.3.0)
   webdrivers

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
     # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
@@ -34,6 +36,20 @@ module Types
     field :homepage, HomepageType, null: false, description: 'Get homepage data'
 
     def homepage
+      object ? homepage_data_from_object : homepage_data_from_ar
+    end
+
+    private
+
+    def homepage_data_from_object
+      {
+        latest_photo: object[:latest_photo],
+        random_photo: object[:random_photo],
+        most_used_tags: object[:most_used_tags]
+      }
+    end
+
+    def homepage_data_from_ar
       {
         latest_photo: Photo.order(imported_at: :desc).first,
         random_photo: Photo.order(Arel.sql('RANDOM()')).first,

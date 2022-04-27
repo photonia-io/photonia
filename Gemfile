@@ -15,8 +15,6 @@ gem 'puma', '~> 5.1'
 gem 'sass-rails', '>= 6'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
 gem 'webpacker', '~> 5.2'
-# Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
-gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.7'
 # Use Redis adapter to run Action Cable in production
@@ -39,6 +37,7 @@ gem 'faraday'
 gem 'friendly_id', '~> 5.4.0'
 gem 'graphql'
 gem 'image_processing', '~> 1.8'
+gem 'jsonapi-serializer'
 gem 'pagy', '~> 3.5'
 gem 'pg_search'
 gem 'pundit'
@@ -72,10 +71,10 @@ group :development do
   gem 'annotate'
   gem 'graphiql-rails'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
-  gem 'listen', '~> 3.2'
+  gem 'listen'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'spring-watcher-listen'
   gem 'web-console', '>= 3.3.0'
 end
 

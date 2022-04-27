@@ -1,0 +1,84 @@
+    <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="<%= root_path %>">
+            <img src="/photonia-logo.png" width="156" height="30">
+          </a>
+          <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="photonia-navigation">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="photonia-navigation" class="navbar-menu">
+          <div class="navbar-start">
+            <a href="<%= photos_path %>" class="navbar-item">
+              <span class="icon"><i class="fas fa-image"></i></span>
+              <span>Photos</span>
+            </a>
+
+            <a href="<%= albums_path %>" class="navbar-item">
+              <span class="icon"><i class="fas fa-book"></i></span>
+              <span>Albums</span>
+            </a>
+
+            <a href="<%= tags_path %>" class="navbar-item">
+              <span class="icon"><i class="fas fa-tag"></i></span>
+              <span>Tags</span>
+            </a>
+
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                More
+              </a>
+
+              <div class="navbar-dropdown">
+                <a class="navbar-item">
+                  About
+                </a>
+                <a class="navbar-item">
+                  Contact
+                </a>
+                <hr class="navbar-divider">
+                <% if user_signed_in? %>
+                  <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %>
+                  <%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'navbar-item' %>
+                <% else %>
+                  <a href="<%= new_user_session_path %>" class="navbar-item">
+                    Login
+                  </a>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <%= form_tag(photos_path, method: :get) do %>
+                <div class="field has-addons">
+                  <p class="control">
+                    <%= text_field_tag(:q, params[:q], class: 'input', placeholder: 'Find a photo') %>
+                  </p>
+                  <p class="control">
+                    <input type="submit" class="button" value="Search">
+                  </p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          Photos &copy; <a href="https://www.rusiczki.net">János Rusiczki</a>
+        </p>
+        <p>
+          Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a>
+        </p>
+      </div>
+    </footer>

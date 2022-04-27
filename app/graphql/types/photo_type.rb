@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module Types
+  # GraphQL Photo Type
   class PhotoType < Types::BaseObject
     description 'A Photo'
 
@@ -11,6 +14,10 @@ module Types
     field :user_tags, [TagType], null: true
     field :rekognition_tags, [TagType], null: true
     field :albums, [AlbumType], null: true
+
+    field :image_url, String, null: false do
+      argument :type, String, required: true
+    end
 
     def id
       @object.slug
@@ -26,6 +33,10 @@ module Types
 
     def albums
       @object.albums
+    end
+
+    def image_url(type:)
+      @object.image_url(type.to_sym)
     end
   end
 end

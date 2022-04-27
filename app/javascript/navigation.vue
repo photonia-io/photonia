@@ -2,7 +2,7 @@
   <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
     <div class="container">
       <div class="navbar-brand">
-        <router-link :to="root_path" class="navbar-item">
+        <router-link :to="{ name: 'root' }" class="navbar-item">
           <img src="/photonia-logo.png" width="156" height="30">
         </router-link>
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="photonia-navigation">
@@ -14,17 +14,17 @@
 
       <div id="photonia-navigation" class="navbar-menu">
         <div class="navbar-start">
-          <router-link :to="photos_path" class="navbar-item">
+          <router-link :to="{ name: 'photos-index' }" class="navbar-item">
             <span class="icon"><i class="fas fa-image"></i></span>
             <span>Photos</span>
           </router-link>
 
-          <router-link :to="albums_path" class="navbar-item">
+          <router-link :to="{ name: 'albums-index' }" class="navbar-item">
             <span class="icon"><i class="fas fa-book"></i></span>
             <span>Albums</span>
           </router-link>
 
-          <router-link :to="tags_path" class="navbar-item">
+          <router-link :to="{ name: 'tags-index' }" class="navbar-item">
             <span class="icon"><i class="fas fa-tag"></i></span>
             <span>Tags</span>
           </router-link>
@@ -48,7 +48,7 @@
 
         <div class="navbar-end">
           <div class="navbar-item">
-            <form :action="photos_path" method="get" accept-charset="UTF-8">
+            <form :action="PHOTOS_PATH" method="get" accept-charset="UTF-8">
               <div class="field has-addons">
                 <p class="control">
                   <input type="text" name="q" id="q" class="input" placeholder="Find a photo">
@@ -67,21 +67,8 @@
 
 <script>
   export default {
-    data() {
-      return {
-        root_path: '',
-        photos_path: '',
-        albums_path: '',
-        tags_path: ''
-      }
-    },
     created() {
-      const cj = window.configuration_json
-      const cjda = cj.data.attributes
-      this.root_path = cjda.root_path
-      this.photos_path = cjda.photos_path
-      this.albums_path = cjda.albums_path
-      this.tags_path = cjda.tags_path
+      this.PHOTOS_PATH = window.configuration_json.data.attributes.photos_path
     }
   }
 </script>

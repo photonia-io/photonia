@@ -7,6 +7,7 @@
     "@rails/activestorage": "^6.1.4",
     "@rails/ujs": "^6.1.4",
     "@rails/webpacker": "5.4.2",
+    "@vue/apollo-option": "^4.0.0-alpha.14",
     "axios": "^0.21.1",
     "bulma": "^0.9.3",
     "bulma-block-list": "^0.5.0",
@@ -14,7 +15,9 @@
     "graphql-tag": "^2.12.5",
     "turbolinks": "^5.2.0",
     "vue": "^2.6.14",
+    "vue-apollo": "^3.0.7",
     "vue-loader": "^15.9.8",
+    "vue-router": "^3.5.2",
     "vue-template-compiler": "^2.6.14"
   },
   "version": "0.1.0",
