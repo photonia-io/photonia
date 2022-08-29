@@ -409,7 +409,7 @@ DEPENDENCIES
   image_processing (~> 1.8)
   jbuilder (~> 2.7)
   jsonapi-serializer
-  listen (~> 3.2)
+  listen
   pagy (~> 4)
   pg (>= 0.18, < 2.0)
   pg_search
