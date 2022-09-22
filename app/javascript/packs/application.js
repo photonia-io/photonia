@@ -19,4 +19,4 @@ require('helpers/bulma')
 import setupCSRFToken from 'helpers/csrf'
 window.addEventListener('load', setupCSRFToken)
 
-require('photos/show')
+// require('photos/show')

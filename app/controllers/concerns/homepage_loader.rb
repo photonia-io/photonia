@@ -19,7 +19,7 @@ module HomepageLoader
   private
 
   def cached_gql
-    @gql_cached_query = GraphqlQueryCollection::COLLECTION[:homepage]
+    @gql_cached_query = GraphqlQueryCollection::COLLECTION[:homepage_index]
     @gql_cached_result = PhotoniaSchema.execute(
       @gql_cached_query,
       root_value: {

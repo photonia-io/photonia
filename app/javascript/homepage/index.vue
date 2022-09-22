@@ -2,16 +2,16 @@
   <div>
     <div class="block">
       <span v-if="$apollo.loading">Loading...</span>
-      <LatestPhoto v-else :photo="homepage.latestPhoto"/>
+      <LatestPhoto v-else :photo="latestPhoto"/>
     </div>
     <hr class="is-hidden-touch mt-1 mb-4">
     <div class="block">
       <div class="columns">
         <div class="column is-half">
-          <RandomPhoto :photo="homepage.randomPhoto"/>
+          <RandomPhoto :photo="randomPhoto"/>
         </div>
         <div class="column is-half">
-          <MostUsedTags :tags="homepage.mostUsedTags"/>
+          <MostUsedTags :tags="mostUsedTags"/>
         </div>
       </div>
     </div>
@@ -25,7 +25,7 @@
   import MostUsedTags from './most-used-tags'
   import writeGQLQuery from '../mixins/write-gql-query'
 
-  const queryString = gql_queries.homepage
+  const queryString = gql_queries.homepage_index
   const GQLQuery = gql`${queryString}`
 
   export default {
@@ -38,22 +38,25 @@
     mixins: [writeGQLQuery(queryString, GQLQuery)],
     data () {
       return {
-        homepage: {
-          latestPhoto: {
-            name: '',
-            id: ''
-          },
-          randomPhoto: {
-            name: '',
-            id: ''
-          },
-          mostUsedTags: [],
-        }
+        latestPhoto: {
+          name: '',
+          id: ''
+        },
+        randomPhoto: {
+          name: '',
+          id: ''
+        },
+        mostUsedTags: [],
       }
     },
     apollo: {
       homepage: {
-        query: GQLQuery
+        query: GQLQuery,
+        update: function(data) {
+          this.latestPhoto = data.latestPhoto
+          this.randomPhoto = data.randomPhoto
+          this.mostUsedTags = data.mostUsedTags
+        }
       }
     }
   }

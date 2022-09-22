@@ -8,6 +8,9 @@ Vue.use(VueRouter)
 import VueApollo from 'vue-apollo'
 Vue.use(VueApollo)
 
+import VueMoment from 'vue-moment'
+Vue.use(VueMoment)
+
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from "@apollo/client/link/context"
 import { createApolloProvider } from '@vue/apollo-option'

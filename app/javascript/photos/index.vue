@@ -1,29 +1,40 @@
 <template>
   <div>
-    <p>le photo index</p>
-    <router-link :to="photos_path + '/29541298843'">
-      go to 29541298843
-    </router-link>
+    <h1 class="title">Photos</h1>
+    <hr class="is-hidden-touch mt-2 mb-4">
+    <div class="columns is-1 is-variable is-multiline">
+      <PhotoItem
+        v-for="photo in photos"
+        :photo="photo"
+        :key="photo.id"
+      />
+    </div>
   </div>
 </template>
 
 <script>
+  import gql from 'graphql-tag'
+  import PhotoItem from './photo-item'
+  import writeGQLQuery from '../mixins/write-gql-query'
+
+  const queryString = gql_queries.photos_index
+  const GQLQuery = gql`${queryString}`
+
   export default {
-    data() {
+    name: 'PhotosIndex',
+    components: {
+      PhotoItem,
+    },
+    mixins: [writeGQLQuery(queryString, GQLQuery)],
+    data () {
       return {
-        root_path: '',
-        photos_path: '',
-        albums_path: '',
-        tags_path: ''
+        photos: []
       }
     },
-    created() {
-      const cj = window.configuration_json
-      const cjda = cj.data.attributes
-      this.root_path = cjda.root_path
-      this.photos_path = cjda.photos_path
-      this.albums_path = cjda.albums_path
-      this.tags_path = cjda.tags_path
+    apollo: {
+      photos: {
+        query: GQLQuery
+      }
     }
   }
 </script>
