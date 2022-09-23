@@ -74,7 +74,4 @@ export default {
   .label:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
-  .label > p {
-    font-size: 10px;
-  }
 </style>

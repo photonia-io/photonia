@@ -20,5 +20,7 @@ export default {
 </script>
 
 <style>
-
+  .label > p {
+    font-size: 10px;
+  }
 </style>
