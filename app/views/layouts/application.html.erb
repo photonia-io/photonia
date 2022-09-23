@@ -29,31 +29,23 @@
 
   <body>
     <div id='app'>
-      <app-navigation></app-navigation>
       <section class="section pt-5">
+        <% if notice %>
+          <div class="notification is-primary">
+            <button class="delete"></button>
+            <%= notice %>
+          </div>
+        <% end %>
+        <% if alert %>
+          <div class="notification is-danger">
+            <button class="delete"></button>
+            <%= alert %>
+          </div>
+        <% end %>
         <div class="container is-dark">
-          <router-view></router-view>
+          <%= yield %>
         </div>
       </section>
-      <app-footer></app-footer>
     </div>
-
-    <section class="section pt-5">
-      <% if notice %>
-        <div class="notification is-primary">
-          <button class="delete"></button>
-          <%= notice %>
-        </div>
-      <% end %>
-      <% if alert %>
-        <div class="notification is-danger">
-          <button class="delete"></button>
-          <%= alert %>
-        </div>
-      <% end %>
-      <div class="container is-dark">
-        <%= yield %>
-      </div>
-    </section>
   </body>
 </html>

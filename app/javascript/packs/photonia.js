@@ -1,6 +1,5 @@
 import Vue from 'vue/dist/vue.esm'
-import AppNavigation from '../navigation.vue'
-import AppFooter from '../footer.vue'
+import App from '../app.vue'
 
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
@@ -79,6 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     el: '#app',
     apolloProvider,
     router,
-    components: { AppNavigation, AppFooter }
+    render: h => h(App)
   })
 })
