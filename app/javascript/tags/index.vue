@@ -32,6 +32,7 @@ const GQLQuery = gql`${queryString}`
 
 export default {
   name: 'TagsIndex',
+  pageTitle: 'Tags - Photonia',
   components: {
     TagWithCount
   },

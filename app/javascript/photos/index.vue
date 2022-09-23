@@ -22,6 +22,7 @@
 
   export default {
     name: 'PhotosIndex',
+    pageTitle: 'Photos - Photonia',
     components: {
       PhotoItem,
     },

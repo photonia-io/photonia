@@ -22,6 +22,9 @@ const GQLQuery = gql`${queryString}`
 
 export default {
   name: 'AlbumsShow',
+  pageTitle () {
+    return `Album: ${this.album.title} - Photonia`
+  },
   components: {
     PhotoItem,
   },
@@ -44,6 +47,11 @@ export default {
       }
     }
   },
+  watch: {
+    album() {
+      this.setPageTitle()
+    }
+  }
 }
 </script>
 

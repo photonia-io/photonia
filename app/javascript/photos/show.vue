@@ -143,6 +143,9 @@
 
   export default {
     name: 'PhotosShow',
+    pageTitle () {
+      return `${this.photo.name} - Photonia`
+    },
     components: {
       SmallNavigationButton,
       Display,
@@ -179,6 +182,11 @@
             id: this.$route.params.id
           }
         }
+      }
+    },
+    watch: {
+      photo() {
+        this.setPageTitle()
       }
     }
   }

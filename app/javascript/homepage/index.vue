@@ -30,6 +30,7 @@
 
   export default {
     name: 'Homepage',
+    pageTitle: 'Photonia',
     components: {
       LatestPhoto,
       RandomPhoto,

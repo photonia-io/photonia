@@ -22,6 +22,9 @@ const GQLQuery = gql`${queryString}`
 
 export default {
   name: 'TagsShow',
+  pageTitle () {
+    return `Tag: ${this.tag.name} - Photonia`
+  },
   components: {
     PhotoItem,
   },
@@ -29,7 +32,7 @@ export default {
   data () {
     return {
       tag: {
-        title: '',
+        name: '',
         photos: []
       },
     }
@@ -44,6 +47,11 @@ export default {
       }
     }
   },
+  watch: {
+    tag() {
+      this.setPageTitle()
+    }
+  }
 }
 </script>
 

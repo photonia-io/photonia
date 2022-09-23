@@ -11,6 +11,9 @@ Vue.use(VueApollo)
 import VueMoment from 'vue-moment'
 Vue.use(VueMoment)
 
+import pageTitle from '../mixins/page-title'
+Vue.mixin(pageTitle)
+
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from "@apollo/client/link/context"
 import { createApolloProvider } from '@vue/apollo-option'

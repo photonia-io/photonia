@@ -22,6 +22,7 @@
 
   export default {
     name: 'AlbumsIndex',
+    pageTitle: 'Albums - Photonia',
     components: {
       AlbumItem
     },
