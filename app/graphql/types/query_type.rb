@@ -14,7 +14,7 @@ module Types
     end
 
     def photos
-      Photo.all
+      Photo.all.order(imported_at: :desc)
     end
 
     field :photo, PhotoType, null: false do
