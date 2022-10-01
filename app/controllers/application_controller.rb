@@ -2,6 +2,7 @@
 
 # This is the application controller, duh
 class ApplicationController < ActionController::Base
+  include GraphqlDevise::SetUserByToken
   include Pundit
   before_action :set_configuration_json
   before_action :set_gql_queries
