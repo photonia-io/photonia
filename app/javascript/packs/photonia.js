@@ -7,6 +7,10 @@ Vue.use(VueRouter)
 import VueApollo from 'vue-apollo'
 Vue.use(VueApollo)
 
+import { createPinia, PiniaVuePlugin } from 'pinia'
+Vue.use(PiniaVuePlugin)
+const pinia = createPinia()
+
 import VueMoment from 'vue-moment'
 Vue.use(VueMoment)
 
@@ -78,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el: '#app',
     apolloProvider,
     router,
+    pinia,
     render: h => h(App)
   })
 })
