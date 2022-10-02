@@ -17,9 +17,11 @@ Vue.use(VueMoment)
 import pageTitle from '../mixins/page-title'
 Vue.mixin(pageTitle)
 
-import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
+import { ApolloClient, createHttpLink, ApolloLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from "@apollo/client/link/context"
 import { createApolloProvider } from '@vue/apollo-option'
+
+import { useTokenStore } from '../stores/token'
 
 Vue.prototype.gql_queries = window.gql_queries
 Vue.prototype.gql_cached_query = window.gql_cached_query
@@ -39,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: cjda.albums_path + '/:id', name: 'albums-show', component: () => import('../albums/show.vue') },
     { path: cjda.tags_path, name: 'tags-index', component: () => import('../tags/index.vue') },
     { path: cjda.tags_path + '/:id', name: 'tags-show', component: () => import('../tags/show.vue') },
+    { path: cjda.users_sign_in_path, name: 'users-sign-in', component: () => import('../users/sign-in.vue') },
+    { path: cjda.users_sign_out_path, name: 'users-sign-out', component: () => import('../users/sign-out.vue') },
   ]
 
   const router = new VueRouter({
@@ -47,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   // Apollo
+
+  const tokenStore = useTokenStore(pinia)
 
   const httpLink = createHttpLink({ uri: cjda.graphql_url })
   const authLink = setContext((_, { headers }) => {
@@ -57,17 +63,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // get the authentication token from local storage if it exists
     // const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
 
+    console.log(tokenStore.accessToken)
+
     return {
       headers: {
         ...headers,
         'X-CSRF-Token': csrfToken,
+        'access-token': tokenStore.accessToken,
+        'client': tokenStore.client,
+        'uid': tokenStore.uid,
+        'token-type': tokenStore.tokenType,
         // authorization: authToken ? `Bearer ${authToken}` : '',
       },
     };
   });
+  const afterwareLink = new ApolloLink((operation, forward) => {
+    return forward(operation).map((response) => {
+      const context = operation.getContext();
+      const headers = context.response.headers
+      console.log('access-token', headers.get('access-token'))
+      tokenStore.$patch({
+        accessToken: headers.get('access-token'),
+        client: headers.get('client'),
+        expiry: headers.get('expiry'),
+        tokenType: headers.get('token-type'),
+        uid: headers.get('uid')
+      })
+      return response
+    })
+  })
 
   const apolloClient = new ApolloClient({
-    link: authLink.concat(httpLink),
+    link: authLink.concat(afterwareLink.concat(httpLink)),
     cache: new InMemoryCache(),
     // connectToDevTools: true,
   })

@@ -15,7 +15,9 @@ class ApplicationController < ActionController::Base
         root_path: root_path,
         photos_path: photos_path,
         albums_path: albums_path,
-        tags_path: tags_path
+        tags_path: tags_path,
+        users_sign_in_path: new_user_session_path,
+        users_sign_out_path: destroy_user_session_path
       )
     ).serializable_hash.to_json
   end

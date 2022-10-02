@@ -33,7 +33,6 @@
             <a class="navbar-link">
               More
             </a>
-
             <div class="navbar-dropdown">
               <a class="navbar-item">
                 About
@@ -42,6 +41,22 @@
                 Contact
               </a>
               <hr class="navbar-divider">
+              {{ userStore.isSignedIn }}
+              <!-- <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %> -->
+              <router-link
+                v-if="userStore.isSignedIn"
+                :to="{ name: 'users-sign-out' }"
+                class="navbar-item"
+              >
+                Sign Out
+              </router-link>
+              <router-link
+                v-if="!userStore.isSignedIn"
+                :to="{ name: 'users-sign-in' }"
+                class="navbar-item"
+              >
+                Sign In
+              </router-link>
             </div>
           </div>
         </div>
@@ -66,7 +81,15 @@
 </template>
 
 <script>
+  import { useUserStore } from './stores/user'
+
   export default {
+    setup() {
+      const userStore = useUserStore()
+      return {
+        userStore,
+      }
+    },
     created() {
       this.PHOTOS_PATH = window.configuration_json.data.attributes.photos_path
     }
