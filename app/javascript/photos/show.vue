@@ -101,10 +101,10 @@
         </ul>
 
         <h3 class="heading"><span class="icon"><i class="fas fa-camera"></i></span> Date Taken</h3>
-        <p v-if="!$apollo.loading" class="content">{{ photo.dateTaken | moment("dddd, MMMM Do YYYY, H:mm:ss") }}</p>
+        <p v-if="!$apollo.loading" class="content">{{ momentFormat(photo.dateTaken) }}</p>
 
         <h3 class="heading"><span class="icon"><i class="fas fa-arrow-circle-up"></i></span> Date Posted</h3>
-        <p v-if="!$apollo.loading" class="content">{{ photo.importedAt | moment("dddd, MMMM Do YYYY, H:mm:ss") }}</p>
+        <p v-if="!$apollo.loading" class="content">{{ momentFormat(photo.importedAt) }}</p>
 
         <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h3>
         <div class="tags">
@@ -131,6 +131,7 @@
 
 <script>
   import gql from 'graphql-tag'
+  import moment from 'moment'
   import writeGQLQuery from '../mixins/write-gql-query'
 
   import SmallNavigationButton from './small-navigation-button.vue'
@@ -140,6 +141,8 @@
 
   const queryString = gql_queries.photos_show
   const GQLQuery = gql`${queryString}`
+
+  const momentFormat = 'dddd, MMMM Do YYYY, H:mm:ss'
 
   export default {
     name: 'PhotosShow',
@@ -171,6 +174,11 @@
     computed: {
       showAlbumBrowser: function () {
         return this.photo && this.photo.albums.length > 0
+      },
+    },
+    methods: {
+      momentFormat: function (date) {
+        return moment(date).format(momentFormat)
       }
     },
     mixins: [writeGQLQuery(queryString, GQLQuery)],

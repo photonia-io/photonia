@@ -41,17 +41,16 @@
                 Contact
               </a>
               <hr class="navbar-divider">
-              {{ userStore.isSignedIn }}
               <!-- <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %> -->
               <router-link
-                v-if="userStore.isSignedIn"
+                v-if="userStore.signedIn"
                 :to="{ name: 'users-sign-out' }"
                 class="navbar-item"
               >
                 Sign Out
               </router-link>
               <router-link
-                v-if="!userStore.isSignedIn"
+                v-if="!userStore.signedIn"
                 :to="{ name: 'users-sign-in' }"
                 class="navbar-item"
               >

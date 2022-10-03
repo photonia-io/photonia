@@ -1,11 +1,19 @@
 const { environment } = require('@rails/webpacker')
-
-const nodeModules = environment.loaders.get('nodeModules')
-nodeModules.type = 'javascript/auto'
-
 const { VueLoaderPlugin } = require('vue-loader')
 const vue = require('./loaders/vue')
+
+const { DefinePlugin } = require('webpack')
+environment.plugins.prepend(
+  'Define',
+  new DefinePlugin({
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false
+  })
+)
 
 environment.plugins.prepend('VueLoaderPlugin', new VueLoaderPlugin())
 environment.loaders.prepend('vue', vue)
 module.exports = environment
+
+const nodeModules = environment.loaders.get('nodeModules')
+nodeModules.type = 'javascript/auto'
