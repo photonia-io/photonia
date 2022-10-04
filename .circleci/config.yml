@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@1.1.4
-  node: circleci/node@5.0.3
+  ruby: cimg/ruby@1.1.4
+  node: cimg/node@5.0.3
 
 jobs:
   build:
