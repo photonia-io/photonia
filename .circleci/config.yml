@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  ruby: cimg/ruby@1.1.4
-  node: cimg/node@5.0.3
+  ruby: circleci/ruby@1.1.4
+  node: circleci/node@5.0.3
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
   test:
     docker:
       - image: cimg/ruby:2.6.7-node
-      - image: circleci/postgres:11
+      - image: cimg/postgres:11
         environment:
           POSTGRES_USER: photonia
           POSTGRES_DB: photonia_test
