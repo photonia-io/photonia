@@ -23,7 +23,7 @@ jobs:
   test:
     docker:
       - image: cimg/ruby:2.6.7-node
-      - image: cimg/postgres:11
+      - image: cimg/postgres:11.16
         environment:
           POSTGRES_USER: photonia
           POSTGRES_DB: photonia_test
