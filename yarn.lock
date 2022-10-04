@@ -7356,6 +7356,10 @@ vue-moment@^4.1.0:
   dependencies:
     moment "^2.19.2"
 
+"vue-page-title@https://github.com/photonia-io/vue-page-title.git#add-glue-option":
+  version "2.0.5"
+  resolved "https://github.com/photonia-io/vue-page-title.git#15531254bebd63e24d4a78cb656ca6dd75620e08"
+
 vue-router@4:
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-4.1.5.tgz#256f597e3f5a281a23352a6193aa6e342c8d9f9a"
