@@ -15,4 +15,4 @@ Rails - Vue 3 - GraphQL
 
 ## Setup
 
-    sudo apt install libpq-dev
+    sudo apt install libpq-dev libexif-dev
