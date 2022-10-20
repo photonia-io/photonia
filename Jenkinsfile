@@ -3,21 +3,14 @@ pipeline {
     PHOTONIA_DATABASE_URL = credentials('photonia-database-url')
   }
   agent {
-    docker {
-      image 'ruby:2.6.7'
+    dockerfile {
       args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
     }
   }
   stages {
-    stage('requirements') {
+    stage('migrate') {
       steps {
-        sh 'gem install bundler -v 2.2.26'
-      }
-    }
-    stage('build') {
-      steps {
-        sh 'env'
-        sh 'bundle install'
+        sh 'bundle rails db:migrate RAILS_ENV=test'
       }
     }
     stage('test') {
