@@ -13,7 +13,7 @@ pipeline {
     }
     stage('test') {
       steps {
-        sh 'rake'
+        sh 'bundle exec rspec'
       }   
     }
   }
