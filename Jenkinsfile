@@ -9,6 +9,11 @@ pipeline {
     }
   }
   stages {
+    stage('reset test database') {
+      steps {
+        sh 'bundle exec rails db:reset RAILS_ENV=test'
+      }
+    }
     stage('migrate') {
       steps {
         sh 'bundle exec rails db:migrate RAILS_ENV=test'
