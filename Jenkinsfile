@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('migrate') {
       steps {
-        sh 'bundle rails db:migrate RAILS_ENV=test'
+        sh 'bundle exec rails db:migrate RAILS_ENV=test'
       }
     }
     stage('test') {
