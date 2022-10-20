@@ -9,11 +9,6 @@ pipeline {
     }
   }
   stages {
-    stage('reset test database') {
-      steps {
-        sh 'bundle exec rails db:reset RAILS_ENV=test'
-      }
-    }
     stage('test') {
       steps {
         sh 'bundle exec rspec'
