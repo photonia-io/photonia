@@ -24,4 +24,4 @@ RUN bundle install --jobs 5
 # yarn install
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install
+# RUN yarn install
