@@ -13,8 +13,7 @@ pipeline {
     }
     stage('build') {
       steps {
-        sh "echo \$PHOTONIA_DATABASE_URL" 
-        sh 'echo ---'
+        sh 'env'
         sh 'bundle install'
       }
     }
