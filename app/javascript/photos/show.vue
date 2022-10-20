@@ -5,17 +5,19 @@
         <!-- <% if policy(@photo).update? %>
           <h1 id="photo-name" class="title level-item" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
         <% else %> -->
-          <h1 class="title level-item">{{ photo.name  }}</h1>
+          <h1 class="title level-item">{{ photo.name }}</h1>
       </div>
       <div class="level-right">
         <SmallNavigationButton
           v-if="photo.previousPhoto"
           :photo="photo.previousPhoto"
+          :loading="loading"
           direction="left"
         />
         <SmallNavigationButton
           v-if="photo.nextPhoto"
           :photo="photo.nextPhoto"
+          :loading="loading"
           direction="right"
         />
       </div>
@@ -101,10 +103,10 @@
         </ul>
 
         <h3 class="heading"><span class="icon"><i class="fas fa-camera"></i></span> Date Taken</h3>
-        <p v-if="!$apollo.loading" class="content">{{ momentFormat(photo.dateTaken) }}</p>
+        <p v-if="!loading" class="content">{{ momentFormat(photo.dateTaken) }}</p>
 
         <h3 class="heading"><span class="icon"><i class="fas fa-arrow-circle-up"></i></span> Date Posted</h3>
-        <p v-if="!$apollo.loading" class="content">{{ momentFormat(photo.importedAt) }}</p>
+        <p v-if="!loading" class="content">{{ momentFormat(photo.importedAt) }}</p>
 
         <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h3>
         <div class="tags">
@@ -129,10 +131,54 @@
   </div>
 </template>
 
-<script>
+<script setup>
+  import { computed } from 'vue'
+  import { useRoute } from 'vue-router'
+  import gql from 'graphql-tag'
+  import { useQuery } from '@vue/apollo-composable'
+  import { useTitle } from 'vue-page-title'
+  import moment from 'moment'
+
+  // components
+  import SmallNavigationButton from './small-navigation-button.vue'
+  import Display from './display.vue'
+  import Tag from '../tags/tag.vue'
+  import Empty from '../empty.vue'
+
+  // route
+  const route = useRoute()
+
+  const emptyPhoto = {
+          name: '',
+          description: '',
+          largeImageUrl: '',
+          previousPhoto: null,
+          nextPhoto: null,
+          albums: [],
+          tags: [],
+          rekognitionTags: [],
+          labelInstances: null,
+          intelligentThumbnail: null
+        }
+
+  const format = 'dddd, MMMM Do YYYY, H:mm:ss'
+  function momentFormat(date) {
+    return moment(date).format(format)
+  }
+
+  const id = computed(() => route.params.id)
+  const { result, loading } = useQuery(gql`${gql_queries.photos_show}`, { id: id })
+
+  const photo = computed(() => result.value?.photo ?? emptyPhoto)
+  const showAlbumBrowser = computed(() => photo.value.albums.length > 0)
+  const title = computed(() => photo.value.name)
+
+  useTitle(title)
+</script>
+
+<!-- <script>
   import gql from 'graphql-tag'
   import moment from 'moment'
-  import writeGQLQuery from '../mixins/write-gql-query'
 
   import SmallNavigationButton from './small-navigation-button.vue'
   import Display from './display.vue'
@@ -146,8 +192,8 @@
 
   export default {
     name: 'PhotosShow',
-    pageTitle () {
-      return `${this.photo.name} - Photonia`
+    title () {
+      return this.photo.name
     },
     components: {
       SmallNavigationButton,
@@ -193,9 +239,10 @@
       }
     },
     watch: {
-      photo() {
-        this.setPageTitle()
+      'photo.name'(newPhoto) {
+        console.log('photo changed')
+        setTitle(this.photo.name)
       }
     }
   }
-</script>
+</script> -->

@@ -12,47 +12,31 @@
   </div>
 </template>
 
-<script>
-import gql from 'graphql-tag'
-import PhotoItem from '../photos/photo-item'
-import writeGQLQuery from '../mixins/write-gql-query'
+<script setup>
+  import { computed } from 'vue'
+  import { useRoute } from 'vue-router'
+  import gql from 'graphql-tag'
+  import { useQuery } from '@vue/apollo-composable'
+  import { useTitle } from 'vue-page-title'
 
-const queryString = gql_queries.tags_show
-const GQLQuery = gql`${queryString}`
+  // components
+  import PhotoItem from '../photos/photo-item'
 
-export default {
-  name: 'TagsShow',
-  pageTitle () {
-    return `Tag: ${this.tag.name} - Photonia`
-  },
-  components: {
-    PhotoItem,
-  },
-  mixins: [writeGQLQuery(queryString, GQLQuery)],
-  data () {
-    return {
-      tag: {
-        name: '',
-        photos: []
-      },
-    }
-  },
-  apollo: {
-    tag: {
-      query: GQLQuery,
-      variables () {
-        return {
-          id: this.$route.params.id
+  // route
+  const route = useRoute()
+
+  const emptyTag = {
+          name: '',
+          photos: []
         }
-      }
-    }
-  },
-  watch: {
-    tag() {
-      this.setPageTitle()
-    }
-  }
-}
+
+  const id = computed(() => route.params.id)
+  const { result, loading } = useQuery(gql`${gql_queries.tags_show}`, { id: id })
+
+  const tag = computed(() => result.value?.tag ?? emptyTag)
+  const title = computed(() => `Album: ${tag.value.name}`)
+
+  useTitle(title)
 </script>
 
 <style>

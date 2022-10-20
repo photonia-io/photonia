@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, provide, h } from 'vue'
 import App from '../app.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
@@ -6,13 +6,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 const pinia = createPinia()
 
-import pageTitle from '../mixins/page-title'
+import { pageTitle } from 'vue-page-title'
 
 import { ApolloClient, createHttpLink, ApolloLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from "@apollo/client/link/context"
 import { createApolloProvider } from '@vue/apollo-option'
+import { DefaultApolloClient } from '@vue/apollo-composable'
 
-// import { useTokenStore } from '../stores/token'
+import { useTokenStore } from '../stores/token'
 
 document.addEventListener('DOMContentLoaded', () => {
   // routes and router start
@@ -34,12 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const router = createRouter({
     history: createWebHistory(),
-    routes, // short for `routes: routes`
+    routes,
   })
 
   // Apollo
 
-  // const tokenStore = useTokenStore(pinia)
+  const tokenStore = useTokenStore(pinia)
 
   const httpLink = createHttpLink({ uri: cjda.graphql_url })
   const authLink = setContext((_, { headers }) => {
@@ -54,10 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
       headers: {
         ...headers,
         'X-CSRF-Token': csrfToken,
-        // 'access-token': tokenStore.accessToken,
-        // 'client': tokenStore.client,
-        // 'uid': tokenStore.uid,
-        // 'token-type': tokenStore.tokenType,
+        'access-token': tokenStore.accessToken,
+        'client': tokenStore.client,
+        'uid': tokenStore.uid,
+        'token-type': tokenStore.tokenType,
       },
     };
   });
@@ -66,14 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return forward(operation).map((response) => {
       const context = operation.getContext();
       const headers = context.response.headers
-      // console.log('access-token', headers.get('access-token'))
-      // tokenStore.$patch({
-      //   accessToken: headers.get('access-token'),
-      //   client: headers.get('client'),
-      //   expiry: headers.get('expiry'),
-      //   tokenType: headers.get('token-type'),
-      //   uid: headers.get('uid')
-      // })
+      console.log('access-token', headers.get('access-token'))
+      tokenStore.$patch({
+        accessToken: headers.get('access-token'),
+        client: headers.get('client'),
+        expiry: headers.get('expiry'),
+        tokenType: headers.get('token-type'),
+        uid: headers.get('uid')
+      })
       return response
     })
   })
@@ -84,20 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // connectToDevTools: true,
   })
 
-  const apolloProvider = createApolloProvider({
-    defaultClient: apolloClient,
-  })
+  // const apolloProvider = createApolloProvider({
+  //   defaultClient: apolloClient,
+  // })
 
   // go for Vue!
 
-  // const app = Vue.createApp({
-  //   el: '#app',
-  //   apolloProvider,
-  //   pinia,
-  //   render: h => h(App)
-  // })
-
-  const app = createApp(App)
+  const app = createApp({
+    setup() {
+      provide(DefaultApolloClient, apolloClient)
+    },
+    render: () => h(App),
+  })
 
   app.config.globalProperties.gql_queries = window.gql_queries
   app.config.globalProperties.gql_cached_query = window.gql_cached_query
@@ -105,9 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   app.use(router)
   app.use(pinia)
-  app.use(apolloProvider)
+  // app.use(apolloProvider)
 
-  app.mixin(pageTitle)
+  app.use(
+    pageTitle({
+      suffix: 'Photonia',
+      separator: ' - ',
+      mixin: true,
+    })
+  )
 
   app.mount('#app')
 })

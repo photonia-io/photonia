@@ -4,7 +4,8 @@
     <hr class="is-hidden-touch mt-2 mb-4">
     <div class="columns is-1 is-variable is-multiline">
       <AlbumItem
-        v-for="album in albums"
+        v-if="result && result.albums"
+        v-for="album in result.albums"
         :album="album"
         :key="album.id"
       />
@@ -12,30 +13,17 @@
   </div>
 </template>
 
-<script>
+<script setup>
   import gql from 'graphql-tag'
+  import { useQuery } from '@vue/apollo-composable'
+  import { useTitle } from 'vue-page-title'
+
+  // components
   import AlbumItem from './album-item'
-  import writeGQLQuery from '../mixins/write-gql-query'
+
+  useTitle('Albums')
 
   const queryString = gql_queries.albums_index
   const GQLQuery = gql`${queryString}`
-
-  export default {
-    name: 'AlbumsIndex',
-    pageTitle: 'Albums - Photonia',
-    components: {
-      AlbumItem
-    },
-    mixins: [writeGQLQuery(queryString, GQLQuery)],
-    data () {
-      return {
-        albums: []
-      }
-    },
-    apollo: {
-      albums: {
-        query: GQLQuery
-      }
-    }
-  }
+  const { result } = useQuery(GQLQuery)
 </script>

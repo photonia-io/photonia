@@ -7,6 +7,7 @@
     "@rails/activestorage": "^6.1.4",
     "@rails/ujs": "^6.1.4",
     "@rails/webpacker": "5.4.2",
+    "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
     "axios": "^0.21.1",
     "bulma": "^0.9.3",
@@ -19,7 +20,7 @@
     "vue-apollo": "^3.0.7",
     "vue-loader": "^16.0.0",
     "vue-moment": "^4.1.0",
-    "vue-page-title": "https://github.com/photonia-io/vue-page-title.git#add-glue-option",
+    "vue-page-title": "^2.0.5",
     "vue-router": "4"
   },
   "version": "0.1.0",

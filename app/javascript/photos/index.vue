@@ -4,7 +4,8 @@
     <hr class="is-hidden-touch mt-2 mb-4">
     <div class="columns is-1 is-variable is-multiline">
       <PhotoItem
-        v-for="photo in photos"
+        v-if="result && result.photos"
+        v-for="photo in result.photos"
         :photo="photo"
         :key="photo.id"
       />
@@ -12,31 +13,16 @@
   </div>
 </template>
 
-<script>
+<script setup>
   import gql from 'graphql-tag'
+  import { useQuery } from '@vue/apollo-composable'
+  import { useTitle } from 'vue-page-title'
+
+  // components
   import PhotoItem from './photo-item'
-  import writeGQLQuery from '../mixins/write-gql-query'
 
-  const queryString = gql_queries.photos_index
-  const GQLQuery = gql`${queryString}`
+  useTitle('Photos')
 
-  export default {
-    name: 'PhotosIndex',
-    pageTitle: 'Photos - Photonia',
-    components: {
-      PhotoItem,
-    },
-    mixins: [writeGQLQuery(queryString, GQLQuery)],
-    data () {
-      return {
-        photos: []
-      }
-    },
-    apollo: {
-      photos: {
-        query: GQLQuery
-      }
-    }
-  }
+  const { result } = useQuery(gql`${gql_queries.photos_index}`)
 </script>
 

@@ -1,64 +1,42 @@
 <template>
   <div>
     <div class="block">
-      <span v-if="$apollo.loading">Loading...</span>
-      <LatestPhoto v-else :photo="latestPhoto"/>
+      <LatestPhoto
+        v-if="result && result.latestPhoto"
+        :photo="result.latestPhoto"
+      />
     </div>
     <hr class="is-hidden-touch mt-1 mb-4">
     <div class="block">
       <div class="columns">
         <div class="column is-half">
-          <RandomPhoto :photo="randomPhoto"/>
+          <RandomPhoto
+            v-if="result && result.randomPhoto"
+            :photo="result.randomPhoto"
+          />
         </div>
         <div class="column is-half">
-          <MostUsedTags :tags="mostUsedTags"/>
+          <MostUsedTags
+            v-if="result && result.mostUsedTags"
+            :tags="result.mostUsedTags"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
   import gql from 'graphql-tag'
+  import { useQuery } from '@vue/apollo-composable'
+  import { useTitle } from 'vue-page-title'
+
+  // components
   import LatestPhoto from './latest-photo'
   import RandomPhoto from './random-photo'
   import MostUsedTags from './most-used-tags'
-  import writeGQLQuery from '../mixins/write-gql-query'
 
-  const queryString = gql_queries.homepage_index
-  const GQLQuery = gql`${queryString}`
+  useTitle('')
 
-  export default {
-    name: 'Homepage',
-    pageTitle: 'Photonia',
-    components: {
-      LatestPhoto,
-      RandomPhoto,
-      MostUsedTags
-    },
-    mixins: [writeGQLQuery(queryString, GQLQuery)],
-    data () {
-      return {
-        latestPhoto: {
-          name: '',
-          id: ''
-        },
-        randomPhoto: {
-          name: '',
-          id: ''
-        },
-        mostUsedTags: [],
-      }
-    },
-    apollo: {
-      homepage: {
-        query: GQLQuery,
-        update: function(data) {
-          this.latestPhoto = data.latestPhoto
-          this.randomPhoto = data.randomPhoto
-          this.mostUsedTags = data.mostUsedTags
-        }
-      }
-    }
-  }
+  const { result } = useQuery(gql`${gql_queries.homepage_index}`)
 </script>

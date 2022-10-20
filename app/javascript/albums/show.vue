@@ -12,47 +12,32 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import gql from 'graphql-tag'
+import { useQuery } from '@vue/apollo-composable'
+import { useTitle } from 'vue-page-title'
+
+// components
 import PhotoItem from '../photos/photo-item'
-import writeGQLQuery from '../mixins/write-gql-query'
+
+// route
+const route = useRoute()
+
+const emptyAlbum = {
+        title: '',
+        photos: []
+      }
 
 const queryString = gql_queries.albums_show
 const GQLQuery = gql`${queryString}`
+const { result } = useQuery(GQLQuery, { id: route.params.id })
 
-export default {
-  name: 'AlbumsShow',
-  pageTitle () {
-    return `Album: ${this.album.title} - Photonia`
-  },
-  components: {
-    PhotoItem,
-  },
-  mixins: [writeGQLQuery(queryString, GQLQuery)],
-  data () {
-    return {
-      album: {
-        title: '',
-        photos: []
-      },
-    }
-  },
-  apollo: {
-    album: {
-      query: GQLQuery,
-      variables () {
-        return {
-          id: this.$route.params.id
-        }
-      }
-    }
-  },
-  watch: {
-    album() {
-      this.setPageTitle()
-    }
-  }
-}
+const album = computed(() => result.value?.album ?? emptyAlbum)
+const title = computed(() => `Album: ${album.value.title}`)
+
+useTitle(title)
 </script>
 
 <style>

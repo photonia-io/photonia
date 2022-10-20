@@ -2,7 +2,7 @@
   <div class="level-item">
   <router-link
     :to="{ name: 'photos-show', params: { id: photo.id } }"
-    :class="[ 'button', 'is-light', $apollo.loading ? 'disabled' : '' ]"
+    :class="[ 'button', 'is-light', loading ? 'disabled' : '' ]"
   >
     <span
       v-if="direction === 'left'"
@@ -29,7 +29,7 @@
 
 <script>
 export default {
-  props: [ 'photo', 'direction' ]
+  props: [ 'photo', 'direction', 'loading' ]
 }
 </script>
 

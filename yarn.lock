@@ -1148,6 +1148,15 @@
   resolved "https://registry.yarnpkg.com/@types/zen-observable/-/zen-observable-0.8.3.tgz#781d360c282436494b32fe7d9f7f8e64b3118aa3"
   integrity sha512-fbF6oTd4sGGy0xjHPKAt+eS2CrxJ3+6gQ3FGcBoIJR2TLAyCkCyI8JqZNy+FeON0AhVgNJoUumVoZQjBFUqHkw==
 
+"@vue/apollo-composable@^4.0.0-alpha.19":
+  version "4.0.0-alpha.19"
+  resolved "https://registry.yarnpkg.com/@vue/apollo-composable/-/apollo-composable-4.0.0-alpha.19.tgz#5066426ac5c73717a1f7fd5bfe884587af7ac0ff"
+  integrity sha512-bxFjzV/j8j3kzWcG4iX8z4JnidTKjQytmVL2tJWRdjeKZbfZDV9nVr/XBVPP75+iR5ckZe6EKinDKkjnYFKhlg==
+  dependencies:
+    throttle-debounce "^3.0.1"
+    ts-essentials "^9.1.2"
+    vue-demi "^0.13.1"
+
 "@vue/apollo-option@^4.0.0-alpha.14":
   version "4.0.0-alpha.14"
   resolved "https://registry.yarnpkg.com/@vue/apollo-option/-/apollo-option-4.0.0-alpha.14.tgz#edae0082d8bb26e66eefd02ed941be89c7085a17"
@@ -7045,6 +7054,11 @@ throttle-debounce@^2.1.0, throttle-debounce@^2.3.0:
   resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-2.3.0.tgz#fd31865e66502071e411817e241465b3e9c372e2"
   integrity sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==
 
+throttle-debounce@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-3.0.1.tgz#32f94d84dfa894f786c9a1f290e7a645b6a19abb"
+  integrity sha512-dTEWWNu6JmeVXY0ZYoPuH5cRIwc0MeGbJwah9KUNYSJwommQpCzTySTpEe8Gs1J23aeWEuAobe4Ag7EHVt/LOg==
+
 through2@^2.0.0:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/through2/-/through2-2.0.5.tgz#01c1e39eb31d07cb7d03a96a70823260b23132cd"
@@ -7116,6 +7130,11 @@ toidentifier@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
+
+ts-essentials@^9.1.2:
+  version "9.3.0"
+  resolved "https://registry.yarnpkg.com/ts-essentials/-/ts-essentials-9.3.0.tgz#7e639c1a76b1805c3c60d6e1b5178da2e70aea02"
+  integrity sha512-XeiCboEyBG8UqXZtXl59bWEi4ZgOqRsogFDI6WDGIF1LmzbYiAkIwjkXN6zZWWl4re/lsOqMlYfe8KA0XiiEPw==
 
 ts-invariant@^0.9.0:
   version "0.9.1"
@@ -7335,7 +7354,7 @@ vue-apollo@^3.0.7:
     serialize-javascript "^4.0.0"
     throttle-debounce "^2.1.0"
 
-vue-demi@*:
+vue-demi@*, vue-demi@^0.13.1:
   version "0.13.11"
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.13.11.tgz#7d90369bdae8974d87b1973564ad390182410d99"
   integrity sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==
@@ -7356,9 +7375,10 @@ vue-moment@^4.1.0:
   dependencies:
     moment "^2.19.2"
 
-"vue-page-title@https://github.com/photonia-io/vue-page-title.git#add-glue-option":
-  version "2.0.5"
-  resolved "https://github.com/photonia-io/vue-page-title.git#15531254bebd63e24d4a78cb656ca6dd75620e08"
+vue-page-title@^2.0.5:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/vue-page-title/-/vue-page-title-2.1.0.tgz#c1077ec8acff38628f609469aa6bfa7a10435df5"
+  integrity sha512-Zb03EvI86tAF2TNDgpnf7np/8rnKtGuiS/RVDNq624T/hj5y7yWIwDRgUq8NsLUhIqq01TuNPxOI8pFULqcYAg==
 
 vue-router@4:
   version "4.1.5"
