@@ -1,5 +1,10 @@
 pipeline {
-  agent { docker { image 'ruby:2.6.7' } }
+  agent {
+    docker {
+      image 'ruby:2.6.7'
+      args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
+    }
+  }
   stages {
     stage('requirements') {
       steps {
