@@ -1,6 +1,7 @@
 pipeline {
   environment {
     PHOTONIA_DATABASE_URL = credentials('photonia-database-url')
+    HOME = '/photonia'
   }
   agent {
     dockerfile {
