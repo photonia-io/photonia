@@ -12,7 +12,6 @@ pipeline {
   agent any
   environment {
     PHOTONIA_DATABASE_URL = credentials('photonia-database-url')
-    HOME = '/photonia'
   }
   stages {
     stage('Set GitHub state') {
