@@ -13,12 +13,15 @@ RUN apt-get update
 RUN apt-get install -y postgresql-client
 RUN apt-get install -y libexif-dev
 
+RUN pwd
+RUN ls
+
 # Create and switch to app directory
 WORKDIR /usr/src/app
 
 # bundle install
 RUN gem install bundler:2.2.26
-COPY Gemfile Gemfile.lock ./
+COPY Gemfile Gemfile.lock .
 RUN cat Gemfile.lock
 RUN bundle install --jobs 5
 
