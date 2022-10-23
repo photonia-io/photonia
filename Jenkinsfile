@@ -22,7 +22,7 @@ pipeline {
     stage('Build and test') {
       agent {
         dockerfile {
-          args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL -v bundle:/root/.bundle'
+          args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
         }
       }
       steps {
