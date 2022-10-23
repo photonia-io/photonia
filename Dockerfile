@@ -19,6 +19,7 @@ WORKDIR /usr/src/app
 # bundle install
 RUN gem install bundler:2.2.26
 COPY Gemfile Gemfile.lock ./
+RUN cat Gemfile.lock
 RUN bundle install --jobs 5
 
 # yarn install
