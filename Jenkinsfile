@@ -9,17 +9,24 @@ void setBuildStatus(String message, String state) {
 }
 
 pipeline {
+  agent none
   environment {
     PHOTONIA_DATABASE_URL = credentials('photonia-database-url')
     HOME = '/photonia'
   }
-  agent {
-    dockerfile {
-      args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL -v bundle:/root/.bundle'
-    }
-  }
   stages {
-    stage('test') {
+    stage('Set GitHub state') {
+      agent any
+      steps {
+        setBuildStatus("Build started", "PENDING");
+      }
+    }
+    stage('Build and test') {
+      agent {
+        dockerfile {
+          args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL -v bundle:/root/.bundle'
+        }
+      }
       steps {
         setBuildStatus("Running rspec", "PENDING");
         sh 'bundle exec rspec'
