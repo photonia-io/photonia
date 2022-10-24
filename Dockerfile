@@ -1,20 +1,23 @@
 # Dockerfile - Development environment
 FROM ruby:2.6.7
 
-# the ever necessary
 RUN apt-get update
 
-# nodejs
-# RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg -o /root/yarn-pubkey.gpg && apt-key add /root/yarn-pubkey.gpg
-# RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
-# RUN apt-get install -y --no-install-recommends nodejs yarn
+# nodejs via nvm
+ENV NODE_VERSION=16.18.0
+RUN apt install -y curl
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+ENV NVM_DIR=/root/.nvm
+RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+RUN node --version
+RUN npm --version
 
 # other dependencies
 RUN apt-get install -y postgresql-client
 RUN apt-get install -y libexif-dev
-
-RUN pwd
-RUN ls
 
 # Create and switch to app directory
 WORKDIR /usr/src/app
@@ -23,7 +26,6 @@ WORKDIR /usr/src/app
 RUN gem install bundler:2.2.26
 COPY Gemfile .
 COPY Gemfile.lock .
-RUN cat Gemfile.lock
 RUN bundle install --jobs 5
 
 # yarn install
