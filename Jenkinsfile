@@ -15,4 +15,12 @@ pipeline {
       }   
     }
   }
+  /*
+  post {
+    always {
+      echo 'Cleaning up'
+      sh 'docker rmi --force $(docker images --quiet --filter=reference="jenkins-test-build")' /* clean up dockerfile images*/
+    }
+  }
+  */
 }
