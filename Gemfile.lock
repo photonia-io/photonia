@@ -141,7 +141,7 @@ GEM
       addressable (~> 2.8)
     ed25519 (1.2.4)
     erubi (1.11.0)
-    exif (2.2.1)
+    exif (2.2.3)
     faraday (1.7.1)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
