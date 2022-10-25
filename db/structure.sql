@@ -17,13 +17,6 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION unaccent; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
-
-
---
 -- Name: photo_privacy; Type: TYPE; Schema: public; Owner: -
 --
 

@@ -1,0 +1,1 @@
+ActiveRecord::Tasks::DatabaseTasks.structure_dump_flags = ['--no-comments']
