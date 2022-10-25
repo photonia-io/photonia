@@ -1,20 +1,28 @@
 # Dockerfile - Development environment
 FROM ruby:2.6.7
 
-# the ever necessary
 RUN apt-get update
 
-# nodejs
-# RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg -o /root/yarn-pubkey.gpg && apt-key add /root/yarn-pubkey.gpg
-# RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
-# RUN apt-get install -y --no-install-recommends nodejs yarn
+# versions
+ENV NODE_VERSION=16.18.0
+ENV NVM_VERSION=0.39.2
+ENV YARN_VERSION=1.22.19
+
+# nodejs via nvm
+RUN apt install -y curl
+RUN curl --silent -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash
+ENV NVM_DIR=/root/.nvm
+RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+
+# yarn via npm
+RUN npm install --global yarn@${YARN_VERSION}
 
 # other dependencies
 RUN apt-get install -y postgresql-client
 RUN apt-get install -y libexif-dev
-
-RUN pwd
-RUN ls
 
 # Create and switch to app directory
 WORKDIR /usr/src/app
@@ -23,10 +31,9 @@ WORKDIR /usr/src/app
 RUN gem install bundler:2.2.26
 COPY Gemfile .
 COPY Gemfile.lock .
-RUN cat Gemfile.lock
 RUN bundle install --jobs 5
 
 # yarn install
-# COPY package.json .
-# COPY yarn.lock .
-# RUN yarn install
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install
