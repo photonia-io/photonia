@@ -18,8 +18,8 @@ pipeline {
   /*
   post {
     always {
-      echo 'Cleaning up'
-      sh 'docker rmi --force $(docker images --quiet --filter=reference="jenkins-test-build")' /* clean up dockerfile images*/
+      echo 'Clean up Docker images'
+      sh 'docker rmi --force $(docker images --quiet --filter=reference="jenkins-test-build")'
     }
   }
   */
