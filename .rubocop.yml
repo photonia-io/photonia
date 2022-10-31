@@ -1,7 +1,14 @@
-require: rubocop-rails
+require:
+  - rubocop-rspec
+  - rubocop-rails
 
 Naming/VariableNumber:
   EnforcedStyle: snake_case
 
 AllCops:
   NewCops: enable
+
+# rubocop-rails
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
