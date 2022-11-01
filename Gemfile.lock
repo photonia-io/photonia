@@ -436,7 +436,7 @@ DEPENDENCIES
   whenever
 
 RUBY VERSION
-   ruby 2.6.7p197
+   ruby 3.1.2
 
 BUNDLED WITH
    2.2.26
