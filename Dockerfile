@@ -1,5 +1,6 @@
 # Dockerfile - Development environment
-FROM ruby:3.1.2
+
+FROM ruby:2.7.6
 
 RUN apt-get update
 
