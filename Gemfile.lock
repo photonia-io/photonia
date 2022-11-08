@@ -245,7 +245,7 @@ GEM
       ffi (~> 1.0)
     redis (5.0.5)
       redis-client (>= 0.9.0)
-    redis-client (0.11.0)
+    redis-client (0.11.1)
       connection_pool
     redis-namespace (1.9.0)
       redis (>= 4)
@@ -315,7 +315,7 @@ GEM
     shrine (3.4.0)
       content_disposition (~> 1.0)
       down (~> 5.1)
-    sidekiq (7.0.0)
+    sidekiq (7.0.1)
       concurrent-ruby (< 2)
       connection_pool (>= 2.3.0)
       rack (>= 2.2.4)
