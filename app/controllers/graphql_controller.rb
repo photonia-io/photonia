@@ -8,7 +8,7 @@ class GraphqlController < ApplicationController
     query = params[:query]
     variables = prepare_variables(params[:variables])
     operation_name = params[:operationName]
-    context = gql_devise_context(User)
+    context = {}
     result = PhotoniaSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
   rescue StandardError => e

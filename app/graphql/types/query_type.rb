@@ -7,8 +7,6 @@ module Types
     include GraphQL::Types::Relay::HasNodeField
     include GraphQL::Types::Relay::HasNodesField
 
-    field_class GraphqlDevise::Types::BaseField
-
     # Photos
 
     field :photos, [PhotoType], null: false do
