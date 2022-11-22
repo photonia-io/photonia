@@ -22,8 +22,7 @@
 
   onDone(({ data }) => {
     const userStore = useUserStore()
-    userStore.signedIn = false
-    userStore.email = null
+    userStore.signOut()
     router.push({ name: 'root' })
   })
 
