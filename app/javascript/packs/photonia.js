@@ -10,7 +10,6 @@ import { pageTitle } from 'vue-page-title'
 
 import { ApolloClient, createHttpLink, ApolloLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from "@apollo/client/link/context"
-import { createApolloProvider } from '@vue/apollo-option'
 import { DefaultApolloClient } from '@vue/apollo-composable'
 
 import { useTokenStore } from '../stores/token'
@@ -56,10 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       headers: {
         ...headers,
         'X-CSRF-Token': csrfToken,
-        'access-token': tokenStore.accessToken,
-        'client': tokenStore.client,
-        'uid': tokenStore.uid,
-        'token-type': tokenStore.tokenType,
+        authorization: tokenStore.authorization,
       },
     };
   });
@@ -68,13 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return forward(operation).map((response) => {
       const context = operation.getContext();
       const headers = context.response.headers
-      console.log('access-token', headers.get('access-token'))
       tokenStore.$patch({
-        accessToken: headers.get('access-token'),
-        client: headers.get('client'),
-        expiry: headers.get('expiry'),
-        tokenType: headers.get('token-type'),
-        uid: headers.get('uid')
+        authorization: headers.get('Authorization'),
       })
       return response
     })

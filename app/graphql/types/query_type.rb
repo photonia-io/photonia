@@ -107,5 +107,13 @@ module Types
     def most_used_tags
       object ? object[:most_used_tags] : ActsAsTaggableOn::Tag.photonia_most_used(limit: 60)
     end
+
+    # Users
+
+    field :user_settings, UserType, null: false
+
+    def user_settings
+      context[:current_user]
+    end
   end
 end
