@@ -13,9 +13,18 @@ import { setContext } from "@apollo/client/link/context"
 import { DefaultApolloClient } from '@vue/apollo-composable'
 
 import { useTokenStore } from '../stores/token'
+import { useUserStore } from '../stores/user'
 
 document.addEventListener('DOMContentLoaded', () => {
   // routes and router start
+
+  const userStore = useUserStore(pinia)
+
+  const redirectIfNotSignedIn = (to, from) => {
+    if (!userStore.signedIn) {
+      return { name: 'users-sign-in' }
+    }
+  }
 
   const cj = window.configuration_json
   const cjda = cj.data.attributes
@@ -30,7 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: cjda.tags_path + '/:id', name: 'tags-show', component: () => import('../tags/show.vue') },
     { path: cjda.users_sign_in_path, name: 'users-sign-in', component: () => import('../users/sign-in.vue') },
     { path: cjda.users_sign_out_path, name: 'users-sign-out', component: () => import('../users/sign-out.vue') },
-    { path: cjda.users_settings_path, name: 'users-settings', component: () => import('../users/settings.vue') },
+    { 
+      path: cjda.users_settings_path,
+      name: 'users-settings',
+      component: () => import('../users/settings.vue'),
+      beforeEnter: redirectIfNotSignedIn,
+    },
   ]
 
   const router = createRouter({
