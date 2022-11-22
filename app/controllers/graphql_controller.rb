@@ -1,4 +1,5 @@
 class GraphqlController < ApplicationController
+  skip_before_action :verify_authenticity_token
   # If accessing from outside this domain, nullify the session
   # This allows for outside API access while preventing CSRF attacks,
   # but you'll have to authenticate your user separately
@@ -8,12 +9,15 @@ class GraphqlController < ApplicationController
     query = params[:query]
     variables = prepare_variables(params[:variables])
     operation_name = params[:operationName]
-    context = {}
+    context = {
+      current_user: current_user,
+      sign_in: method(:sign_in),
+      sign_out: method(:sign_out)
+    }
     result = PhotoniaSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
   rescue StandardError => e
     raise e unless Rails.env.development?
-
     handle_error_in_development(e)
   end
 

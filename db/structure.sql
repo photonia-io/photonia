@@ -333,7 +333,8 @@ CREATE TABLE public.users (
     encrypted_password character varying DEFAULT ''::character varying NOT NULL,
     remember_created_at timestamp without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    jti character varying
 );
 
 
@@ -619,6 +620,13 @@ CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 
 
 --
+-- Name: index_users_on_jti; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_users_on_jti ON public.users USING btree (jti);
+
+
+--
 -- Name: taggings_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -713,6 +721,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20210109083341'),
 ('20210109204633'),
 ('20210109214524'),
-('20210823184309');
+('20210823184309'),
+('20221111194506');
 
 

@@ -4,40 +4,28 @@
   </div>
 </template>
 
-<script>
-import gql from 'graphql-tag'
+<script setup>
+  import gql from 'graphql-tag'
+  import { useMutation } from '@vue/apollo-composable'
+  import { useUserStore } from '../stores/user'
 
-export default {
-  setup() {
-    return {
-      email: '',
-      password: '',
-    }
-  },
-  methods: {
-    submit() {
-      this.$apollo.mutate({
-        mutation: gql`
-          mutation($email: String!, $password: String!) {
-            userLogin(email: $email, password: $password) {
-              authenticatable {
-                email
-              }
-            }
-          }
-        `,
-        variables: {
-          email: this.email,
-          password: this.password
-        }
-      }).then(({ data }) => {
-        const userStore = useUserStore()
-        userStore.signedIn = true
-        userStore.email = data.userLogin.authenticatable.email
-      }).catch((error) => {
-        console.log(error)
-      })
-    }
-  }
-}
+  const { mutate, onDone, onError } = useMutation(
+    gql`
+      mutation {
+        signOut { email }
+      }
+    `
+  )
+
+  onDone(({ data }) => {
+    const userStore = useUserStore()
+    userStore.signedIn = false
+    userStore.email = null
+  })
+
+  onError((error) => {
+    console.log(error)
+  })
+
+  mutate()
 </script>

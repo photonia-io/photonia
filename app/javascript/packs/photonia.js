@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: cjda.tags_path + '/:id', name: 'tags-show', component: () => import('../tags/show.vue') },
     { path: cjda.users_sign_in_path, name: 'users-sign-in', component: () => import('../users/sign-in.vue') },
     { path: cjda.users_sign_out_path, name: 'users-sign-out', component: () => import('../users/sign-out.vue') },
+    { path: cjda.users_settings_path, name: 'users-settings', component: () => import('../users/settings.vue') },
   ]
 
   const router = createRouter({

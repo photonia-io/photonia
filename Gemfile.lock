@@ -136,9 +136,22 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
+    devise-jwt (0.10.0)
+      devise (~> 4.0)
+      warden-jwt_auth (~> 0.6)
     diff-lcs (1.4.4)
     down (5.2.3)
       addressable (~> 2.8)
+    dry-auto_inject (0.8.0)
+      dry-container (>= 0.3.4)
+    dry-configurable (0.13.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 0.6)
+    dry-container (0.9.0)
+      concurrent-ruby (~> 1.0)
+      dry-configurable (~> 0.13, >= 0.13.0)
+    dry-core (0.7.1)
+      concurrent-ruby (~> 1.0)
     ed25519 (1.2.4)
     erubi (1.11.0)
     exif (2.2.1)
@@ -181,6 +194,7 @@ GEM
     json (2.6.2)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
+    jwt (2.5.0)
     listen (3.7.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -203,6 +217,10 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.9)
       mini_portile2 (~> 2.8.0)
+      racc (~> 1.4)
+    nokogiri (1.13.9-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.13.9-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     pagy (4.11.0)
@@ -355,6 +373,11 @@ GEM
     unicode-display_width (2.3.0)
     warden (1.2.9)
       rack (>= 2.0.9)
+    warden-jwt_auth (0.7.0)
+      dry-auto_inject (~> 0.8)
+      dry-configurable (~> 0.13)
+      jwt (~> 2.1)
+      warden (~> 1.2)
     web-console (4.1.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -398,6 +421,7 @@ DEPENDENCIES
   capistrano-sidekiq
   capybara (>= 2.15)
   devise
+  devise-jwt
   ed25519
   exif
   faraday

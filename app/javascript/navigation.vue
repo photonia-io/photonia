@@ -44,6 +44,13 @@
               <!-- <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %> -->
               <router-link
                 v-if="userStore.signedIn"
+                :to="{ name: 'users-settings' }"
+                class="navbar-item"
+              >
+                Settings
+              </router-link>
+              <router-link
+                v-if="userStore.signedIn"
                 :to="{ name: 'users-sign-out' }"
                 class="navbar-item"
               >

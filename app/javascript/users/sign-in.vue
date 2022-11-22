@@ -52,17 +52,17 @@
   import gql from 'graphql-tag'
   import { useMutation } from '@vue/apollo-composable'
   import { useUserStore } from '../stores/user'
+  import { useRouter } from 'vue-router'
 
   const email = ref('')
   const password = ref('')
+  const router = useRouter()
 
   const { mutate: submit, onDone, onError } = useMutation(
     gql`
       mutation($email: String!, $password: String!) {
-        userLogin(email: $email, password: $password) {
-          authenticatable {
-            email
-          }
+        signIn(email: $email, password: $password) {
+          email
         }
       }
     `, () => ({
@@ -76,7 +76,8 @@
   onDone(({ data }) => {
     const userStore = useUserStore()
     userStore.signedIn = true
-    userStore.email = data.userLogin.authenticatable.email
+    userStore.email = data.signIn.email
+    router.push({ name: 'users-settings' })
   })
 
   onError((error) => {

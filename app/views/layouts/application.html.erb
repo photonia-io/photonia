@@ -30,18 +30,6 @@
   <body>
     <div id='app'>
       <section class="section pt-5">
-        <% if notice %>
-          <div class="notification is-primary">
-            <button class="delete"></button>
-            <%= notice %>
-          </div>
-        <% end %>
-        <% if alert %>
-          <div class="notification is-danger">
-            <button class="delete"></button>
-            <%= alert %>
-          </div>
-        <% end %>
         <div class="container is-dark">
           <%= yield %>
         </div>
