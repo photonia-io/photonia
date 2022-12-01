@@ -161,7 +161,7 @@
           intelligentThumbnail: null
         }
 
-  const format = 'dddd, MMMM Do YYYY, H:mm:ss'
+  const format = 'dddd, MMMM Do YYYY, H:mm'
   function momentFormat(date) {
     return moment(date).format(format)
   }
