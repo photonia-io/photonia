@@ -312,10 +312,10 @@ Devise.setup do |config|
   config.jwt do |jwt|
     jwt.secret = ENV['PHOTONIA_DEVISE_JWT_SECRET_KEY']
     jwt.dispatch_requests = [
-      ['POST', %r{^/graphql$}]
+      ['POST', %r{^/graphql$}, %r{signIn}]
     ]
     jwt.revocation_requests = [
-      ['POST', %r{^/api/v1/auth/sign_out$}]
+      ['POST', %r{^/graphql$}, %r{signOut}]
     ]
     jwt.expiration_time = 1.day.to_i
   end

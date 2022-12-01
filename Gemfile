@@ -32,7 +32,7 @@ gem 'acts-as-taggable-on', '~> 8.1'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
-gem 'devise-jwt'
+gem 'devise-jwt', path: '../devise-jwt'
 gem 'exif'
 gem 'faraday'
 gem 'friendly_id', '~> 5.4.0'
@@ -49,6 +49,7 @@ gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'skylight'
 gem 'whenever', require: false
+gem 'warden-jwt_auth', path: '../warden-jwt_auth'
 
 group :development, :test do
   gem 'bcrypt_pbkdf'

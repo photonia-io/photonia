@@ -1,3 +1,19 @@
+PATH
+  remote: ../devise-jwt
+  specs:
+    devise-jwt (0.10.0)
+      devise (~> 4.0)
+      warden-jwt_auth (~> 0.6)
+
+PATH
+  remote: ../warden-jwt_auth
+  specs:
+    warden-jwt_auth (0.7.0)
+      dry-auto_inject (~> 0.8)
+      dry-configurable (~> 0.13)
+      jwt (~> 2.1)
+      warden (~> 1.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -136,9 +152,6 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
-    devise-jwt (0.10.0)
-      devise (~> 4.0)
-      warden-jwt_auth (~> 0.6)
     diff-lcs (1.4.4)
     down (5.2.3)
       addressable (~> 2.8)
@@ -217,10 +230,6 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.9)
       mini_portile2 (~> 2.8.0)
-      racc (~> 1.4)
-    nokogiri (1.13.9-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.13.9-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     pagy (4.11.0)
@@ -373,11 +382,6 @@ GEM
     unicode-display_width (2.3.0)
     warden (1.2.9)
       rack (>= 2.0.9)
-    warden-jwt_auth (0.7.0)
-      dry-auto_inject (~> 0.8)
-      dry-configurable (~> 0.13)
-      jwt (~> 2.1)
-      warden (~> 1.2)
     web-console (4.1.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -421,7 +425,7 @@ DEPENDENCIES
   capistrano-sidekiq
   capybara (>= 2.15)
   devise
-  devise-jwt
+  devise-jwt!
   ed25519
   exif
   faraday
@@ -455,6 +459,7 @@ DEPENDENCIES
   spring
   spring-watcher-listen
   tzinfo-data
+  warden-jwt_auth!
   web-console (>= 3.3.0)
   webdrivers
   webpacker (~> 5.2)

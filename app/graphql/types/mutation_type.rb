@@ -18,7 +18,7 @@ module Types
     end
 
     def sign_out
-      context[:sign_out].call
+      context[:sign_out].call(context[:current_user])
       user = {
         id: nil,
         email: nil

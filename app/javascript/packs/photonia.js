@@ -1,4 +1,4 @@
-import { createApp, provide, h } from 'vue'
+import { createApp, provide, h, watch } from 'vue'
 import App from '../app.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
@@ -10,14 +10,13 @@ import { pageTitle } from 'vue-page-title'
 
 import { ApolloClient, createHttpLink, ApolloLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from "@apollo/client/link/context"
-import { DefaultApolloClient } from '@vue/apollo-composable'
+import { DefaultApolloClient, provideApolloClient, useQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 
 import { useTokenStore } from '../stores/token'
 import { useUserStore } from '../stores/user'
 
 document.addEventListener('DOMContentLoaded', () => {
-  // routes and router start
-
   const userStore = useUserStore(pinia)
 
   const redirectIfNotSignedIn = (to, from) => {
@@ -52,8 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     routes,
   })
 
-  // Apollo
-
   const tokenStore = useTokenStore(pinia)
 
   const httpLink = createHttpLink({ uri: cjda.graphql_url })
@@ -61,9 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const csrfToken = document.
       querySelector('meta[name="csrf-token"]').
       attributes.content.value;
-
-    // get the authentication token from local storage if it exists
-    // const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
 
     return {
       headers: {
@@ -78,9 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return forward(operation).map((response) => {
       const context = operation.getContext();
       const headers = context.response.headers
-      tokenStore.$patch({
-        authorization: headers.get('Authorization'),
-      })
+      const authorization = headers.get('Authorization')
+      if (authorization) {
+        tokenStore.$patch({ authorization })
+      }
       return response
     })
   })
@@ -91,9 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // connectToDevTools: true,
   })
 
-  // const apolloProvider = createApolloProvider({
-  //   defaultClient: apolloClient,
-  // })
+  // if a token was found in local storage, fetch the user
+
+  if (tokenStore.authorization) {
+    // todo console.log('authorization exists', tokenStore.authorization)
+    provideApolloClient(apolloClient)
+    const { result, loading, error } = useQuery(
+      gql`
+        query UserSettingsQuery {
+          userSettings {
+            email
+          }
+        }
+      `
+    )
+  
+    watch(result, value => {
+      userStore.signedIn = true
+      userStore.email = value.userSettings.email
+    })
+  }
 
   // go for Vue!
 
@@ -110,7 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   app.use(router)
   app.use(pinia)
-  // app.use(apolloProvider)
 
   app.use(
     pageTitle({

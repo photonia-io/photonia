@@ -81,7 +81,7 @@
   })
 
   onError((error) => {
-    console.log(error)
+    // todo console.log(error)
   })
 </script>
 

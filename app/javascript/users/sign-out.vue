@@ -8,6 +8,7 @@
   import gql from 'graphql-tag'
   import { useMutation } from '@vue/apollo-composable'
   import { useUserStore } from '../stores/user'
+  import { useTokenStore } from '../stores/token'
   import { useRouter } from 'vue-router'
 
   const router = useRouter()
@@ -23,11 +24,13 @@
   onDone(({ data }) => {
     const userStore = useUserStore()
     userStore.signOut()
+    const tokenStore = useTokenStore()
+    tokenStore.signOut()
     router.push({ name: 'root' })
   })
 
   onError((error) => {
-    console.log(error)
+    // todo console.log(error)
   })
 
   mutate()
