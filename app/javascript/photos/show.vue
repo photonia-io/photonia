@@ -5,7 +5,7 @@
         <!-- <% if policy(@photo).update? %>
           <h1 id="photo-name" class="title level-item" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
         <% else %> -->
-          <h1 class="title level-item">{{ photo.name }}</h1>
+          <h1 class="title level-item">{{ photoTitle() }}</h1>
       </div>
       <div class="level-right">
         <SmallNavigationButton
@@ -171,8 +171,11 @@
 
   const photo = computed(() => result.value?.photo ?? emptyPhoto)
   const showAlbumBrowser = computed(() => photo.value.albums.length > 0)
-  const title = computed(() => photo.value.name)
 
+  const noTitle = '(no title)'
+  const photoTitle = (() => loading.value ? 'Loading...' : (photo.value.name || noTitle))
+
+  const title = computed(() => photoTitle())
   useTitle(title)
 </script>
 
