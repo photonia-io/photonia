@@ -1,11 +1,7 @@
 <% content_for(:page_title, @photo.name) %>
 <div>
   <div>
-    <% if policy(@photo).update? %>
-      <h1 id="photo-name" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
-    <% else %>
-      <h1><%= @photo.name.presence || '(no title)' %></h1>
-    <% end %>
+    <h1><%= @photo.name.presence || '(no title)' %></h1>
   </div>
   <div>
     <% if @photo.prev %>
@@ -29,67 +25,14 @@
 <hr>
 <div>
   <div>
-    <style>
-      #image-wrapper {
-        position: relative;
-      }
-      #image-wrapper > img {
-        vertical-align: top;
-        width: 100%;
-        opacity: 0;
-      }
-      #image-wrapper > .labels {
-        position: absolute;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transition: 0.3s;
-      }
-
-      #image-wrapper:hover > .labels {
-        opacity: 1;
-      }
-
-      .label {
-        cursor: pointer;
-        border: 2px dotted green; position: absolute;
-        transition: 0.3s;
-      }
-
-      .label:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-
-      .label > p {
-        font-size: 10px;
-      }
-    </style>
-    <div id="image-wrapper" style="background: no-repeat url(<%= @photo.image_url(:large) %>) 50% / 100%">
+    <div id="image-wrapper">
       <img src="<%= @photo.image_url(:large) %>" />
-      <% if @photo.label_instances.present? %>
-        <div>
-          <% @photo.label_instances.each do |li| %>
-            <div style="top: <%= li.bounding_box.top * 100 %>%; left: <%= li.bounding_box.left * 100 %>%; width: <%= li.bounding_box.width * 100 %>%; height: <%= li.bounding_box.height * 100 %>%;">
-              <p><%= li.name %></p>
-            </div>
-          <% end %>
-          <% if @photo.intelligent_thumbnail %>
-            <div style="border: 3px solid red; position: absolute; top: <%= @photo.label_instance_collection.center_of_gravity[:top] * 100 %>%; left: <%= @photo.label_instance_collection.center_of_gravity[:left] * 100 %>%; width: 2px; height: 2px;"></div>
-            <div style="border: 1px solid blue; position: absolute; top: <%= @photo.intelligent_thumbnail[:top] * 100 %>%; left: <%= @photo.intelligent_thumbnail[:left] * 100 %>%; width: <%= @photo.intelligent_thumbnail[:width] * 100 %>%; height: <%= @photo.intelligent_thumbnail[:height] * 100 %>%;"></div>
-          <% end %>
-        </div>
-      <% end %>
     </div>
-    <% if @photo.description.presence || policy(@photo).update? %>
+    <% if @photo.description.presence %>
       <h2>Description</h2>
       <div>
-        <% if policy(@photo).update? %>
-          <div id="photo-description" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.description.presence || '(no description)' %></div>
-        <% else %>
-          <%= @photo.description %>
-        <% end %>
-      </div>
+        <%= @photo.description %>
+     </div>
     <% end %>
   </div>
   <div id="sidebar">
