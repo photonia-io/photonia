@@ -1,11 +1,19 @@
 <template>
   <div>
     <div class="level mb-4">
-      <div class="level-left">
-        <!-- <% if policy(@photo).update? %>
-          <h1 id="photo-name" class="title level-item" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
-        <% else %> -->
-          <h1 class="title level-item">{{ photoTitle() }}</h1>
+      <div class="level-left is-flex-grow-1">
+        <PhotoTitleEditable
+          v-if="(userStore.signedIn && !loading)"
+          :id="photo.id"
+          :title="photoTitle()"
+          @update-title="updatePhotoTitle"
+        />
+        <h1
+          v-else
+          class="title level-item"
+        >
+          {{ photoTitle() }}
+        </h1>
       </div>
       <div class="level-right">
         <SmallNavigationButton
@@ -26,15 +34,19 @@
     <div class="columns is-1">
       <div class="column is-three-quarters">
         <Display :photo="photo" />
-        <!-- <% if @photo.description.presence || policy(@photo).update? %> -->
-          <h2 v-if="photo.description" class="heading">Description</h2>
-          <div v-if="photo.description" class="content">
-            <!-- <% if policy(@photo).update? %>
-              <div id="photo-description" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.description.presence || '(no description)' %></div>
-            <% else %> -->
-            {{ photo.description }}
-          </div>
-        <!-- <% end %> -->
+        <h2 class="heading">Description</h2>
+        <PhotoDescriptionEditable
+          v-if="(userStore.signedIn && !loading)"
+          :id="photo.id"
+          :description="photoDescription()"
+          @update-description="updatePhotoDescription"
+        />
+        <div
+          v-else
+          class="content"
+        >
+          {{ photoDescription() }}
+        </div>
       </div>
       <div id="sidebar" class="column">
         <h3
@@ -135,11 +147,14 @@
   import { computed } from 'vue'
   import { useRoute } from 'vue-router'
   import gql from 'graphql-tag'
-  import { useQuery } from '@vue/apollo-composable'
+  import { useQuery, useMutation } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
   import moment from 'moment'
+  import { useUserStore } from '../stores/user'
 
   // components
+  import PhotoTitleEditable from './photo-title-editable.vue'
+  import PhotoDescriptionEditable from './photo-description-editable.vue'
   import SmallNavigationButton from './small-navigation-button.vue'
   import Display from './display.vue'
   import Tag from '../tags/tag.vue'
@@ -169,14 +184,57 @@
   const id = computed(() => route.params.id)
   const { result, loading } = useQuery(gql`${gql_queries.photos_show}`, { id: id })
 
+  const { mutate: updatePhotoTitle, onDone: onUpdateTitleDone, onError: onUpdateTitleError } = useMutation(
+    gql`
+      mutation($id: String!, $title: String!) {
+        updatePhotoTitle(id: $id, title: $title) {
+          id
+          name
+        }
+      }
+    `
+  )
+
+  const { mutate: updatePhotoDescription, onDone: onUpdateDescriptionDone, onError: onUpdateDescriptionError } = useMutation(
+    gql`
+      mutation($id: String!, $description: String!) {
+        updatePhotoDescription(id: $id, description: $description) {
+          id
+          description
+        }
+      }
+    `
+  )
+
+  onUpdateTitleDone(({ data }) => {
+    console.log(data)  
+  })
+
+  onUpdateTitleError((error) => {
+    // todo console.log(error)
+  })
+
+  onUpdateDescriptionDone(({ data }) => {
+    console.log(data)  
+  })
+
+  onUpdateDescriptionError((error) => {
+    // todo console.log(error)
+  })
+
   const photo = computed(() => result.value?.photo ?? emptyPhoto)
   const showAlbumBrowser = computed(() => photo.value.albums.length > 0)
 
   const noTitle = '(no title)'
   const photoTitle = (() => loading.value ? 'Loading...' : (photo.value.name || noTitle))
 
+  const noDescription = '(no description)'
+  const photoDescription = (() => loading.value ? 'Loading...' : (photo.value.description || noDescription))
+
   const title = computed(() => photoTitle())
   useTitle(title)
+
+  const userStore = useUserStore()
 </script>
 
 <!-- <script>

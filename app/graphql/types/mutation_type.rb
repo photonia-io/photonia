@@ -24,5 +24,31 @@ module Types
         email: nil
       }
     end
+
+    field :update_photo_title, PhotoType, null: false do
+      description 'Update photo title'
+      argument :id, String, required: true
+      argument :title, String, required: true
+    end
+
+    def update_photo_title(id:, title:)
+      photo = Photo.friendly.find(id)
+      context[:authorize].call(photo, :update?)
+      photo.update(name: title)
+      photo
+    end
+
+    field :update_photo_description, PhotoType, null: false do
+      description 'Update photo description'
+      argument :id, String, required: true
+      argument :description, String, required: true
+    end
+
+    def update_photo_description(id:, description:)
+      photo = Photo.friendly.find(id)
+      context[:authorize].call(photo, :update?)
+      photo.update(description: description)
+      photo
+    end
   end
 end

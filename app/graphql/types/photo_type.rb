@@ -7,7 +7,7 @@ module Types
 
     field :id, String, null: false
     field :name, String, null: true
-    field :description, String, null: true
+    field :description, String, null: false
     field :date_taken, GraphQL::Types::ISO8601DateTime, null: true
     field :imported_at, GraphQL::Types::ISO8601DateTime, null: true
     field :license, String, null: true
@@ -25,6 +25,10 @@ module Types
 
     def id
       @object.slug
+    end
+
+    def description
+      @object.description || ''
     end
 
     def user_tags

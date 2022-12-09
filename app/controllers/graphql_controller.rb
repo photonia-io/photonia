@@ -12,7 +12,8 @@ class GraphqlController < ApplicationController
     context = {
       current_user: current_user,
       sign_in: method(:sign_in),
-      sign_out: method(:sign_out)
+      sign_out: method(:sign_out),
+      authorize: method(:authorize)
     }
     result = PhotoniaSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
