@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="level mb-4">
-      <div class="level-left is-flex-grow-1">
+      <div class="level-left is-flex-grow-1" id="photo-title-container">
         <PhotoTitleEditable
           v-if="(userStore.signedIn && !loading)"
           :id="photo.id"
