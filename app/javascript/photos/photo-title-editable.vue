@@ -4,7 +4,7 @@
     class="title level-item mb-0"
     @click="startEditing"
   >
-    {{ title }}
+    {{ localTitle }}
   </h1>
   <div
     v-else
@@ -12,7 +12,7 @@
   >
     <p class="control is-expanded">
       <input
-        v-model="title"
+        v-model="localTitle"
         class="input"
         type="text"
         placeholder="Enter a title for this photo"
@@ -20,17 +20,25 @@
     </p>
     <p class="control">
       <button
-        class="button is-info"
+        class="button is-primary"
         @click="updateTitle"
       >
         Save
+      </button>
+    </p>
+    <p class="control">
+      <button
+        class="button"
+        @click="cancelEditing"
+      >
+        Cancel
       </button>
     </p>
   </div>
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { ref, toRef, watch } from 'vue'
 
   const props = defineProps({
     id: {
@@ -46,16 +54,26 @@
   const emit = defineEmits(['updateTitle'])
 
   const editing = ref(false)
-  var oldTitle = ''
+  const localTitle = ref(props.title)
+  var savedTitle = ''
+
+  watch(toRef(props, 'title'), (newTitle) => {
+     localTitle.value = newTitle
+  })
   
   const startEditing = () => {
-    oldTitle = props.title
+    savedTitle = localTitle.value
     editing.value = true
   }
 
+  const cancelEditing = () => {
+    localTitle.value = savedTitle
+    editing.value = false
+  }
+
   const updateTitle = () => {
-    if(oldTitle != props.title) {
-      emit('updateTitle', { id: props.id, title: props.title })
+    if(savedTitle != localTitle.value) {
+      emit('updateTitle', { id: props.id, title: localTitle.value })
     }
     editing.value = false
   }
