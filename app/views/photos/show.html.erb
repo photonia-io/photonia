@@ -7,7 +7,7 @@
     <% if @photo.prev %>
       <div>
         <a href="<%= photo_path(@photo.prev) %>">
-          <span><i></i></span> <span>Previous</span>
+          Previous
           <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>">
         </a>
       </div>
@@ -16,7 +16,7 @@
       <div>
         <a href="<%= photo_path(@photo.next) %>">
           <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>">
-          <span>Next</span> <span><i></i></span>
+          Next
         </a>
       </div>
     <% end %>
@@ -25,7 +25,7 @@
 <hr>
 <div>
   <div>
-    <div id="image-wrapper">
+    <div>
       <img src="<%= @photo.image_url(:large) %>" />
     </div>
     <% if @photo.description.presence %>
@@ -35,9 +35,9 @@
      </div>
     <% end %>
   </div>
-  <div id="sidebar">
+  <div>
     <% if @photo.albums.any? %>
-      <h3><span><i></i></span> Albums</h3>
+      <h3>Albums</h3>
       <ul>
       <% @photo.albums.each do |album| %>
         <li>
@@ -47,14 +47,11 @@
               <% if(@prev = @photo.prev_in_album(album)) %>
                 <a href="<%= photo_path(@prev) %>">
                   <img src="<%= @prev.image_url(:thumbnail_intelligent).presence || @prev.image_url(:thumbnail_square) %>">
-                  <span>
-                    <span><i></i></span>
-                    <span>Previous</span>
-                  </span>
+                  Previous
                 </a>
               <% else %>
                 <button disabled>
-                  <span><i></i></span> <span>Previous</span>
+                  Previous
                 </button>
               <% end %>
             </div>
@@ -62,14 +59,11 @@
               <% if(@next = @photo.next_in_album(album)) %>
                 <a href="<%= photo_path(@next) %>">
                   <img src="<%= @next.image_url(:thumbnail_intelligent).presence || @next.image_url(:thumbnail_square) %>">
-                  <span>
-                    <span>Next</span>
-                    <span><i></i></span>
-                  </span>
+                  Next
                 </a>
               <% else %>
                 <button disabled>
-                  <span>Next</span> <span><i></i></span>
+                  Next
                 </button>
               <% end %>
             </div>
@@ -79,23 +73,23 @@
       </ul>
     <% end %>
 
-    <h3><span><i></i></span> Date Taken</h3>
+    <h3>Date Taken</h3>
     <p><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
 
-    <h3><span><i></i></span> Date Posted</h3>
+    <h3>Date Posted</h3>
     <p><%= @photo.imported_at.strftime('%B %e, %Y') %></p>
 
-    <h3><span><i></i></span> Tags</h2>
+    <h3>Tags</h3>
     <div>
       <% @tags.each do |tag| %>
         <a href="<%= tag_path(tag) %>"><%= tag.name %></a>
       <% end %>
     </div>
 
-    <h3><span><i></i></span> AI Tags</h2>
+    <h3>AI Tags</h3>
     <div>
       <% @rekognition_tags.each do |tag| %>
-        <a href="<%= tag_path(tag) %>"><span><i></i></span><%= tag.name %></a>
+        <a href="<%= tag_path(tag) %>"><%= tag.name %></a>
       <% end %>
     </div>
   </div>
