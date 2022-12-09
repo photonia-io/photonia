@@ -4,7 +4,8 @@ pipeline {
   }
   agent {
     dockerfile {
-      args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL -v bundle:/root/.bundle'
+      args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
+      additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     }
   }
   stages {
@@ -14,4 +15,12 @@ pipeline {
       }   
     }
   }
+  /*
+  post {
+    always {
+      echo 'Clean up Docker images'
+      sh 'docker rmi --force $(docker images --quiet --filter=reference="jenkins-test-build")'
+    }
+  }
+  */
 }

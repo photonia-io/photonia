@@ -2,7 +2,7 @@
 
 # This is the application controller, duh
 class ApplicationController < ActionController::Base
-  include Pundit
+  include Pundit::Authorization
   before_action :set_configuration_json
   before_action :set_gql_queries
 
