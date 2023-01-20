@@ -6,19 +6,19 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.6'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.1.0', '>= 6.0.3.4'
+gem 'rails', '~> 6.1.7', '>= 6.1.7.1'
 # Use postgresql as the database for Active Record
 gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
 gem 'puma', '~> 5.1'
 # Use SCSS for stylesheets
-gem 'sass-rails', '>= 6'
+gem 'sass-rails', '>= 6.0.0'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
-gem 'webpacker', '~> 5.2'
+gem 'webpacker', '~> 5.4', '>= 5.4.3'
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.7'
+gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
 # Use Active Model has_secure_password
@@ -30,13 +30,13 @@ gem 'jbuilder', '~> 2.7'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 8.1'
+gem 'acts-as-taggable-on', '~> 8.1', '>= 8.1.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
 gem 'exif'
 gem 'faraday'
-gem 'friendly_id', '~> 5.4.0'
+gem 'friendly_id', '~> 5.4.2'
 gem 'image_processing', '~> 1.8'
 gem 'pagy', '~> 4'
 gem 'pg_search'
@@ -74,12 +74,12 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
-  gem 'web-console', '>= 3.3.0'
+  gem 'web-console', '>= 4.2.0'
 end
 
 group :test do
   # Adds support for Capybara system testing and selenium driver
-  gem 'capybara', '>= 2.15'
+  gem 'capybara', '>= 3.38.0'
   gem 'selenium-webdriver'
   # Easy installation and use of web drivers to run system tests with browsers
   gem 'webdrivers'
