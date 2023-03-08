@@ -1,4 +1,6 @@
 class GraphqlController < ApplicationController
+  include Pagy::Backend
+
   skip_before_action :verify_authenticity_token
   # If accessing from outside this domain, nullify the session
   # This allows for outside API access while preventing CSRF attacks,
@@ -13,7 +15,8 @@ class GraphqlController < ApplicationController
       current_user: current_user,
       sign_in: method(:sign_in),
       sign_out: method(:sign_out),
-      authorize: method(:authorize)
+      authorize: method(:authorize),
+      pagy: method(:pagy)
     }
     result = PhotoniaSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result

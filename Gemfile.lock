@@ -182,6 +182,8 @@ GEM
       railties
       sprockets-rails
     graphql (2.0.14)
+    graphql-pagination (0.1.0)
+      graphql
     i18n (1.8.11)
       concurrent-ruby (~> 1.0)
     image_processing (1.12.2)
@@ -217,6 +219,8 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.10)
       mini_portile2 (~> 2.8.0)
+      racc (~> 1.4)
+    nokogiri (1.13.10-x86_64-darwin)
       racc (~> 1.4)
     nokogiri (1.13.10-x86_64-linux)
       racc (~> 1.4)
@@ -427,6 +431,7 @@ DEPENDENCIES
   friendly_id (~> 5.4.0)
   graphiql-rails
   graphql
+  graphql-pagination
   image_processing (~> 1.8)
   jbuilder (~> 2.7)
   jsonapi-serializer
