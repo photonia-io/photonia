@@ -1,12 +1,7 @@
-PATH
-  remote: ../devise-jwt
-  specs:
-    devise-jwt (0.10.0)
-      devise (~> 4.0)
-      warden-jwt_auth (~> 0.6)
-
-PATH
-  remote: ../warden-jwt_auth
+GIT
+  remote: https://github.com/photonia-io/warden-jwt_auth
+  revision: d1b7969fc2cc8ec8196bd1d178b5e16bce411f47
+  branch: add-request-body-matcher
   specs:
     warden-jwt_auth (0.7.0)
       dry-auto_inject (~> 0.8)
@@ -153,6 +148,9 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
+    devise-jwt (0.10.0)
+      devise (~> 4.0)
+      warden-jwt_auth (~> 0.6)
     diff-lcs (1.5.0)
     down (5.2.3)
       addressable (~> 2.8)
@@ -424,7 +422,7 @@ DEPENDENCIES
   capistrano-sidekiq
   capybara (>= 2.15)
   devise
-  devise-jwt!
+  devise-jwt
   ed25519
   exif
   faraday
