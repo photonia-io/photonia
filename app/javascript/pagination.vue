@@ -41,6 +41,12 @@
         >
           {{ page }}
         </router-link>
+        <span
+          v-else-if="page === '…'"
+          class="pagination-ellipsis"
+        >
+          …
+        </span>
         <router-link
           v-else
           :to="{ name: 'photos-index', query: { page: page } }"
@@ -59,6 +65,10 @@
 <script setup>
   import { computed, toRefs } from 'vue'
 
+  const pad = 3
+  const padFirst = 0
+  const padLast = 0
+
   const props = defineProps({
     metadata: {
       type: Object,
@@ -76,7 +86,22 @@
     function() {
       const pages = []
       for (let i = 1; i <= metadata.value.totalPages; i++) {
-        pages.push(i)
+        let addPage = false
+        if(i == 1 || i == metadata.value.totalPages) {
+          addPage = true
+        } else if(i >= metadata.value.currentPage - pad && i <= metadata.value.currentPage + pad) {
+          addPage = true
+        } else if(i <= padFirst + 1) {
+          addPage = true
+        } else if(i >= metadata.value.totalPages - padLast) {
+          addPage = true
+        }
+
+        if(addPage) {
+          pages.push(i)
+        } else if(pages[pages.length - 1] != '…') {
+          pages.push('…')
+        }
       }
       return pages
     }
