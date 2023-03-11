@@ -4,7 +4,7 @@ pipeline {
   }
   agent {
     dockerfile {
-      args '-u root -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
+      args '-u root -e RAILS_ENV=test -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
       additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     }
   }
@@ -12,8 +12,8 @@ pipeline {
     stage('test') {
       steps {
         sh 'ln -s /usr/src/app/node_modules node_modules'
-        sh 'RAILS_ENV=test bundle exec rails webpacker:compile'
-        sh 'RAILS_ENV=test bundle exec rspec'
+        sh 'bundle exec rails webpacker:compile'
+        sh 'bundle exec rspec'
       }   
     }
   }
