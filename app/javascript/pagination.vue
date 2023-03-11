@@ -3,7 +3,7 @@
     <!-- previous page router-link -->
     <router-link
       v-if="previousPage > 0"
-      :to="{ name: 'photos-index', query: { page: previousPage } }"
+      :to="{ name: routeName, query: { page: previousPage } }"
       class="pagination-previous"
       rel="prev"
     >
@@ -18,7 +18,7 @@
     <!-- next page router-link -->
     <router-link
       v-if="nextPage <= metadata.totalPages"
-      :to="{ name: 'photos-index', query: { page: nextPage } }"
+      :to="{ name: routeName, query: { page: nextPage } }"
       class="pagination-next"
       rel="next"
     >
