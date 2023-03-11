@@ -11,6 +11,8 @@ pipeline {
   stages {
     stage('test') {
       steps {
+        sh 'nvm list'
+        sh 'gem list'
         sh 'bundle exec rspec'
       }   
     }
