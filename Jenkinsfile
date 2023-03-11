@@ -11,6 +11,8 @@ pipeline {
   stages {
     stage('test') {
       steps {
+        sh 'ln -s /usr/src/app/node_modules node_modules'
+        sh 'bundle exec rails webpacker:compile'
         sh 'bundle exec rspec'
       }   
     }
