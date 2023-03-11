@@ -11,6 +11,7 @@ pipeline {
   stages {
     stage('test') {
       steps {
+        sh 'gem list'
         sh 'bundle exec rspec'
       }   
     }
