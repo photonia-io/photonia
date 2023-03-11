@@ -36,7 +36,7 @@
       >
         <router-link
           v-if="page === metadata.currentPage"
-          :to="{ name: 'photos-index', query: { page: page } }"
+          :to="{ name: routeName, query: { page: page } }"
           class="pagination-link is-current"
         >
           {{ page }}
@@ -49,7 +49,7 @@
         </span>
         <router-link
           v-else
-          :to="{ name: 'photos-index', query: { page: page } }"
+          :to="{ name: routeName, query: { page: page } }"
           class="pagination-link"
         >
           {{ page }}
@@ -74,13 +74,13 @@
       type: Object,
       required: true
     },
-    path: {
+    routeName: {
       type: String,
       required: true
     }
   })
 
-  const { metadata, path } = toRefs(props)
+  const { metadata, routeName } = toRefs(props)
 
   const pages = computed(
     function() {

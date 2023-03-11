@@ -14,7 +14,7 @@
     <Pagination
       v-if="result && result.photos"
       :metadata="result.photos.metadata"
-      path="/photos"
+      routeName="photos-index"
     />
   </div>
 </template>
