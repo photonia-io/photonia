@@ -5,25 +5,38 @@
     <div class="columns is-1 is-variable is-multiline">
       <AlbumItem
         v-if="result && result.albums"
-        v-for="album in result.albums"
+        v-for="album in result.albums.collection"
         :album="album"
         :key="album.id"
       />
     </div>
+    <hr class="mt-1 mb-4">
+    <Pagination
+      v-if="result && result.albums"
+      :metadata="result.albums.metadata"
+      routeName="albums-index"
+    />
   </div>
 </template>
 
 <script setup>
+  import { computed } from 'vue'
+  import { useRoute } from 'vue-router'
   import gql from 'graphql-tag'
   import { useQuery } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
 
   // components
   import AlbumItem from './album-item'
+  import Pagination from '../pagination'
 
-  useTitle('Albums')
+  useTitle('Albums') // todo: add page number
 
-  const queryString = gql_queries.albums_index
-  const GQLQuery = gql`${queryString}`
-  const { result } = useQuery(GQLQuery)
+  const route = useRoute()
+  const page = computed(
+    function() {
+      return parseInt(route.query.page) || 1
+    }
+  )
+  const { result } = useQuery(gql`${gql_queries.albums_index}`, { page: page })
 </script>

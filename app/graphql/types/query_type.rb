@@ -77,12 +77,18 @@ module Types
 
     # Albums
 
-    field :albums, [AlbumType], null: false do
+    field :albums, Types::AlbumType.collection_type, null: false do
       description 'Find all albums'
+      argument :page, Integer, required: false
     end
 
-    def albums
-      Album.includes(:albums_photos, :photos).order(created_at: :desc)
+    def albums(page: nil)
+      pagy, @albums = context[:pagy].call(Album.includes(:albums_photos, :photos).order(created_at: :desc), page: page)
+      @albums.define_singleton_method(:total_pages) { pagy.pages }
+      @albums.define_singleton_method(:current_page) { pagy.page }
+      @albums.define_singleton_method(:limit_value) { pagy.items }
+      @albums.define_singleton_method(:total_count) { pagy.count }
+      @albums
     end
 
     field :album, AlbumType, null: false do

@@ -23,13 +23,21 @@ class GraphqlQueryCollection
       }
     GQL
     albums_index: <<-GQL.squish,
-      query AlbumsIndexQuery {
-        albums {
-          id
-          title
-          photosCount
-          coverPhoto {
-            intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+      query AlbumsIndexQuery($page: Int) {
+        albums(page: $page) {
+          collection {
+            id
+            title
+            photosCount
+            coverPhoto {
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+            }
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
           }
         }
       }
