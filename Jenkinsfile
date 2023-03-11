@@ -4,7 +4,7 @@ pipeline {
   }
   agent {
     dockerfile {
-      args '-e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
+      args '-u root -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
       additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     }
   }
