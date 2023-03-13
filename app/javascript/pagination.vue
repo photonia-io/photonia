@@ -120,13 +120,4 @@
       return metadata.value.currentPage + 1
     }
   )
-
-  const routerTo = computed(
-    function(page) {
-      return { 
-        name: routeName.value,
-        query: { page: page }
-      }
-    }
-  )
 </script>
