@@ -5,14 +5,22 @@
         <router-link :to="{ name: 'root' }" class="navbar-item">
           <img src="/photonia-logo.png" width="156" height="30">
         </router-link>
-        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="photonia-navigation">
+        <a
+          role="button"
+          class="navbar-burger burger"
+          v-on:click="showNavigation = !showNavigation"
+        >
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
         </a>
       </div>
 
-      <div id="photonia-navigation" class="navbar-menu">
+      <div
+        id="photonia-navigation"
+        class="navbar-menu"
+        :class="{ 'is-active': showNavigation }"
+      >
         <div class="navbar-start">
           <router-link :to="{ name: 'photos-index' }" class="navbar-item">
             <span class="icon"><i class="fas fa-image"></i></span>
@@ -69,7 +77,7 @@
 
         <div class="navbar-end">
           <div class="navbar-item">
-            <form :action="PHOTOS_PATH" method="get" accept-charset="UTF-8">
+            <form :action="photos_path" method="get" accept-charset="UTF-8">
               <div class="field has-addons">
                 <p class="control">
                   <input type="text" name="q" id="q" class="input" placeholder="Find a photo">
@@ -86,18 +94,11 @@
   </nav>
 </template>
 
-<script>
+<script setup>
+  import { ref } from 'vue'
   import { useUserStore } from './stores/user'
 
-  export default {
-    setup() {
-      const userStore = useUserStore()
-      return {
-        userStore,
-      }
-    },
-    created() {
-      this.PHOTOS_PATH = window.configuration_json.data.attributes.photos_path
-    }
-  }
+  const showNavigation = ref(false)
+  const userStore = useUserStore()
+  const photos_path = window.configuration_json.data.attributes.photos_path
 </script>
