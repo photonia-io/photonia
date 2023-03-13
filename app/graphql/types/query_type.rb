@@ -10,12 +10,16 @@ module Types
     # Photos
 
     field :photos, Types::PhotoType.collection_type, null: false do
-      description 'Find all photos'
-      argument :page, Integer, required: false      
+      description 'Find all photos or p'
+      argument :page, Integer, required: false  
+      argument :query, String, required: false    
     end
 
-    def photos(page: nil)
-      pagy, @photos = context[:pagy].call(Photo.all.order(imported_at: :desc), page: page)
+    def photos(page: nil, query: nil)
+      pagy, @photos = context[:pagy].call(
+        query.present? ? Photo.search(query) : Photo.all.order(imported_at: :desc),
+        page: page
+      )
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.items }

@@ -3,7 +3,7 @@
     <!-- previous page router-link -->
     <router-link
       v-if="previousPage > 0"
-      :to="{ name: routeName, params: routeParams, query: { page: previousPage } }"
+      :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: previousPage } }"
       class="pagination-previous"
       rel="prev"
     >
@@ -18,7 +18,7 @@
     <!-- next page router-link -->
     <router-link
       v-if="nextPage <= metadata.totalPages"
-      :to="{ name: routeName, params: routeParams, query: { page: nextPage } }"
+      :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: nextPage } }"
       class="pagination-next"
       rel="next"
     >
@@ -36,7 +36,7 @@
       >
         <router-link
           v-if="page === metadata.currentPage"
-          :to="{ name: routeName, params: routeParams, query: { page: page } }"
+          :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: page } }"
           class="pagination-link is-current"
         >
           {{ page }}
@@ -49,7 +49,7 @@
         </span>
         <router-link
           v-else
-          :to="{ name: routeName, params: routeParams, query: { page: page } }"
+          :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: page } }"
           class="pagination-link"
         >
           {{ page }}
@@ -79,10 +79,14 @@
     routeParams: {
       type: Object,
       required: false
+    },
+    additionalQueryParams: {
+      type: Object,
+      required: false
     }
   })
 
-  const { metadata, routeName, routeParams } = toRefs(props)
+  const { metadata, routeName, routeParams, additionalQueryParams } = toRefs(props)
 
   const pages = computed(
     function() {

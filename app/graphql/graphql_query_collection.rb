@@ -110,8 +110,8 @@ class GraphqlQueryCollection
       }
     GQL
     photos_index: <<-GQL.squish,
-      query PhotosIndexQuery($page: Int) {
-        photos(page: $page) {
+      query PhotosIndexQuery($page: Int, $query: String) {
+        photos(page: $page, query: $query) {
           collection {
             id
             name

@@ -14,6 +14,7 @@
     <Pagination
       v-if="result && result.photos"
       :metadata="result.photos.metadata"
+      :additionalQueryParams="additionalQueryParams"
       routeName="photos-index"
     />
   </div>
@@ -33,12 +34,9 @@
   useTitle('Photos') // todo: add page number
 
   const route = useRoute()
-  const page = computed(
-    function() {
-      console.log('computing page')
-      return parseInt(route.query.page) || 1
-    }
-  )
-  const { result } = useQuery(gql`${gql_queries.photos_index}`, { page: page })
+  const query = computed(() => route.query.q || null)
+  const page = computed(() => parseInt(route.query.page) || 1)
+  const additionalQueryParams = computed(() => query.value !== null ? { q: query.value } : {})
+  const { result } = useQuery(gql`${gql_queries.photos_index}`, { page: page, query: query })
 </script>
 

@@ -77,10 +77,15 @@
 
         <div class="navbar-end">
           <div class="navbar-item">
-            <form :action="photos_path" method="get" accept-charset="UTF-8">
+            <form @submit.prevent="doSearch">
               <div class="field has-addons">
                 <p class="control">
-                  <input type="text" name="q" id="q" class="input" placeholder="Find a photo">
+                  <input
+                    type="text"
+                    class="input"
+                    placeholder="Find a photo"
+                    v-model="query"
+                  >
                 </p>
                 <p class="control">
                   <input type="submit" class="button" value="Search">
@@ -95,10 +100,23 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { ref, watch } from 'vue'
   import { useUserStore } from './stores/user'
+  import { useRoute, useRouter } from 'vue-router'
+
+
+  const router = useRouter()
+  const userStore = useUserStore()
 
   const showNavigation = ref(false)
-  const userStore = useUserStore()
-  const photos_path = window.configuration_json.data.attributes.photos_path
+  const query = ref('')
+
+  watch(useRoute(), (route) => {
+    query.value = route.query.q
+  });
+
+  function doSearch() {
+    const routeQuery = query.value ? { q: query.value } : {}
+    router.push({ name: 'photos-index', query: routeQuery })
+  }
 </script>
