@@ -12,10 +12,17 @@ module Types
     field :photos_count, Integer, null: false
     field :cover_photo, PhotoType, null: true
 
-    field :photos, [PhotoType], null: false
+    field :photos, Types::PhotoType.collection_type, null: false do
+      argument :page, Integer, required: false
+    end
 
-    def photos
-      @object.photos.order(:ordering)
+    def photos(page: nil)
+      pagy, @photos = context[:pagy].call(@object.photos.order(:ordering), page: page)
+      @photos.define_singleton_method(:total_pages) { pagy.pages }
+      @photos.define_singleton_method(:current_page) { pagy.page }
+      @photos.define_singleton_method(:limit_value) { pagy.items }
+      @photos.define_singleton_method(:total_count) { pagy.count }
+      @photos
     end
 
     field :previous_photo_in_album, PhotoType, null: true do

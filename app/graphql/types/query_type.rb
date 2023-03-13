@@ -95,6 +95,7 @@ module Types
     field :album, AlbumType, null: false do
       description 'Find an album by ID'
       argument :id, ID, required: true
+      argument :page, Integer, required: false
     end
 
     def album(id:)

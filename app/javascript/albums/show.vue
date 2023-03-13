@@ -4,40 +4,49 @@
     <hr class="is-hidden-touch mt-2 mb-4">
     <div class="columns is-1 is-variable is-multiline">
       <PhotoItem
-        v-for="photo in album.photos"
+        v-for="photo in album.photos.collection"
         :photo="photo"
         :key="photo.id"
       />
     </div>
+    <hr class="mt-1 mb-4">
+    <Pagination
+      v-if="album.photos.metadata"
+      :metadata="album.photos.metadata"
+      :routeParams="{ id: id }"
+      routeName="albums-show"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import gql from 'graphql-tag'
-import { useQuery } from '@vue/apollo-composable'
-import { useTitle } from 'vue-page-title'
+  import { computed } from 'vue'
+  import { useRoute } from 'vue-router'
+  import gql from 'graphql-tag'
+  import { useQuery } from '@vue/apollo-composable'
+  import { useTitle } from 'vue-page-title'
 
-// components
-import PhotoItem from '../photos/photo-item'
+  // components
+  import PhotoItem from '../photos/photo-item'
+  import Pagination from '../pagination'
 
-// route
-const route = useRoute()
+  // route
+  const route = useRoute()
 
-const emptyAlbum = {
-        title: '',
-        photos: []
-      }
+  const emptyAlbum = {
+          title: '',
+          photos: []
+        }
 
-const queryString = gql_queries.albums_show
-const GQLQuery = gql`${queryString}`
-const { result } = useQuery(GQLQuery, { id: route.params.id })
+  const id = computed(() => route.params.id)
+  const page = computed(() => parseInt(route.query.page) || 1 )
 
-const album = computed(() => result.value?.album ?? emptyAlbum)
-const title = computed(() => `Album: ${album.value.title}`)
+  const { result } = useQuery(gql`${gql_queries.albums_show}`, { id: id, page: page })
 
-useTitle(title)
+  const album = computed(() => result.value?.album ?? emptyAlbum)
+  const title = computed(() => `Album: ${album.value.title}`)
+
+  useTitle(title)
 </script>
 
 <style>

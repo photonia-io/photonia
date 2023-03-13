@@ -43,14 +43,23 @@ class GraphqlQueryCollection
       }
     GQL
     albums_show: <<-GQL.squish,
-      query AlbumsShowQuery($id: ID!) {
+      query AlbumsShowQuery($id: ID!, $page: Int) {
         album(id: $id) {
+          id
           title
           description
-          photos {
-            id
-            name
-            intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+          photos(page: $page) {
+            collection {
+              id
+              name
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+            }
+            metadata {
+              totalPages
+              totalCount
+              currentPage
+              limitValue
+            }
           }
         }
       }
