@@ -4,11 +4,18 @@
     <hr class="is-hidden-touch mt-2 mb-4">
     <div class="columns is-1 is-variable is-multiline">
       <PhotoItem
-        v-for="photo in tag.photos"
+        v-for="photo in tag.photos.collection"
         :photo="photo"
         :key="photo.id"
       />
     </div>
+    <hr class="mt-1 mb-4">
+    <Pagination
+      v-if="tag.photos.metadata"
+      :metadata="tag.photos.metadata"
+      :routeParams="{ id: id }"
+      routeName="tags-show"
+    />
   </div>
 </template>
 
@@ -21,6 +28,7 @@
 
   // components
   import PhotoItem from '../photos/photo-item'
+  import Pagination from '../pagination'
 
   // route
   const route = useRoute()
@@ -31,7 +39,8 @@
         }
 
   const id = computed(() => route.params.id)
-  const { result, loading } = useQuery(gql`${gql_queries.tags_show}`, { id: id })
+  const page = computed(() => parseInt(route.query.page) || 1 )
+  const { result, loading } = useQuery(gql`${gql_queries.tags_show}`, { id: id, page: page })
 
   const tag = computed(() => result.value?.tag ?? emptyTag)
   const title = computed(() => `Album: ${tag.value.name}`)

@@ -3,7 +3,7 @@
     <!-- previous page router-link -->
     <router-link
       v-if="previousPage > 0"
-      :to="{ name: routeName, query: { page: previousPage } }"
+      :to="{ name: routeName, params: routeParams, query: { page: previousPage } }"
       class="pagination-previous"
       rel="prev"
     >
@@ -18,7 +18,7 @@
     <!-- next page router-link -->
     <router-link
       v-if="nextPage <= metadata.totalPages"
-      :to="{ name: routeName, query: { page: nextPage } }"
+      :to="{ name: routeName, params: routeParams, query: { page: nextPage } }"
       class="pagination-next"
       rel="next"
     >
@@ -36,7 +36,7 @@
       >
         <router-link
           v-if="page === metadata.currentPage"
-          :to="{ name: routeName, query: { page: page } }"
+          :to="{ name: routeName, params: routeParams, query: { page: page } }"
           class="pagination-link is-current"
         >
           {{ page }}
@@ -49,15 +49,13 @@
         </span>
         <router-link
           v-else
-          :to="{ name: routeName, query: { page: page } }"
+          :to="{ name: routeName, params: routeParams, query: { page: page } }"
           class="pagination-link"
         >
           {{ page }}
         </router-link>
       </li>
-        <!-- <a href="/photos?page=1" class="pagination-link is-current" aria-label="page 1" aria-current="page">1</a> -->
         <!-- <a href="/photos?page=2" rel="next" class="pagination-link" aria-label="goto page 2">2</a> -->
-        <!-- <span class="pagination-ellipsis">…</span> -->
     </ul>
   </nav>
 </template>
@@ -77,10 +75,14 @@
     routeName: {
       type: String,
       required: true
+    },
+    routeParams: {
+      type: Object,
+      required: false
     }
   })
 
-  const { metadata, routeName } = toRefs(props)
+  const { metadata, routeName, routeParams } = toRefs(props)
 
   const pages = computed(
     function() {
@@ -116,6 +118,15 @@
   const nextPage = computed(
     function() {
       return metadata.value.currentPage + 1
+    }
+  )
+
+  const routerTo = computed(
+    function(page) {
+      return { 
+        name: routeName.value,
+        query: { page: page }
+      }
     }
   )
 </script>

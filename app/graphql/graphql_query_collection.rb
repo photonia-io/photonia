@@ -80,13 +80,22 @@ class GraphqlQueryCollection
       }
     GQL
     tags_show: <<-GQL.squish,
-      query TagsShowQuery($id: ID!) {
+      query TagsShowQuery($id: ID!, $page: Int) {
         tag(id: $id) {
+          id
           name
-          photos {
-            id
-            name
-            intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+          photos(page: $page) {
+            collection {
+              id
+              name
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+            }
+            metadata {
+              totalPages
+              totalCount
+              currentPage
+              limitValue
+            }
           }
         }
       }

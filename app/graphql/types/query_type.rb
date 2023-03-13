@@ -37,6 +37,7 @@ module Types
     field :tag, TagType, null: false do
       description 'Find a tag by ID'
       argument :id, ID, required: true
+      argument :page, Integer, required: false
     end
 
     def tag(id:)
