@@ -1,40 +1,40 @@
-<div class="block">
-  <h1 class="title">Latest photo</h1>
+<div>
+  <h1>Latest photo</h1>
   <a href="<%= photo_path(@latest_photo) %>">
-    <img src="<%= @latest_photo.image_url(:extralarge) %>" class="image is-fullwidth" />
+    <img src="<%= @latest_photo.image_url(:extralarge) %>" />
   </a>
-  <div class="level mt-3">
-    <div class="level-left">
-      <a href="<%= photo_path(@latest_photo) %>"><span class="title is-5"><%= @latest_photo.name %></span></a>
+  <div>
+    <div>
+      <a href="<%= photo_path(@latest_photo) %>"><span><%= @latest_photo.name %></span></a>
     </div>
-    <div class="level-right">
-      <a href="<%= photos_path %>" class="button">See all photos...</a>
+    <div>
+      <a href="<%= photos_path %>">See all photos...</a>
     </div>
   </div>
 </div>
-<hr class="is-hidden-touch mt-1 mb-4">
-<div class="block">
-  <div class="columns">
-    <div class="column is-half">
-      <h1 class="title is-3">Random photo</h1>
+<hr>
+<div>
+  <div>
+    <div>
+      <h1>Random photo</h1>
       <a href="<%= photo_path(@random_photo) %>">
-        <img src="<%= @random_photo.image_url(:large) %>" class="image is-fullwidth" />
+        <img src="<%= @random_photo.image_url(:large) %>" />
         <%= @random_photo.name %>
       </a>
     </div>
-    <div class="column is-half">
-      <h2 class="title is-3">Most used tags</h2>
-      <div class="field is-grouped is-grouped-multiline">
+    <div>
+      <h2>Most used tags</h2>
+      <div>
         <% @most_used_tags.each_with_index do |tag, index| %>
-          <div class="control">
-            <div class="tags has-addons">
-              <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
-              <span class="tag"><%= tag.taggings_count %></span>
+          <div>
+            <div>
+              <a href="<%= tag_path(tag) %>"><%= tag.name %></a>
+              <span><%= tag.taggings_count %></span>
             </div>
           </div>
         <% end %>
       </div>
-      <a href="<%= tags_path %>" class="button">See tags page...</a>
+      <a href="<%= tags_path %>">See tags page...</a>
     </div>
   </div>
 </div>

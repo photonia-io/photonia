@@ -50,7 +50,11 @@ module Label
           total += instance.center.send(type) * instance.area
           area_total += instance.area
         end
-        total / area_total
+        if area_total.zero?
+          0.5
+        else
+          total / area_total
+        end
       end
     end
   end
