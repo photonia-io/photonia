@@ -1,23 +1,23 @@
 <% content_for(:page_title, 'Upload') %>
 
-<h1 class="title">Upload</h1>
-<hr class="is-hidden-touch mt-2 mb-4">
+<h1>Upload</h1>
+<hr>
 
-<div class="columns">
-  <div class="column is-one-third">
+<div>
+  <div>
     <%= form_for(@photo) do |f| %>
-      <div class="field">
-        <%= f.label :name, class: 'label' %>
-        <div class="control">
-          <%= f.text_field :name, placeholder: 'Name', class: 'input' %>
+      <div>
+        <%= f.label :name %>
+        <div>
+          <%= f.text_field :name, placeholder: 'Name' %>
         </div>
       </div>
 
       <%= f.hidden_field :image, value: @photo.cached_image_data %>
       <%= f.file_field :image %>
 
-      <div class="actions">
-        <%= f.submit 'Upload', class: 'button is-link' %>
+      <div>
+        <%= f.submit 'Upload' %>
       </div>
     <% end %>
   </div>

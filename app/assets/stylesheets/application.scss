@@ -40,3 +40,9 @@ $section-padding: 3rem 0.75rem;
   height: auto;
   flex-direction: column;
 }
+
+#photo-title-container {
+  @include from(769px) {
+    margin-right: 0.75rem;
+  }
+}

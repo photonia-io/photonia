@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.6'
+ruby '3.2.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 6.1.7', '>= 6.1.7.1'
@@ -15,8 +15,6 @@ gem 'puma', '~> 5.1'
 gem 'sass-rails', '>= 6.0.0'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
 gem 'webpacker', '~> 5.4', '>= 5.4.3'
-# Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
-gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Use Redis adapter to run Action Cable in production
@@ -34,10 +32,14 @@ gem 'acts-as-taggable-on', '~> 8.1', '>= 8.1.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
+gem 'devise-jwt'
 gem 'exif'
 gem 'faraday'
 gem 'friendly_id', '~> 5.4.2'
+gem 'graphql'
+gem 'graphql-pagination'
 gem 'image_processing', '~> 1.8'
+gem 'jsonapi-serializer'
 gem 'pagy', '~> 4'
 gem 'pg_search'
 gem 'pundit'
@@ -48,6 +50,7 @@ gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'skylight'
 gem 'whenever', require: false
+gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
 
 group :development, :test do
   gem 'bcrypt_pbkdf'
@@ -69,8 +72,9 @@ end
 
 group :development do
   gem 'annotate'
+  gem 'graphiql-rails'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
-  gem 'listen', '~> 3.2'
+  gem 'listen'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'

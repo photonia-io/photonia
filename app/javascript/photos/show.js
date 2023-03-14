@@ -1,9 +1,9 @@
-const { default: axios } = require("axios");
+import { default as axios } from "axios";
 
 var oldPhotoName = '';
 var oldPhotoDescription = '';
 
-document.addEventListener('turbolinks:load', () => {
+document.addEventListener('load', () => {
   photoName = document.getElementById('photo-name');
 
   photoName.addEventListener('focus', () => {
