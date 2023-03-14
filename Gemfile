@@ -28,7 +28,7 @@ gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 8.1', '>= 8.1.0'
+gem 'acts-as-taggable-on', '~> 8.1'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
@@ -76,8 +76,8 @@ group :development do
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'spring', '~> 4.1'
+  gem 'spring-watcher-listen', '~> 2.1'
   gem 'web-console', '>= 4.2.0'
 end
 

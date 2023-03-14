@@ -427,18 +427,18 @@ DEPENDENCIES
   capistrano-rails
   capistrano-rbenv
   capistrano-sidekiq
-  capybara (>= 2.15)
+  capybara (>= 3.38.0)
   devise
   devise-jwt
   ed25519
   exif
   faraday
-  friendly_id (~> 5.4.0)
+  friendly_id (~> 5.4.2)
   graphiql-rails
   graphql
   graphql-pagination
   image_processing (~> 1.8)
-  jbuilder (~> 2.7)
+  jbuilder (~> 2.11, >= 2.11.5)
   jsonapi-serializer
   listen
   pagy (~> 4)
@@ -447,7 +447,7 @@ DEPENDENCIES
   pry
   puma (~> 5.1)
   pundit
-  rails (~> 6.1.0, >= 6.0.3.4)
+  rails (~> 6.1.7, >= 6.1.7.1)
   redis
   redis-namespace
   rspec-rails
@@ -455,19 +455,19 @@ DEPENDENCIES
   rubocop
   rubocop-rails
   rubocop-rspec
-  sass-rails (>= 6)
+  sass-rails (>= 6.0.0)
   selenium-webdriver
   shrine (~> 3.0)
   sidekiq
   sitemap_generator
   skylight
-  spring
-  spring-watcher-listen
+  spring (~> 4.1)
+  spring-watcher-listen (~> 2.1)
   tzinfo-data
   warden-jwt_auth!
-  web-console (>= 3.3.0)
+  web-console (>= 4.2.0)
   webdrivers
-  webpacker (~> 5.2)
+  webpacker (~> 5.4, >= 5.4.3)
   whenever
 
 RUBY VERSION
