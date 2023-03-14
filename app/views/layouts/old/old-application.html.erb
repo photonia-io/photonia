@@ -42,8 +42,8 @@
                 </a>
                 <hr class="navbar-divider">
                 <% if user_signed_in? %>
-                  <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %>
-                  <%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'navbar-item' %>
+                  <%= link_to 'Upload', new_photo_path %>
+                  <%= link_to 'Logout', destroy_user_session_path, method: :delete %>
                 <% else %>
                   <a href="<%= new_user_session_path %>" class="navbar-item">
                     Login
@@ -58,7 +58,7 @@
               <%= form_tag(photos_path, method: :get) do %>
                 <div class="field has-addons">
                   <p class="control">
-                    <%= text_field_tag(:q, params[:q], class: 'input', placeholder: 'Find a photo') %>
+                    <%= text_field_tag(:q, params[:q], placeholder: 'Find a photo') %>
                   </p>
                   <p class="control">
                     <input type="submit" class="button" value="Search">
