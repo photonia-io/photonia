@@ -32,9 +32,9 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import LatestPhoto from './latest-photo'
-  import RandomPhoto from './random-photo'
-  import MostUsedTags from './most-used-tags'
+  import LatestPhoto from './latest-photo.vue'
+  import RandomPhoto from './random-photo.vue'
+  import MostUsedTags from './most-used-tags.vue'
 
   useTitle('')
 

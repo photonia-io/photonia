@@ -27,8 +27,8 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import AlbumItem from './album-item'
-  import Pagination from '../pagination'
+  import AlbumItem from '@/albums/album-item.vue'
+  import Pagination from '@/shared/pagination.vue'
 
   useTitle('Albums') // todo: add page number
 
