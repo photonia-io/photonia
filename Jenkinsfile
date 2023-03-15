@@ -1,0 +1,36 @@
+pipeline {
+  environment {
+    PHOTONIA_DATABASE_URL = credentials('photonia-database-url')
+  }
+  agent {
+    dockerfile {
+      args '-u root -e RAILS_ENV=test -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
+      additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+    }
+  }
+  stages {
+    stage('test') {
+      steps {
+        sh 'ln -s /usr/src/app/node_modules node_modules'
+        sh 'bundle exec rails webpacker:compile'
+        sh 'bundle exec rspec'
+      }   
+    }
+    stage('deploy') {
+      when {
+        branch 'master'
+      }
+      steps {
+        sh 'bundle exec cap production deploy'
+      }
+    }
+  }
+  /*
+  post {
+    always {
+      echo 'Clean up Docker images'
+      sh 'docker rmi --force $(docker images --quiet --filter=reference="jenkins-test-build")'
+    }
+  }
+  */
+}

@@ -176,16 +176,18 @@ class Photo < ApplicationRecord
     # closest_pole, min_distance = distances.min_by { |_, distance| distance }
     _, min_distance = distances.min_by { |_, distance| distance }
     # if(min_distance >= ENV['PHOTONIA_MEDIUM_SIDE'])
-      {
-        x: x = cog_x - min_distance,
-        y: y = cog_y - min_distance,
-        pixel_width: min_distance * 2,
-        pixel_height: min_distance * 2,
-        top: y.to_f / pixel_height,
-        left: x.to_f / pixel_width,
-        width: min_distance.to_f * 2 / pixel_width,
-        height: min_distance.to_f * 2 / pixel_height
-      }
+    {
+      x: x = cog_x - min_distance,
+      y: y = cog_y - min_distance,
+      pixel_width: min_distance * 2,
+      pixel_height: min_distance * 2,
+      top: y.to_f / pixel_height,
+      left: x.to_f / pixel_width,
+      width: min_distance.to_f * 2 / pixel_width,
+      height: min_distance.to_f * 2 / pixel_height,
+      center_of_gravity_left: cog_left,
+      center_of_gravity_top: cog_top
+    }
     # end
   end
 

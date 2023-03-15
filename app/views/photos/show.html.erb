@@ -1,132 +1,69 @@
 <% content_for(:page_title, @photo.name) %>
-<div class="level mb-4">
-  <div class="level-left">
-    <% if policy(@photo).update? %>
-      <h1 id="photo-name" class="title level-item" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.name.presence || '(no title)' %></h1>
-    <% else %>
-      <h1 class="title level-item"><%= @photo.name.presence || '(no title)' %></h1>
-    <% end %>
+<div>
+  <div>
+    <h1><%= @photo.name.presence || '(no title)' %></h1>
   </div>
-  <div class="level-right">
+  <div>
     <% if @photo.prev %>
-      <div class="level-item">
-        <a href="<%= photo_path(@photo.prev) %>" class="button is-light">
-          <span class="icon"><i class="fas fa-chevron-left"></i></span> <span>Previous</span>
-          <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>" class="image is-24x24 ml-3">
+      <div>
+        <a href="<%= photo_path(@photo.prev) %>">
+          Previous
+          <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>">
         </a>
       </div>
     <% end %>
     <% if @photo.next %>
-      <div class="level-item">
-        <a href="<%= photo_path(@photo.next) %>" class="button is-light">
-          <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>" class="image is-24x24 mr-3">
-          <span>Next</span> <span class="icon"><i class="fas fa-chevron-right"></i></span>
+      <div>
+        <a href="<%= photo_path(@photo.next) %>">
+          <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>">
+          Next
         </a>
       </div>
     <% end %>
   </div>
 </div>
-<hr class="is-hidden-touch mt-2 mb-4">
-<div class="columns is-1">
-  <div class="column is-three-quarters">
-    <style>
-      #image-wrapper {
-        position: relative;
-      }
-      #image-wrapper > img {
-        vertical-align: top;
-        width: 100%;
-        opacity: 0;
-      }
-      #image-wrapper > .labels {
-        position: absolute;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transition: 0.3s;
-      }
-
-      #image-wrapper:hover > .labels {
-        opacity: 1;
-      }
-
-      .label {
-        cursor: pointer;
-        border: 2px dotted green; position: absolute;
-        transition: 0.3s;
-      }
-
-      .label:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-
-      .label > p {
-        font-size: 10px;
-      }
-    </style>
-    <div id="image-wrapper" style="background: no-repeat url(<%= @photo.image_url(:large) %>) 50% / 100%">
+<hr>
+<div>
+  <div>
+    <div>
       <img src="<%= @photo.image_url(:large) %>" />
-      <% if @photo.label_instances.present? %>
-        <div class="labels">
-          <% @photo.label_instances.each do |li| %>
-            <div class="label" style="top: <%= li.bounding_box.top * 100 %>%; left: <%= li.bounding_box.left * 100 %>%; width: <%= li.bounding_box.width * 100 %>%; height: <%= li.bounding_box.height * 100 %>%;">
-              <p><%= li.name %></p>
-            </div>
-          <% end %>
-          <% if @photo.intelligent_thumbnail %>
-            <div style="border: 3px solid red; position: absolute; top: <%= @photo.label_instance_collection.center_of_gravity[:top] * 100 %>%; left: <%= @photo.label_instance_collection.center_of_gravity[:left] * 100 %>%; width: 2px; height: 2px;"></div>
-            <div style="border: 1px solid blue; position: absolute; top: <%= @photo.intelligent_thumbnail[:top] * 100 %>%; left: <%= @photo.intelligent_thumbnail[:left] * 100 %>%; width: <%= @photo.intelligent_thumbnail[:width] * 100 %>%; height: <%= @photo.intelligent_thumbnail[:height] * 100 %>%;"></div>
-          <% end %>
-        </div>
-      <% end %>
     </div>
-    <% if @photo.description.presence || policy(@photo).update? %>
-      <h2 class="heading">Description</h2>
-      <div class="content">
-        <% if policy(@photo).update? %>
-          <div id="photo-description" contenteditable="true" data-photo-slug="<%= @photo.slug %>"><%= @photo.description.presence || '(no description)' %></div>
-        <% else %>
-          <%= @photo.description %>
-        <% end %>
-      </div>
+    <% if @photo.description.presence %>
+      <h2>Description</h2>
+      <div>
+        <%= @photo.description %>
+     </div>
     <% end %>
   </div>
-  <div id="sidebar" class="column">
+  <div>
     <% if @photo.albums.any? %>
-      <h3 class="heading"><span class="icon"><i class="fas fa-book"></i></span> Albums</h3>
-      <ul class="block-list is-small has-radius pb-4">
+      <h3>Albums</h3>
+      <ul>
       <% @photo.albums.each do |album| %>
         <li>
-          <h4 class="is-size-6 mb-2"><a href="<%= album_path(album) %>"><%= album.title %></a></h4>
-          <div class="columns is-variable is-1 is-mobile">
-            <div class="column is-half">
+          <h4><a href="<%= album_path(album) %>"><%= album.title %></a></h4>
+          <div>
+            <div>
               <% if(@prev = @photo.prev_in_album(album)) %>
-                <a href="<%= photo_path(@prev) %>" class="button is-fullwidth is-image-button">
-                  <img src="<%= @prev.image_url(:thumbnail_intelligent).presence || @prev.image_url(:thumbnail_square) %>" class="image is-fullwidth mb-2">
-                  <span class="icon-text is-hidden-desktop-only is-hidden-tablet-only">
-                    <span class="icon"><i class="fas fa-chevron-left"></i></span>
-                    <span>Previous</span>
-                  </span>
+                <a href="<%= photo_path(@prev) %>">
+                  <img src="<%= @prev.image_url(:thumbnail_intelligent).presence || @prev.image_url(:thumbnail_square) %>">
+                  Previous
                 </a>
               <% else %>
-                <button class="button is-fullwidth" disabled>
-                  <span class="icon"><i class="fas fa-chevron-left"></i></span> <span>Previous</span>
+                <button disabled>
+                  Previous
                 </button>
               <% end %>
             </div>
-            <div class="column is-half">
+            <div>
               <% if(@next = @photo.next_in_album(album)) %>
-                <a href="<%= photo_path(@next) %>" class="button is-fullwidth is-image-button">
-                  <img src="<%= @next.image_url(:thumbnail_intelligent).presence || @next.image_url(:thumbnail_square) %>" class="image is-fullwidth mb-2">
-                  <span class="icon-text is-hidden-desktop-only is-hidden-tablet-only">
-                    <span>Next</span>
-                    <span class="icon"><i class="fas fa-chevron-right"></i></span>
-                  </span>
+                <a href="<%= photo_path(@next) %>">
+                  <img src="<%= @next.image_url(:thumbnail_intelligent).presence || @next.image_url(:thumbnail_square) %>">
+                  Next
                 </a>
               <% else %>
-                <button class="button is-fullwidth" disabled>
-                  <span>Next</span> <span class="icon"><i class="fas fa-chevron-right"></i></span>
+                <button disabled>
+                  Next
                 </button>
               <% end %>
             </div>
@@ -136,23 +73,23 @@
       </ul>
     <% end %>
 
-    <h3 class="heading"><span class="icon"><i class="fas fa-camera"></i></span> Date Taken</h3>
-    <p class="content"><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
+    <h3>Date Taken</h3>
+    <p><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
 
-    <h3 class="heading"><span class="icon"><i class="fas fa-arrow-circle-up"></i></span> Date Posted</h3>
-    <p class="content"><%= @photo.imported_at.strftime('%B %e, %Y') %></p>
+    <h3>Date Posted</h3>
+    <p><%= @photo.imported_at.strftime('%B %e, %Y') %></p>
 
-    <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h2>
-    <div class="tags">
+    <h3>Tags</h3>
+    <div>
       <% @tags.each do |tag| %>
-        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><%= tag.name %></a>
+        <a href="<%= tag_path(tag) %>"><%= tag.name %></a>
       <% end %>
     </div>
 
-    <h3 class="heading"><span class="icon"><i class="fas fa-robot"></i></span> AI Tags</h2>
-    <div class="tags">
+    <h3>AI Tags</h3>
+    <div>
       <% @rekognition_tags.each do |tag| %>
-        <a href="<%= tag_path(tag) %>" class="tag has-background-grey-lighter"><span class="icon"><i class="fas fa-robot"></i></span><%= tag.name %></a>
+        <a href="<%= tag_path(tag) %>"><%= tag.name %></a>
       <% end %>
     </div>
   </div>
