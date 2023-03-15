@@ -16,6 +16,14 @@ pipeline {
         sh 'bundle exec rspec'
       }   
     }
+    stage('deploy') {
+      when {
+        branch 'master'
+      }
+      steps {
+        sh 'bundle exec cap production deploy'
+      }
+    }
   }
   /*
   post {
