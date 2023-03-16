@@ -15,7 +15,7 @@
     "graphql": "^15.5.2",
     "graphql-tag": "^2.12.5",
     "jest": "^29.5.0",
-    "pinia": "^2.0.22",
+    "pinia": "^2.0.32",
     "turbolinks": "^5.2.0",
     "vue": "^3.1.0",
     "vue-apollo": "^3.0.7",
