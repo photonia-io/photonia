@@ -1,3 +1,5 @@
+import '@/styles/application.scss'
+
 import { createApp, provide, h, watch } from 'vue'
 import App from '../app.vue'
 

@@ -149,16 +149,16 @@
   import gql from 'graphql-tag'
   import { useQuery, useMutation } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
-  import moment from 'moment'
+  import moment from 'moment/min/moment-with-locales'
   import { useUserStore } from '../stores/user'
 
   // components
   import PhotoTitleEditable from './photo-title-editable.vue'
   import PhotoDescriptionEditable from './photo-description-editable.vue'
-  import SmallNavigationButton from './small-navigation-button.vue'
+  import SmallNavigationButton from '@/photos/small-navigation-button.vue'
   import Display from './display.vue'
-  import Tag from '../tags/tag.vue'
-  import Empty from '../empty.vue'
+  import Tag from '@/tags/tag.vue'
+  import Empty from '@/empty.vue'
 
   // route
   const route = useRoute()
