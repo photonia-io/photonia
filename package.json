@@ -2,7 +2,7 @@
   "name": "photonia",
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.4.10",
+    "@apollo/client": "^3.7.9",
     "@rails/actioncable": "^6.1.7",
     "@rails/activestorage": "^6.1.7",
     "@rails/ujs": "^6.1.7",
