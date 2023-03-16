@@ -3,7 +3,7 @@
     <div class="container">
       <div class="navbar-brand">
         <router-link :to="{ name: 'root' }" class="navbar-item">
-          <img src="/photonia-logo.png" width="156" height="30">
+          <img src="@/assets/photonia-logo.png" width="156" height="30">
         </router-link>
         <a
           role="button"

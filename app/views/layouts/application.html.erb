@@ -28,10 +28,16 @@
 
   <body>
     <div id='app'>
+      <nav>
+        <ul>
+          <li><a href="<%= root_path %>">Photonia</a></li>
+          <li><a href="<%= photos_path %>">Photos</a></li>
+          <li><a href="<%= albums_path %>">Albums</a></li>
+          <li><a href="<%= tags_path %>">Tags</a></li>
+        </ul>
+      </nav>
       <section>
-        <div>
-          <%= yield %>
-        </div>
+        <%= yield %>
       </section>
     </div>
   </body>
