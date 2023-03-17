@@ -3156,7 +3156,7 @@ vite-node@0.29.3:
     picocolors "^1.0.0"
     vite "^3.0.0 || ^4.0.0"
 
-vite-plugin-ruby@^3.1.2:
+vite-plugin-ruby@^3.2.0:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/vite-plugin-ruby/-/vite-plugin-ruby-3.2.1.tgz#fe2e2572c450a74d9342d64d183985f32583c0ce"
   integrity sha512-GBSplgICiQb/pweEZzXtWrJhvOo33ljE7taAVbxDOXCbm4X3w0mFUmowxFf4I7oePtLPIZRU8N+JHCcBYzNIng==
@@ -3164,7 +3164,7 @@ vite-plugin-ruby@^3.1.2:
     debug "^4.3.4"
     fast-glob "^3.2.12"
 
-"vite@^3.0.0 || ^4.0.0", vite@^4.0.0:
+"vite@^3.0.0 || ^4.0.0", vite@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/vite/-/vite-4.2.0.tgz#d4e6eafbc034f3faf0ab376bd5b76ac15775eb99"
   integrity sha512-AbDTyzzwuKoRtMIRLGNxhLRuv1FpRgdIw+1y6AQG73Q5+vtecmvzKo/yk8X/vrHDpETRTx01ABijqUHIzBXi0g==
