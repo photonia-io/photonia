@@ -13,8 +13,6 @@ gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 5.1'
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 6.0.0'
-# Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
-gem 'webpacker', '~> 5.4', '>= 5.4.3'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Use Redis adapter to run Action Cable in production
@@ -48,6 +46,7 @@ gem 'shrine', '~> 3.0'
 gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'skylight'
+gem 'vite_rails', '~> 3.0'
 gem 'whenever', require: false
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
 

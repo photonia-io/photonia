@@ -156,6 +156,7 @@ GEM
       addressable (~> 2.8)
     dry-auto_inject (0.9.0)
       dry-container (>= 0.3.4)
+    dry-cli (1.0.0)
     dry-configurable (0.16.1)
       dry-core (~> 0.6)
       zeitwerk (~> 2.6)
@@ -350,7 +351,6 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
-    semantic_range (3.0.0)
     shrine (3.4.0)
       content_disposition (~> 1.0)
       down (~> 5.1)
@@ -383,6 +383,13 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
+    vite_rails (3.0.14)
+      railties (>= 5.1, < 8)
+      vite_ruby (~> 3.0, >= 3.2.2)
+    vite_ruby (3.2.15)
+      dry-cli (>= 0.7, < 2)
+      rack-proxy (~> 0.6, >= 0.6.1)
+      zeitwerk (~> 2.2)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.0)
@@ -394,11 +401,6 @@ GEM
       nokogiri (~> 1.6)
       rubyzip (>= 1.3.0)
       selenium-webdriver (~> 4.0)
-    webpacker (5.4.4)
-      activesupport (>= 5.2)
-      rack-proxy (>= 0.6.1)
-      railties (>= 5.2)
-      semantic_range (>= 2.3.0)
     websocket (1.2.9)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
@@ -461,10 +463,10 @@ DEPENDENCIES
   spring (~> 4.1)
   spring-watcher-listen (~> 2.1)
   tzinfo-data
+  vite_rails (~> 3.0)
   warden-jwt_auth!
   web-console (>= 4.2.0)
   webdrivers
-  webpacker (~> 5.4, >= 5.4.3)
   whenever
 
 RUBY VERSION

@@ -13,7 +13,7 @@
 </template>
 
 <script>
-  import TagWithCount from '../tag-with-count'
+  import TagWithCount from '../tag-with-count.vue'
 
   export default {
     name: 'MostUsedTags',

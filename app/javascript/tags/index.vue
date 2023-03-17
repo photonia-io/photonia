@@ -47,7 +47,7 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import TagWithCount from '../tag-with-count.vue'
+  import TagWithCount from '@/tag-with-count.vue'
 
   useTitle('Tags')
 
