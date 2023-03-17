@@ -6,5 +6,9 @@ export default defineConfig({
   plugins: [
     RubyPlugin(),
     vue()
-  ]
+  ],
+  test: {
+    globals: true,
+    environment: 'happy-dom'
+  }
 })
