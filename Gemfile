@@ -46,7 +46,7 @@ gem 'shrine', '~> 3.0'
 gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'skylight'
-gem 'vite_rails', '~> 3.0'
+gem 'vite_rails', '~> 3.0', '>= 3.0.14'
 gem 'whenever', require: false
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
 
