@@ -57,18 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const httpLink = createHttpLink({ uri: cjda.graphql_url })
   const authLink = setContext((_, { headers }) => {
-    const csrfToken = document.
-      querySelector('meta[name="csrf-token"]').
-      attributes.content.value;
-
     return {
       headers: {
         ...headers,
-        'X-CSRF-Token': csrfToken,
         authorization: tokenStore.authorization,
       },
-    };
-  });
+    }
+  })
 
   const afterwareLink = new ApolloLink((operation, forward) => {
     return forward(operation).map((response) => {
@@ -85,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const apolloClient = new ApolloClient({
     link: authLink.concat(afterwareLink.concat(httpLink)),
     cache: new InMemoryCache(),
-    // connectToDevTools: true,
+    connectToDevTools: true,
   })
 
   // if a token was found in local storage, fetch the user

@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.2.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.1.7', '>= 6.1.7.1'
+gem 'rails', '~> 7.0'
 # Use postgresql as the database for Active Record
 gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
@@ -26,7 +26,7 @@ gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 8.1'
+gem 'acts-as-taggable-on', '~> 9.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
