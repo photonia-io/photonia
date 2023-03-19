@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
     @configuration_json = ConfigurationSerializer.new(
       Configuration.new(
         root_path: root_path,
+        graphql_url: graphql_url,
         photos_path: photos_path,
         albums_path: albums_path,
         tags_path: tags_path,
