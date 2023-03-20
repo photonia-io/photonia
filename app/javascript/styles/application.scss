@@ -1,5 +1,8 @@
-@import 'bulma-scss/bulma';
-@import 'bulma-block-list/src/block-list';
+$box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1);
+$section-padding: 3rem 0.75rem;
+
+@import "bulma-scss/bulma";
+@import "bulma-block-list/src/block-list";
 
 .tag span.icon {
   margin-right: 0.3em !important;
