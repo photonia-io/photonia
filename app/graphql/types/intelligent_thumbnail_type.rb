@@ -6,8 +6,8 @@ module Types
     description 'An intelligent thumbnail'
 
     field :bounding_box, BoundingBoxType, null: false
-    field :center_of_gravity_top, Float, null: false
     field :center_of_gravity_left, Float, null: false
+    field :center_of_gravity_top, Float, null: false
 
     def bounding_box
       {

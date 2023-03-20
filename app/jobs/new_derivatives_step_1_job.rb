@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NewDerivativesStep1Job < ApplicationJob
   queue_as :default
 
@@ -11,7 +13,10 @@ class NewDerivativesStep1Job < ApplicationJob
       thumbnail_square = attacher.file.download do |original|
         ImageProcessing::MiniMagick
           .source(original)
-          .resize_to_fill!(ENV['PHOTONIA_THUMBNAIL_SIDE'], ENV['PHOTONIA_THUMBNAIL_SIDE'])
+          .resize_to_fill!(
+            ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
+            ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+          )
       end
       attacher.add_derivative(:thumbnail_square, thumbnail_square)
     end
@@ -20,7 +25,10 @@ class NewDerivativesStep1Job < ApplicationJob
       medium_square = attacher.file.download do |original|
         ImageProcessing::MiniMagick
           .source(original)
-          .resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE'])
+          .resize_to_fill!(
+            ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
+            ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+          )
       end
       attacher.add_derivative(:medium_square, medium_square)
     end

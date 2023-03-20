@@ -4,9 +4,9 @@
 class RekognitionTagger
   def initialize
     @client = Aws::Rekognition::Client.new(
-      region: ENV['PHOTONIA_S3_REGION'],
-      access_key_id: ENV['PHOTONIA_REKOGNITION_ACCESS_KEY_ID'],
-      secret_access_key: ENV['PHOTONIA_REKOGNITION_SECRET_ACCESS_KEY']
+      region: ENV.fetch('PHOTONIA_S3_REGION', nil),
+      access_key_id: ENV.fetch('PHOTONIA_REKOGNITION_ACCESS_KEY_ID', nil),
+      secret_access_key: ENV.fetch('PHOTONIA_REKOGNITION_SECRET_ACCESS_KEY', nil)
     )
     @tagging_source = TaggingSource.find_by(name: 'Rekognition')
   end
@@ -15,7 +15,7 @@ class RekognitionTagger
     response = @client.detect_labels(
       image: {
         s3_object: {
-          bucket: ENV['PHOTONIA_S3_BUCKET'],
+          bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil),
           name: photo.image_data['derivatives']['extralarge']['id']
         }
       },

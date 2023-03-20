@@ -5,19 +5,19 @@ module Types
   class PhotoType < Types::BaseObject
     description 'A Photo'
 
-    field :id, String, null: false
-    field :name, String, null: true
-    field :description, String, null: false
-    field :date_taken, GraphQL::Types::ISO8601DateTime, null: true
-    field :imported_at, GraphQL::Types::ISO8601DateTime, null: true
-    field :license, String, null: true
-    field :user_tags, [TagType], null: true
-    field :machine_tags, [TagType], null: true
     field :albums, [AlbumType], null: true
-    field :previous_photo, PhotoType, null: true
-    field :next_photo, PhotoType, null: true
-    field :label_instances, [LabelInstanceType], null: true
+    field :date_taken, GraphQL::Types::ISO8601DateTime, null: true
+    field :description, String, null: false
+    field :id, String, null: false
+    field :imported_at, GraphQL::Types::ISO8601DateTime, null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, null: true
+    field :label_instances, [LabelInstanceType], null: true
+    field :license, String, null: true
+    field :machine_tags, [TagType], null: true
+    field :name, String, null: true
+    field :next_photo, PhotoType, null: true
+    field :previous_photo, PhotoType, null: true
+    field :user_tags, [TagType], null: true
 
     field :image_url, String, null: false do
       argument :type, String, required: true

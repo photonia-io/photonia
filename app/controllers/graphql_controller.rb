@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class GraphqlController < ApplicationController
   include Pagy::Backend
 
@@ -12,16 +14,17 @@ class GraphqlController < ApplicationController
     variables = prepare_variables(params[:variables])
     operation_name = params[:operationName]
     context = {
-      current_user: current_user,
+      current_user:,
       sign_in: method(:sign_in),
       sign_out: method(:sign_out),
       authorize: method(:authorize),
       pagy: method(:pagy)
     }
-    result = PhotoniaSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
+    result = PhotoniaSchema.execute(query, variables:, context:, operation_name:)
     render json: result
   rescue StandardError => e
     raise e unless Rails.env.development?
+
     handle_error_in_development(e)
   end
 

@@ -64,6 +64,7 @@ group :development, :test do
   gem 'rspec_junit_formatter' # for CircleCI
   gem 'rspec-rails'
   gem 'rubocop'
+  gem 'rubocop-graphql'
   gem 'rubocop-rails'
   gem 'rubocop-rspec'
 end
