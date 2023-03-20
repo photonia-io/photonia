@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 module Types
+  # GraphQL Tag Type
   class TagType < Types::BaseObject
     description 'A tag'
-    field :id, String, null: false
-    field :name, String, null: true
-    field :photos, Types::PhotoType.collection_type, null: true do
-      argument :page, Integer, required: false
+    field :id, String, 'ID of the tag', null: false
+    field :name, String, 'Name of the tag', null: true
+    field :photos, Types::PhotoType.collection_type, 'Photos tagged with this tag', null: true do
+      argument :page, Integer, 'Page number', required: false
     end
-    field :taggings_count, Integer, null: true
+    field :taggings_count, Integer, 'Number of photos tagged with this tag', null: true
 
     def id
       @object.slug

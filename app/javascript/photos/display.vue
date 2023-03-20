@@ -17,8 +17,8 @@
         <div :style="' \
           border: 3px solid red; \
           position: absolute; \
-          top: ' + photo.intelligentThumbnail.centerOfGravityTop * 100 + '%; \
-          left: ' + photo.intelligentThumbnail.centerOfGravityLeft * 100 + '%; \
+          top: ' + photo.intelligentThumbnail.centerOfGravity.top * 100 + '%; \
+          left: ' + photo.intelligentThumbnail.centerOfGravity.left * 100 + '%; \
           width: 2px; \
           height: 2px;'
         "/>

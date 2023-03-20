@@ -6,8 +6,7 @@ class RekognitionJob < ApplicationJob
 
   def perform(photo_id)
     photo = Photo.find(photo_id)
-    rekognition_tagger = RekognitionTagger.new
-    rekognition_tagger.tag(photo)
+    RekognitionTagger.new.tag(photo)
     AddIntelligentDerivativesJob.perform_later(photo_id)
   end
 end

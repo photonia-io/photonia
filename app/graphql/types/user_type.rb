@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module Types
+  # GraphQL User Type
   class UserType < Types::BaseObject
     description 'A user'
-    field :email, String, null: true
-    field :id, String, null: true
+    field :email, String, 'Email', null: true
+    field :id, String, 'User ID', null: false
   end
 end

@@ -12,21 +12,28 @@ class RekognitionTagger
   end
 
   def tag(photo)
+    rekognition_labels = detect_labels(photo)
+    rekognition_tag_list = rekognition_labels.join(',')
+    @tagging_source.tag(photo, with: rekognition_tag_list, on: :tags)
+    rekognition_tag_list
+  end
+
+  private
+
+  def detect_labels(photo)
     response = @client.detect_labels(
-      image: {
-        s3_object: {
-          bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil),
-          name: photo.image_data['derivatives']['extralarge']['id']
-        }
-      },
+      image: { s3_object: s3_object(photo) },
       max_labels: 50
     )
+    photo.rekognition_response = response.to_h
+    photo.save(validate: false)
+    response.labels.map { |l| l.name.downcase }
+  end
 
-    photo.update_attribute(:rekognition_response, response.to_h)
-
-    rekognition_tag_list = response.labels.map { |l| l.name.downcase }.join(',')
-    @tagging_source.tag(photo, with: rekognition_tag_list, on: :tags)
-
-    rekognition_tag_list
+  def s3_object(photo)
+    {
+      bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil),
+      name: photo.image.path
+    }
   end
 end

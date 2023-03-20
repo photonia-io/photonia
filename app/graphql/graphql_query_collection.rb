@@ -183,8 +183,10 @@ class GraphqlQueryCollection
               width
               height
             }
-            centerOfGravityTop
-            centerOfGravityLeft
+            centerOfGravity {
+              top
+              left
+            }
           }
         }
       }
