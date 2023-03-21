@@ -5,32 +5,34 @@ module Types
   class AlbumType < Types::BaseObject
     description 'An album'
 
-    field :id, String, null: false
-    field :title, String, null: true
-    field :description, String, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :photos_count, Integer, null: false
-    field :cover_photo, PhotoType, null: true
+    field :id, String, 'Id of the album', null: false
+
+    field :previous_photo_in_album, PhotoType, 'Previous photo in the album', null: true do
+      argument :photo_id, ID, 'Id of the photo for which the previous photo is to be found', required: true
+    end
+
+    field :next_photo_in_album, PhotoType, 'Next photo in the album', null: true do
+      argument :photo_id, ID, 'Id of the photo for which the next photo is to be found', required: true
+    end
+
+    field :cover_photo, PhotoType, 'Cover photo of the album', null: true
+    field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
+    field :description, String, 'Description of the album', null: true
+    field :photos_count, Integer, 'Number of photos in the album', null: false
+    field :title, String, 'Title of the album', null: false
 
     field :photos, Types::PhotoType.collection_type, null: false do
-      argument :page, Integer, required: false
+      argument :page, Integer, 'Page number', required: false
+      description 'Photos in the album'
     end
 
     def photos(page: nil)
-      pagy, @photos = context[:pagy].call(@object.photos.order(:ordering), page: page)
+      pagy, @photos = context[:pagy].call(@object.photos.order(:ordering), page:)
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.items }
       @photos.define_singleton_method(:total_count) { pagy.count }
       @photos
-    end
-
-    field :previous_photo_in_album, PhotoType, null: true do
-      argument :photo_id, ID, required: true
-    end
-
-    field :next_photo_in_album, PhotoType, null: true do
-      argument :photo_id, ID, required: true
     end
 
     def id

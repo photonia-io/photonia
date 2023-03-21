@@ -14,8 +14,8 @@ module Label
 
     def center
       Photo::Point.new(
-        @bounding_box.top + @bounding_box.height / 2,
-        @bounding_box.left + @bounding_box.width / 2
+        @bounding_box.top + (@bounding_box.height / 2),
+        @bounding_box.left + (@bounding_box.width / 2)
       )
     end
 

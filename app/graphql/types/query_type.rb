@@ -3,22 +3,70 @@
 module Types
   # GraphQL Query Type
   class QueryType < GraphQL::Schema::Object
+    description 'The query root of this schema'
+
     # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
     include GraphQL::Types::Relay::HasNodeField
     include GraphQL::Types::Relay::HasNodesField
 
-    # Photos
-
     field :photos, Types::PhotoType.collection_type, null: false do
-      description 'Find all photos or p'
-      argument :page, Integer, required: false  
-      argument :query, String, required: false    
+      description 'Find all photos or photos matching a query'
+      argument :page, Integer, 'Page number', required: false
+      argument :query, String, 'Search query', required: false
     end
+
+    field :photo, PhotoType, null: false do
+      description 'Find a photo by ID'
+      argument :id, ID, 'ID of the photo', required: true
+    end
+
+    field :tag, TagType, null: false do
+      description 'Find a tag by ID'
+      argument :id, ID, 'ID of the tag', required: true
+      argument :page, Integer, 'Page number', required: false
+    end
+
+    field :most_used_user_tags, [TagType], null: false do
+      description 'Find the most used user tags'
+    end
+
+    field :least_used_user_tags, [TagType], null: false do
+      description 'Find the least used user tags'
+    end
+
+    field :most_used_machine_tags, [TagType], null: false do
+      description 'Find the most used machine tags'
+    end
+
+    field :least_used_machine_tags, [TagType], null: false do
+      description 'Find the least used machine tags'
+    end
+
+    field :albums, Types::AlbumType.collection_type, null: false do
+      description 'Find all albums'
+      argument :page, Integer, 'Page number', required: false
+    end
+
+    field :album, AlbumType, null: false do
+      description 'Find an album by ID'
+      argument :id, ID, 'ID of the album', required: true
+      argument :page, Integer, 'Page number', required: false
+    end
+
+    field :latest_photo, PhotoType, 'Latest photo', null: false
+
+    field :random_photo, PhotoType, 'Random photo', null: false
+
+    field :most_used_tags, [TagType], 'List of most used tags', null: false
+
+    field :user_settings, UserType, 'User settings', null: false
+
+    # Photos
 
     def photos(page: nil, query: nil)
       pagy, @photos = context[:pagy].call(
         query.present? ? Photo.search(query) : Photo.all.order(imported_at: :desc),
-        page: page
+        page:
       )
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
@@ -27,53 +75,26 @@ module Types
       @photos
     end
 
-    field :photo, PhotoType, null: false do
-      description 'Find a photo by ID'
-      argument :id, ID, required: true
-    end
-
     def photo(id:)
       Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
     end
 
     # Tags
 
-    field :tag, TagType, null: false do
-      description 'Find a tag by ID'
-      argument :id, ID, required: true
-      argument :page, Integer, required: false
-    end
-
     def tag(id:)
       ActsAsTaggableOn::Tag.friendly.find(id)
-    end
-
-    field :most_used_user_tags, [TagType], null: false do
-      description 'Find the most used user tags'
     end
 
     def most_used_user_tags
       ActsAsTaggableOn::Tag.photonia_most_used
     end
 
-    field :least_used_user_tags, [TagType], null: false do
-      description 'Find the least used user tags'
-    end
-
     def least_used_user_tags
       ActsAsTaggableOn::Tag.photonia_least_used
     end
 
-    field :most_used_machine_tags, [TagType], null: false do
-      description 'Find the most used machine tags'
-    end
-
     def most_used_machine_tags
       ActsAsTaggableOn::Tag.photonia_most_used(rekognition: true)
-    end
-
-    field :least_used_machine_tags, [TagType], null: false do
-      description 'Find the least used machine tags'
     end
 
     def least_used_machine_tags
@@ -82,24 +103,13 @@ module Types
 
     # Albums
 
-    field :albums, Types::AlbumType.collection_type, null: false do
-      description 'Find all albums'
-      argument :page, Integer, required: false
-    end
-
     def albums(page: nil)
-      pagy, @albums = context[:pagy].call(Album.includes(:albums_photos, :photos).order(created_at: :desc), page: page)
+      pagy, @albums = context[:pagy].call(Album.includes(:albums_photos, :photos).order(created_at: :desc), page:)
       @albums.define_singleton_method(:total_pages) { pagy.pages }
       @albums.define_singleton_method(:current_page) { pagy.page }
       @albums.define_singleton_method(:limit_value) { pagy.items }
       @albums.define_singleton_method(:total_count) { pagy.count }
       @albums
-    end
-
-    field :album, AlbumType, null: false do
-      description 'Find an album by ID'
-      argument :id, ID, required: true
-      argument :page, Integer, required: false
     end
 
     def album(id:)
@@ -108,27 +118,19 @@ module Types
 
     # Homepage
 
-    field :latest_photo, PhotoType, null: false
-
     def latest_photo
       object ? object[:latest_photo] : Photo.order(imported_at: :desc).first
     end
 
-    field :random_photo, PhotoType, null: false
-
     def random_photo
       object ? object[:random_photo] : Photo.order(Arel.sql('RANDOM()')).first
     end
-
-    field :most_used_tags, [TagType], null: false
 
     def most_used_tags
       object ? object[:most_used_tags] : ActsAsTaggableOn::Tag.photonia_most_used(limit: 60)
     end
 
     # Users
-
-    field :user_settings, UserType, null: false
 
     def user_settings
       context[:current_user]

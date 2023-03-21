@@ -24,7 +24,7 @@ class ImageUploader < Shrine
     if Rails.env.production?
       {
         public: true,
-        host: "https://#{ENV['PHOTONIA_S3_BUCKET']}"
+        host: "https://#{ENV.fetch('PHOTONIA_S3_BUCKET', nil)}"
       }
     end
   }
@@ -34,9 +34,18 @@ class ImageUploader < Shrine
     {
       extralarge: magick.resize_to_limit!(2048, 2048),
       large: magick.resize_to_limit!(1024, 1024),
-      medium: magick.resize_to_limit!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE']),
-      medium_square: magick.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE']),
-      thumbnail_square: magick.resize_to_fill!(ENV['PHOTONIA_THUMBNAIL_SIDE'], ENV['PHOTONIA_THUMBNAIL_SIDE'])
+      medium: magick.resize_to_limit!(
+        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
+        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+      ),
+      medium_square: magick.resize_to_fill!(
+        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
+        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+      ),
+      thumbnail_square: magick.resize_to_fill!(
+        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
+        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+      )
     }
   end
 
