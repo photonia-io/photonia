@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: cjda.root_path, name: 'root', component: () => import('../homepage/index.vue') },
     { path: cjda.photos_path, name: 'photos-index', component: () => import('../photos/index.vue') },
     { path: cjda.photos_path + '/:id', name: 'photos-show', component: () => import('../photos/show.vue') },
+    { path: cjda.photos_path + '/upload', name: 'photos-upload', component: () => import('../photos/upload.vue') },
     { path: cjda.albums_path, name: 'albums-index', component: () => import('../albums/index.vue') },
     { path: cjda.albums_path + '/:id', name: 'albums-show', component: () => import('../albums/show.vue') },
     { path: cjda.tags_path, name: 'tags-index', component: () => import('../tags/index.vue') },
