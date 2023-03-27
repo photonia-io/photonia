@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: cjda.root_path, name: 'root', component: () => import('../homepage/index.vue') },
     { path: cjda.photos_path, name: 'photos-index', component: () => import('../photos/index.vue') },
     { path: cjda.photos_path + '/:id', name: 'photos-show', component: () => import('../photos/show.vue') },
-    { path: cjda.photos_path + '/upload', name: 'photos-upload', component: () => import('../photos/upload.vue') },
     { path: cjda.albums_path, name: 'albums-index', component: () => import('../albums/index.vue') },
     { path: cjda.albums_path + '/:id', name: 'albums-show', component: () => import('../albums/show.vue') },
     { path: cjda.tags_path, name: 'tags-index', component: () => import('../tags/index.vue') },
@@ -45,8 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
       path: cjda.users_settings_path,
       name: 'users-settings',
       component: () => import('../users/settings.vue'),
-      beforeEnter: redirectIfNotSignedIn,
+      beforeEnter: redirectIfNotSignedIn
     },
+    {
+      path: cjda.photos_path + '/upload',
+      name: 'photos-upload',
+      component: () => import('../photos/upload.vue'),
+      beforeEnter: redirectIfNotSignedIn
+    }
   ]
 
   const router = createRouter({
@@ -87,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // if a token was found in local storage, fetch the user
 
   if (tokenStore.authorization) {
-    // todo console.log('authorization exists', tokenStore.authorization)
+    // console.log('authorization exists', tokenStore.authorization)
+    // we will suppose that the token is valid
+    userStore.signedIn = true
     provideApolloClient(apolloClient)
     const { result, loading, error } = useQuery(
       gql`
@@ -100,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     )
   
     watch(result, value => {
-      userStore.signedIn = true
       userStore.email = value.userSettings.email
     })
   }

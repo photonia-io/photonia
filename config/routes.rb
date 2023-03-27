@@ -8,7 +8,9 @@ Rails.application.routes.draw do
 
   devise_for :users, skip: :all
 
-  resources :photos
+  resources :photos, except: %i[new] do
+    get :upload, on: :collection
+  end
   resources :tags, only: %i[index show]
   resources :albums, only: %i[index show]
 
