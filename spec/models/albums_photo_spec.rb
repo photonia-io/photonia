@@ -25,5 +25,15 @@
 require 'rails_helper'
 
 RSpec.describe AlbumsPhoto, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe 'associations' do
+    it 'belongs to an album' do
+      association = described_class.reflect_on_association(:album)
+      expect(association.macro).to eq :belongs_to
+    end
+
+    it 'belongs to a photo' do
+      association = described_class.reflect_on_association(:photo)
+      expect(association.macro).to eq :belongs_to
+    end
+  end
 end

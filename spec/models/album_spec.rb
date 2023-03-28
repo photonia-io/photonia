@@ -16,5 +16,36 @@
 require 'rails_helper'
 
 RSpec.describe Album, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it 'has a valid factory' do
+    expect(build(:album)).to be_valid
+  end
+
+  describe 'validations' do
+    it 'is invalid without a title' do
+      expect(build(:album, title: nil)).to_not be_valid
+    end
+  end
+
+  describe 'associations' do
+    it 'has many photos through albums_photos' do
+      association = described_class.reflect_on_association(:photos)
+      expect(association.macro).to eq :has_many
+      expect(association.options[:through]).to eq :albums_photos
+    end
+  end
+
+  describe 'callbacks' do
+    it 'calls set_serial_number before validation' do
+      album = build(:album)
+      expect(album).to receive(:set_serial_number)
+      album.valid?
+    end
+  end
+
+  describe 'instance methods' do
+    it 'should return the correct slug' do
+      album = create(:album)
+      expect(album.slug).to eq(album.serial_number.to_s)
+    end
+  end
 end

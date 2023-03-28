@@ -60,6 +60,8 @@ group :development, :test do
   gem 'capistrano-rbenv'
   gem 'capistrano-sidekiq'
   gem 'ed25519'
+  gem 'factory_bot_rails'
+  gem 'faker'
   gem 'pry'
   gem 'rspec_junit_formatter' # for CircleCI
   gem 'rspec-rails'

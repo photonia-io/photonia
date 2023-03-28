@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # == Schema Information
 #
 # Table name: tagging_sources
@@ -9,10 +7,8 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
-require 'rails_helper'
-
-RSpec.describe TaggingSource, type: :model do
-  it 'has a valid factory' do
-    expect(build(:tagging_source)).to be_valid
+FactoryBot.define do
+  factory :tagging_source do
+    name { Faker::Lorem.word }
   end
 end

@@ -43,6 +43,7 @@ class Photo < ApplicationRecord
   friendly_id :serial_number, use: :slugged
 
   include ImageUploader::Attachment(:image)
+  include SerialNumberSetter
 
   include PgSearch::Model
   pg_search_scope :search,
@@ -212,11 +213,7 @@ class Photo < ApplicationRecord
   end
 
   def set_fields
-    if serial_number.nil?
-      maximum_serial_number = Photo.unscoped.maximum('serial_number') || 1_000_000_000
-      self.serial_number = maximum_serial_number + rand(1..10_000_000)
-    end
-
+    set_serial_number
     self.imported_at = Time.current if imported_at.nil?
   end
 end
