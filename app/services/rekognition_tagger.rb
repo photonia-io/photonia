@@ -33,7 +33,7 @@ class RekognitionTagger
   def s3_object(photo)
     {
       bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil),
-      name: photo.image.path
+      name: photo.image_data['derivatives']['extralarge']['id']
     }
   end
 end

@@ -37,6 +37,15 @@
             <span>Tags</span>
           </router-link>
 
+          <router-link
+            v-if="userStore.signedIn"
+            :to="{ name: 'photos-upload' }"
+            class="navbar-item"
+          >
+            <span class="icon"><i class="fas fa-upload"></i></span>
+            <span>Upload</span>
+          </router-link>          
+
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link">
               More

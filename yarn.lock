@@ -3251,6 +3251,11 @@ vue-router@4:
   dependencies:
     "@vue/devtools-api" "^6.4.5"
 
+vue-upload-component@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/vue-upload-component/-/vue-upload-component-3.1.8.tgz#6c79aaf3c34c596ec40bbdde0f625d4855fb275a"
+  integrity sha512-8LHCrgmEZPg+1hbkKjQgMce2uasmGLEnIsLE8YG+vNyfNDuaQA71T+5t6kdDSG/szeh+E8mjb26uEd9WkVSFtg==
+
 vue@^3.2.47:
   version "3.2.47"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.2.47.tgz#3eb736cbc606fc87038dbba6a154707c8a34cff0"
