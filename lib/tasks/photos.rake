@@ -27,12 +27,4 @@ namespace :photos do
       end
     end
   end
-
-  desc 'New derivatives - Step 1'
-  task new_derivatives_step_1: :environment do
-    Photo.unscoped.where(derivatives_version: 'original').find_each do |photo|
-      puts "Adding job for photo #{photo.id} / #{photo.slug}"
-      NewDerivativesStep1Job.perform_later(photo.id)
-    end
-  end
 end
