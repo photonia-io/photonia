@@ -33,29 +33,31 @@
     <hr class="is-hidden-touch mt-2 mb-4">
     <div class="columns is-1">
       <div class="column is-three-quarters">
-        <Display :photo="photo" />
-        <h2 class="heading">Description</h2>
-        <PhotoDescriptionEditable
-          v-if="(userStore.signedIn && !loading)"
-          :id="photo.id"
-          :description="photoDescription()"
-          @update-description="updatePhotoDescription"
+        <Display
+          :photo="photo"
+          :labelHighlights="labelHighlights"
         />
-        <div
-          v-else
-          class="content"
-        >
-          {{ photoDescription() }}
+        <div class="block mt-2">
+          <PhotoDescriptionEditable
+            v-if="(userStore.signedIn && !loading)"
+            :id="photo.id"
+            :description="photoDescription()"
+            @update-description="updatePhotoDescription"
+          />
+          <div
+            v-else
+            class="content"
+          >
+            {{ photoDescription() }}
+          </div>
         </div>
       </div>
       <div id="sidebar" class="column">
-        <h3
+        <SidebarHeader
           v-if="showAlbumBrowser"
-          class="heading"
-        >
-          <span class="icon"><i class="fas fa-book"></i></span>
-          Albums
-        </h3>
+          icon="fas fa-book"
+          title="Albums"
+        />
         <ul
           v-if="showAlbumBrowser"
           class="block-list is-small has-radius pb-4"
@@ -114,13 +116,45 @@
           </li>
         </ul>
 
-        <h3 class="heading"><span class="icon"><i class="fas fa-camera"></i></span> Date Taken</h3>
-        <p v-if="!loading" class="content">{{ momentFormat(photo.dateTaken) }}</p>
+        <SidebarHeader
+          icon="fas fa-info-circle"
+          title="Info"
+        />
+        <div class="block">
+          <span class="icon-text is-size-7">
+            <span class="icon"><i class="fas fa-camera"></i></span>
+            <span>Date Taken:</span>
+            <span v-if="!loading" class="ml-1">{{ momentFormat(photo.dateTaken) }}</span>
+          </span>
+          <span class="icon-text is-size-7">
+            <span class="icon"><i class="fas fa-arrow-circle-up"></i></span>
+            <span>Date Posted:</span>
+            <span v-if="!loading" class="ml-1">{{ momentFormat(photo.importedAt) }}</span>
+          </span>
+        </div>
 
-        <h3 class="heading"><span class="icon"><i class="fas fa-arrow-circle-up"></i></span> Date Posted</h3>
-        <p v-if="!loading" class="content">{{ momentFormat(photo.importedAt) }}</p>
+        <SidebarHeader
+          v-if="photo.labelInstances"
+          icon="far fa-square"
+          title="Labels"
+        />
+        <div
+          v-if="photo.labelInstances"
+          class="tags"
+        >
+          <SidebarLabelInstance
+            v-for="labelInstance in photo.labelInstances"
+            @highlight-label="highlightLabel"
+            @un-highlight-label="unHighlightLabel"
+            :labelInstance="labelInstance"
+            :key="labelInstance.id"
+          />
+        </div>
 
-        <h3 class="heading"><span class="icon"><i class="fas fa-tag"></i></span> Tags</h3>
+        <SidebarHeader
+          icon="fas fa-tag"
+          title="Tags"
+        />
         <div class="tags">
           <Tag
             v-for="tag in photo.userTags"
@@ -129,7 +163,10 @@
           />
         </div>
 
-        <h3 class="heading"><span class="icon"><i class="fas fa-robot"></i></span> AI Tags</h3>
+        <SidebarHeader
+          icon="fas fa-robot"
+          title="Machine Tags"
+        />
         <div class="tags">
           <Tag
             v-for="tag in photo.machineTags"
@@ -144,7 +181,7 @@
 </template>
 
 <script setup>
-  import { computed } from 'vue'
+  import { ref, computed } from 'vue'
   import { useRoute } from 'vue-router'
   import gql from 'graphql-tag'
   import { useQuery, useMutation } from '@vue/apollo-composable'
@@ -157,6 +194,8 @@
   import PhotoDescriptionEditable from './photo-description-editable.vue'
   import SmallNavigationButton from '@/photos/small-navigation-button.vue'
   import Display from './display.vue'
+  import SidebarHeader from './sidebar-header.vue'
+  import SidebarLabelInstance from '@/photos/sidebar-label-instance.vue'
   import Tag from '@/tags/tag.vue'
   import Empty from '@/empty.vue'
 
@@ -183,6 +222,7 @@
 
   const id = computed(() => route.params.id)
   const { result, loading } = useQuery(gql`${gql_queries.photos_show}`, { id: id })
+  const labelHighlights = ref({})
 
   const { mutate: updatePhotoTitle, onDone: onUpdateTitleDone, onError: onUpdateTitleError } = useMutation(
     gql`
@@ -221,6 +261,14 @@
   onUpdateDescriptionError((error) => {
     // todo console.log(error)
   })
+
+  const highlightLabel = (label) => {
+    labelHighlights.value[label.id] = true
+  }
+
+  const unHighlightLabel = (label) => {
+    labelHighlights.value[label.id] = false
+  }
 
   const photo = computed(() => result.value?.photo ?? emptyPhoto)
   const showAlbumBrowser = computed(() => photo.value.albums.length > 0)

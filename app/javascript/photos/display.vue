@@ -8,9 +8,10 @@
       v-if="photo.labelInstances"
       class="labels"
     >
-      <LabelInstance
+      <DisplayLabelInstance
         v-for="labelInstance in photo.labelInstances"
         :labelInstance="labelInstance"
+        :highlighted="labelHighlights[labelInstance.id]"
         :key="labelInstance.id"
       />
       <div v-if="photo.intelligentThumbnail">
@@ -20,7 +21,8 @@
           top: ' + photo.intelligentThumbnail.centerOfGravity.top * 100 + '%; \
           left: ' + photo.intelligentThumbnail.centerOfGravity.left * 100 + '%; \
           width: 2px; \
-          height: 2px;'
+          height: 2px; \
+          opacity: 0'
         "/>
         <div :style="' \
           border: 1px solid blue; \
@@ -28,22 +30,27 @@
           top: ' + photo.intelligentThumbnail.boundingBox.top * 100 + '%; \
           left: ' + photo.intelligentThumbnail.boundingBox.left * 100 + '%; \
           width: ' + photo.intelligentThumbnail.boundingBox.width * 100 + '%; \
-          height: ' + photo.intelligentThumbnail.boundingBox.height * 100 + '%;'
+          height: ' + photo.intelligentThumbnail.boundingBox.height * 100 + '%; \
+          opacity: 0'
         "/>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import LabelInstance from './label-instance.vue'
+<script setup>
+  import DisplayLabelInstance from './display-label-instance.vue'
 
-export default {
-  props: [ 'photo' ],
-  components: {
-    LabelInstance
-  }
-}
+  const props = defineProps({
+    photo: {
+      type: Object,
+      required: true
+    },
+    labelHighlights: {
+      type: Object,
+      required: false
+    }
+  })
 </script>
 
 <style scoped>
@@ -60,18 +67,5 @@ export default {
     top: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
-    transition: 0.3s;
-  }
-  #image-wrapper:hover > .labels {
-    opacity: 1;
-  }
-  .label {
-    cursor: pointer;
-    border: 2px dotted green; position: absolute;
-    transition: 0.3s;
-  }
-  .label:hover {
-    background-color: rgba(255, 255, 255, 0.1);
   }
 </style>

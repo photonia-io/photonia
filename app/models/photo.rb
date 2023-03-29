@@ -117,10 +117,6 @@ class Photo < ApplicationRecord
     lic
   end
 
-  def label_instances
-    label_instance_collection&.label_instances
-  end
-
   def pixel_width
     image.metadata['width']
   end
@@ -136,7 +132,7 @@ class Photo < ApplicationRecord
   def add_intelligent_derivatives
     # Log Intelligent Derivatives Attempt
 
-    if label_instances.blank?
+    if label_instance_collection&.label_instances.blank?
       # Log Error: No Label Instances
       return
     end
@@ -166,7 +162,7 @@ class Photo < ApplicationRecord
   end
 
   def intelligent_thumbnail
-    return unless label_instances.present? && ratio > 1.02
+    return unless label_instance_collection&.label_instances.present? && ratio > 1.02
 
     cog = label_instance_collection.center_of_gravity
     cog_left = cog[:left]

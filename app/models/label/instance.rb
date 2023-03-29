@@ -4,7 +4,8 @@ module Label
   # Tableless
   # Rekognition label instance
   class Instance
-    attr_reader :name, :confidence, :bounding_box
+    attr_reader :id, :name, :confidence, :bounding_box
+    attr_accessor :sequenced_name
 
     def initialize(label, instance)
       @name = label['name']
@@ -25,6 +26,10 @@ module Label
 
     def person?
       name == 'Person'
+    end
+
+    def id
+      @id ||= Digest::MD5.hexdigest("#{name} #{confidence} #{bounding_box.top} #{bounding_box.left} #{bounding_box.width} #{bounding_box.height}")
     end
   end
 end

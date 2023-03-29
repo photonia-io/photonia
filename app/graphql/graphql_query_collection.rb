@@ -168,7 +168,9 @@ class GraphqlQueryCollection
             name
           }
           labelInstances {
-            name
+            id
+            name: sequencedName
+            confidence
             boundingBox {
               top
               left
