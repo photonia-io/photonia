@@ -7,7 +7,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.7.6-node
+      - image: cimg/ruby:3.2.1-node
     steps:
       - checkout
       - run:
@@ -22,7 +22,7 @@ jobs:
           node-version: 16.17.1
   test:
     docker:
-      - image: cimg/ruby:2.7.6-node
+      - image: cimg/ruby:3.2.1-node
       - image: circleci/postgres:11
         environment:
           POSTGRES_USER: photonia
@@ -53,7 +53,7 @@ jobs:
       # - ruby/rubocop-check
   deploy:
     docker:
-      - image: cimg/ruby:2.7.6-node
+      - image: cimg/ruby:3.2.1-node
     steps:
       - checkout
       - ruby/install-deps
