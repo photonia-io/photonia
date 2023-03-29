@@ -43,9 +43,13 @@
     opacity: v-bind(opacity);
   }
   .label > p {
+    position: absolute;
     font-size: 10px;
     background: rgba(255, 255, 255, 0.9);
     padding: 4px;
-    margin: -24px -2px 0 -2px;
+    margin: -26px 0 0 0;
+    white-space: nowrap;
+    min-width: 100%;
+    outline: 2px solid rgba(255, 255, 255, 0.9);
   }
 </style>
