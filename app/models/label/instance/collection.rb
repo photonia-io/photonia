@@ -11,11 +11,26 @@ module Label
       def initialize
         @label_instances = []
         @mode = :person
+        @name_counts = Hash.new(0)
+        @name_counters = Hash.new(0)
+      end
+
+      def add_sequenced_names
+        label_instances.each do |label_instance|
+          if @name_counts[label_instance.name] > 1
+            @name_counters[label_instance.name] += 1
+            label_instance.sequenced_name = "#{label_instance.name} ##{@name_counters[label_instance.name]}"
+          else
+            label_instance.sequenced_name = label_instance.name
+          end
+        end
+        self
       end
 
       def add(label, instances)
         instances.each do |instance|
           @label_instances << Label::Instance.new(label, instance)
+          @name_counts[label['name']] += 1
         end
       end
 

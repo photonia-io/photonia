@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // if a token was found in local storage, fetch the user
 
   if (tokenStore.authorization) {
-    // we will suppose that the token is valid
+    // we will suppose that the token is valid, later we will check the error
     userStore.signedIn = true
     provideApolloClient(apolloClient)
     const { result, loading, error } = useQuery(
@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     watch(error, value => {
       if (value && value.graphQLErrors && value.graphQLErrors.length > 0) {
+        tokenStore.authorization = ''
         userStore.signedIn = false
         router.push({ name: 'users-sign-in' })
       }
