@@ -1,10 +1,14 @@
 pipeline {
   environment {
     PHOTONIA_DATABASE_URL = credentials('photonia-database-url')
+    PHOTONIA_DEPLOY_HOST = credentials('photonia-deploy-host')
+    PHOTONIA_DEPLOY_PORT = credentials('photonia-deploy-port')
+    PHOTONIA_DEPLOY_USER = credentials('photonia-deploy-user')
+    PHOTONIA_DEPLOY_PATH = credentials('photonia-deploy-path')
   }
   agent {
     dockerfile {
-      args '-u root -e RAILS_ENV=test -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL'
+      args '-u root -e RAILS_ENV=test -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL -e PHOTONIA_DEPLOY_HOST=$PHOTONIA_DEPLOY_HOST -e PHOTONIA_DEPLOY_PORT=$PHOTONIA_DEPLOY_PORT -e PHOTONIA_DEPLOY_USER=$PHOTONIA_DEPLOY_USER -e PHOTONIA_DEPLOY_PATH=$PHOTONIA_DEPLOY_PATH'
       additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     }
   }
