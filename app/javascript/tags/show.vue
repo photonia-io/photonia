@@ -27,8 +27,8 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import PhotoItem from '../photos/photo-item'
-  import Pagination from '../pagination'
+  import PhotoItem from '@/shared/photo-item.vue'
+  import Pagination from '@/shared/pagination.vue'
 
   // route
   const route = useRoute()

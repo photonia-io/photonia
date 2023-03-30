@@ -5,9 +5,9 @@ module Types
   class LabelInstanceType < Types::BaseObject
     description 'A label instance'
 
-    field :id, String, null: false
-    field :name, String, null: false
-    field :bounding_box, BoundingBoxType, null: false
-    field :confidence, Float, null: false
+    field :bounding_box, BoundingBoxType, 'Bounding box of the label instance', null: false
+    field :confidence, Float, 'Confidence of the label instance', null: false
+    field :id, String, 'ID of the label instance', null: false
+    field :name, String, 'Name of the label instance', null: false
   end
 end

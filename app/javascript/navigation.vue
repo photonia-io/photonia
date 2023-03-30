@@ -3,7 +3,7 @@
     <div class="container">
       <div class="navbar-brand">
         <router-link :to="{ name: 'root' }" class="navbar-item">
-          <img src="/photonia-logo.png" width="156" height="30">
+          <img src="@/assets/photonia-logo.png" width="156" height="30">
         </router-link>
         <a
           role="button"
@@ -36,6 +36,15 @@
             <span class="icon"><i class="fas fa-tag"></i></span>
             <span>Tags</span>
           </router-link>
+
+          <router-link
+            v-if="userStore.signedIn"
+            :to="{ name: 'photos-upload' }"
+            class="navbar-item"
+          >
+            <span class="icon"><i class="fas fa-upload"></i></span>
+            <span>Upload</span>
+          </router-link>          
 
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link">

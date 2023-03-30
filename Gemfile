@@ -6,15 +6,13 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.2.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.1.7', '>= 6.1.7.1'
+gem 'rails', '~> 7.0'
 # Use postgresql as the database for Active Record
 gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
-gem 'puma', '~> 5.1'
+gem 'puma', '~> 6.1'
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 6.0.0'
-# Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
-gem 'webpacker', '~> 5.4', '>= 5.4.3'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Use Redis adapter to run Action Cable in production
@@ -28,19 +26,19 @@ gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 8.1'
+gem 'acts-as-taggable-on', '~> 9.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
 gem 'devise-jwt'
 gem 'exif'
 gem 'faraday'
-gem 'friendly_id', '~> 5.4.2'
+gem 'friendly_id', '~> 5.5.0'
 gem 'graphql'
 gem 'graphql-pagination'
 gem 'image_processing', '~> 1.8'
 gem 'jsonapi-serializer'
-gem 'pagy', '~> 4'
+gem 'pagy', '~> 6'
 gem 'pg_search'
 gem 'pundit'
 gem 'redis'
@@ -48,6 +46,7 @@ gem 'shrine', '~> 3.0'
 gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'skylight'
+gem 'vite_rails', '~> 3.0', '>= 3.0.14'
 gem 'whenever', require: false
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
 
@@ -61,10 +60,13 @@ group :development, :test do
   gem 'capistrano-rbenv'
   gem 'capistrano-sidekiq'
   gem 'ed25519'
+  gem 'factory_bot_rails'
+  gem 'faker'
   gem 'pry'
   gem 'rspec_junit_formatter' # for CircleCI
   gem 'rspec-rails'
   gem 'rubocop'
+  gem 'rubocop-graphql'
   gem 'rubocop-rails'
   gem 'rubocop-rspec'
 end

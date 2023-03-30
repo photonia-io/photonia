@@ -4,7 +4,7 @@
     class="content"
     @click="startEditing"
   >
-    {{ description }}
+    {{ localDescription }}
   </div>
   <div
     v-else
@@ -12,7 +12,7 @@
   >
     <p class="control is-expanded">
       <input
-        v-model="description"
+        v-model="localDescription"
         class="input"
         type="text"
         placeholder="Enter a description for this photo"
@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { ref, toRef, watch } from 'vue'
 
   const props = defineProps({
     id: {
@@ -46,16 +46,26 @@
   const emit = defineEmits(['updateDescription'])
 
   const editing = ref(false)
-  var oldDescription = ''
+  const localDescription = ref(props.description)
+  var savedDescription = ''
+
+  watch(toRef(props, 'description'), (newDescription) => {
+     localDescription.value = newDescription
+  })
   
   const startEditing = () => {
-    oldDescription = props.description
+    savedDescription = localDescription.value
     editing.value = true
   }
 
+  const cancelEditing = () => {
+    localDescription.value = savedDescription
+    editing.value = false
+  }
+
   const updateDescription = () => {
-    if(oldDescription != props.description) {
-      emit('updateDescription', { id: props.id, description: props.description })
+    if(savedDescription != localDescription.value) {
+      emit('updateDescription', { id: props.id, description: localDescription.value })
     }
     editing.value = false
   }

@@ -19,9 +19,8 @@ class PhotosController < ApplicationController
     @rekognition_tags = @photo.tags.rekognition(true)
   end
 
-  def new
+  def upload
     @photo = Photo.new
-    authorize @photo
   end
 
   def create
@@ -33,9 +32,6 @@ class PhotosController < ApplicationController
 
     if @photo.valid?
       @photo.save
-      redirect_to @photo
-    else
-      render :new
     end
   end
 

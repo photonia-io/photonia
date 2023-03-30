@@ -188,8 +188,7 @@ CREATE TABLE public.photos (
     privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
     rekognition_response jsonb,
     user_id bigint,
-    tsv tsvector,
-    derivatives_version character varying DEFAULT 'original'::character varying
+    tsv tsvector
 );
 
 
@@ -722,6 +721,10 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20210109204633'),
 ('20210109214524'),
 ('20210823184309'),
-('20221111194506');
+('20221111194506'),
+('20230319213542'),
+('20230319213543'),
+('20230319213544'),
+('20230328161122');
 
 

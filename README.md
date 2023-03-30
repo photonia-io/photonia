@@ -4,7 +4,11 @@ A photo hosting service tailored to my needs.
 
 ## Technologies
 
-[<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rails/rails-original-wordmark.svg" width="100"/>](https://rubyonrails.org/) [<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg" width="100"/>](https://vuejs.org/) [<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" width="100"/>](https://graphql.org/) [<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" width="100"/>](https://aws.amazon.com/)
+[<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rails/rails-original-wordmark.svg" width="100"/>](https://rubyonrails.org/) [<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg" width="100"/>](https://vuejs.org/) [<img src="https://raw.githubusercontent.com/devicons/devicon/develop/icons/vitejs/vitejs-original.svg" width="100"/>](https://vitejs.dev/) [<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" width="100"/>](https://graphql.org/) [<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" width="100"/>](https://aws.amazon.com/)
+
+* The backend is Ruby on Rails with Sidekiq as the job processor
+* Frontend is VueJS 3 - Development, testing and bundling is done by ViteJS
+* Uses GraphQL for communicating between the front and backend, except the photo upload which is a REST call (for now)
 
 ## Features
 
@@ -16,3 +20,8 @@ A photo hosting service tailored to my needs.
 ## Setup
 
     sudo apt install libpq-dev libexif-dev
+
+## Development
+
+    bin/vite
+    bin/rails s

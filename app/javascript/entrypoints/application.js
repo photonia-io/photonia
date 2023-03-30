@@ -1,3 +1,5 @@
+import '@/styles/application.scss'
+
 import { createApp, provide, h, watch } from 'vue'
 import App from '../app.vue'
 
@@ -42,8 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
       path: cjda.users_settings_path,
       name: 'users-settings',
       component: () => import('../users/settings.vue'),
-      beforeEnter: redirectIfNotSignedIn,
+      beforeEnter: redirectIfNotSignedIn
     },
+    {
+      path: cjda.photos_path + '/upload',
+      name: 'photos-upload',
+      component: () => import('../photos/upload.vue'),
+      beforeEnter: redirectIfNotSignedIn
+    }
   ]
 
   const router = createRouter({
@@ -55,18 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const httpLink = createHttpLink({ uri: cjda.graphql_url })
   const authLink = setContext((_, { headers }) => {
-    const csrfToken = document.
-      querySelector('meta[name="csrf-token"]').
-      attributes.content.value;
-
     return {
       headers: {
         ...headers,
-        'X-CSRF-Token': csrfToken,
         authorization: tokenStore.authorization,
       },
-    };
-  });
+    }
+  })
 
   const afterwareLink = new ApolloLink((operation, forward) => {
     return forward(operation).map((response) => {
@@ -83,13 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const apolloClient = new ApolloClient({
     link: authLink.concat(afterwareLink.concat(httpLink)),
     cache: new InMemoryCache(),
-    // connectToDevTools: true,
+    connectToDevTools: true,
   })
 
   // if a token was found in local storage, fetch the user
 
   if (tokenStore.authorization) {
-    // todo console.log('authorization exists', tokenStore.authorization)
+    // we will suppose that the token is valid
+    userStore.signedIn = true
     provideApolloClient(apolloClient)
     const { result, loading, error } = useQuery(
       gql`
@@ -102,8 +106,14 @@ document.addEventListener('DOMContentLoaded', () => {
     )
   
     watch(result, value => {
-      userStore.signedIn = true
       userStore.email = value.userSettings.email
+    })
+
+    watch(error, value => {
+      if (value && value.graphQLErrors && value.graphQLErrors.length > 0) {
+        userStore.signedIn = false
+        router.push({ name: 'users-sign-in' })
+      }
     })
   }
 

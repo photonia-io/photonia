@@ -6,7 +6,6 @@
 #
 #  id                   :bigint           not null, primary key
 #  date_taken           :datetime
-#  derivatives_version  :string           default("original")
 #  description          :text
 #  exif                 :jsonb
 #  flickr_faves         :integer
@@ -43,6 +42,7 @@ class Photo < ApplicationRecord
   friendly_id :serial_number, use: :slugged
 
   include ImageUploader::Attachment(:image)
+  include SerialNumberSetter
 
   include PgSearch::Model
   pg_search_scope :search,
@@ -148,12 +148,18 @@ class Photo < ApplicationRecord
 
     image_attacher.add_derivative(
       :medium_intelligent,
-      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_MEDIUM_SIDE'], ENV['PHOTONIA_MEDIUM_SIDE'])
+      intelligent_crop.resize_to_fill!(
+        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
+        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+      )
     )
 
     image_attacher.add_derivative(
       :thumbnail_intelligent,
-      intelligent_crop.resize_to_fill!(ENV['PHOTONIA_THUMBNAIL_SIDE'], ENV['PHOTONIA_THUMBNAIL_SIDE'])
+      intelligent_crop.resize_to_fill!(
+        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
+        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+      )
     )
 
     image_attacher.atomic_promote
@@ -206,11 +212,7 @@ class Photo < ApplicationRecord
   end
 
   def set_fields
-    if serial_number.nil?
-      maximum_serial_number = Photo.unscoped.maximum('serial_number') || 1_000_000_000
-      self.serial_number = maximum_serial_number + rand(1..10_000_000)
-    end
-
+    set_serial_number
     self.imported_at = Time.current if imported_at.nil?
   end
 end

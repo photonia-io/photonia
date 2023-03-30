@@ -28,8 +28,8 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import PhotoItem from './photo-item'
-  import Pagination from '../pagination'
+  import PhotoItem from '@/shared/photo-item.vue'
+  import Pagination from '@/shared/pagination.vue'
 
   useTitle('Photos') // todo: add page number
 

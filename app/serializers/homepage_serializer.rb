@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HomepageSerializer
   include JSONAPI::Serializer
   has_one :latest_photo, record_type: :photo

@@ -1,4 +1,6 @@
 require:
+  - rubocop-capybara
+  - rubocop-graphql
   - rubocop-rspec
   - rubocop-rails
 

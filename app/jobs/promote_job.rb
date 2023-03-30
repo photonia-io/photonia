@@ -7,7 +7,7 @@ class PromoteJob < ApplicationJob
 
     attacher = attacher_class.retrieve(
       model: record,
-      name: name,
+      name:,
       file: file_data
     )
 

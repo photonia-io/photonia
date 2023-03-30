@@ -4,29 +4,36 @@
 class RekognitionTagger
   def initialize
     @client = Aws::Rekognition::Client.new(
-      region: ENV['PHOTONIA_S3_REGION'],
-      access_key_id: ENV['PHOTONIA_REKOGNITION_ACCESS_KEY_ID'],
-      secret_access_key: ENV['PHOTONIA_REKOGNITION_SECRET_ACCESS_KEY']
+      region: ENV.fetch('PHOTONIA_S3_REGION', nil),
+      access_key_id: ENV.fetch('PHOTONIA_REKOGNITION_ACCESS_KEY_ID', nil),
+      secret_access_key: ENV.fetch('PHOTONIA_REKOGNITION_SECRET_ACCESS_KEY', nil)
     )
     @tagging_source = TaggingSource.find_by(name: 'Rekognition')
   end
 
   def tag(photo)
+    rekognition_labels = detect_labels(photo)
+    rekognition_tag_list = rekognition_labels.join(',')
+    @tagging_source.tag(photo, with: rekognition_tag_list, on: :tags)
+    rekognition_tag_list
+  end
+
+  private
+
+  def detect_labels(photo)
     response = @client.detect_labels(
-      image: {
-        s3_object: {
-          bucket: ENV['PHOTONIA_S3_BUCKET'],
-          name: photo.image_data['derivatives']['extralarge']['id']
-        }
-      },
+      image: { s3_object: s3_object(photo) },
       max_labels: 50
     )
+    photo.rekognition_response = response.to_h
+    photo.save(validate: false)
+    response.labels.map { |l| l.name.downcase }
+  end
 
-    photo.update_attribute(:rekognition_response, response.to_h)
-
-    rekognition_tag_list = response.labels.map { |l| l.name.downcase }.join(',')
-    @tagging_source.tag(photo, with: rekognition_tag_list, on: :tags)
-
-    rekognition_tag_list
+  def s3_object(photo)
+    {
+      bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil),
+      name: photo.image_data['derivatives']['extralarge']['id']
+    }
   end
 end
