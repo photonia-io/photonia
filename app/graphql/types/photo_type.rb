@@ -32,6 +32,10 @@ module Types
       @object.description || ''
     end
 
+    def label_instances
+      @object.label_instance_collection&.add_sequenced_names.label_instances
+    end
+
     def user_tags
       @object.tags.rekognition(false)
     end
