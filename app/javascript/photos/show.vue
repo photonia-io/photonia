@@ -134,12 +134,12 @@
         </div>
 
         <SidebarHeader
-          v-if="photo.labelInstances"
+          v-if="photo.labelInstances?.length > 0"
           icon="far fa-square"
           title="Labels"
         />
         <div
-          v-if="photo.labelInstances"
+          v-if="photo.labelInstances?.length > 0"
           class="tags"
         >
           <SidebarLabelInstance
