@@ -20,7 +20,9 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh 'bundle exec cap production deploy'
+        sshagent (credentials: ['photonia-private-key']) {
+          sh 'bundle exec cap production deploy'
+        }
       }
     }
   }
