@@ -96,8 +96,13 @@ class Photo < ApplicationRecord
   def populate_exif_fields
     file = image_attacher.file
     file.open do
-      if exif(file)&.date_time_original
-        self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
+      begin
+        if exif(file)&.date_time_original
+          self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
+        end
+      rescue Exif::NotReadable
+        # Log Error: Exif Not Readable
+        Rails.logger.error "Exif Not Readable: #{file.tempfile}"
       end
     end
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
