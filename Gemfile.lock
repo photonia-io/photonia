@@ -212,7 +212,7 @@ GEM
     listen (3.8.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    loofah (2.19.1)
+    loofah (2.20.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.8.1)
@@ -479,7 +479,7 @@ DEPENDENCIES
   rubocop-rspec
   sass-rails (>= 6.0.0)
   selenium-webdriver
-  sentry-rails (~> 5.8)
+  sentry-rails (~> 5.8, >= 5.8.0)
   sentry-ruby (~> 5.8)
   shrine (~> 3.0)
   sidekiq
@@ -498,4 +498,4 @@ RUBY VERSION
    ruby 3.2.1p31
 
 BUNDLED WITH
-   2.4.8
+   2.4.6
