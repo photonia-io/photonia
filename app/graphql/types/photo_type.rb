@@ -55,11 +55,11 @@ module Types
     def image_url(type:)
       case type
       when 'intelligent_or_square_medium'
-        @object.image_url(:medium_intelligent).presence || @object.image_url(:medium_square)
+        @object.image_url(:medium_intelligent).presence || @object.image_url(:medium_square) || ''
       when 'intelligent_or_square_thumbnail'
-        @object.image_url(:thumbnail_intelligent).presence || @object.image_url(:thumbnail_square)
+        @object.image_url(:thumbnail_intelligent).presence || @object.image_url(:thumbnail_square) || ''
       else
-        @object.image_url(type.to_sym)
+        @object.image_url(type.to_sym).presence || ''
       end
     end
   end
