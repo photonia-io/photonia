@@ -122,7 +122,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log(import.meta.env.MODE)
 
-  // Sentry
+  // go for Vue!
+
+  const app = createApp({
+    setup() {
+      provide(DefaultApolloClient, apolloClient)
+    },
+    render: () => h(App),
+  })
+
+  app.config.globalProperties.gql_queries = window.gql_queries
+  app.config.globalProperties.gql_cached_query = window.gql_cached_query
+  app.config.globalProperties.gql_cached_result = window.gql_cached_result
+  
+  // Start Sentry
 
   if (import.meta.env.PROD) {
     Sentry.init({
@@ -140,19 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
       tracesSampleRate: 0.5,
     });
   }
-
-  // go for Vue!
-
-  const app = createApp({
-    setup() {
-      provide(DefaultApolloClient, apolloClient)
-    },
-    render: () => h(App),
-  })
-
-  app.config.globalProperties.gql_queries = window.gql_queries
-  app.config.globalProperties.gql_cached_query = window.gql_cached_query
-  app.config.globalProperties.gql_cached_result = window.gql_cached_result
 
   app.use(router)
   app.use(pinia)
