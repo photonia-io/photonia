@@ -18,6 +18,8 @@ import gql from 'graphql-tag'
 import { useTokenStore } from '../stores/token'
 import { useUserStore } from '../stores/user'
 
+import * as Sentry from '@sentry/vue'
+
 document.addEventListener('DOMContentLoaded', () => {
   const userStore = useUserStore(pinia)
 
@@ -116,6 +118,27 @@ document.addEventListener('DOMContentLoaded', () => {
         router.push({ name: 'users-sign-in' })
       }
     })
+  }
+
+  console.log(import.meta.env.MODE)
+
+  // Sentry
+
+  if (import.meta.env.PROD) {
+    Sentry.init({
+      app,
+      dsn: cjda.sentry_dsn,
+      integrations: [
+        new Sentry.BrowserTracing({
+          routingInstrumentation: Sentry.vueRouterInstrumentation(router),
+          tracePropagationTargets: ["photos.rusiczki.net", /^\//],
+        }),
+      ],
+      // Set tracesSampleRate to 1.0 to capture 100%
+      // of transactions for performance monitoring.
+      // We recommend adjusting this value in production
+      tracesSampleRate: 0.5,
+    });
   }
 
   // go for Vue!
