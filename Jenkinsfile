@@ -21,7 +21,7 @@ pipeline {
     }
     stage('deploy') {
       when {
-        branch 'master'
+        tag "release-*"
       }
       steps {
         sshagent (credentials: ['photonia-private-key']) {
