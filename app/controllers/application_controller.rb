@@ -18,7 +18,8 @@ class ApplicationController < ActionController::Base
         tags_path:,
         users_sign_in_path:,
         users_sign_out_path:,
-        users_settings_path:
+        users_settings_path:,
+        sentry_dsn: ENV.fetch('PHOTONIA_FE_SENTRY_DSN', '')
       )
     ).serializable_hash.to_json
   end
