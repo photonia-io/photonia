@@ -19,8 +19,12 @@ Rails.application.routes.draw do
   root 'homepage#index'
 
   # sidekiq
-  authenticate :user do
-    require 'sidekiq/web'
-    mount Sidekiq::Web => '/sidekiq'
+  require 'sidekiq/web'
+
+  Sidekiq::Web.use Rack::Auth::Basic do |username, password|
+    username == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_USERNAME') &&
+      password == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_PASSWORD')
   end
+
+  mount Sidekiq::Web => '/sidekiq'
 end

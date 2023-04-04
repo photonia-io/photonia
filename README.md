@@ -25,3 +25,10 @@ A photo hosting service tailored to my needs.
 
     bin/vite
     bin/rails s
+
+## Deployment
+
+1. Draft a new release on the [releases page](https://github.com/photonia-io/photonia/releases)
+    - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
+    - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
+2. Publish the release

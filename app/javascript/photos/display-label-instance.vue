@@ -28,7 +28,6 @@
 
   const opacity = ref(0)
   watch(toRef(props, 'highlighted'), (newHighlighted) => {
-    console.log(props.labelInstance.id, newHighlighted)
     opacity.value = newHighlighted ? 1 : 0
   })
 </script>
