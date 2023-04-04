@@ -18,6 +18,7 @@ module Types
     field :next_photo, PhotoType, 'Next photo', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :user_tags, [TagType], 'User (non-Rekognition) tags', null: true
+    field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
 
     field :image_url, String, null: false do
       description 'URL of the image'
@@ -61,6 +62,10 @@ module Types
       else
         @object.image_url(type.to_sym).presence || ''
       end
+    end
+
+    def rekognition_label_model_version
+      @object.rekognition_response['label_model_version'].presence || ''
     end
   end
 end

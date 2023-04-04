@@ -123,13 +123,21 @@
         <div class="block">
           <span class="icon-text is-size-7">
             <span class="icon"><i class="fas fa-camera"></i></span>
-            <span>Date Taken:</span>
+            <span class="has-text-weight-semibold">Date Taken:</span>
             <span v-if="!loading" class="ml-1">{{ momentFormat(photo.dateTaken) }}</span>
           </span>
           <span class="icon-text is-size-7">
             <span class="icon"><i class="fas fa-arrow-circle-up"></i></span>
-            <span>Date Posted:</span>
+            <span class="has-text-weight-semibold">Date Posted:</span>
             <span v-if="!loading" class="ml-1">{{ momentFormat(photo.importedAt) }}</span>
+          </span>
+          <span
+            v-if="!loading && photo.rekognitionLabelModelVersion !== ''"
+            class="icon-text is-size-7"
+          >
+            <span class="icon"><i class="fas fa-robot"></i></span>
+            <span class="has-text-weight-semibold">Rekognition Label Model Version:</span>
+            <span class="ml-1">{{ photo.rekognitionLabelModelVersion }}</span>
           </span>
         </div>
 
