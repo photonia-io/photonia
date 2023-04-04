@@ -7,7 +7,7 @@
 	rotate 15
 	compress
 	notifempty
-	create 0644 photos photos
+	create 0644 user group
 	sharedscripts
 	postrotate
 		touch /var/www/directory/current/tmp/restart.txt
