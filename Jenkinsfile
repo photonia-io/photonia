@@ -10,7 +10,7 @@ pipeline {
   agent {
     dockerfile {
       args '-u root -e RAILS_ENV=test -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL -e PHOTONIA_DEPLOY_HOST=$PHOTONIA_DEPLOY_HOST -e PHOTONIA_DEPLOY_PORT=$PHOTONIA_DEPLOY_PORT -e PHOTONIA_DEPLOY_USER=$PHOTONIA_DEPLOY_USER -e PHOTONIA_DEPLOY_PATH=$PHOTONIA_DEPLOY_PATH -e PHOTONIA_DEVISE_JWT_SECRET_KEY=$PHOTONIA_DEVISE_JWT_SECRET_KEY'
-      additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME.replace('\/', '-')}-${env.BUILD_NUMBER}"
+      additionalBuildArgs "-t photonia-jenkins-build:${env.BRANCH_NAME.replace('/', '-')}-${env.BUILD_NUMBER}"
     }
   }
   stages {
