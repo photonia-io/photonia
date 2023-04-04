@@ -21,5 +21,9 @@ module Photonia
 
     config.active_record.schema_format = :sql
     config.active_job.queue_adapter = :sidekiq
+
+    # for sidekiq
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore, key: '_photonia_session'
   end
 end
