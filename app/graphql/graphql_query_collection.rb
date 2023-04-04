@@ -190,6 +190,7 @@ class GraphqlQueryCollection
               left
             }
           }
+          rekognitionLabelModelVersion
         }
       }
     GQL
