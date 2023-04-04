@@ -62,6 +62,49 @@ class Photo < ApplicationRecord
   belongs_to :user
   has_many :albums_photos, dependent: :destroy
   has_many :albums, through: :albums_photos
+  has_many :labels, dependent: :destroy do
+    def center_of_gravity
+      Photo::Point.new(average(:top), average(:left))
+    end
+
+    def average(type)
+      total = 0
+      area_total = 0
+      filtered.each do |label|
+        total += label.center.send(type) * label.area
+        area_total += label.area
+      end
+      if area_total.zero?
+        0.5
+      else
+        total / area_total
+      end
+    end
+
+    def filtered
+      person_present? ? proxy_association.target.select(&:person?) : proxy_association.target
+    end
+
+    def person_present?
+      proxy_association.target.any? { |label| label.person? }
+    end
+
+    def add_sequenced_names
+      @name_counts = Hash.new(0)
+      @name_counters = Hash.new(0)
+      proxy_association.target.each { |label| @name_counts[label.name] += 1 }
+      proxy_association.target.each do |label|
+        label_name = label.name
+        if @name_counts[label_name] > 1
+          @name_counters[label_name] += 1
+          label.sequenced_name = "#{label_name} ##{@name_counters[label_name]}"
+        else
+          label.sequenced_name = label_name
+        end
+      end
+      self
+    end
+  end
 
   before_validation :set_fields, prepend: true
 
@@ -101,25 +144,11 @@ class Photo < ApplicationRecord
           self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
         end
       rescue Exif::NotReadable
-        # Log Error: Exif Not Readable
         Rails.logger.error "Exif Not Readable: #{file.tempfile}"
       end
     end
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
     self
-  end
-
-  def label_instance_collection
-    return unless rekognition_response
-
-    lic = Label::Instance::Collection.new
-    rekognition_response['labels'].each do |label|
-      next unless (instances = label['instances'].presence)
-
-      lic.add(label, instances)
-    end
-
-    lic
   end
 
   def pixel_width
@@ -137,7 +166,7 @@ class Photo < ApplicationRecord
   def add_intelligent_derivatives
     # Log Intelligent Derivatives Attempt
 
-    if label_instance_collection&.label_instances.blank?
+    if labels.blank?
       # Log Error: No Label Instances
       return
     end
@@ -167,11 +196,11 @@ class Photo < ApplicationRecord
   end
 
   def intelligent_thumbnail
-    return unless label_instance_collection&.label_instances.present? && ratio > 1.02
+    return unless labels.present? && ratio > 1.02
 
-    cog = label_instance_collection.center_of_gravity
-    cog_left = cog[:left]
-    cog_top = cog[:top]
+    cog = labels.center_of_gravity
+    cog_left = cog.left
+    cog_top = cog.top
     cog_x = (pixel_width * cog_left).to_i
     cog_y = (pixel_height * cog_top).to_i
     distances = {

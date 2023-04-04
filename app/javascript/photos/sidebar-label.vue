@@ -4,13 +4,13 @@
     @mouseover="hovered(true)"
     @mouseout="hovered(false)"
   >
-    <span class="icon"><i class="far fa-square"></i></span>{{ labelInstance.name }} ({{ Math.ceil(labelInstance.confidence) }}%)
+    <span class="icon"><i class="far fa-square"></i></span>{{ label.name }} ({{ Math.ceil(label.confidence) }}%)
   </div>
 </template>
 
 <script setup>
   const props = defineProps({
-    labelInstance: {
+    label: {
       type: Object,
       required: true
     }
@@ -20,9 +20,9 @@
 
   const hovered = (state) => {
     if (state) {
-      emit('highlightLabel', props.labelInstance)
+      emit('highlightLabel', props.label)
     } else {
-      emit('unHighlightLabel', props.labelInstance)
+      emit('unHighlightLabel', props.label)
     }
   }
 </script>

@@ -11,7 +11,7 @@ module Types
     field :id, String, 'ID of the photo', null: false
     field :imported_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
-    field :label_instances, [LabelInstanceType], 'Label instances', null: true
+    field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
     field :name, String, 'Title of the photo', null: false
@@ -32,8 +32,8 @@ module Types
       @object.description || ''
     end
 
-    def label_instances
-      @object.label_instance_collection&.add_sequenced_names.label_instances
+    def labels
+      @object.labels.load.add_sequenced_names
     end
 
     def user_tags

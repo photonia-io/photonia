@@ -2,13 +2,13 @@
   <div
     class="label"
     :style="'\
-      top: ' + labelInstance.boundingBox.top * 100 + '%; \
-      left: ' + labelInstance.boundingBox.left * 100 + '%; \
-      width: ' + labelInstance.boundingBox.width * 100 + '%; \
-      height: ' + labelInstance.boundingBox.height * 100 + '%;'
+      top: ' + label.boundingBox.top * 100 + '%; \
+      left: ' + label.boundingBox.left * 100 + '%; \
+      width: ' + label.boundingBox.width * 100 + '%; \
+      height: ' + label.boundingBox.height * 100 + '%;'
     "
   >
-    <p>{{ labelInstance.name }}</p>
+    <p>{{ label.name }}</p>
   </div>
 </template>
 
@@ -16,7 +16,7 @@
   import { ref, toRef, watch } from 'vue'
 
   const props = defineProps({
-    labelInstance: {
+    label: {
       type: Object,
       required: true
     },

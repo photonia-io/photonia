@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 namespace :albums do
-  desc 'Resets tag tables'
+  desc 'Resets album tables'
   task reset: :environment do
     ActiveRecord::Base.connection.execute(
       <<~SQL.squish
