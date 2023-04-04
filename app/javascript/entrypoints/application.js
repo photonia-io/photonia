@@ -120,8 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
 
-  console.log(import.meta.env.MODE)
-
   // go for Vue!
 
   const app = createApp({
