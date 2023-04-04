@@ -167,7 +167,7 @@ class GraphqlQueryCollection
             id
             name
           }
-          labelInstances {
+          labels {
             id
             name: sequencedName
             confidence

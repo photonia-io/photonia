@@ -5,14 +5,14 @@
   >
     <img :src="photo.largeImageUrl" />
     <div
-      v-if="photo.labelInstances"
+      v-if="photo.labels"
       class="labels"
     >
-      <DisplayLabelInstance
-        v-for="labelInstance in photo.labelInstances"
-        :labelInstance="labelInstance"
-        :highlighted="labelHighlights[labelInstance.id]"
-        :key="labelInstance.id"
+      <DisplayLabel
+        v-for="label in photo.labels"
+        :label="label"
+        :highlighted="labelHighlights[label.id]"
+        :key="label.id"
       />
       <div v-if="photo.intelligentThumbnail">
         <div :style="' \
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-  import DisplayLabelInstance from './display-label-instance.vue'
+  import DisplayLabel from './display-label.vue'
 
   const props = defineProps({
     photo: {

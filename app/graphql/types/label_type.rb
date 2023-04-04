@@ -2,8 +2,8 @@
 
 module Types
   # GraphQL Label Instance Type
-  class LabelInstanceType < Types::BaseObject
-    description 'A label instance'
+  class LabelType < Types::BaseObject
+    description 'A label'
 
     field :bounding_box, BoundingBoxType, 'Bounding box of the label instance', null: false
     field :confidence, Float, 'Confidence of the label instance', null: false

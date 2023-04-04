@@ -49,6 +49,8 @@ CREATE FUNCTION public.photos_trigger() RETURNS trigger
 
 SET default_tablespace = '';
 
+SET default_table_access_method = heap;
+
 --
 -- Name: albums; Type: TABLE; Schema: public; Owner: -
 --
@@ -161,6 +163,43 @@ CREATE SEQUENCE public.friendly_id_slugs_id_seq
 --
 
 ALTER SEQUENCE public.friendly_id_slugs_id_seq OWNED BY public.friendly_id_slugs.id;
+
+
+--
+-- Name: labels; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.labels (
+    id bigint NOT NULL,
+    photo_id bigint NOT NULL,
+    name character varying,
+    confidence double precision,
+    top double precision,
+    "left" double precision,
+    width double precision,
+    height double precision,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: labels_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.labels_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: labels_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.labels_id_seq OWNED BY public.labels.id;
 
 
 --
@@ -378,6 +417,13 @@ ALTER TABLE ONLY public.friendly_id_slugs ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: labels id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.labels ALTER COLUMN id SET DEFAULT nextval('public.labels_id_seq'::regclass);
+
+
+--
 -- Name: photos id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -442,6 +488,14 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 ALTER TABLE ONLY public.friendly_id_slugs
     ADD CONSTRAINT friendly_id_slugs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: labels labels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.labels
+    ADD CONSTRAINT labels_pkey PRIMARY KEY (id);
 
 
 --
@@ -525,6 +579,13 @@ CREATE UNIQUE INDEX index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope
 --
 
 CREATE INDEX index_friendly_id_slugs_on_sluggable_type_and_sluggable_id ON public.friendly_id_slugs USING btree (sluggable_type, sluggable_id);
+
+
+--
+-- Name: index_labels_on_photo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_labels_on_photo_id ON public.labels USING btree (photo_id);
 
 
 --
@@ -650,7 +711,15 @@ CREATE INDEX taggings_taggable_context_idx ON public.taggings USING btree (tagga
 -- Name: photos tsvupdate; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER tsvupdate BEFORE INSERT OR UPDATE ON public.photos FOR EACH ROW EXECUTE PROCEDURE public.photos_trigger();
+CREATE TRIGGER tsvupdate BEFORE INSERT OR UPDATE ON public.photos FOR EACH ROW EXECUTE FUNCTION public.photos_trigger();
+
+
+--
+-- Name: labels fk_rails_6e98447d68; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.labels
+    ADD CONSTRAINT fk_rails_6e98447d68 FOREIGN KEY (photo_id) REFERENCES public.photos(id);
 
 
 --
@@ -725,6 +794,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230319213542'),
 ('20230319213543'),
 ('20230319213544'),
-('20230328161122');
+('20230328161122'),
+('20230403133751');
 
 

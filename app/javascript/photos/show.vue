@@ -142,20 +142,20 @@
         </div>
 
         <SidebarHeader
-          v-if="photo.labelInstances?.length > 0"
+          v-if="photo.labels?.length > 0"
           icon="far fa-square"
           title="Labels"
         />
         <div
-          v-if="photo.labelInstances?.length > 0"
+          v-if="photo.labels?.length > 0"
           class="tags"
         >
-          <SidebarLabelInstance
-            v-for="labelInstance in photo.labelInstances"
+          <SidebarLabel
+            v-for="label in photo.labels"
             @highlight-label="highlightLabel"
             @un-highlight-label="unHighlightLabel"
-            :labelInstance="labelInstance"
-            :key="labelInstance.id"
+            :label="label"
+            :key="label.id"
           />
         </div>
 
@@ -203,7 +203,7 @@
   import SmallNavigationButton from '@/photos/small-navigation-button.vue'
   import Display from './display.vue'
   import SidebarHeader from './sidebar-header.vue'
-  import SidebarLabelInstance from '@/photos/sidebar-label-instance.vue'
+  import SidebarLabel from '@/photos/sidebar-label.vue'
   import Tag from '@/tags/tag.vue'
   import Empty from '@/empty.vue'
 
@@ -219,7 +219,7 @@
           albums: [],
           tags: [],
           rekognitionTags: [],
-          labelInstances: null,
+          labels: null,
           intelligentThumbnail: null
         }
 
