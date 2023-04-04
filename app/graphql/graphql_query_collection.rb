@@ -133,6 +133,8 @@ class GraphqlQueryCollection
           name
           description
           largeImageUrl: imageUrl(type: "large")
+          width
+          height
           dateTaken
           importedAt
           previousPhoto {
