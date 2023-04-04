@@ -26,7 +26,7 @@ pipeline {
       }
       steps {
         sshagent (credentials: ['photonia-private-key']) {
-          sh 'bundle exec cap production deploy'
+          sh 'bundle exec cap production deploy BRANCH=${env.BRANCH_NAME}'
         }
       }
     }

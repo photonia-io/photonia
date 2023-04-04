@@ -49,3 +49,5 @@ set :rbenv_ruby, '3.2.1'
 set :sidekiq_service_unit_name, 'sidekiq-photonia'
 
 set :asset_prefix, 'vite'
+
+set :branch, ENV['BRANCH'] || 'master'
