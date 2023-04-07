@@ -33,34 +33,6 @@
       required: false
     }
   })
-
-  const viewportWidth = ref(window.innerWidth)
-
-  const resizeListener = () => {
-    viewportWidth.value = window.innerWidth
-  }
-
-  onMounted(() => window.addEventListener('resize', resizeListener))
-  onUnmounted(() => window.removeEventListener('resize', resizeListener))
-
-  const imageWrapperWidth = computed(() => {
-    if (viewportWidth.value < 768) {
-      return 100
-    } else if (props.photo.width != -1 && props.photo.height != -1) {
-      const ratio = props.photo.width / props.photo.height
-      console.log(ratio)
-      if (ratio > 1.2) {
-        // landscape
-        return 100
-      } else if (ratio >= 0.8 && ratio <= 1.2) {
-        // square
-        return 95
-      } else {
-        // portrait
-        return 100 - (1 - ratio) * 100
-      }
-    }
-  })
 </script>
 
 <style scoped>

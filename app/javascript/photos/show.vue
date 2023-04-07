@@ -195,8 +195,6 @@
           name: '',
           description: '',
           largeImageUrl: '',
-          width: -1,
-          height: -1,
           previousPhoto: null,
           nextPhoto: null,
           albums: [],
