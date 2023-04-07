@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="columns is-centered">
+    <div class="columns is-centered mt-5 mb-0">
       <div class="column is-5-tablet is-5-desktop is-5-widescreen">
         <form
           @submit.prevent="submit"

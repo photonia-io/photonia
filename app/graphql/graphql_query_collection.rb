@@ -133,6 +133,7 @@ class GraphqlQueryCollection
           name
           description
           largeImageUrl: imageUrl(type: "large")
+          extralargeImageUrl: imageUrl(type: "extralarge")
           width
           height
           dateTaken

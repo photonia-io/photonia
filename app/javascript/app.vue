@@ -1,11 +1,7 @@
 <template>
   <div>
     <Navigation></Navigation>
-    <section class="section pt-5">
-      <div class="container is-dark">
-        <RouterView></RouterView>
-      </div>
-    </section>
+    <RouterView></RouterView>
     <Footer></Footer>
   </div>
 </template>

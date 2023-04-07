@@ -23,18 +23,17 @@
       >
         <div class="navbar-start">
           <router-link :to="{ name: 'photos-index' }" class="navbar-item">
-            <span class="icon"><i class="fas fa-image"></i></span>
-            <span>Photos</span>
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-image"></i></span>
+              <span>Photos</span>
+            </span>
           </router-link>
 
           <router-link :to="{ name: 'albums-index' }" class="navbar-item">
-            <span class="icon"><i class="fas fa-book"></i></span>
-            <span>Albums</span>
-          </router-link>
-
-          <router-link :to="{ name: 'tags-index' }" class="navbar-item">
-            <span class="icon"><i class="fas fa-tag"></i></span>
-            <span>Tags</span>
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-book"></i></span>
+              <span>Albums</span>
+            </span>
           </router-link>
 
           <router-link
@@ -42,46 +41,44 @@
             :to="{ name: 'photos-upload' }"
             class="navbar-item"
           >
-            <span class="icon"><i class="fas fa-upload"></i></span>
-            <span>Upload</span>
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-upload"></i></span>
+              <span>Upload</span>
+            </span>
           </router-link>          
 
-          <div class="navbar-item has-dropdown is-hoverable">
-            <a class="navbar-link">
-              More
-            </a>
-            <div class="navbar-dropdown">
-              <a class="navbar-item">
-                About
-              </a>
-              <a class="navbar-item">
-                Contact
-              </a>
-              <hr class="navbar-divider">
-              <!-- <%= link_to 'Upload', new_photo_path, class: 'navbar-item' %> -->
-              <router-link
-                v-if="userStore.signedIn"
-                :to="{ name: 'users-settings' }"
-                class="navbar-item"
-              >
-                Settings
-              </router-link>
-              <router-link
-                v-if="userStore.signedIn"
-                :to="{ name: 'users-sign-out' }"
-                class="navbar-item"
-              >
-                Sign Out
-              </router-link>
-              <router-link
-                v-if="!userStore.signedIn"
-                :to="{ name: 'users-sign-in' }"
-                class="navbar-item"
-              >
-                Sign In
-              </router-link>
-            </div>
-          </div>
+          <router-link
+            v-if="userStore.signedIn"
+            :to="{ name: 'users-settings' }"
+            class="navbar-item"
+          >
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-cog"></i></span>
+              <span>Settings</span>
+            </span>
+          </router-link>
+
+          <router-link
+            v-if="userStore.signedIn"
+            :to="{ name: 'users-sign-out' }"
+            class="navbar-item"
+          >
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+              <span>Sign Out</span>
+            </span>
+          </router-link>
+
+          <router-link
+            v-if="!userStore.signedIn"
+            :to="{ name: 'users-sign-in' }"
+            class="navbar-item"
+          >
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-sign-in-alt"></i></span>
+              <span>Sign In</span>
+            </span>
+          </router-link>
         </div>
 
         <div class="navbar-end">

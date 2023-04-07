@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <h1 class="title">Upload Photos</h1>
+  <div class="container">
+    <h1 class="title mt-5 mb-0">Upload Photos</h1>
     <hr class="is-hidden-touch mt-2 mb-4">
     <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
 		  <h3>Drop files here to upload</h3>
@@ -44,22 +44,30 @@
         <div class="column is-10">
           <div class="columns">
             <div class="column is-half">
-              <label class="label is-small">
-                Name
-                <input
-                  type="text"
-                  class="input is-small"
-                  v-model="file.data['photo[name]']"
-                >
-              </label>
-              <label class="label is-small">
-                Description
-                <textarea
-                  class="textarea is-small"
-                  v-model="file.data['photo[description]']"
-                >
-                </textarea>
-              </label>
+              <div class="field">
+                <label class="label is-small">
+                  Name
+                  <div class="control">
+                    <input
+                      type="text"
+                      class="input is-small"
+                      v-model="file.data['photo[name]']"
+                    >
+                  </div>
+                </label>
+              </div>
+              <div class="field">
+                <label class="label is-small">
+                  Description
+                  <div class="control">
+                    <textarea
+                      class="textarea is-small"
+                      v-model="file.data['photo[description]']"
+                    >
+                    </textarea>
+                  </div>
+                </label>
+              </div>
             </div>
             <div class="column is-half">
               <p>

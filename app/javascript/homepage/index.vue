@@ -1,10 +1,30 @@
 <template>
   <div>
-    <div class="block">
-      <LatestPhoto
-        v-if="result && result.latestPhoto"
-        :photo="result.latestPhoto"
-      />
+    <div class="container">
+      <h1 class="title mt-5 mb-1"></h1>
+    </div>
+    <DisplayHero
+      v-if="!loading"
+      :photo="result.latestPhoto"
+    />
+    <div class="container">
+      <div
+      v-if="!loading"
+      class="level mt-3"
+    >
+      <div class="level-left">
+        <span class="title is-5">
+          Latest photo:
+          <router-link :to="{ name: 'photos-show', params: { id: result.latestPhoto.id } }">
+            {{ result.latestPhoto.name }}
+          </router-link>          
+        </span>
+      </div>
+      <div class="level-right">
+        <router-link :to="{ name: 'photos-index' }" class="button">
+          See all photos...
+        </router-link>
+      </div>
     </div>
     <hr class="is-hidden-touch mt-1 mb-4">
     <div class="block">
@@ -23,6 +43,8 @@
         </div>
       </div>
     </div>
+      
+    </div>
   </div>
 </template>
 
@@ -32,11 +54,11 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import LatestPhoto from './latest-photo.vue'
+  import DisplayHero from '../photos/display-hero.vue'  
   import RandomPhoto from './random-photo.vue'
   import MostUsedTags from './most-used-tags.vue'
 
   useTitle('')
 
-  const { result } = useQuery(gql`${gql_queries.homepage_index}`)
+  const { result, loading } = useQuery(gql`${gql_queries.homepage_index}`)
 </script>
