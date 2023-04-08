@@ -1,5 +1,7 @@
 # Photonia
 
+[![Licensed under the Apache License, Version 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)]([http://www.apache.org/licenses/LICENSE-2.0](https://github.com/photonia-io/photonia/blob/development/LICENSE))
+
 A photo hosting service tailored to my needs.
 
 ## Technologies
@@ -32,3 +34,4 @@ A photo hosting service tailored to my needs.
     - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
     - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
 2. Publish the release
+3. Go to Jenkins and build the tag
