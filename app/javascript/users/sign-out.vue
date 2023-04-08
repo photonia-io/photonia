@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    Signing out...
+    <p class="mt-5 mb-0">Signing out...</p>
   </div>
 </template>
 

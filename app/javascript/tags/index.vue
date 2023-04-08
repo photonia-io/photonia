@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <h1 class="title">Tags</h1>
+  <div class="container">
+    <h1 class="title mt-5 mb-0">Tags</h1>
     <hr class="is-hidden-touch mt-2 mb-4">
     <h2 class="title is-4">Most used</h2>
     <div class="field is-grouped is-grouped-multiline mb-2">

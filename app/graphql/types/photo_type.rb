@@ -16,9 +16,12 @@ module Types
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
     field :name, String, 'Title of the photo', null: false
     field :next_photo, PhotoType, 'Next photo', null: true
+    field :width, Integer, 'Width of the photo in pixels', null: true
+    field :height, Integer, 'Height of the photo in pixels', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
-    field :user_tags, [TagType], 'User (non-Rekognition) tags', null: true
+    field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
+    field :user_tags, [TagType], 'User (non-Rekognition) tags', null: true
 
     field :image_url, String, null: false do
       description 'URL of the image'
@@ -66,6 +69,14 @@ module Types
 
     def rekognition_label_model_version
       @object.rekognition_response['label_model_version'].presence || ''
+    end
+
+    def width
+      @object.pixel_width
+    end
+
+    def height
+      @object.pixel_height
     end
   end
 end

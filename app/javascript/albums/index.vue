@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <h1 class="title">Albums</h1>
+  <div class="container">
+    <h1 class="title mt-5 mb-0">Albums</h1>
     <hr class="is-hidden-touch mt-2 mb-4">
     <div class="columns is-1 is-variable is-multiline">
       <AlbumItem
