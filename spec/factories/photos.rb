@@ -13,6 +13,7 @@
 #  flickr_views         :integer
 #  image_data           :jsonb
 #  imported_at          :datetime
+#  impressions_count    :integer          default(0), not null
 #  license              :string
 #  name                 :string
 #  privacy              :enum             default("public")

@@ -2,6 +2,9 @@
 
 # Monkeypatching ActsAsTaggableOn::Tag class
 ActsAsTaggableOn::Tag.class_eval do
+  include Impressionist::IsImpressionable
+  is_impressionable counter_cache: true, unique: :session_hash
+
   extend FriendlyId
   friendly_id :name, use: :slugged
 

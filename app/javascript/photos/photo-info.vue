@@ -5,6 +5,12 @@
   />
   <div class="block">
     <span class="icon-text is-size-7">
+      <!-- display views -->
+      <span class="icon"><i class="fas fa-eye"></i></span>
+      <span class="has-text-weight-semibold">Views:</span>
+      <span v-if="!loading" class="ml-1">{{ photo.impressions }}</span>
+    </span>
+    <span class="icon-text is-size-7">
       <span class="icon"><i class="fas fa-camera"></i></span>
       <span class="has-text-weight-semibold">Date Taken:</span>
       <span v-if="!loading" class="ml-1">{{ momentFormat(photo.dateTaken) }}</span>
