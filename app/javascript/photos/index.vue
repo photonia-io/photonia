@@ -1,23 +1,25 @@
 <template>
-  <div class="container">
-    <h1 class="title mt-5 mb-0">Photos</h1>
-    <hr class="is-hidden-touch mt-2 mb-4">
-    <div class="columns is-1 is-variable is-multiline">
-      <PhotoItem
+  <section class="section-pt-pb-0">
+    <div class="container">
+      <h1 class="title mt-5 mb-0">Photos</h1>
+      <hr class="mt-2 mb-4">
+      <div class="columns is-1 is-variable is-multiline">
+        <PhotoItem
+          v-if="result && result.photos"
+          v-for="photo in result.photos.collection"
+          :photo="photo"
+          :key="photo.id"
+        />
+      </div>
+      <hr class="mt-1 mb-4">
+      <Pagination
         v-if="result && result.photos"
-        v-for="photo in result.photos.collection"
-        :photo="photo"
-        :key="photo.id"
+        :metadata="result.photos.metadata"
+        :additionalQueryParams="additionalQueryParams"
+        routeName="photos-index"
       />
     </div>
-    <hr class="mt-1 mb-4">
-    <Pagination
-      v-if="result && result.photos"
-      :metadata="result.photos.metadata"
-      :additionalQueryParams="additionalQueryParams"
-      routeName="photos-index"
-    />
-  </div>
+  </section>
 </template>
 
 <script setup>
