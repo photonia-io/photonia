@@ -1,8 +1,5 @@
 <template>
   <div>
-    <div class="container">
-      <h1 class="title mt-5 mb-1"></h1>
-    </div>
     <DisplayHero
       v-if="!loading"
       :photo="result.latestPhoto"
