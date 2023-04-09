@@ -1,22 +1,24 @@
 <template>
-  <div class="container">
-    <h1 class="title mt-5 mb-0">Album: {{ album.title }}</h1>
-    <hr class="is-hidden-touch mt-2 mb-4">
-    <div class="columns is-1 is-variable is-multiline">
-      <PhotoItem
-        v-for="photo in album.photos.collection"
-        :photo="photo"
-        :key="photo.id"
+  <section class="section-pt-pb-0">
+    <div class="container">
+      <h1 class="title mt-5 mb-0">Album: {{ album.title }}</h1>
+      <hr class="mt-2 mb-4">
+      <div class="columns is-1 is-variable is-multiline">
+        <PhotoItem
+          v-for="photo in album.photos.collection"
+          :photo="photo"
+          :key="photo.id"
+        />
+      </div>
+      <hr class="mt-1 mb-4">
+      <Pagination
+        v-if="album.photos.metadata"
+        :metadata="album.photos.metadata"
+        :routeParams="{ id: id }"
+        routeName="albums-show"
       />
     </div>
-    <hr class="mt-1 mb-4">
-    <Pagination
-      v-if="album.photos.metadata"
-      :metadata="album.photos.metadata"
-      :routeParams="{ id: id }"
-      routeName="albums-show"
-    />
-  </div>
+  </section>
 </template>
 
 <script setup>

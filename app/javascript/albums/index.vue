@@ -1,22 +1,24 @@
 <template>
-  <div class="container">
-    <h1 class="title mt-5 mb-0">Albums</h1>
-    <hr class="is-hidden-touch mt-2 mb-4">
-    <div class="columns is-1 is-variable is-multiline">
-      <AlbumItem
+  <section class="section-pt-pb-0">
+    <div class="container">
+      <h1 class="title mt-5 mb-0">Albums</h1>
+      <hr class="mt-2 mb-4">
+      <div class="columns is-1 is-variable is-multiline">
+        <AlbumItem
+          v-if="result && result.albums"
+          v-for="album in result.albums.collection"
+          :album="album"
+          :key="album.id"
+        />
+      </div>
+      <hr class="mt-1 mb-4">
+      <Pagination
         v-if="result && result.albums"
-        v-for="album in result.albums.collection"
-        :album="album"
-        :key="album.id"
+        :metadata="result.albums.metadata"
+        routeName="albums-index"
       />
     </div>
-    <hr class="mt-1 mb-4">
-    <Pagination
-      v-if="result && result.albums"
-      :metadata="result.albums.metadata"
-      routeName="albums-index"
-    />
-  </div>
+  </section>
 </template>
 
 <script setup>

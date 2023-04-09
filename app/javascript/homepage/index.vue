@@ -1,12 +1,9 @@
 <template>
-  <div>
-    <div class="container">
-      <h1 class="title mt-5 mb-1"></h1>
-    </div>
-    <DisplayHero
-      v-if="!loading"
-      :photo="result.latestPhoto"
-    />
+  <DisplayHero
+    v-if="!loading"
+    :photo="result.latestPhoto"
+  />
+  <section class="section-pt-pb-0">
     <div class="container">
       <div
       v-if="!loading"
@@ -26,7 +23,7 @@
         </router-link>
       </div>
     </div>
-    <hr class="is-hidden-touch mt-1 mb-4">
+    <hr class="mt-1 mb-4">
     <div class="block">
       <div class="columns">
         <div class="column is-half">
@@ -45,7 +42,7 @@
     </div>
       
     </div>
-  </div>
+  </section>    
 </template>
 
 <script setup>
