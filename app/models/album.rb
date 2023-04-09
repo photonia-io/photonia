@@ -4,16 +4,19 @@
 #
 # Table name: albums
 #
-#  id            :bigint           not null, primary key
-#  description   :text
-#  flickr_views  :integer
-#  serial_number :bigint
-#  slug          :string
-#  title         :string
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
+#  id                :bigint           not null, primary key
+#  description       :text
+#  flickr_views      :integer
+#  impressions_count :integer          default(0), not null
+#  serial_number     :bigint
+#  slug              :string
+#  title             :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
 #
 class Album < ApplicationRecord
+  is_impressionable counter_cache: true, unique: :session_hash
+
   extend FriendlyId
   friendly_id :serial_number, use: :slugged
 

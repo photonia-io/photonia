@@ -76,13 +76,17 @@ module Types
     end
 
     def photo(id:)
-      Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
+      @photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
+      context[:impressionist].call(@photo, 'graphql', unique: [:session_hash])
+      @photo
     end
 
     # Tags
 
     def tag(id:)
-      ActsAsTaggableOn::Tag.friendly.find(id)
+      @tag = ActsAsTaggableOn::Tag.friendly.find(id)
+      context[:impressionist].call(@tag, 'graphql', unique: [:session_hash])
+      @tag
     end
 
     def most_used_user_tags
@@ -113,7 +117,9 @@ module Types
     end
 
     def album(id:)
-      Album.includes(:albums_photos).friendly.find(id)
+      @album = Album.includes(:albums_photos).friendly.find(id)
+      context[:impressionist].call(@album, 'graphql', unique: [:session_hash])
+      @album
     end
 
     # Homepage

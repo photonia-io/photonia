@@ -63,7 +63,8 @@ CREATE TABLE public.albums (
     serial_number bigint,
     flickr_views integer,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    impressions_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -166,6 +167,48 @@ ALTER SEQUENCE public.friendly_id_slugs_id_seq OWNED BY public.friendly_id_slugs
 
 
 --
+-- Name: impressions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.impressions (
+    id bigint NOT NULL,
+    impressionable_type character varying,
+    impressionable_id integer,
+    user_id integer,
+    controller_name character varying,
+    action_name character varying,
+    view_name character varying,
+    request_hash character varying,
+    ip_address character varying,
+    session_hash character varying,
+    message text,
+    referrer text,
+    params text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: impressions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.impressions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: impressions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.impressions_id_seq OWNED BY public.impressions.id;
+
+
+--
 -- Name: labels; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -227,7 +270,8 @@ CREATE TABLE public.photos (
     privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
     rekognition_response jsonb,
     user_id bigint,
-    tsv tsvector
+    tsv tsvector,
+    impressions_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -337,7 +381,8 @@ CREATE TABLE public.tags (
     updated_at timestamp without time zone,
     taggings_count integer DEFAULT 0,
     source public.tag_source DEFAULT 'photonia'::public.tag_source,
-    slug character varying
+    slug character varying,
+    impressions_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -417,6 +462,13 @@ ALTER TABLE ONLY public.friendly_id_slugs ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: impressions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.impressions ALTER COLUMN id SET DEFAULT nextval('public.impressions_id_seq'::regclass);
+
+
+--
 -- Name: labels id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -491,6 +543,14 @@ ALTER TABLE ONLY public.friendly_id_slugs
 
 
 --
+-- Name: impressions impressions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.impressions
+    ADD CONSTRAINT impressions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: labels labels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -547,6 +607,34 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: controlleraction_ip_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX controlleraction_ip_index ON public.impressions USING btree (controller_name, action_name, ip_address);
+
+
+--
+-- Name: controlleraction_request_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX controlleraction_request_index ON public.impressions USING btree (controller_name, action_name, request_hash);
+
+
+--
+-- Name: controlleraction_session_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX controlleraction_session_index ON public.impressions USING btree (controller_name, action_name, session_hash);
+
+
+--
+-- Name: impressionable_type_message_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX impressionable_type_message_index ON public.impressions USING btree (impressionable_type, message, impressionable_id);
+
+
+--
 -- Name: index_albums_photos_on_album_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -579,6 +667,13 @@ CREATE UNIQUE INDEX index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope
 --
 
 CREATE INDEX index_friendly_id_slugs_on_sluggable_type_and_sluggable_id ON public.friendly_id_slugs USING btree (sluggable_type, sluggable_id);
+
+
+--
+-- Name: index_impressions_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_impressions_on_user_id ON public.impressions USING btree (user_id);
 
 
 --
@@ -684,6 +779,34 @@ CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 --
 
 CREATE UNIQUE INDEX index_users_on_jti ON public.users USING btree (jti);
+
+
+--
+-- Name: poly_ip_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX poly_ip_index ON public.impressions USING btree (impressionable_type, impressionable_id, ip_address);
+
+
+--
+-- Name: poly_params_request_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX poly_params_request_index ON public.impressions USING btree (impressionable_type, impressionable_id, params);
+
+
+--
+-- Name: poly_request_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX poly_request_index ON public.impressions USING btree (impressionable_type, impressionable_id, request_hash);
+
+
+--
+-- Name: poly_session_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX poly_session_index ON public.impressions USING btree (impressionable_type, impressionable_id, session_hash);
 
 
 --
@@ -795,6 +918,10 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230319213543'),
 ('20230319213544'),
 ('20230328161122'),
-('20230403133751');
+('20230403133751'),
+('20230409165520'),
+('20230409171752'),
+('20230409171819'),
+('20230409184758');
 
 

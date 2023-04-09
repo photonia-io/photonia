@@ -15,6 +15,7 @@
 #  flickr_views         :integer
 #  image_data           :jsonb
 #  imported_at          :datetime
+#  impressions_count    :integer          default(0), not null
 #  license              :string
 #  name                 :string
 #  privacy              :enum             default("public")
@@ -38,6 +39,8 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Photo < ApplicationRecord
+  is_impressionable counter_cache: true, unique: :session_hash
+
   extend FriendlyId
   friendly_id :serial_number, use: :slugged
 
