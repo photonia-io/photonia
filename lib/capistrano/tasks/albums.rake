@@ -11,7 +11,7 @@ namespace :albums do
     end
   end
 
-  task :copy_flickr_views_to_impressions_count destroy do
+  task :copy_flickr_views_to_impressions_count do
     on roles(:app) do
       within current_path.to_s do
         with rails_env: fetch(:stage).to_s do
