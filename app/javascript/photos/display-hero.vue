@@ -1,5 +1,5 @@
 <template>
-  <div class="hero is-dark mb-4">
+  <div class="hero is-dark mb-3">
     <div class="hero-body pt-5 pb-4" style="text-align: center;">
       <div id="image-wrapper">
         <img :src="photo.extralargeImageUrl" />
@@ -43,7 +43,7 @@
   }
 
   #image-wrapper > img {
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 170px);
     min-height: 400px;
     width: 100%;
     border-radius: 2px;
