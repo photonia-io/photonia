@@ -125,7 +125,9 @@ module Types
     # Homepage
 
     def latest_photo
-      object ? object[:latest_photo] : Photo.order(imported_at: :desc).first
+      latest_photo = object ? object[:latest_photo] : Photo.order(imported_at: :desc).first
+      context[:impressionist].call(latest_photo, 'graphql', unique: [:session_hash])
+      latest_photo
     end
 
     def random_photo
