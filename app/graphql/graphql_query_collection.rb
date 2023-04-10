@@ -136,7 +136,7 @@ class GraphqlQueryCollection
           extralargeImageUrl: imageUrl(type: "extralarge")
           dateTaken
           importedAt
-          impressions
+          impressionsCount
           previousPhoto {
             id
             name

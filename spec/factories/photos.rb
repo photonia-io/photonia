@@ -2,28 +2,28 @@
 #
 # Table name: photos
 #
-#  id                   :bigint           not null, primary key
-#  date_taken           :datetime
-#  description          :text
-#  exif                 :jsonb
-#  flickr_faves         :integer
-#  flickr_json          :jsonb
-#  flickr_original      :string
-#  flickr_photopage     :string
-#  flickr_views         :integer
-#  image_data           :jsonb
-#  imported_at          :datetime
-#  impressions_count    :integer          default(0), not null
-#  license              :string
-#  name                 :string
-#  privacy              :enum             default("public")
-#  rekognition_response :jsonb
-#  serial_number        :bigint           not null
-#  slug                 :string
-#  tsv                  :tsvector
-#  created_at           :datetime         not null
-#  updated_at           :datetime         not null
-#  user_id              :bigint
+#  id                       :bigint           not null, primary key
+#  date_taken               :datetime
+#  description              :text
+#  exif                     :jsonb
+#  flickr_faves             :integer
+#  flickr_impressions_count :integer          default(0), not null
+#  flickr_json              :jsonb
+#  flickr_original          :string
+#  flickr_photopage         :string
+#  image_data               :jsonb
+#  imported_at              :datetime
+#  impressions_count        :integer          default(0), not null
+#  license                  :string
+#  name                     :string
+#  privacy                  :enum             default("public")
+#  rekognition_response     :jsonb
+#  serial_number            :bigint           not null
+#  slug                     :string
+#  tsv                      :tsvector
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  user_id                  :bigint
 #
 # Indexes
 #
