@@ -4,6 +4,8 @@
 class PhotosController < ApplicationController
   include Pagy::Backend
 
+  protect_from_forgery only: [:create], with: :null_session
+
   def index
     photos = if params[:q].present?
                Photo.search(params[:q])
