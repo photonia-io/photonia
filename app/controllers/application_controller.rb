@@ -19,7 +19,8 @@ class ApplicationController < ActionController::Base
         users_sign_in_path:,
         users_sign_out_path:,
         users_settings_path:,
-        sentry_dsn: ENV.fetch('PHOTONIA_FE_SENTRY_DSN', '')
+        sentry_dsn: ENV.fetch('PHOTONIA_FE_SENTRY_DSN', ''),
+        sentry_sample_rate: ENV.fetch('PHOTONIA_FE_SENTRY_SAMPLE_RATE', 0.1).to_f
       )
     ).serializable_hash.to_json
   end
