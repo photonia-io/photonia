@@ -4,15 +4,15 @@
 #
 # Table name: albums
 #
-#  id                :bigint           not null, primary key
-#  description       :text
-#  flickr_views      :integer
-#  impressions_count :integer          default(0), not null
-#  serial_number     :bigint
-#  slug              :string
-#  title             :string
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
+#  id                       :bigint           not null, primary key
+#  description              :text
+#  flickr_impressions_count :integer          default(0), not null
+#  impressions_count        :integer          default(0), not null
+#  serial_number            :bigint
+#  slug                     :string
+#  title                    :string
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
 #
 require 'rails_helper'
 

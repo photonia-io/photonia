@@ -10,7 +10,7 @@ module Types
     field :description, String, 'Description', null: false
     field :id, String, 'ID of the photo', null: false
     field :imported_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
-    field :impressions, Integer, 'Number of impressions', null: true
+    field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
@@ -68,8 +68,9 @@ module Types
       end
     end
 
-    def impressions
-      @object.impressions_count.zero? ? 1 : @object.impressions_count
+    def impressions_count
+      total_impressions_count = @object.impressions_count + @object.flickr_impressions_count
+      total_impressions_count.zero? ? 1 : total_impressions_count
     end
 
     def rekognition_label_model_version

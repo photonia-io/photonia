@@ -27,11 +27,4 @@ namespace :photos do
       end
     end
   end
-
-  desc 'Copy flickr_views to impressions_count'
-  task copy_flickr_views_to_impressions_count: :environment do
-    Photo.unscoped.all.each do |photo|
-      photo.update(impressions_count: photo.flickr_views)
-    end
-  end
 end

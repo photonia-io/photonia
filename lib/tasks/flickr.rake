@@ -29,7 +29,7 @@ namespace :flickr do
           license: photo_hash['license'],
           exif: photo_hash['exif'],
           serial_number: photo_hash['id'],
-          flickr_views: photo_hash['count_views'],
+          flickr_impressions_count: photo_hash['count_views'],
           flickr_faves: photo_hash['count_faves'],
           imported_at: photo_hash['date_imported'],
           flickr_photopage: photo_hash['photopage'],
@@ -83,7 +83,7 @@ namespace :flickr do
       album = Album.find_or_create_by(serial_number: flickr_album['id']) do |a|
         a.title = flickr_album['title']
         a.description = flickr_album['description']
-        a.flickr_views = flickr_album['view_count']
+        a.flickr_impressions_count = flickr_album['view_count']
         a.created_at = DateTime.strptime(flickr_album['created'], '%s')
         a.updated_at = DateTime.strptime(flickr_album['last_updated'], '%s')
       end

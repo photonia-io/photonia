@@ -61,7 +61,7 @@ CREATE TABLE public.albums (
     title character varying,
     description text,
     serial_number bigint,
-    flickr_views integer,
+    flickr_impressions_count integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     impressions_count integer DEFAULT 0 NOT NULL
@@ -258,7 +258,7 @@ CREATE TABLE public.photos (
     license character varying,
     exif jsonb,
     serial_number bigint NOT NULL,
-    flickr_views integer,
+    flickr_impressions_count integer DEFAULT 0 NOT NULL,
     flickr_faves integer,
     imported_at timestamp without time zone,
     flickr_photopage character varying,
@@ -922,6 +922,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230409165520'),
 ('20230409171752'),
 ('20230409171819'),
-('20230409184758');
+('20230409184758'),
+('20230410080718'),
+('20230410080845');
 
 
