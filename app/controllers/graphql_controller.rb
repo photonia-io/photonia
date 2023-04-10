@@ -10,6 +10,8 @@ class GraphqlController < ApplicationController
   # protect_from_forgery with: :null_session
 
   def execute
+    session[:dummy] = true
+    
     query = params[:query]
     variables = prepare_variables(params[:variables])
     operation_name = params[:operationName]
