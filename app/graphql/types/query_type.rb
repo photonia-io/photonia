@@ -64,29 +64,29 @@ module Types
     # Photos
 
     def photos(page: nil, query: nil)
-      pagy, @photos = context[:pagy].call(
+      pagy, photos = context[:pagy].call(
         query.present? ? Photo.search(query) : Photo.all.order(imported_at: :desc),
         page:
       )
-      @photos.define_singleton_method(:total_pages) { pagy.pages }
-      @photos.define_singleton_method(:current_page) { pagy.page }
-      @photos.define_singleton_method(:limit_value) { pagy.items }
-      @photos.define_singleton_method(:total_count) { pagy.count }
-      @photos
+      photos.define_singleton_method(:total_pages) { pagy.pages }
+      photos.define_singleton_method(:current_page) { pagy.page }
+      photos.define_singleton_method(:limit_value) { pagy.items }
+      photos.define_singleton_method(:total_count) { pagy.count }
+      photos
     end
 
     def photo(id:)
-      @photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
-      context[:impressionist].call(@photo, 'graphql', unique: [:session_hash])
-      @photo
+      photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
+      context[:impressionist].call(photo, 'graphql', unique: [:session_hash])
+      photo
     end
 
     # Tags
 
     def tag(id:)
-      @tag = ActsAsTaggableOn::Tag.friendly.find(id)
-      context[:impressionist].call(@tag, 'graphql', unique: [:session_hash])
-      @tag
+      tag = ActsAsTaggableOn::Tag.friendly.find(id)
+      context[:impressionist].call(tag, 'graphql', unique: [:session_hash])
+      tag
     end
 
     def most_used_user_tags
@@ -108,18 +108,18 @@ module Types
     # Albums
 
     def albums(page: nil)
-      pagy, @albums = context[:pagy].call(Album.includes(:albums_photos, :photos).order(created_at: :desc), page:)
-      @albums.define_singleton_method(:total_pages) { pagy.pages }
-      @albums.define_singleton_method(:current_page) { pagy.page }
-      @albums.define_singleton_method(:limit_value) { pagy.items }
-      @albums.define_singleton_method(:total_count) { pagy.count }
-      @albums
+      pagy, albums = context[:pagy].call(Album.includes(:albums_photos, :photos).order(created_at: :desc), page:)
+      albums.define_singleton_method(:total_pages) { pagy.pages }
+      albums.define_singleton_method(:current_page) { pagy.page }
+      albums.define_singleton_method(:limit_value) { pagy.items }
+      albums.define_singleton_method(:total_count) { pagy.count }
+      albums
     end
 
     def album(id:)
-      @album = Album.includes(:albums_photos).friendly.find(id)
-      context[:impressionist].call(@album, 'graphql', unique: [:session_hash])
-      @album
+      album = Album.includes(:albums_photos).friendly.find(id)
+      context[:impressionist].call(album, 'graphql', unique: [:session_hash])
+      album
     end
 
     # Homepage
