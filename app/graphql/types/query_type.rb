@@ -77,7 +77,7 @@ module Types
 
     def photo(id:)
       @photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
-      # context[:impressionist].call(@photo, 'graphql', unique: [:session_hash])
+      context[:impressionist].call(@photo, 'graphql', unique: [:session_hash])
       @photo
     end
 
@@ -85,7 +85,7 @@ module Types
 
     def tag(id:)
       @tag = ActsAsTaggableOn::Tag.friendly.find(id)
-      # context[:impressionist].call(@tag, 'graphql', unique: [:session_hash])
+      context[:impressionist].call(@tag, 'graphql', unique: [:session_hash])
       @tag
     end
 
@@ -118,7 +118,7 @@ module Types
 
     def album(id:)
       @album = Album.includes(:albums_photos).friendly.find(id)
-      # context[:impressionist].call(@album, 'graphql', unique: [:session_hash])
+      context[:impressionist].call(@album, 'graphql', unique: [:session_hash])
       @album
     end
 
@@ -126,7 +126,7 @@ module Types
 
     def latest_photo
       latest_photo = object ? object[:latest_photo] : Photo.order(imported_at: :desc).first
-      # context[:impressionist].call(latest_photo, 'graphql', unique: [:session_hash])
+      context[:impressionist].call(latest_photo, 'graphql', unique: [:session_hash])
       latest_photo
     end
 
