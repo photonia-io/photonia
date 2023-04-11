@@ -62,6 +62,10 @@ class Photo < ApplicationRecord
 
   default_scope { where(privacy: 'public') }
 
+  # validate name and description
+  validates :name, presence: true
+  validates :description, presence: true
+
   belongs_to :user
   has_many :albums_photos, dependent: :destroy
   has_many :albums, through: :albums_photos
