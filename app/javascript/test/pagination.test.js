@@ -18,7 +18,7 @@ test("Pagination renders the correct elements", () => {
     } 
   })
   expect(wrapper.find("nav.pagination").exists()).toBe(true)
-  expect(wrapper.findAllComponents(RouterLinkStub).length).toBe(6)
+  expect(wrapper.findAllComponents(RouterLinkStub).length).toBe(8)
   // console.log(wrapper.findAllComponents(RouterLinkStub)[0].classes())
   // console.log(wrapper.findAll("nav.pagination > *")[2].classes())
 })
