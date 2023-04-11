@@ -4,6 +4,11 @@
 class PhotosController < ApplicationController
   include Pagy::Backend
 
+  # Once sessions were reactivated this was needed for the uploads to work
+  # otherwise it would throw a CSRF error.
+  # The user is authenticated via the JWT token anyway.
+  protect_from_forgery only: [:create], with: :null_session
+
   def index
     photos = if params[:q].present?
                Photo.search(params[:q])

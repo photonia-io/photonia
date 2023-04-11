@@ -40,5 +40,6 @@ FactoryBot.define do
   factory :photo do
     name { Faker::Lorem.sentence }
     description { Faker::Lorem.paragraph }
+    association :user
   end
 end
