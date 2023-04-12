@@ -31,6 +31,7 @@
   // components
   import PhotoItem from '@/shared/photo-item.vue'
   import Pagination from '@/shared/pagination.vue'
+  import GqlQueries from '@/shared/gql_queries.js'
 
   // route
   const route = useRoute()
@@ -42,10 +43,10 @@
 
   const id = computed(() => route.params.id)
   const page = computed(() => parseInt(route.query.page) || 1 )
-  const { result, loading } = useQuery(gql`${gql_queries.tags_show}`, { id: id, page: page })
+  const { result, loading } = useQuery(gql`${GqlQueries.tags_show}`, { id: id, page: page })
 
   const tag = computed(() => result.value?.tag ?? emptyTag)
-  const title = computed(() => `Album: ${tag.value.name}`)
+  const title = computed(() => `Tag: ${tag.value.name}`)
 
   useTitle(title)
 </script>
