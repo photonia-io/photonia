@@ -30,5 +30,8 @@
     "vite": "^4.2.1",
     "vite-plugin-ruby": "^3.2.0",
     "vitest": "^0.30.0"
+  },
+  "scripts": {
+    "test:run": "vitest run"
   }
 }

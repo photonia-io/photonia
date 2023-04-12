@@ -18,7 +18,8 @@ pipeline {
       steps {
         sh 'ln -s /usr/src/app/node_modules node_modules'
         sh 'bundle exec rspec'
-      }   
+        sh 'yarn test:run'
+      }
     }
     stage('deploy') {
       when {
