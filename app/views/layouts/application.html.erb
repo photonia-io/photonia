@@ -3,6 +3,8 @@
   <head>
     <title><%= (yield(:page_title) + " - " unless yield(:page_title).blank?).to_s + "Photonia" %></title>
 
+    <%= render partial: 'layouts/opengraph' if @photo %>
+
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'application' %>
 
