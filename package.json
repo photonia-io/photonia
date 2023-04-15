@@ -2,7 +2,7 @@
   "name": "photonia",
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.7.11",
+    "@apollo/client": "^3.7.12",
     "@sentry/vue": "^7.47.0",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
