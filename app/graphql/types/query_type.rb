@@ -55,7 +55,7 @@ module Types
 
     field :latest_photo, PhotoType, 'Latest photo', null: false
 
-    field :random_photo, PhotoType, 'Random photo', null: false
+    field :random_photos, [PhotoType], 'Random photos', null: false
 
     field :most_used_tags, [TagType], 'List of most used tags', null: false
 
@@ -130,8 +130,8 @@ module Types
       latest_photo
     end
 
-    def random_photo
-      object ? object[:random_photo] : Photo.order(Arel.sql('RANDOM()')).first
+    def random_photos
+      Photo.order(Arel.sql('RANDOM()')).limit(4)
     end
 
     def most_used_tags
