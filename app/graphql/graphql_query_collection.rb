@@ -10,10 +10,10 @@ class GraphqlQueryCollection
           name
           extralargeImageUrl: imageUrl(type: "extralarge")
         }
-        randomPhoto {
+        randomPhotos {
           id
           name
-          largeImageUrl: imageUrl(type: "large")
+          intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
         }
         mostUsedTags {
           id

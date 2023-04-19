@@ -14,7 +14,7 @@
           Latest photo:
           <router-link :to="{ name: 'photos-show', params: { id: result.latestPhoto.id } }">
             {{ result.latestPhoto.name }}
-          </router-link>          
+          </router-link>
         </span>
       </div>
       <div class="level-right">
@@ -27,9 +27,9 @@
     <div class="block">
       <div class="columns">
         <div class="column is-half">
-          <RandomPhoto
-            v-if="result && result.randomPhoto"
-            :photo="result.randomPhoto"
+          <RandomPhotos
+            v-if="result && result.randomPhotos"
+            :photos="result.randomPhotos"
           />
         </div>
         <div class="column is-half">
@@ -40,9 +40,9 @@
         </div>
       </div>
     </div>
-      
+
     </div>
-  </section>    
+  </section>
 </template>
 
 <script setup>
@@ -51,8 +51,8 @@
   import { useTitle } from 'vue-page-title'
 
   // components
-  import DisplayHero from '../photos/display-hero.vue'  
-  import RandomPhoto from './random-photo.vue'
+  import DisplayHero from '../photos/display-hero.vue'
+  import RandomPhotos from './random-photos.vue'
   import MostUsedTags from './most-used-tags.vue'
 
   useTitle('')
