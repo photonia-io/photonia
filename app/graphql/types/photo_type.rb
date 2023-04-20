@@ -74,7 +74,7 @@ module Types
     end
 
     def rekognition_label_model_version
-      @object.rekognition_response['label_model_version'].presence || ''
+      (@object.rekognition_response && @object.rekognition_response['label_model_version'].presence) || ''
     end
 
     def width
