@@ -50,8 +50,8 @@
       required: true
     }
   })
-  
-  const emit = defineEmits(['updateTitle'])
+
+  const emit = defineEmits(['updateTitle', 'disableKeyboardShortcuts', 'enableKeyboardShortcuts'])
 
   const editing = ref(false)
   const localTitle = ref(props.title)
@@ -60,15 +60,17 @@
   watch(toRef(props, 'title'), (newTitle) => {
      localTitle.value = newTitle
   })
-  
+
   const startEditing = () => {
     savedTitle = localTitle.value
     editing.value = true
+    emit('disableKeyboardShortcuts')
   }
 
   const cancelEditing = () => {
     localTitle.value = savedTitle
     editing.value = false
+    emit('enableKeyboardShortcuts')
   }
 
   const updateTitle = () => {
@@ -76,6 +78,7 @@
       emit('updateTitle', { id: props.id, title: localTitle.value })
     }
     editing.value = false
+    emit('enableKeyboardShortcuts')
   }
 </script>
 

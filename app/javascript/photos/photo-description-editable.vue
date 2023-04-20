@@ -42,8 +42,8 @@
       required: true
     }
   })
-  
-  const emit = defineEmits(['updateDescription'])
+
+  const emit = defineEmits(['updateDescription', 'disableKeyboardShortcuts', 'enableKeyboardShortcuts'])
 
   const editing = ref(false)
   const localDescription = ref(props.description)
@@ -52,15 +52,17 @@
   watch(toRef(props, 'description'), (newDescription) => {
      localDescription.value = newDescription
   })
-  
+
   const startEditing = () => {
     savedDescription = localDescription.value
     editing.value = true
+    emit('disableKeyboardShortcuts')
   }
 
   const cancelEditing = () => {
     localDescription.value = savedDescription
     editing.value = false
+    emit('enableKeyboardShortcuts')
   }
 
   const updateDescription = () => {
@@ -68,6 +70,7 @@
       emit('updateDescription', { id: props.id, description: localDescription.value })
     }
     editing.value = false
+    emit('enableKeyboardShortcuts')
   }
 </script>
 
