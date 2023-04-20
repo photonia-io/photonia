@@ -13,6 +13,8 @@
               :id="photo.id"
               :title="photoTitle()"
               @update-title="updatePhotoTitle"
+              @enable-keyboard-shortcuts="enableKeyboardShortcuts"
+              @disable-keyboard-shortcuts="disableKeyboardShortcuts"
             />
             <h1
               v-else
@@ -44,6 +46,8 @@
                 :id="photo.id"
                 :description="photoDescription()"
                 @update-description="updatePhotoDescription"
+                @enable-keyboard-shortcuts="enableKeyboardShortcuts"
+                @disable-keyboard-shortcuts="disableKeyboardShortcuts"
               />
               <div
                 v-else
@@ -272,12 +276,20 @@
   const userStore = useUserStore()
 
   onMounted(() => {
-    document.addEventListener('keydown', handleKeyDown)
+    enableKeyboardShortcuts()
   })
 
   onBeforeUnmount(() => {
-    document.removeEventListener('keydown', handleKeyDown)
+    disableKeyboardShortcuts()
   })
+
+  const enableKeyboardShortcuts = () => {
+    document.addEventListener('keydown', handleKeyDown)
+  }
+
+  const disableKeyboardShortcuts = () => {
+    document.removeEventListener('keydown', handleKeyDown)
+  }
 
   const handleKeyDown = (event) => {
     if (event.key === 'ArrowLeft') {
