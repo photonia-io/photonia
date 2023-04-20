@@ -172,8 +172,8 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue'
-  import { useRoute } from 'vue-router'
+  import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
   import gql from 'graphql-tag'
   import { useQuery, useMutation } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
@@ -190,8 +190,9 @@
   import Tag from '@/tags/tag.vue'
   import Empty from '@/empty.vue'
 
-  // route
+  // route & router
   const route = useRoute()
+  const router = useRouter()
 
   const emptyPhoto = {
           name: '',
@@ -233,7 +234,7 @@
   )
 
   onUpdateTitleDone(({ data }) => {
-    console.log(data)  
+    console.log(data)
   })
 
   onUpdateTitleError((error) => {
@@ -241,7 +242,7 @@
   })
 
   onUpdateDescriptionDone(({ data }) => {
-    console.log(data)  
+    console.log(data)
   })
 
   onUpdateDescriptionError((error) => {
@@ -269,4 +270,24 @@
   useTitle(title)
 
   const userStore = useUserStore()
+
+  onMounted(() => {
+    document.addEventListener('keydown', handleKeyDown)
+  })
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('keydown', handleKeyDown)
+  })
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'ArrowLeft') {
+      if (photo.value.previousPhoto) {
+        router.push({ name: 'photos-show', params: { id: photo.value.previousPhoto.id } })
+      }
+    } else if (event.key === 'ArrowRight') {
+      if (photo.value.nextPhoto) {
+        router.push({ name: 'photos-show', params: { id: photo.value.nextPhoto.id } })
+      }
+    }
+  }
 </script>
