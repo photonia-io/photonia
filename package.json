@@ -10,7 +10,7 @@
     "bulma-scss": "^0.9.4",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.5",
-    "pinia": "^2.0.34",
+    "pinia": "^2.0.35",
     "sass": "^1.62.0",
     "typescript": "^5.0.4",
     "vue": "^3.2.47",
