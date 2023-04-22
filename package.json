@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.12",
-    "@sentry/vue": "^7.48.0",
+    "@sentry/vue": "^7.49.0",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
     "bulma-block-list": "0.7.0",
