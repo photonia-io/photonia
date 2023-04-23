@@ -44,30 +44,16 @@
         <div class="column is-10">
           <div class="columns">
             <div class="column is-half">
-              <div class="field">
-                <label class="label is-small">
-                  Name
-                  <div class="control">
                     <input
                       type="text"
                       class="input is-small"
                       v-model="file.data['photo[name]']"
                     >
-                  </div>
-                </label>
-              </div>
-              <div class="field">
-                <label class="label is-small">
-                  Description
-                  <div class="control">
                     <textarea
                       class="textarea is-small"
                       v-model="file.data['photo[description]']"
                     >
                     </textarea>
-                  </div>
-                </label>
-              </div>
             </div>
             <div class="column is-half">
               <p>
