@@ -1,5 +1,6 @@
 <template>
-  <h1 class="title is-3">Random Photos</h1>
+  <h2 class="title is-3 mb-2">Random Photos</h2>
+  <hr class="mt-0 mb-3"/>
   <div class="columns is-variable is-multiline">
     <div
       v-for="photo in photos"
