@@ -10,9 +10,12 @@ Rails.application.routes.draw do
 
   resources :photos, except: %i[new] do
     get :upload, on: :collection
+    get :feed, on: :collection, format: :xml
   end
   resources :tags, only: %i[index show]
-  resources :albums, only: %i[index show]
+  resources :albums, only: %i[index show] do
+    get :feed, on: :collection, format: :xml
+  end
 
   post '/graphql', to: 'graphql#execute'
 

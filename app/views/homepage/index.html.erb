@@ -1,3 +1,10 @@
+<%
+  content_for(
+    :autodiscovery_link,
+    auto_discovery_link_tag(:rss, feed_photos_url(format: :xml), title: 'Photonia Photos RSS') + "\n    " +
+    auto_discovery_link_tag(:rss, feed_albums_url(format: :xml), title: 'Photonia Albums RSS')
+  )
+%>
 <div>
   <h1>Latest photo</h1>
   <a href="<%= photo_path(@latest_photo) %>">

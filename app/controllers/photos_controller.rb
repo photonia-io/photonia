@@ -28,6 +28,13 @@ class PhotosController < ApplicationController
     @photo = Photo.new
   end
 
+  def feed
+    @photos = Photo.all.order(imported_at: :desc).limit(30)
+    respond_to do |format|
+      format.xml
+    end
+  end
+
   def create
     @photo = Photo.new(photo_params)
     authorize @photo
