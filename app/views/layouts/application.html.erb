@@ -13,6 +13,8 @@
     <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
     <%= ENV['PHOTONIA_TRACKING_CODE']&.html_safe %>
 
+    <%= yield(:autodiscovery_link) %>
+
     <%= javascript_tag nonce: true do %>
       window.configuration_json = <%= @configuration_json.html_safe %>
       window.gql_queries = <%= @gql_queries.html_safe %>
