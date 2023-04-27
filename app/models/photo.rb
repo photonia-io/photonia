@@ -93,7 +93,7 @@ class Photo < ApplicationRecord
     end
 
     def person_present?
-      proxy_association.target.any? { |label| label.person? }
+      proxy_association.target.any?(&:person?)
     end
 
     def add_sequenced_names
@@ -146,13 +146,11 @@ class Photo < ApplicationRecord
   def populate_exif_fields
     file = image_attacher.file
     file.open do
-      begin
-        if exif(file)&.date_time_original
-          self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
-        end
-      rescue Exif::NotReadable
-        Rails.logger.error "Exif Not Readable: #{file.tempfile}"
+      if exif(file)&.date_time_original
+        self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
       end
+    rescue Exif::NotReadable
+      Rails.logger.error "Exif Not Readable: #{file.tempfile}"
     end
     self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
     self

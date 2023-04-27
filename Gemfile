@@ -37,20 +37,21 @@ gem 'friendly_id', '~> 5.5.0'
 gem 'graphql'
 gem 'graphql-pagination'
 gem 'image_processing', '~> 1.8'
+gem 'impressionist', '~> 2.0'
 gem 'jsonapi-serializer'
 gem 'pagy', '~> 6'
 gem 'pg_search'
 gem 'pundit'
 gem 'redis'
-gem 'sentry-ruby', '~> 5.8'
 gem 'sentry-rails', '~> 5.8'
+gem 'sentry-ruby', '~> 5.8'
 gem 'shrine', '~> 3.0'
 gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'skylight'
 gem 'vite_rails', '~> 3.0', '>= 3.0.14'
-gem 'whenever', require: false
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
+gem 'whenever', require: false
 
 group :development, :test do
   gem 'bcrypt_pbkdf'
@@ -94,5 +95,3 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
-
-gem "impressionist", "~> 2.0"

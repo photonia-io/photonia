@@ -21,10 +21,10 @@ ActsAsTaggableOn::Tag.class_eval do
   end
 
   def self.photonia_most_used(limit: 100, rekognition: false)
-    distinct_taggings_count(rekognition: rekognition).most_used(limit)
+    distinct_taggings_count(rekognition:).most_used(limit)
   end
 
   def self.photonia_least_used(limit: 100, rekognition: false)
-    distinct_taggings_count(rekognition: rekognition).least_used(limit)
+    distinct_taggings_count(rekognition:).least_used(limit)
   end
 end

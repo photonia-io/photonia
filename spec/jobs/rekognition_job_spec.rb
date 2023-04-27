@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe RekognitionJob, type: :job do
+RSpec.describe RekognitionJob do
+  subject { described_class.perform_now(photo.id) }
+
   let(:photo) { build_stubbed(:photo) }
   let(:rekognition_tagger_instance) { double }
   let(:photo_labeler_instance) { double }
@@ -13,8 +17,6 @@ RSpec.describe RekognitionJob, type: :job do
     allow(PhotoLabeler).to receive(:new).and_return(photo_labeler_instance)
     allow(photo_labeler_instance).to receive(:add_labels_from_rekognition_response)
   end
-
-  subject { described_class.perform_now(photo.id) }
 
   it 'calls tag on the RekognitionTagger instance' do
     expect(rekognition_tagger_instance).to receive(:tag).with(photo)

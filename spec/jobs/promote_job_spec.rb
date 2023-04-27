@@ -29,7 +29,7 @@ RSpec.describe PromoteJob do
 
     it 'calls #retrieve on the attacher class' do
       perform
-      expect(ImageUploader::Attacher).to have_received(:retrieve).with(model: record, name: name, file: file_data)
+      expect(ImageUploader::Attacher).to have_received(:retrieve).with(model: record, name:, file: file_data)
     end
 
     it 'calls #create_derivatives on the attacher' do

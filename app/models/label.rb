@@ -44,7 +44,7 @@ class Label < ApplicationRecord
   end
 
   def bounding_box
-    Photo::BoundingBox.new(top: top, left: left, width: width, height: height)
+    Photo::BoundingBox.new(top:, left:, width:, height:)
   end
 
   # class methods

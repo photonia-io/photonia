@@ -16,7 +16,7 @@ module HomepageLoader
     # cached_gql
   end
 
-  private
+  # private
 
   # def cached_gql
   #   @gql_cached_query = GraphqlQueryCollection::COLLECTION[:homepage_index]

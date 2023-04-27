@@ -313,12 +313,12 @@ Devise.setup do |config|
   # config.sign_in_after_change_password = true
 
   config.jwt do |jwt|
-    jwt.secret = ENV['PHOTONIA_DEVISE_JWT_SECRET_KEY']
+    jwt.secret = ENV.fetch('PHOTONIA_DEVISE_JWT_SECRET_KEY', nil)
     jwt.dispatch_requests = [
-      ['POST', %r{^/graphql$}, %r{signIn}]
+      ['POST', %r{^/graphql$}, /signIn/]
     ]
     jwt.revocation_requests = [
-      ['POST', %r{^/graphql$}, %r{signOut}]
+      ['POST', %r{^/graphql$}, /signOut/]
     ]
     jwt.expiration_time = 1.day.to_i
   end

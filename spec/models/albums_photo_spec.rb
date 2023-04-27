@@ -24,7 +24,7 @@
 #
 require 'rails_helper'
 
-RSpec.describe AlbumsPhoto, type: :model do
+RSpec.describe AlbumsPhoto do
   describe 'associations' do
     it 'belongs to an album' do
       association = described_class.reflect_on_association(:album)

@@ -18,4 +18,3 @@ namespace :labels do
     end
   end
 end
-  

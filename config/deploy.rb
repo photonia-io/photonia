@@ -10,7 +10,7 @@ set :repo_url, 'git@github.com:photonia-io/photonia.git'
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, ENV['PHOTONIA_DEPLOY_PATH']
+set :deploy_to, ENV.fetch('PHOTONIA_DEPLOY_PATH', nil)
 
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
