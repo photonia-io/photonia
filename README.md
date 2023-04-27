@@ -26,8 +26,8 @@ A photo hosting service tailored to my needs.
 
 ## Development
 
-    bin/vite
     bin/rails s
+    bin/vite dev
 
 ## Deployment
 
