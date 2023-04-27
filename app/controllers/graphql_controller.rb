@@ -11,7 +11,7 @@ class GraphqlController < ApplicationController
 
   def execute
     session[:dummy] = true
-    
+
     query = params[:query]
     variables = prepare_variables(params[:variables])
     operation_name = params[:operationName]

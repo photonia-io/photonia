@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe AddIntelligentDerivativesJob, type: :job do
+RSpec.describe AddIntelligentDerivativesJob do
   let(:photo) { build_stubbed(:photo) }
 
   before do

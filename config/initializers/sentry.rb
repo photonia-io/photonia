@@ -9,7 +9,7 @@ if Rails.env.production?
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production.
     config.traces_sample_rate = ENV.fetch('PHOTONIA_BE_SENTRY_SAMPLE_RATE', 0.1).to_f
-    
+
     # or
     # config.traces_sampler = lambda do |context|
     #   true

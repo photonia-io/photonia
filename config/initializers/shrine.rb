@@ -13,10 +13,10 @@ else
   require 'shrine/storage/s3'
 
   s3_options = {
-    access_key_id: ENV['PHOTONIA_S3_ACCESS_KEY_ID'],
-    secret_access_key: ENV['PHOTONIA_S3_SECRET_ACCESS_KEY'],
-    region: ENV['PHOTONIA_S3_REGION'],
-    bucket: ENV['PHOTONIA_S3_BUCKET']
+    access_key_id: ENV.fetch('PHOTONIA_S3_ACCESS_KEY_ID', nil),
+    secret_access_key: ENV.fetch('PHOTONIA_S3_SECRET_ACCESS_KEY', nil),
+    region: ENV.fetch('PHOTONIA_S3_REGION', nil),
+    bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil)
   }
 
   Shrine.storages = {

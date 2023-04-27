@@ -11,7 +11,7 @@
 #
 require 'rails_helper'
 
-RSpec.describe TaggingSource, type: :model do
+RSpec.describe TaggingSource do
   it 'has a valid factory' do
     expect(build(:tagging_source)).to be_valid
   end

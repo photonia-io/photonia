@@ -7,7 +7,7 @@ if Rails.env.test?
     config.logger.level = Logger::WARN
   end
 else
-  sidekiq_config = { url: ENV['JOB_WORKER_URL'] }
+  sidekiq_config = { url: ENV.fetch('JOB_WORKER_URL', nil) }
 
   Sidekiq.configure_server do |config|
     config.redis = sidekiq_config

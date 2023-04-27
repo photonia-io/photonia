@@ -16,14 +16,14 @@
 #
 require 'rails_helper'
 
-RSpec.describe Album, type: :model do
+RSpec.describe Album do
   it 'has a valid factory' do
     expect(build(:album)).to be_valid
   end
 
   describe 'validations' do
     it 'is invalid without a title' do
-      expect(build(:album, title: nil)).to_not be_valid
+      expect(build(:album, title: nil)).not_to be_valid
     end
   end
 
@@ -44,7 +44,7 @@ RSpec.describe Album, type: :model do
   end
 
   describe 'instance methods' do
-    it 'should return the correct slug' do
+    it 'returns the correct slug' do
       album = create(:album)
       expect(album.slug).to eq(album.serial_number.to_s)
     end

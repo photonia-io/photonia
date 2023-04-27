@@ -8,6 +8,7 @@ module Types
     field :albums, [AlbumType], 'Albums the photo belongs to', null: true
     field :date_taken, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was taken', null: true
     field :description, String, 'Description', null: false
+    field :height, Integer, 'Height of the photo in pixels', null: true
     field :id, String, 'ID of the photo', null: false
     field :imported_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :impressions_count, Integer, 'Number of impressions', null: true
@@ -17,12 +18,11 @@ module Types
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
     field :name, String, 'Title of the photo', null: false
     field :next_photo, PhotoType, 'Next photo', null: true
-    field :width, Integer, 'Width of the photo in pixels', null: true
-    field :height, Integer, 'Height of the photo in pixels', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
     field :user_tags, [TagType], 'User (non-Rekognition) tags', null: true
+    field :width, Integer, 'Width of the photo in pixels', null: true
 
     field :image_url, String, null: false do
       description 'URL of the image'

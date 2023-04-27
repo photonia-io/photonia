@@ -49,7 +49,7 @@ RSpec.describe Photo do
 
   describe 'instance methods' do
     describe '#next' do
-      it 'should return the next photo' do
+      it 'returns the next photo' do
         photo = create(:photo)
         next_photo = create(:photo, imported_at: photo.imported_at + 1.day)
         expect(photo.next).to eq(next_photo)
@@ -57,7 +57,7 @@ RSpec.describe Photo do
     end
 
     describe '#prev' do
-      it 'should return the previous photo' do
+      it 'returns the previous photo' do
         photo = create(:photo)
         prev_photo = create(:photo, imported_at: photo.imported_at - 1.day)
         expect(photo.prev).to eq(prev_photo)
