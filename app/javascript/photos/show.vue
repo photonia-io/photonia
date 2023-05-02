@@ -13,8 +13,6 @@
               :id="photo.id"
               :title="photoTitle()"
               @update-title="updatePhotoTitle"
-              @enable-keyboard-shortcuts="enableNavigationShortcuts"
-              @disable-keyboard-shortcuts="disableNavigationShortcuts"
             />
             <h1
               v-else
@@ -46,8 +44,6 @@
                 :id="photo.id"
                 :description="photoDescription()"
                 @update-description="updatePhotoDescription"
-                @enable-keyboard-shortcuts="enableNavigationShortcuts"
-                @disable-keyboard-shortcuts="disableNavigationShortcuts"
               />
               <div
                 v-else
@@ -60,6 +56,7 @@
                 v-if="userStore.signedIn"
                 :photo="photo"
                 :loading="loading"
+                @delete-photo="deletePhoto"
               />
 
               <PhotoInfo
@@ -188,6 +185,7 @@
   import { useQuery, useMutation } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
   import { useUserStore } from '../stores/user'
+  import { useApplicationStore } from '../stores/application'
 
   // components
   import PhotoTitleEditable from './photo-title-editable.vue'
@@ -301,28 +299,23 @@
   useTitle(title)
 
   const userStore = useUserStore()
+  const applicationStore = useApplicationStore()
 
   onMounted(() => {
-    enableNavigationShortcuts()
+    document.addEventListener('keydown', handleKeyDown)
   })
 
   onBeforeUnmount(() => {
-    disableNavigationShortcuts()
+    document.removeEventListener('keydown', handleKeyDown)
   })
 
-  const enableNavigationShortcuts = () => {
-    document.addEventListener('keydown', handleKeyDown)
-  }
-
-  const disableNavigationShortcuts = () => {
-    document.removeEventListener('keydown', handleKeyDown)
-  }
-
   const handleKeyDown = (event) => {
-    if (event.key === 'ArrowLeft') {
-      navigateToPreviousPhoto()
-    } else if (event.key === 'ArrowRight') {
-      navigateToNextPhoto()
+    if (applicationStore.navigationShortcutsEnabled === true) {
+      if (event.key === 'ArrowLeft') {
+        navigateToPreviousPhoto()
+      } else if (event.key === 'ArrowRight') {
+        navigateToNextPhoto()
+      }
     }
   }
 
