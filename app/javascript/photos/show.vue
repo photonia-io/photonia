@@ -40,7 +40,7 @@
         </div> <!-- End photo title and navigation -->
         <div class="block mt-2">
           <div class="columns">
-            <div class="column is-three-quarters">
+            <div class="column is-three-quarters">  <!-- Left column -->
               <PhotoDescriptionEditable
                 v-if="(userStore.signedIn && !loading)"
                 :id="photo.id"
@@ -55,6 +55,12 @@
               >
                 {{ photoDescription() }}
               </div>
+
+              <PhotoAdministration
+                v-if="userStore.signedIn"
+                :photo="photo"
+                :loading="loading"
+              />
 
               <PhotoInfo
                 :photo="photo"
@@ -103,7 +109,7 @@
                   type="machine"
                 />
               </div>
-            </div>
+            </div> <!-- End left column -->
             <div class="column is-one-quarter">
               <SidebarHeader
                 v-if="showAlbumBrowser"
@@ -186,6 +192,7 @@
   // components
   import PhotoTitleEditable from './photo-title-editable.vue'
   import PhotoDescriptionEditable from './photo-description-editable.vue'
+  import PhotoAdministration from './photo-administration.vue'
   import PhotoInfo from './photo-info.vue'
   import SmallNavigationButton from '@/photos/small-navigation-button.vue'
   import DisplayHero from './display-hero.vue'
@@ -237,6 +244,16 @@
     `
   )
 
+  const { mutate: deletePhoto, onDone: onDeletePhotoDone, onError: onDeletePhotoError } = useMutation(
+    gql`
+      mutation($id: String!) {
+        deletePhoto(id: $id) {
+          id
+        }
+      }
+    `
+  )
+
   onUpdateTitleDone(({ data }) => {
     console.log(data)
   })
@@ -250,6 +267,16 @@
   })
 
   onUpdateDescriptionError((error) => {
+    // todo console.log(error)
+  })
+
+  onDeletePhotoDone(({ data }) => {
+    console.log(data)
+    // set notification toast about deletion
+    router.push({ name: 'photos-index' })
+  })
+
+  onDeletePhotoError((error) => {
     // todo console.log(error)
   })
 
