@@ -2,7 +2,7 @@
   <DisplayHero
     v-if="!loading"
     :photo="result.latestPhoto"
-    isHomepage="true"
+    :isHomepage="true"
   />
   <section class="section-pt-pb-0">
     <div class="container">
