@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer mt-5">
+  <footer class="footer mt-5 pt-5 pb-5">
     <div class="content has-text-centered">
       <p>
         Photos &copy; <a href="https://www.rusiczki.net">János Rusiczki</a>
