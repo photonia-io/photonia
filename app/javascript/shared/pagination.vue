@@ -32,11 +32,11 @@
     </a>
     <ul class="pagination-list">
       <li
-        v-for="page in pages"        
+        v-for="page in pages"
       >
         <router-link
           v-if="page === metadata.currentPage"
-          :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: page } }"
+          :to="{ name: routeName, params: routeParams, query: page != 1 ? { ...additionalQueryParams, page: page } : additionalQueryParams }"
           class="pagination-link is-current"
         >
           {{ page }}
