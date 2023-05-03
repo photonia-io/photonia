@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: cjda.tags_path + '/:id', name: 'tags-show', component: () => import('../tags/show.vue') },
     { path: cjda.users_sign_in_path, name: 'users-sign-in', component: () => import('../users/sign-in.vue') },
     { path: cjda.users_sign_out_path, name: 'users-sign-out', component: () => import('../users/sign-out.vue') },
-    { 
+    {
       path: cjda.users_settings_path,
       name: 'users-settings',
       component: () => import('../users/settings.vue'),
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       `
     )
-  
+
     watch(result, value => {
       userStore.email = value.userSettings.email
     })
@@ -123,16 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // go for Vue!
 
   const app = createApp({
-    setup() {
-      provide(DefaultApolloClient, apolloClient)
-    },
     render: () => h(App),
   })
+
+  app.provide('apolloClient', apolloClient)
 
   app.config.globalProperties.gql_queries = window.gql_queries
   app.config.globalProperties.gql_cached_query = window.gql_cached_query
   app.config.globalProperties.gql_cached_result = window.gql_cached_result
-  
+
   // Start Sentry
 
   if (import.meta.env.PROD) {

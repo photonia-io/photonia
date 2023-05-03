@@ -179,7 +179,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+  import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import gql from 'graphql-tag'
   import { useQuery, useMutation } from '@vue/apollo-composable'
@@ -219,6 +219,8 @@
   const id = computed(() => route.params.id)
   const { result, loading } = useQuery(gql`${gql_queries.photos_show}`, { id: id })
   const labelHighlights = ref({})
+
+  const apolloClient = inject('apolloClient')
 
   const { mutate: updatePhotoTitle, onDone: onUpdateTitleDone, onError: onUpdateTitleError } = useMutation(
     gql`
@@ -271,6 +273,8 @@
   onDeletePhotoDone(({ data }) => {
     console.log(data)
     // set notification toast about deletion
+    applicationStore.photoListChanged = true
+    apolloClient.cache.reset()
     router.push({ name: 'photos-index' })
   })
 
