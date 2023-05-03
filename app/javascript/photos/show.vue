@@ -186,6 +186,7 @@
   import { useTitle } from 'vue-page-title'
   import { useUserStore } from '../stores/user'
   import { useApplicationStore } from '../stores/application'
+  import toaster from '../mixins/toaster'
 
   // components
   import PhotoTitleEditable from './photo-title-editable.vue'
@@ -271,9 +272,8 @@
   })
 
   onDeletePhotoDone(({ data }) => {
-    console.log(data)
-    // set notification toast about deletion
     apolloClient.cache.reset()
+    toaster('The photo has been deleted', 'is-success')
     router.push({ name: 'photos-index' })
   })
 
