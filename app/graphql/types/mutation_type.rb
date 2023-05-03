@@ -5,6 +5,11 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
+    field :delete_photo, PhotoType, null: false do
+      description 'Delete photo'
+      argument :id, String, 'Photo Id', required: true
+    end
+
     field :sign_in, UserType, null: true do
       description 'Sign in'
       argument :email, String, 'User email', required: true
@@ -25,6 +30,13 @@ module Types
       description 'Update photo description'
       argument :description, String, 'New photo description', required: true
       argument :id, String, 'Photo Id', required: true
+    end
+
+    def delete_photo(id:)
+      photo = Photo.friendly.find(id)
+      context[:authorize].call(photo, :destroy?)
+      photo.destroy
+      photo
     end
 
     def sign_in(email:, password:)

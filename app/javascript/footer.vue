@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer mt-5">
+  <footer class="footer mt-5 pt-5 pb-5">
     <div class="content has-text-centered">
       <p>
         Photos &copy; <a href="https://www.rusiczki.net">János Rusiczki</a>
@@ -13,11 +13,17 @@
         </router-link>
         &middot;
         <a>
-          About
+          <span class="icon-text">
+            <span class="icon"><i class="fas fa-info-circle"></i></span>
+            <span>About</span>
+          </span>
         </a>
         &middot;
         <a>
-          Contact
+          <span class="icon-text">
+            <span class="icon"><i class="fas fa-envelope"></i></span>
+            <span>Contact</span>
+          </span>
         </a>
         &middot;
         Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a>

@@ -13,8 +13,6 @@
               :id="photo.id"
               :title="photoTitle()"
               @update-title="updatePhotoTitle"
-              @enable-keyboard-shortcuts="enableNavigationShortcuts"
-              @disable-keyboard-shortcuts="disableNavigationShortcuts"
             />
             <h1
               v-else
@@ -40,14 +38,12 @@
         </div> <!-- End photo title and navigation -->
         <div class="block mt-2">
           <div class="columns">
-            <div class="column is-three-quarters">
+            <div class="column is-three-quarters">  <!-- Left column -->
               <PhotoDescriptionEditable
                 v-if="(userStore.signedIn && !loading)"
                 :id="photo.id"
                 :description="photoDescription()"
                 @update-description="updatePhotoDescription"
-                @enable-keyboard-shortcuts="enableNavigationShortcuts"
-                @disable-keyboard-shortcuts="disableNavigationShortcuts"
               />
               <div
                 v-else
@@ -55,6 +51,13 @@
               >
                 {{ photoDescription() }}
               </div>
+
+              <PhotoAdministration
+                v-if="userStore.signedIn"
+                :photo="photo"
+                :loading="loading"
+                @delete-photo="deletePhoto"
+              />
 
               <PhotoInfo
                 :photo="photo"
@@ -103,7 +106,7 @@
                   type="machine"
                 />
               </div>
-            </div>
+            </div> <!-- End left column -->
             <div class="column is-one-quarter">
               <SidebarHeader
                 v-if="showAlbumBrowser"
@@ -176,16 +179,19 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+  import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import gql from 'graphql-tag'
   import { useQuery, useMutation } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
   import { useUserStore } from '../stores/user'
+  import { useApplicationStore } from '../stores/application'
+  import toaster from '../mixins/toaster'
 
   // components
   import PhotoTitleEditable from './photo-title-editable.vue'
   import PhotoDescriptionEditable from './photo-description-editable.vue'
+  import PhotoAdministration from './photo-administration.vue'
   import PhotoInfo from './photo-info.vue'
   import SmallNavigationButton from '@/photos/small-navigation-button.vue'
   import DisplayHero from './display-hero.vue'
@@ -215,6 +221,8 @@
   const { result, loading } = useQuery(gql`${gql_queries.photos_show}`, { id: id })
   const labelHighlights = ref({})
 
+  const apolloClient = inject('apolloClient')
+
   const { mutate: updatePhotoTitle, onDone: onUpdateTitleDone, onError: onUpdateTitleError } = useMutation(
     gql`
       mutation($id: String!, $title: String!) {
@@ -237,6 +245,16 @@
     `
   )
 
+  const { mutate: deletePhoto, onDone: onDeletePhotoDone, onError: onDeletePhotoError } = useMutation(
+    gql`
+      mutation($id: String!) {
+        deletePhoto(id: $id) {
+          id
+        }
+      }
+    `
+  )
+
   onUpdateTitleDone(({ data }) => {
     console.log(data)
   })
@@ -250,6 +268,16 @@
   })
 
   onUpdateDescriptionError((error) => {
+    // todo console.log(error)
+  })
+
+  onDeletePhotoDone(({ data }) => {
+    apolloClient.cache.reset()
+    toaster('The photo has been deleted', 'is-success')
+    router.push({ name: 'photos-index' })
+  })
+
+  onDeletePhotoError((error) => {
     // todo console.log(error)
   })
 
@@ -274,28 +302,23 @@
   useTitle(title)
 
   const userStore = useUserStore()
+  const applicationStore = useApplicationStore()
 
   onMounted(() => {
-    enableNavigationShortcuts()
+    document.addEventListener('keydown', handleKeyDown)
   })
 
   onBeforeUnmount(() => {
-    disableNavigationShortcuts()
+    document.removeEventListener('keydown', handleKeyDown)
   })
 
-  const enableNavigationShortcuts = () => {
-    document.addEventListener('keydown', handleKeyDown)
-  }
-
-  const disableNavigationShortcuts = () => {
-    document.removeEventListener('keydown', handleKeyDown)
-  }
-
   const handleKeyDown = (event) => {
-    if (event.key === 'ArrowLeft') {
-      navigateToPreviousPhoto()
-    } else if (event.key === 'ArrowRight') {
-      navigateToNextPhoto()
+    if (applicationStore.navigationShortcutsEnabled === true) {
+      if (event.key === 'ArrowLeft') {
+        navigateToPreviousPhoto()
+      } else if (event.key === 'ArrowRight') {
+        navigateToNextPhoto()
+      }
     }
   }
 

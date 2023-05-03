@@ -36,3 +36,11 @@ $section-padding: 3rem 0.75rem;
   padding-top: 0;
   padding-bottom: 0;
 }
+
+.modal-content, .modal-card {
+  width: calc(100% - 2em);
+
+  @media screen and (min-width:769px) {
+    width: 640px;
+  }
+}

@@ -22,6 +22,8 @@
 </template>
 
 <script setup>
+  import ImagePlaceholder from '@/shared/image-placeholder.vue'
+
   const props = defineProps({
     photos: {
       type: Array,

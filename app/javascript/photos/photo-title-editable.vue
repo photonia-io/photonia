@@ -39,6 +39,7 @@
 
 <script setup>
   import { ref, toRef, watch } from 'vue'
+  import { useApplicationStore } from '../stores/application'
 
   const props = defineProps({
     id: {
@@ -51,7 +52,9 @@
     }
   })
 
-  const emit = defineEmits(['updateTitle', 'disableKeyboardShortcuts', 'enableKeyboardShortcuts'])
+  const emit = defineEmits(['updateTitle'])
+
+  const applicationStore = useApplicationStore()
 
   const editing = ref(false)
   const localTitle = ref(props.title)
@@ -64,13 +67,13 @@
   const startEditing = () => {
     savedTitle = localTitle.value
     editing.value = true
-    emit('disableKeyboardShortcuts')
+    applicationStore.disableNavigationShortcuts()
   }
 
   const cancelEditing = () => {
     localTitle.value = savedTitle
     editing.value = false
-    emit('enableKeyboardShortcuts')
+    applicationStore.enableNavigationShortcuts()
   }
 
   const updateTitle = () => {
@@ -78,7 +81,7 @@
       emit('updateTitle', { id: props.id, title: localTitle.value })
     }
     editing.value = false
-    emit('enableKeyboardShortcuts')
+    applicationStore.enableNavigationShortcuts()
   }
 </script>
 
