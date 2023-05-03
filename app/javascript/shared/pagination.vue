@@ -3,7 +3,7 @@
     <!-- previous page router-link -->
     <router-link
       v-if="previousPage > 0"
-      :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: previousPage } }"
+      :to="routerLinkTo(previousPage)"
       class="pagination-previous"
       rel="prev"
     >
@@ -18,7 +18,7 @@
     <!-- next page router-link -->
     <router-link
       v-if="nextPage <= metadata.totalPages"
-      :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: nextPage } }"
+      :to="routerLinkTo(nextPage)"
       class="pagination-next"
       rel="next"
     >
@@ -36,7 +36,7 @@
       >
         <router-link
           v-if="page === metadata.currentPage"
-          :to="{ name: routeName, params: routeParams, query: page != 1 ? { ...additionalQueryParams, page: page } : additionalQueryParams }"
+          :to="routerLinkTo(page)"
           class="pagination-link is-current"
         >
           {{ page }}
@@ -49,7 +49,7 @@
         </span>
         <router-link
           v-else
-          :to="{ name: routeName, params: routeParams, query: { ...additionalQueryParams, page: page } }"
+          :to="routerLinkTo(page)"
           class="pagination-link"
         >
           {{ page }}
@@ -124,4 +124,13 @@
       return metadata.value.currentPage + 1
     }
   )
+
+  const routerLinkTo = (page) => {
+    const query = page != 1 ? { ...additionalQueryParams.value, page: page } : additionalQueryParams.value
+    return {
+      name: routeName.value,
+      params: routeParams.value,
+      query: query
+    }
+  }
 </script>
