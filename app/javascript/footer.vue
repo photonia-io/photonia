@@ -13,11 +13,17 @@
         </router-link>
         &middot;
         <a>
-          About
+          <span class="icon-text">
+            <span class="icon"><i class="fas fa-info-circle"></i></span>
+            <span>About</span>
+          </span>
         </a>
         &middot;
         <a>
-          Contact
+          <span class="icon-text">
+            <span class="icon"><i class="fas fa-envelope"></i></span>
+            <span>Contact</span>
+          </span>
         </a>
         &middot;
         Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a>
