@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useApplicationStore = defineStore('application', () => {
-  const photoListChanged = ref(false)
   const navigationShortcutsEnabled = ref(true)
 
   function enableNavigationShortcuts() {
@@ -15,7 +14,6 @@ export const useApplicationStore = defineStore('application', () => {
 
   return {
     navigationShortcutsEnabled,
-    photoListChanged,
     enableNavigationShortcuts,
     disableNavigationShortcuts
   }

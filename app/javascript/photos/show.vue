@@ -273,7 +273,6 @@
   onDeletePhotoDone(({ data }) => {
     console.log(data)
     // set notification toast about deletion
-    applicationStore.photoListChanged = true
     apolloClient.cache.reset()
     router.push({ name: 'photos-index' })
   })

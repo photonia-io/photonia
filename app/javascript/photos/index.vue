@@ -27,11 +27,7 @@
   import { useRoute } from 'vue-router'
   import gql from 'graphql-tag'
   import { useTitle } from 'vue-page-title'
-  import useQueryWithFetchPolicy from '@/mixins/query-with-fetch-policy'
-  import { inject } from 'vue'
-
-  const apolloClient = inject('apolloClient')
-  // apolloClient.cache.reset()
+  import { useQuery } from '@vue/apollo-composable'
 
   // components
   import PhotoItem from '@/shared/photo-item.vue'
@@ -44,6 +40,6 @@
   const page = computed(() => parseInt(route.query.page) || 1)
   const additionalQueryParams = computed(() => query.value !== null ? { q: query.value } : {})
 
-  const { result } = useQueryWithFetchPolicy(gql`${gql_queries.photos_index}`, { page: page, query: query })
+  const { result } = useQuery(gql`${gql_queries.photos_index}`, { page: page, query: query })
 </script>
 
