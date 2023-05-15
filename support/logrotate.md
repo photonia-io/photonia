@@ -15,6 +15,6 @@
 }
 ````
 
-crontab entry
+Current user's crontab entry (`crontab -e`)
 
     0 2 * * * logrotate /home/user/logrotate.conf --state /home/user/logrotate-state
