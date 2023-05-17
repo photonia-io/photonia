@@ -3,7 +3,7 @@
     <div class="message-header">
       <p>Selection Mode</p>
     </div>
-    <div class="message-body">
+    <div class="message-body content">
       <p
         v-if="selectionCount > 0"
       >
@@ -20,21 +20,27 @@
       >
         You have not selected any photos.
       </p>
-      <p>
+      <div class="buttons">
         <button
           class="button"
           @click="addAllOnPage()"
         >
-          Select All Photos On This Page
+          <span class="icon-text">
+            <span class="icon"><i class="far fa-check-square"></i></span>
+            <span>Select All Photos On This Page</span>
+          </span>
         </button>
         <button
           class="button"
           @click="removeAllOnPage()"
         >
-          Deselect All Photos On This Page
+          <span class="icon-text">
+            <span class="icon"><i class="far fa-square"></i></span>
+            <span>Deselect All Photos On This Page</span>
+          </span>
         </button>
-      </p>
-      <p>
+      </div>
+      <div class="buttons">
         <button
           class="button"
           @click="selectionStore.clearPhotos()"
@@ -45,9 +51,12 @@
           class="button"
           @click="applicationStore.exitSelectionMode()"
         >
-          Exit Selection Mode
+          <span class="icon-text">
+            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+            <span>Exit Selection Mode</span>
+          </span>
         </button>
-      </p>
+      </div>
     </div>
   </div>
 </template>
