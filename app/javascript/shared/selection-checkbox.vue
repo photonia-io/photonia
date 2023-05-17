@@ -19,8 +19,6 @@
 </template>
 
 <script setup>
-  import 'bulma-checkradio/dist/css/bulma-checkradio.min.css';
-
   import { useSelectionStore } from '@/stores/selection'
 
   const props = defineProps({
