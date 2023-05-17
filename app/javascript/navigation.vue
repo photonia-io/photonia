@@ -45,7 +45,7 @@
               <span class="icon"><i class="fas fa-upload"></i></span>
               <span>Upload</span>
             </span>
-          </router-link>          
+          </router-link>
 
           <router-link
             v-if="userStore.signedIn"
@@ -107,9 +107,8 @@
 
 <script setup>
   import { ref, watch } from 'vue'
-  import { useUserStore } from './stores/user'
+  import { useUserStore } from '@/stores/user'
   import { useRoute, useRouter } from 'vue-router'
-
 
   const router = useRouter()
   const userStore = useUserStore()

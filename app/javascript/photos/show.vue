@@ -185,7 +185,7 @@
   import { useQuery, useMutation } from '@vue/apollo-composable'
   import { useTitle } from 'vue-page-title'
   import { useUserStore } from '../stores/user'
-  import { useApplicationStore } from '../stores/application'
+  import { useApplicationStore } from '@/stores/application'
   import toaster from '../mixins/toaster'
 
   // components
