@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export const useApplicationStore = defineStore('application', () => {
   const navigationShortcutsEnabled = ref(true)
-  const selectionMode = ref(false)
+  const selectionMode = ref(localStorage.getItem('selectionMode') || false)
 
   function enableNavigationShortcuts() {
     navigationShortcutsEnabled.value = true
@@ -12,6 +12,10 @@ export const useApplicationStore = defineStore('application', () => {
   function disableNavigationShortcuts() {
     navigationShortcutsEnabled.value = false
   }
+
+  watch(selectionMode, (newValue) => {
+    localStorage.setItem('selectionMode', newValue)
+  })
 
   function enterSelectionMode() {
     selectionMode.value = true

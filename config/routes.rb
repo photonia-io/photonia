@@ -10,7 +10,8 @@ Rails.application.routes.draw do
 
   resources :photos, except: %i[new] do
     get :upload, on: :collection
-    get :selected, on: :collection
+    get :organizer, on: :collection
+    get :deselected, on: :collection
     get :feed, on: :collection, format: :xml
   end
   resources :tags, only: %i[index show]

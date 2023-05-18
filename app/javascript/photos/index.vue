@@ -16,6 +16,14 @@
             >
               Enter Selection Mode
             </button>
+            <button
+              class="button is-small"
+              v-if="userStore.signedIn && applicationStore.selectionMode"
+              @click="applicationStore.exitSelectionMode()"
+            >
+                <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                <span>Exit Selection Mode</span>
+            </button>
           </div>
         </div>
       </div>

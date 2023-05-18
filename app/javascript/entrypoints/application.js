@@ -55,9 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
       beforeEnter: redirectIfNotSignedIn
     },
     {
-      path: cjda.photos_path + '/selected',
-      name: 'photos-selected',
-      component: () => import('../photos/selected.vue'),
+      path: cjda.photos_path + '/organizer',
+      name: 'photos-organizer',
+      component: () => import('../photos/organizer.vue'),
+      beforeEnter: redirectIfNotSignedIn
+    },
+    {
+      path: cjda.photos_path + '/deselected',
+      name: 'photos-deselected',
+      component: () => import('../photos/deselected.vue'),
       beforeEnter: redirectIfNotSignedIn
     }
   ]
