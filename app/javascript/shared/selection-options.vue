@@ -21,16 +21,9 @@
             >
               Go to the Organizer
             </router-link>
-            <button
-              class="button is-danger"
+            <ClearSelectionButton
               :disabled="buttonsDisabled"
-              @click="selectionStore.clearPhotos()"
-            >
-              <span class="icon">
-                <i class="fas fa-times"></i>
-              </span>
-              <span>Clear Selection</span>
-            </button>
+            />
           </div>
         </div>
         <div class="level-right">
@@ -63,8 +56,9 @@
 <script setup>
   import { computed } from 'vue'
 
-  import { useApplicationStore } from '@/stores/application'
   import { useSelectionStore } from '@/stores/selection';
+
+  import ClearSelectionButton from '@/shared/buttons/clear-selection.vue'
 
   const props = defineProps({
     photos: {
@@ -73,7 +67,6 @@
     }
   })
 
-  const applicationStore = useApplicationStore()
   const selectionStore = useSelectionStore()
 
   const selectionCount = computed(() => selectionStore.selectedPhotos.length)

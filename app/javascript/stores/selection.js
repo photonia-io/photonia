@@ -37,8 +37,9 @@ export const useSelectionStore = defineStore('selection', () => {
     }
   }
 
-  const clearPhotos = () => {
+  const clearPhotoSelection = () => {
     selectedPhotos.value = new Array()
+    deselectedPhotos.value = new Array()
   }
 
   const addPhotos = (photos) => {
@@ -55,5 +56,5 @@ export const useSelectionStore = defineStore('selection', () => {
     selectedPhotos.value = selectedPhotos.value.filter((item) => !photos.find((photo) => photo.id === item.id))
   }
 
-  return { selectedPhotos, deselectedPhotos, addPhoto, removePhoto, clearPhotos, addPhotos, removePhotos }
+  return { selectedPhotos, deselectedPhotos, addPhoto, removePhoto, clearPhotoSelection, addPhotos, removePhotos }
 })

@@ -20,36 +20,15 @@
         You have not selected any photos.
       </p>
       <div class="buttons">
-        <button
-          class="button"
-          :disabled="buttonsDisabled"
-          @click="addToAlbum()"
-        >
-          <span class="icon-text">
-            <span class="icon"><i class="fas fa-folder-plus"></i></span>
-            <span>Add To Album</span>
-          </span>
-        </button>
-        <button
-          class="button"
-          :disabled="buttonsDisabled"
-          @click="addTags()"
-        >
-          <span class="icon-text">
-            <span class="icon"><i class="fas fa-tag"></i></span>
-            <span>Add Tags</span>
-          </span>
-        </button>
-        <button
-          class="button is-danger"
-          :disabled="buttonsDisabled"
-          @click="deletePhotos()"
-        >
-          <span class="icon-text">
-            <span class="icon"><i class="fas fa-trash"></i></span>
-            <span>Delete</span>
-          </span>
-        </button>
+        <AddToAlbumButton
+          :photos="props.photos"
+        />
+        <AddTagsButton
+          :photos="props.photos"
+        />
+        <DeleteButton
+          :photos="props.photos"
+        />
       </div>
     </div>
   </div>
@@ -58,6 +37,10 @@
 <script setup>
   import { computed } from 'vue'
   import { useSelectionStore } from '@/stores/selection'
+
+  import AddToAlbumButton from '@/shared/buttons/add-to-album.vue'
+  import AddTagsButton from '@/shared/buttons/add-tags.vue'
+  import DeleteButton from '@/shared/buttons/delete.vue'
 
   const props = defineProps({
     photos: {
@@ -69,5 +52,4 @@
   const selectionStore = useSelectionStore()
 
   const selectionCount = computed(() => selectionStore.selectedPhotos.length)
-  const buttonsDisabled = computed(() => selectionCount.value === 0)
 </script>
