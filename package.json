@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.14",
-    "@sentry/vue": "^7.52.1",
+    "@sentry/vue": "^7.53.1",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
     "animate.css": "^4.1.1",
@@ -28,7 +28,7 @@
     "@vue/compiler-dom": "^3.3.4",
     "@vue/server-renderer": "3.2.47",
     "@vue/test-utils": "^2.3.2",
-    "happy-dom": "^9.19.2",
+    "happy-dom": "^9.20.3",
     "vite": "^4.3.8",
     "vite-plugin-ruby": "^3.2.2",
     "vitest": "^0.30.1"
