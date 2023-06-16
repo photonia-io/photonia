@@ -21,15 +21,20 @@
               v-if="userStore.signedIn && applicationStore.selectionMode"
               @click="applicationStore.exitSelectionMode()"
             >
-                <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-                <span>Exit Selection Mode</span>
+              <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+              <span>Exit Selection Mode</span>
             </button>
           </div>
         </div>
       </div>
-      <hr class="mt-2 mb-4">
+      <hr class="mt-2 mb-4" />
       <SelectionOptions
-        v-if="result && result.photos && userStore.signedIn && applicationStore.selectionMode"
+        v-if="
+          result &&
+          result.photos &&
+          userStore.signedIn &&
+          applicationStore.selectionMode
+        "
         :photos="result.photos.collection"
       />
       <div class="columns is-1 is-variable is-multiline">
@@ -40,7 +45,7 @@
           :key="photo.id"
         />
       </div>
-      <hr class="mt-1 mb-4">
+      <hr class="mt-1 mb-4" />
       <Pagination
         v-if="result && result.photos"
         :metadata="result.photos.metadata"
@@ -52,29 +57,35 @@
 </template>
 
 <script setup>
-  import { computed } from 'vue'
-  import { useRoute } from 'vue-router'
-  import gql from 'graphql-tag'
-  import { useTitle } from 'vue-page-title'
-  import { useQuery } from '@vue/apollo-composable'
-  import { useApplicationStore } from '@/stores/application'
-  import { useUserStore } from '@/stores/user'
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import gql from "graphql-tag";
+import { useTitle } from "vue-page-title";
+import { useQuery } from "@vue/apollo-composable";
+import { useApplicationStore } from "@/stores/application";
+import { useUserStore } from "@/stores/user";
 
-  // components
-  import SelectionOptions from '@/shared/selection-options.vue'
-  import PhotoItem from '@/shared/photo-item.vue'
-  import Pagination from '@/shared/pagination.vue'
+// components
+import SelectionOptions from "@/shared/selection-options.vue";
+import PhotoItem from "@/shared/photo-item.vue";
+import Pagination from "@/shared/pagination.vue";
 
-  useTitle('Photos') // todo: add page number
+useTitle("Photos"); // todo: add page number
 
-  const route = useRoute()
-  const query = computed(() => route.query.q || null)
-  const page = computed(() => parseInt(route.query.page) || 1)
-  const additionalQueryParams = computed(() => query.value !== null ? { q: query.value } : {})
+const route = useRoute();
+const query = computed(() => route.query.q || null);
+const page = computed(() => parseInt(route.query.page) || 1);
+const additionalQueryParams = computed(() =>
+  query.value !== null ? { q: query.value } : {}
+);
 
-  const applicationStore = useApplicationStore()
-  const userStore = useUserStore()
+const applicationStore = useApplicationStore();
+const userStore = useUserStore();
 
-  const { result } = useQuery(gql`${gql_queries.photos_index}`, { page: page, query: query })
+const { result } = useQuery(
+  gql`
+    ${gql_queries.photos_index}
+  `,
+  { page: page, query: query }
+);
 </script>
-

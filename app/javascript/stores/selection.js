@@ -1,60 +1,80 @@
-import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { defineStore } from "pinia";
+import { ref, watch } from "vue";
 
-export const useSelectionStore = defineStore('selection', () => {
-  const selectedPhotos = ref(JSON.parse(localStorage.getItem('selectedPhotos') || '[]'))
-  const deselectedPhotos = ref(JSON.parse(localStorage.getItem('deselectedPhotos') || '[]'))
-
-  watch(
-    selectedPhotos, (newValue) => {
-      localStorage.setItem('selectedPhotos', JSON.stringify(newValue))
-    },
-    { deep: true }
-  )
+export const useSelectionStore = defineStore("selection", () => {
+  const selectedPhotos = ref(
+    JSON.parse(localStorage.getItem("selectedPhotos") || "[]")
+  );
+  const deselectedPhotos = ref(
+    JSON.parse(localStorage.getItem("deselectedPhotos") || "[]")
+  );
 
   watch(
-    deselectedPhotos, (newValue) => {
-      localStorage.setItem('deselectedPhotos', JSON.stringify(newValue))
+    selectedPhotos,
+    (newValue) => {
+      localStorage.setItem("selectedPhotos", JSON.stringify(newValue));
     },
     { deep: true }
-  )
+  );
+
+  watch(
+    deselectedPhotos,
+    (newValue) => {
+      localStorage.setItem("deselectedPhotos", JSON.stringify(newValue));
+    },
+    { deep: true }
+  );
 
   const addPhoto = (photo) => {
     // add to selectedPhotos if not already there
     if (!selectedPhotos.value.find((item) => item.id === photo.id)) {
-      selectedPhotos.value.push(photo)
+      selectedPhotos.value.push(photo);
     }
     // remove from deselectedPhotos if there
-    deselectedPhotos.value = deselectedPhotos.value.filter((item) => item.id !== photo.id)
-  }
+    deselectedPhotos.value = deselectedPhotos.value.filter(
+      (item) => item.id !== photo.id
+    );
+  };
 
   const removePhoto = (photo) => {
     // remove from selectedPhotos if there
-    selectedPhotos.value = selectedPhotos.value.filter((item) => item.id !== photo.id)
+    selectedPhotos.value = selectedPhotos.value.filter(
+      (item) => item.id !== photo.id
+    );
     // add to deselectedPhotos if not already there
     if (!deselectedPhotos.value.find((item) => item.id === photo.id)) {
-      deselectedPhotos.value.push(photo)
+      deselectedPhotos.value.push(photo);
     }
-  }
+  };
 
   const clearPhotoSelection = () => {
-    selectedPhotos.value = new Array()
-    deselectedPhotos.value = new Array()
-  }
+    selectedPhotos.value = new Array();
+    deselectedPhotos.value = new Array();
+  };
 
   const addPhotos = (photos) => {
-    let newSelectedPhotos = selectedPhotos.value
+    let newSelectedPhotos = selectedPhotos.value;
     photos.forEach((photo) => {
       if (!newSelectedPhotos.find((item) => item.id === photo.id)) {
-        newSelectedPhotos.push(photo)
+        newSelectedPhotos.push(photo);
       }
-    })
-    selectedPhotos.value = newSelectedPhotos
-  }
+    });
+    selectedPhotos.value = newSelectedPhotos;
+  };
 
   const removePhotos = (photos) => {
-    selectedPhotos.value = selectedPhotos.value.filter((item) => !photos.find((photo) => photo.id === item.id))
-  }
+    selectedPhotos.value = selectedPhotos.value.filter(
+      (item) => !photos.find((photo) => photo.id === item.id)
+    );
+  };
 
-  return { selectedPhotos, deselectedPhotos, addPhoto, removePhoto, clearPhotoSelection, addPhotos, removePhotos }
-})
+  return {
+    selectedPhotos,
+    deselectedPhotos,
+    addPhoto,
+    removePhoto,
+    clearPhotoSelection,
+    addPhotos,
+    removePhotos,
+  };
+});

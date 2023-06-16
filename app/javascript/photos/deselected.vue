@@ -13,7 +13,7 @@
           </div>
         </div>
       </div>
-      <hr class="mt-2 mb-4">
+      <hr class="mt-2 mb-4" />
       <div class="message is-warning">
         <div class="message-body content">
           <p>Click on a photo to move it back to the selection.</p>
@@ -31,28 +31,27 @@
 </template>
 
 <script setup>
-  import { watch } from 'vue'
-  import { storeToRefs } from 'pinia'
-  import { useTitle } from 'vue-page-title'
+import { watch } from "vue";
+import { storeToRefs } from "pinia";
+import { useTitle } from "vue-page-title";
 
-  import { useSelectionStore } from '@/stores/selection'
+import { useSelectionStore } from "@/stores/selection";
 
-  import ReturnToPreviousPage from '@/shared/return-to-previous-page.vue'
-  import PhotoItem from '@/shared/photo-item.vue'
-  import toaster from '@/mixins/toaster'
+import ReturnToPreviousPage from "@/shared/return-to-previous-page.vue";
+import PhotoItem from "@/shared/photo-item.vue";
+import toaster from "@/mixins/toaster";
 
-  const selectionStore = useSelectionStore()
-  const { deselectedPhotos } = storeToRefs(selectionStore)
+const selectionStore = useSelectionStore();
+const { deselectedPhotos } = storeToRefs(selectionStore);
 
-  useTitle('Deselected Photos')
+useTitle("Deselected Photos");
 
-  watch(
-    deselectedPhotos, (newValue, oldValue) => {
-      if(newValue.length < oldValue.length) {
-        const removedPhoto = oldValue.filter(photo => !newValue.includes(photo)).pop()
-        toaster(`"${removedPhoto.name}" was moved to the selection`)
-      }
-    }
-  )
+watch(deselectedPhotos, (newValue, oldValue) => {
+  if (newValue.length < oldValue.length) {
+    const removedPhoto = oldValue
+      .filter((photo) => !newValue.includes(photo))
+      .pop();
+    toaster(`"${removedPhoto.name}" was moved to the selection`);
+  }
+});
 </script>
-

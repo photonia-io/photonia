@@ -13,10 +13,8 @@
           </div>
         </div>
       </div>
-      <hr class="mt-2 mb-4">
-      <SelectionActions
-        :photos="selectionStore.selectedPhotos"
-      />
+      <hr class="mt-2 mb-4" />
+      <SelectionActions :photos="selectionStore.selectedPhotos" />
       <div class="columns is-1 is-variable is-multiline">
         <PhotoItem
           v-for="photo in selectionStore.selectedPhotos"
@@ -29,29 +27,28 @@
 </template>
 
 <script setup>
-  import { watch } from 'vue'
-  import { storeToRefs } from 'pinia'
-  import { useTitle } from 'vue-page-title'
+import { watch } from "vue";
+import { storeToRefs } from "pinia";
+import { useTitle } from "vue-page-title";
 
-  import { useSelectionStore } from '@/stores/selection'
+import { useSelectionStore } from "@/stores/selection";
 
-  import ReturnToPreviousPage from '@/shared/return-to-previous-page.vue'
-  import PhotoItem from '@/shared/photo-item.vue'
-  import SelectionActions from '@/photos/selection-actions.vue'
-  import toaster from '@/mixins/toaster'
+import ReturnToPreviousPage from "@/shared/return-to-previous-page.vue";
+import PhotoItem from "@/shared/photo-item.vue";
+import SelectionActions from "@/photos/selection-actions.vue";
+import toaster from "@/mixins/toaster";
 
-  const selectionStore = useSelectionStore()
-  const { selectedPhotos } = storeToRefs(selectionStore)
+const selectionStore = useSelectionStore();
+const { selectedPhotos } = storeToRefs(selectionStore);
 
-  useTitle('Organizer')
+useTitle("Organizer");
 
-  watch(
-    selectedPhotos, (newValue, oldValue) => {
-      if(newValue.length < oldValue.length) {
-        const removedPhoto = oldValue.filter(photo => !newValue.includes(photo)).pop()
-        toaster(`"${removedPhoto.name}" was removed from the selection`)
-      }
-    }
-  )
+watch(selectedPhotos, (newValue, oldValue) => {
+  if (newValue.length < oldValue.length) {
+    const removedPhoto = oldValue
+      .filter((photo) => !newValue.includes(photo))
+      .pop();
+    toaster(`"${removedPhoto.name}" was removed from the selection`);
+  }
+});
 </script>
-
