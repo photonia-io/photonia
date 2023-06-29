@@ -44,5 +44,12 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["deletePhotos"]);
+
 const modalActive = ref(false);
+
+const performDelete = () => {
+  emit("deletePhotos", { ids: props.photos.map((p) => p.id) });
+  modalActive.value = false;
+};
 </script>

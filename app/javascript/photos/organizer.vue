@@ -44,6 +44,11 @@ const { selectedPhotos } = storeToRefs(selectionStore);
 useTitle("Organizer");
 
 watch(selectedPhotos, (newValue, oldValue) => {
+  if (selectionStore.showRemoveNotification == false) {
+    selectionStore.showRemoveNotification = true;
+    return;
+  }
+  
   if (newValue.length < oldValue.length) {
     const removedPhoto = oldValue
       .filter((photo) => !newValue.includes(photo))

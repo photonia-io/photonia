@@ -10,6 +10,11 @@ module Types
       argument :id, String, 'Photo Id', required: true
     end
 
+    field :delete_photos, [PhotoType], null: false do
+      description 'Delete photos'
+      argument :ids, [String], 'Photo Ids', required: true
+    end
+
     field :sign_in, UserType, null: true do
       description 'Sign in'
       argument :email, String, 'User email', required: true
@@ -37,6 +42,18 @@ module Types
       context[:authorize].call(photo, :destroy?)
       photo.destroy
       photo
+    end
+
+    def delete_photos(ids:)
+      deleted_photos = []
+      ids.each do |id|
+        photo = Photo.friendly.find(id)
+        context[:authorize].call(photo, :destroy?)
+        puts 'destroying photo with id: ' + id
+        # photo.destroy
+        deleted_photos << photo
+      end
+      deleted_photos
     end
 
     def sign_in(email:, password:)

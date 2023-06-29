@@ -20,19 +20,23 @@
       <div class="buttons">
         <AddToAlbumButton :photos="props.photos" />
         <AddTagsButton :photos="props.photos" />
-        <DeleteButton :photos="props.photos" />
+        <DeleteButton :photos="props.photos" @delete-photos="deletePhotos" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useSelectionStore } from "@/stores/selection";
+
+import gql from "graphql-tag";
+import { useMutation } from "@vue/apollo-composable";
 
 import AddToAlbumButton from "@/shared/buttons/add-to-album.vue";
 import AddTagsButton from "@/shared/buttons/add-tags.vue";
 import DeleteButton from "@/shared/buttons/delete.vue";
+import toaster from "../mixins/toaster";
 
 const props = defineProps({
   photos: {
@@ -44,4 +48,31 @@ const props = defineProps({
 const selectionStore = useSelectionStore();
 
 const selectionCount = computed(() => selectionStore.selectedPhotos.length);
+
+const apolloClient = inject("apolloClient");
+
+const {
+  mutate: deletePhotos,
+  onDone: onDeletePhotosDone,
+  onError: onDeletePhotosError,
+} = useMutation(
+  gql`
+    mutation ($ids: [String!]!) {
+      deletePhotos(ids: $ids) {
+        id
+      }
+    }
+  `
+);
+
+onDeletePhotosDone(({ data }) => {
+  selectionStore.showRemoveNotification = false;
+  selectionStore.clearSelectedPhotos();
+  apolloClient.cache.reset();
+  toaster("The photos were deleted", "is-success");
+});
+
+onDeletePhotosError((error) => {
+  // todo console.log(error)
+});
 </script>

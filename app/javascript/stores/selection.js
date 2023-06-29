@@ -8,6 +8,7 @@ export const useSelectionStore = defineStore("selection", () => {
   const deselectedPhotos = ref(
     JSON.parse(localStorage.getItem("deselectedPhotos") || "[]")
   );
+  const showRemoveNotification = ref(true);
 
   watch(
     selectedPhotos,
@@ -47,9 +48,17 @@ export const useSelectionStore = defineStore("selection", () => {
     }
   };
 
-  const clearPhotoSelection = () => {
+  const clearSelectedPhotos = () => {
     selectedPhotos.value = new Array();
+  };
+
+  const clearDeselectedPhotos = () => {
     deselectedPhotos.value = new Array();
+  };
+
+  const clearPhotoSelection = () => {
+    clearSelectedPhotos();
+    clearDeselectedPhotos();
   };
 
   const addPhotos = (photos) => {
@@ -71,8 +80,11 @@ export const useSelectionStore = defineStore("selection", () => {
   return {
     selectedPhotos,
     deselectedPhotos,
+    showRemoveNotification,
     addPhoto,
     removePhoto,
+    clearSelectedPhotos,
+    clearDeselectedPhotos,
     clearPhotoSelection,
     addPhotos,
     removePhotos,
