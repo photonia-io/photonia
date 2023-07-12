@@ -64,7 +64,8 @@ CREATE TABLE public.albums (
     flickr_impressions_count integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    impressions_count integer DEFAULT 0 NOT NULL
+    impressions_count integer DEFAULT 0 NOT NULL,
+    user_id bigint DEFAULT 1 NOT NULL
 );
 
 
@@ -635,6 +636,13 @@ CREATE INDEX impressionable_type_message_index ON public.impressions USING btree
 
 
 --
+-- Name: index_albums_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_albums_on_user_id ON public.albums USING btree (user_id);
+
+
+--
 -- Name: index_albums_photos_on_album_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -846,6 +854,14 @@ ALTER TABLE ONLY public.labels
 
 
 --
+-- Name: albums fk_rails_964016e0e8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.albums
+    ADD CONSTRAINT fk_rails_964016e0e8 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: taggings fk_rails_9fcd2e236b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -924,6 +940,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230409171819'),
 ('20230409184758'),
 ('20230410080718'),
-('20230410080845');
+('20230410080845'),
+('20230712191829');
 
 

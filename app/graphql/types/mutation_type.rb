@@ -5,6 +5,18 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
+    field :add_photos_to_album, AlbumType, null: false do
+      description 'Add photos to album'
+      argument :album_id, String, 'Album Id', required: true
+      argument :photo_ids, [String], 'Photo Ids', required: true
+    end
+
+    field :create_album_with_photos, AlbumType, null: false do
+      description 'Create album with photos'
+      argument :title, String, 'Album title', required: true
+      argument :photo_ids, [String], 'Photo Ids', required: true
+    end
+
     field :delete_photo, PhotoType, null: false do
       description 'Delete photo'
       argument :id, String, 'Photo Id', required: true
@@ -37,6 +49,29 @@ module Types
       argument :id, String, 'Photo Id', required: true
     end
 
+    def add_photos_to_album(album_id:, photo_ids:)
+      album = Album.friendly.find(album_id)
+      context[:authorize].call(album, :update?)
+      photo_ids.each do |photo_id|
+        photo = Photo.friendly.find(photo_id)
+        context[:authorize].call(photo, :update?)
+        album.photos << photo
+      end
+      album
+    end
+
+    def create_album_with_photos(title:, photo_ids:)
+      album = Album.new(title: title)
+      context[:authorize].call(album, :create?)
+      album.save
+      photo_ids.each do |photo_id|
+        photo = Photo.friendly.find(photo_id)
+        context[:authorize].call(photo, :update?)
+        album.photos << photo
+      end
+      album
+    end
+
     def delete_photo(id:)
       photo = Photo.friendly.find(id)
       context[:authorize].call(photo, :destroy?)
@@ -55,6 +90,8 @@ module Types
       end
       deleted_photos
     end
+
+
 
     def sign_in(email:, password:)
       user = User.find_for_database_authentication(email:)

@@ -18,7 +18,11 @@
       </p>
       <p v-else-if="selectionCount === 0">You have not selected any photos.</p>
       <div class="buttons">
-        <AddToAlbumButton :photos="props.photos" />
+        <AddToAlbumButton
+          :photos="props.photos"
+          @add-photos-to-album="addPhotosToAlbum"
+          @create-album-with-photos="createAlbumWithPhotos"
+        />
         <AddTagsButton :photos="props.photos" />
         <DeleteButton :photos="props.photos" @delete-photos="deletePhotos" />
       </div>
@@ -73,6 +77,56 @@ onDeletePhotosDone(({ data }) => {
 });
 
 onDeletePhotosError((error) => {
+  // todo console.log(error)
+});
+
+// add photos to album
+
+const {
+  mutate: addPhotosToAlbum,
+  onDone: onAddPhotosToAlbumDone,
+  onError: onAddPhotosToAlbumError,
+} = useMutation(
+  gql`
+    mutation ($albumId: String!, $photoIds: [String!]!) {
+      addPhotosToAlbum(albumId: $albumId, photoIds: $photoIds) {
+        id
+      }
+    }
+  `
+);
+
+onAddPhotosToAlbumDone(({ data }) => {
+  apolloClient.cache.reset();
+  toaster("The photos were added to the album", "is-success");
+});
+
+onAddPhotosToAlbumError((error) => {
+  // todo console.log(error)
+});
+
+// create album
+
+const {
+  mutate: createAlbumWithPhotos,
+  onDone: onCreateAlbumWithPhotosDone,
+  onError: onCreateAlbumWithPhotosError,
+} = useMutation(
+  gql`
+    mutation ($title: String!, $photoIds: [String!]!) {
+      createAlbumWithPhotos(title: $title, photoIds: $photoIds) {
+        id
+      }
+    }
+  `
+);
+
+onCreateAlbumWithPhotosDone(({ data }) => {
+  apolloClient.cache.reset();
+  toaster("The album was created", "is-success");
+});
+
+onCreateAlbumWithPhotosError((error) => {
   // todo console.log(error)
 });
 </script>
