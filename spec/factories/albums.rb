@@ -28,5 +28,6 @@ FactoryBot.define do
     title { Faker::Lorem.sentence }
     description { Faker::Lorem.paragraph }
     flickr_impressions_count { Faker::Number.number(digits: 5) }
+    association :user
   end
 end

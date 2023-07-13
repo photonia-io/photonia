@@ -37,6 +37,11 @@ RSpec.describe Album do
   end
 
   describe 'associations' do
+    it 'belongs to a user' do
+      association = described_class.reflect_on_association(:user)
+      expect(association.macro).to eq :belongs_to
+    end
+
     it 'has many photos through albums_photos' do
       association = described_class.reflect_on_association(:photos)
       expect(association.macro).to eq :has_many
