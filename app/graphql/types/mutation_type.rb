@@ -50,12 +50,13 @@ module Types
     end
 
     def add_photos_to_album(album_id:, photo_ids:)
-      album = Album.friendly.find(album_id)
+      album = Album.includes(:photos).friendly.find(album_id)
       context[:authorize].call(album, :update?)
       photo_ids.each do |photo_id|
         photo = Photo.friendly.find(photo_id)
         context[:authorize].call(photo, :update?)
-        album.photos << photo
+        # only add photo if it's not already in the album
+        album.photos << photo unless album.photos.include?(photo)
       end
       album
     end
