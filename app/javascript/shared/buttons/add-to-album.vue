@@ -69,8 +69,6 @@ const addToAlbum = () => {
 
   const photoIds = props.photos.map((photo) => photo.id);
 
-  debugger;
-
   if (selectedAlbumId !== "") {
     // add to existing album
     emit("addPhotosToAlbum", { albumId: selectedAlbumId, photoIds: photoIds });
