@@ -36,5 +36,5 @@ class Album < ApplicationRecord
   has_many :albums_photos, -> { order(cover: :desc) }, dependent: :destroy, inverse_of: :album
   has_many :photos, through: :albums_photos
 
-  validates :title, presence: true
+  validates :title, presence: true   
 end

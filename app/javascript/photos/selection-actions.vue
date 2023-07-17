@@ -23,6 +23,10 @@
           @add-photos-to-album="addPhotosToAlbum"
           @create-album-with-photos="createAlbumWithPhotos"
         />
+        <RemoveFromAlbumButton
+          :photos="props.photos"
+          @remove-photos-from-album="removePhotosFromAlbum"
+        />
         <AddTagsButton :photos="props.photos" />
         <DeleteButton :photos="props.photos" @delete-photos="deletePhotos" />
       </div>
@@ -38,6 +42,7 @@ import gql from "graphql-tag";
 import { useMutation } from "@vue/apollo-composable";
 
 import AddToAlbumButton from "@/shared/buttons/add-to-album.vue";
+import RemoveFromAlbumButton from "@/shared/buttons/remove-from-album.vue";
 import AddTagsButton from "@/shared/buttons/add-tags.vue";
 import DeleteButton from "@/shared/buttons/delete.vue";
 import toaster from "../mixins/toaster";
@@ -127,6 +132,36 @@ onCreateAlbumWithPhotosDone(({ data }) => {
 });
 
 onCreateAlbumWithPhotosError((error) => {
+  // todo console.log(error)
+});
+
+// remove photos from album
+const {
+  mutate: removePhotosFromAlbum,
+  onDone: onRemovePhotosFromAlbumDone,
+  onError: onRemovePhotosFromAlbumError,
+} = useMutation(
+  gql`
+    mutation ($albumId: String!, $photoIds: [String!]!) {
+      removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
+        id
+        title
+      }
+    }
+  `
+);
+
+onRemovePhotosFromAlbumDone(({ data }) => {
+  apolloClient.cache.reset();
+  toaster(
+    "The photos were removed from the album '" +
+      data.removePhotosFromAlbum.title +
+      "'",
+    "is-success"
+  );
+});
+
+onRemovePhotosFromAlbumError((error) => {
   // todo console.log(error)
 });
 </script>
