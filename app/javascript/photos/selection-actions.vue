@@ -27,7 +27,7 @@
           :photos="props.photos"
           @remove-photos-from-album="removePhotosFromAlbum"
         />
-        <AddTagsButton :photos="props.photos" />
+        <!-- <AddTagsButton :photos="props.photos" /> -->
         <DeleteButton :photos="props.photos" @delete-photos="deletePhotos" />
       </div>
     </div>
@@ -43,7 +43,7 @@ import { useMutation } from "@vue/apollo-composable";
 
 import AddToAlbumButton from "@/shared/buttons/add-to-album.vue";
 import RemoveFromAlbumButton from "@/shared/buttons/remove-from-album.vue";
-import AddTagsButton from "@/shared/buttons/add-tags.vue";
+// import AddTagsButton from "@/shared/buttons/add-tags.vue";
 import DeleteButton from "@/shared/buttons/delete.vue";
 import toaster from "../mixins/toaster";
 
