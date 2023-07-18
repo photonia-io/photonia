@@ -4,6 +4,9 @@ $section-padding: 3rem 0.75rem;
 @import "bulma-scss/bulma";
 @import "bulma-block-list/src/block-list";
 
+$divider-margin-size: 0.75rem;
+@import "@creativebulma/bulma-divider";
+
 .tag span.icon {
   margin-right: 0.3em !important;
 }

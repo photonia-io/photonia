@@ -7,18 +7,14 @@
 </template>
 
 <script>
-import Navigation from './navigation.vue'
-import Footer from './footer.vue'
+import Navigation from "./navigation.vue";
+import Footer from "./footer.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     Navigation,
-    Footer
-  }
-}
+    Footer,
+  },
+};
 </script>
-
-<style>
-
-</style>

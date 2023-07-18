@@ -5,15 +5,38 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
+    field :add_photos_to_album, AlbumType, null: false do
+      description 'Add photos to album'
+      argument :album_id, String, 'Album Id', required: true
+      argument :photo_ids, [String], 'Photo Ids', required: true
+    end
+
+    field :create_album_with_photos, AlbumType, null: false do
+      description 'Create album with photos'
+      argument :title, String, 'Album title', required: true
+      argument :photo_ids, [String], 'Photo Ids', required: true
+    end
+
     field :delete_photo, PhotoType, null: false do
       description 'Delete photo'
       argument :id, String, 'Photo Id', required: true
+    end
+
+    field :delete_photos, [PhotoType], null: false do
+      description 'Delete photos'
+      argument :ids, [String], 'Photo Ids', required: true
     end
 
     field :sign_in, UserType, null: true do
       description 'Sign in'
       argument :email, String, 'User email', required: true
       argument :password, String, 'User password', required: true
+    end
+
+    field :remove_photos_from_album, AlbumType, null: false do
+      description 'Remove photos from album'
+      argument :album_id, String, 'Album Id', required: true
+      argument :photo_ids, [String], 'Photo Ids', required: true
     end
 
     field :sign_out, UserType, null: true do
@@ -32,11 +55,59 @@ module Types
       argument :id, String, 'Photo Id', required: true
     end
 
+    def add_photos_to_album(album_id:, photo_ids:)
+      album = Album.includes(:photos).friendly.find(album_id)
+      context[:authorize].call(album, :update?)
+      photo_ids.each do |photo_id|
+        photo = Photo.friendly.find(photo_id)
+        context[:authorize].call(photo, :update?)
+        # only add photo if it's not already in the album
+        album.photos << photo unless album.photos.include?(photo)
+      end
+      album
+    end
+
+    def create_album_with_photos(title:, photo_ids:)
+      album = Album.new(title: title)
+      context[:authorize].call(album, :create?)
+      album.save
+      photo_ids.each do |photo_id|
+        photo = Photo.friendly.find(photo_id)
+        context[:authorize].call(photo, :update?)
+        album.photos << photo
+      end
+      album
+    end
+
     def delete_photo(id:)
       photo = Photo.friendly.find(id)
       context[:authorize].call(photo, :destroy?)
       photo.destroy
       photo
+    end
+
+    def delete_photos(ids:)
+      deleted_photos = []
+      ids.each do |id|
+        photo = Photo.friendly.find(id)
+        context[:authorize].call(photo, :destroy?)
+        puts 'destroying photo with id: ' + id
+        # photo.destroy
+        deleted_photos << photo
+      end
+      deleted_photos
+    end
+
+    def remove_photos_from_album(album_id:, photo_ids:)
+      album = Album.includes(:photos).friendly.find(album_id)
+      context[:authorize].call(album, :update?)
+      photo_ids.each do |photo_id|
+        photo = Photo.friendly.find(photo_id)
+        context[:authorize].call(photo, :update?)
+        # only remove photo if it's in the album
+        album.photos.delete(photo) if album.photos.include?(photo)
+      end
+      album
     end
 
     def sign_in(email:, password:)

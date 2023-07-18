@@ -27,4 +27,17 @@
 class AlbumsPhoto < ApplicationRecord
   belongs_to :album
   belongs_to :photo
+
+  validates :album_id, uniqueness: { scope: :photo_id }
+
+  before_validation :set_ordering
+
+  private
+
+  def set_ordering
+    if self.ordering.nil?
+      maximum_ordering = AlbumsPhoto.where(album_id: self.album_id).maximum(:ordering)
+      self.ordering = maximum_ordering.nil? ? 100000 : maximum_ordering + 100000
+    end
+  end
 end

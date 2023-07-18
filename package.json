@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.17",
+    "@creativebulma/bulma-divider": "^1.1.0",
     "@sentry/vue": "^7.58.1",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
@@ -29,6 +30,7 @@
     "@vue/server-renderer": "3.2.47",
     "@vue/test-utils": "^2.4.0",
     "happy-dom": "^9.20.3",
+    "prettier": "2.8.8",
     "vite": "^4.4.3",
     "vite-plugin-ruby": "^3.2.2",
     "vitest": "^0.30.1"

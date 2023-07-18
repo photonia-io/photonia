@@ -13,6 +13,15 @@
 #  title                    :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
+#  user_id                  :bigint           default(1), not null
+#
+# Indexes
+#
+#  index_albums_on_user_id  (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
 #
 require 'rails_helper'
 
@@ -28,6 +37,11 @@ RSpec.describe Album do
   end
 
   describe 'associations' do
+    it 'belongs to a user' do
+      association = described_class.reflect_on_association(:user)
+      expect(association.macro).to eq :belongs_to
+    end
+
     it 'has many photos through albums_photos' do
       association = described_class.reflect_on_association(:photos)
       expect(association.macro).to eq :has_many

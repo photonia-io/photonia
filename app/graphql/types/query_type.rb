@@ -43,8 +43,17 @@ module Types
     end
 
     field :albums, Types::AlbumType.collection_type, null: false do
-      description 'Find all albums'
+      description 'Find all albums by page'
       argument :page, Integer, 'Page number', required: false
+    end
+
+    field :all_albums, [AlbumType], null: false do
+      description 'Find all albums'
+    end
+
+    field :albums_with_photos, [AlbumType], null: false do
+      description 'Find albums that contain the given photos'
+      argument :photo_ids, [String], 'IDs of the photos', required: true
     end
 
     field :album, AlbumType, null: false do
@@ -114,6 +123,17 @@ module Types
       albums.define_singleton_method(:limit_value) { pagy.items }
       albums.define_singleton_method(:total_count) { pagy.count }
       albums
+    end
+
+    def all_albums
+      Album.includes(:albums_photos, :photos).order(created_at: :desc)
+    end
+
+    def albums_with_photos(photo_ids:)
+      Album.joins(:photos)
+      .where(photos: { slug: photo_ids })
+      .group('albums.id')
+      .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
     end
 
     def album(id:)

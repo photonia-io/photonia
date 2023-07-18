@@ -19,6 +19,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
     field :photos_count, Integer, 'Number of photos in the album', null: false
+    field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :title, String, 'Title of the album', null: false
 
     field :photos, Types::PhotoType.collection_type, null: false do
