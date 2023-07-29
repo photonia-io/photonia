@@ -26,7 +26,7 @@
           </span>
         </a>
         &middot;
-        Powered by <a href="https://github.com/janosrusiczki/photonia">Photonia</a>
+        Powered by <a href="https://github.com/photonia-io/photonia">Photonia</a>
       </p>
     </div>
   </footer>
