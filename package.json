@@ -4,7 +4,7 @@
   "dependencies": {
     "@apollo/client": "^3.8.1",
     "@creativebulma/bulma-divider": "^1.1.0",
-    "@sentry/vue": "^7.64.0",
+    "@sentry/vue": "^7.66.0",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
     "animate.css": "^4.1.1",
