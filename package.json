@@ -2,9 +2,9 @@
   "name": "photonia",
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.8.1",
+    "@apollo/client": "^3.8.3",
     "@creativebulma/bulma-divider": "^1.1.0",
-    "@sentry/vue": "^7.66.0",
+    "@sentry/vue": "^7.68.0",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.14",
     "animate.css": "^4.1.1",
