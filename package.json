@@ -11,7 +11,7 @@
     "bulma-block-list": "0.7.0",
     "bulma-scss": "^0.9.4",
     "bulma-toast": "^2.4.3",
-    "graphql": "^16.8.0",
+    "graphql": "^16.8.1",
     "graphql-tag": "^2.12.5",
     "pinia": "^2.1.6",
     "sass": "^1.67.0",
