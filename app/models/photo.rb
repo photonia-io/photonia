@@ -74,6 +74,7 @@ class Photo < ApplicationRecord
       Photo::Point.new(average(:top), average(:left))
     end
 
+    # type is usually :top or :left
     def average(type)
       total = 0
       area_total = 0
