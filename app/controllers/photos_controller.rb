@@ -42,9 +42,11 @@ class PhotosController < ApplicationController
     @photo.user = current_user
     @photo.populate_exif_fields
 
-    return unless @photo.valid?
-
-    @photo.save
+    if @photo.valid?
+      @photo.save
+    else
+      render json: { errors: @photo.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   def update
