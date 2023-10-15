@@ -13,7 +13,7 @@ class PhotosController < ApplicationController
     photos = if params[:q].present?
                Photo.search(params[:q])
              else
-               Photo.all.order(imported_at: :desc)
+               Photo.order(imported_at: :desc)
              end
     @pagy, @photos = pagy(photos)
   end
@@ -29,7 +29,7 @@ class PhotosController < ApplicationController
   end
 
   def feed
-    @photos = Photo.all.order(imported_at: :desc).limit(30)
+    @photos = Photo.order(imported_at: :desc).limit(30)
     respond_to do |format|
       format.xml
     end
@@ -42,9 +42,11 @@ class PhotosController < ApplicationController
     @photo.user = current_user
     @photo.populate_exif_fields
 
-    return unless @photo.valid?
-
-    @photo.save
+    if @photo.valid?
+      @photo.save
+    else
+      render json: { errors: @photo.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   def update

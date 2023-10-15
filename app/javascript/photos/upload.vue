@@ -50,15 +50,41 @@
               </textarea>
             </div>
             <div class="column is-half">
-              <p>
+              <p class="mb-2">
                 <span>Size: {{ formatSize(file.size) }}</span>
               </p>
-              <p>
+              <p class="mb-2">
                 Status:
-                <span v-if="file.error">{{ file.error }}</span>
-                <span v-else-if="file.success">Uploaded Successfully</span>
-                <span v-else-if="file.active">Uploading...</span>
-                <span v-else-if="!!file.error">{{ file.error }}</span>
+                <span class="icon-text has-text-danger" v-if="file.error">
+                  <span class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </span>
+                  Error: {{ uploadErrorMessage(file) }}
+                </span>
+                <span
+                  class="icon-text has-text-success"
+                  v-else-if="file.success"
+                >
+                  <span class="icon">
+                    <i class="fas fa-check"></i>
+                  </span>
+                  Uploaded Successfully
+                </span>
+                <span class="icon-text" v-else-if="file.active">
+                  <span class="icon">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                  </span>
+                  Uploading...
+                </span>
+                <span
+                  class="icon-text has-text-danger"
+                  v-else-if="!!file.error"
+                >
+                  <span class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </span>
+                  {{ file.error }}
+                </span>
                 <span v-else>Ready to upload</span>
               </p>
               <div class="buttons">
@@ -208,7 +234,7 @@ const inputFilter = function (newFile, oldFile, prevent) {
       // Add some extra info
       newFile.data = {
         "photo[name]": newFile.name,
-        "photo[description]": "",
+        "photo[description]": newFile.name,
       };
     }
   }
@@ -252,5 +278,12 @@ const formatSize = function (size) {
     return (size / 1024).toFixed(2) + " KB";
   }
   return size.toString() + " B";
+};
+
+const uploadErrorMessage = function (file) {
+  if (file.response && file.response.errors) {
+    return file.response.errors.join(", ");
+  }
+  return "Upload failed";
 };
 </script>

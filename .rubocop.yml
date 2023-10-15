@@ -1,8 +1,9 @@
 require:
   - rubocop-capybara
+  - rubocop-factory_bot
   - rubocop-graphql
-  - rubocop-rspec
   - rubocop-rails
+  - rubocop-rspec
 
 Naming/VariableNumber:
   EnforcedStyle: snake_case
