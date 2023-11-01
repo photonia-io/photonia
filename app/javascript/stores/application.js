@@ -1,32 +1,36 @@
-import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { defineStore } from "pinia";
+import { ref, watch } from "vue";
 
-export const useApplicationStore = defineStore('application', () => {
-  const navigationShortcutsEnabled = ref(true)
-  const selectionMode = ref(localStorage.getItem('selectionMode') || false)
+export const useApplicationStore = defineStore("application", () => {
+  const navigationShortcutsEnabled = ref(true);
+  const selectionMode = ref(localStorage.getItem("selectionMode") || false);
 
   function enableNavigationShortcuts() {
-    navigationShortcutsEnabled.value = true
+    navigationShortcutsEnabled.value = true;
   }
 
   function disableNavigationShortcuts() {
-    navigationShortcutsEnabled.value = false
+    navigationShortcutsEnabled.value = false;
   }
 
   watch(selectionMode, (newValue) => {
-    localStorage.setItem('selectionMode', newValue)
-  })
+    localStorage.setItem("selectionMode", newValue);
+  });
 
   function enterSelectionMode() {
-    selectionMode.value = true
+    selectionMode.value = true;
   }
 
   function exitSelectionMode() {
-    selectionMode.value = false
+    selectionMode.value = false;
   }
 
   function toggleSelectionMode() {
-    selectionMode.value = !selectionMode.value
+    selectionMode.value = !selectionMode.value;
+  }
+
+  function signOut() {
+    exitSelectionMode();
   }
 
   return {
@@ -36,6 +40,7 @@ export const useApplicationStore = defineStore('application', () => {
     selectionMode,
     enterSelectionMode,
     exitSelectionMode,
-    toggleSelectionMode
-  }
-})
+    toggleSelectionMode,
+    signOut,
+  };
+});

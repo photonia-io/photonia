@@ -1,14 +1,23 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
-export const useUserStore = defineStore('user', () => {
-  const signedIn = ref(false)
-  const email = ref('')
+import { useTokenStore } from "./token";
+import { useApplicationStore } from "./application";
+
+export const useUserStore = defineStore("user", () => {
+  const signedIn = ref(false);
+  const email = ref("");
 
   function signOut() {
-    signedIn.value = false
-    email.value = ''
+    const tokenStore = useTokenStore();
+    tokenStore.signOut();
+
+    const applicationStore = useApplicationStore();
+    applicationStore.signOut();
+
+    signedIn.value = false;
+    email.value = "";
   }
 
-  return { signedIn, email, signOut }
-})
+  return { signedIn, email, signOut };
+});
