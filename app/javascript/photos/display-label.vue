@@ -41,7 +41,7 @@ watch(toRef(props, "highlighted"), (newHighlighted) => {
 });
 </script>
 
-<style>
+<style scoped>
 .label {
   cursor: pointer;
   border: 1px solid black;
