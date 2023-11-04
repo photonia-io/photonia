@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { computed } from "vue";
 import gql from "graphql-tag";
 import { useQuery } from "@vue/apollo-composable";
 import { useMutation } from "@vue/apollo-composable";
@@ -89,9 +89,6 @@ import { useTitle } from "vue-page-title";
 import toaster from "../mixins/toaster";
 
 useTitle("User Settings");
-
-const email = ref("");
-const timezone = ref("");
 
 const { result } = useQuery(
   gql`
@@ -109,9 +106,16 @@ const { result } = useQuery(
   `
 );
 
-watch(result, () => {
-  email.value = result.value?.userSettings?.email;
-  timezone.value = result.value?.userSettings?.timezone?.name;
+const email = computed(() => {
+  if (result.value) {
+    return result.value.userSettings.email;
+  }
+});
+
+const timezone = computed(() => {
+  if (result.value) {
+    return result.value.userSettings.timezone.name;
+  }
 });
 
 const {
