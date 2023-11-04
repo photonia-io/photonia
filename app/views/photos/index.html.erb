@@ -1,5 +1,5 @@
 <% content_for(:page_title, 'Photos' + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
-<% content_for(:autodiscovery_link, auto_discovery_link_tag(:rss, feed_photos_url(format: :xml), title: 'Photonia Photos RSS')) %>
+<% content_for(:autodiscovery_link, auto_discovery_link_tag(:rss, feed_photos_url(format: :xml), title: Setting.site_name + ' - Photos RSS')) %>
 <h1>Photos</h1>
 <hr>
 <div>
