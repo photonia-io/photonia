@@ -3,7 +3,7 @@ import { ref, watch } from "vue";
 
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
-  const selectionMode = ref(localStorage.getItem("selectionMode") || false);
+  const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
 
   function enableNavigationShortcuts() {
     navigationShortcutsEnabled.value = true;
