@@ -83,8 +83,7 @@
 <script setup>
 import { computed } from "vue";
 import gql from "graphql-tag";
-import { useQuery } from "@vue/apollo-composable";
-import { useMutation } from "@vue/apollo-composable";
+import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import toaster from "../mixins/toaster";
 
@@ -106,17 +105,8 @@ const { result } = useQuery(
   `
 );
 
-const email = computed(() => {
-  if (result.value) {
-    return result.value.userSettings.email;
-  }
-});
-
-const timezone = computed(() => {
-  if (result.value) {
-    return result.value.userSettings.timezone.name;
-  }
-});
+const email = computed(() => result.value?.userSettings.email);
+const timezone = computed(() => result.value?.userSettings.timezone.name);
 
 const {
   mutate: submit,
