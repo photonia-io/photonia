@@ -15,3 +15,5 @@ AllCops:
 
 RSpec/MultipleMemoizedHelpers:
   Enabled: false
+RSpec/ImplicitExpect:
+  EnforcedStyle: should

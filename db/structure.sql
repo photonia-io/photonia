@@ -272,7 +272,8 @@ CREATE TABLE public.photos (
     rekognition_response jsonb,
     user_id bigint,
     tsv tsvector,
-    impressions_count integer DEFAULT 0 NOT NULL
+    impressions_count integer DEFAULT 0 NOT NULL,
+    timezone character varying DEFAULT 'UTC'::character varying NOT NULL
 );
 
 
@@ -302,6 +303,38 @@ ALTER SEQUENCE public.photos_id_seq OWNED BY public.photos.id;
 CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
+
+
+--
+-- Name: settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.settings (
+    id bigint NOT NULL,
+    var character varying NOT NULL,
+    value text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.settings_id_seq OWNED BY public.settings.id;
 
 
 --
@@ -418,7 +451,8 @@ CREATE TABLE public.users (
     remember_created_at timestamp without time zone,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    jti character varying
+    jti character varying,
+    timezone character varying DEFAULT 'UTC'::character varying NOT NULL
 );
 
 
@@ -481,6 +515,13 @@ ALTER TABLE ONLY public.labels ALTER COLUMN id SET DEFAULT nextval('public.label
 --
 
 ALTER TABLE ONLY public.photos ALTER COLUMN id SET DEFAULT nextval('public.photos_id_seq'::regclass);
+
+
+--
+-- Name: settings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings ALTER COLUMN id SET DEFAULT nextval('public.settings_id_seq'::regclass);
 
 
 --
@@ -573,6 +614,14 @@ ALTER TABLE ONLY public.photos
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: settings settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings
+    ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
 
 
 --
@@ -717,6 +766,13 @@ CREATE UNIQUE INDEX index_photos_on_slug ON public.photos USING btree (slug);
 --
 
 CREATE INDEX index_photos_on_user_id ON public.photos USING btree (user_id);
+
+
+--
+-- Name: index_settings_on_var; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_settings_on_var ON public.settings USING btree (var);
 
 
 --
@@ -941,6 +997,9 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230409184758'),
 ('20230410080718'),
 ('20230410080845'),
-('20230712191829');
+('20230712191829'),
+('20231015101852'),
+('20231015122341'),
+('20231015122407');
 
 

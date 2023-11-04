@@ -9,6 +9,7 @@
 #  encrypted_password  :string           default(""), not null
 #  jti                 :string
 #  remember_created_at :datetime
+#  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #

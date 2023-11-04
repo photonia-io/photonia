@@ -22,6 +22,7 @@
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
 #  slug                     :string
+#  timezone                 :string           default("UTC"), not null
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -46,13 +47,8 @@ RSpec.describe Photo do
   end
 
   describe 'validations' do
-    it 'is invalid without a name' do
-      expect(build(:photo, name: nil)).not_to be_valid
-    end
-
-    it 'is invalid without a description' do
-      expect(build(:photo, description: nil)).not_to be_valid
-    end
+    it { should validate_presence_of(:name) }
+    it { should validate_presence_of(:description) }
   end
 
   describe 'associations' do
@@ -99,6 +95,160 @@ RSpec.describe Photo do
         photo = create(:photo)
         prev_photo = create(:photo, imported_at: photo.imported_at - 1.day)
         expect(photo.prev).to eq(prev_photo)
+      end
+    end
+
+    describe '#exif_from_file' do
+      let(:photo) { build_stubbed(:photo, image: File.open(filename)) }
+
+      subject { photo.exif_from_file }
+
+      context 'when the file has EXIF data' do
+        let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }
+
+        it 'returns some exif data from the file' do
+          expect(subject).to be_present
+        end
+
+        it 'returns the correct image width from the exif data' do
+          expect(subject.image_width).to eq 1620
+        end
+      end
+
+      context 'when the file has no EXIF data' do
+        let(:filename) { 'spec/support/images/zell-am-see-without-exif.jpg' }
+
+        it 'returns nil' do
+          expect(subject).to be_nil
+        end
+      end
+    end
+
+    describe '#exif' do
+      let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
+      let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
+
+      subject { photo.exif }
+
+      context 'when the exif field is nil in the beginning' do
+        let(:photo) { build_stubbed(:photo, exif: nil) }
+
+        before do
+          allow(photo).to receive(:exif_from_file).and_return(exif_data)
+          allow(photo).to receive(:save)
+        end
+
+        it 'calls #exif_from_file' do
+          expect(photo).to receive(:exif_from_file)
+          subject
+        end
+
+        it 'calls #save' do
+          expect(photo).to receive(:save)
+          subject
+        end
+
+        context 'when #exif_from_file returns some exif data' do
+          it 'sets the field to the exif data' do
+            expect { subject }.to change { photo.read_attribute(:exif) }.from(nil).to(exif_data.to_json)
+          end
+
+          it 'returns the exif data' do
+            expect(subject).to eq(exif_data)
+          end
+        end
+
+        context 'when #exif_from_file returns nil' do
+          before do
+            allow(photo).to receive(:exif_from_file).and_return(nil)
+          end
+
+          it 'sets the field to an error hash' do
+            expect { subject }.to change { photo.read_attribute(:exif) }.from(nil).to(error_hash.to_json)
+          end
+
+          it 'returns the error hash' do
+            expect(subject).to eq(error_hash)
+          end
+        end
+      end
+
+      context 'when the exif field has already been set' do
+        let(:photo) { build_stubbed(:photo, exif: exif_data.to_json) }
+
+        it 'does not call #exif_from_file' do
+          expect(photo).not_to receive(:exif_from_file)
+          subject
+        end
+
+        it 'does not call #save' do
+          expect(photo).not_to receive(:save)
+          subject
+        end
+
+        it 'returns the exif data' do
+          expect(subject).to eq(exif_data)
+        end
+      end
+    end
+
+    describe '#exif_exists?' do
+      let(:photo) { build_stubbed(:photo) }
+      let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
+      let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
+
+      subject { photo.exif_exists? }
+
+      context 'when #exif returns some exif data' do
+        before do
+          allow(photo).to receive(:exif).and_return(exif_data)
+        end
+
+        it 'returns true' do
+          expect(subject).to be true
+        end
+      end
+
+      context 'when #exif returns an error hash' do
+        before do
+          allow(photo).to receive(:exif).and_return(error_hash)
+        end
+
+        it 'returns false' do
+          expect(subject).to be false
+        end
+      end
+    end
+
+    describe '#populate_exif_fields' do
+      subject(:populate_exif_fields) { photo.populate_exif_fields }
+
+      let(:timezone) { 'Bucharest' }
+      let(:user) { create(:user, timezone: timezone) }
+      let(:photo) { create(:photo, user: user, image: File.open(filename)) }
+
+      context 'when the file has EXIF data' do
+        let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }
+
+        it 'sets date_taken from the exif data' do
+          Time.use_zone(timezone) do
+            expect { populate_exif_fields }.to change(photo, :date_taken).from(nil).to(Time.zone.parse('2014-08-31 17:25:34'))
+          end
+        end
+      end
+
+      context 'when the file has no EXIF data' do
+        let(:filename) { 'spec/support/images/zell-am-see-without-exif.jpg' }
+
+        before do
+          # freeze Time.current so it doesn't change between when the field is set
+          # and when the spec checks the value (poor man's Timecop)
+          allow(Time).to receive(:current).and_return(Time.zone.parse('2023-10-27 23:23:23'))
+        end
+
+        it 'sets date_taken to the current time' do
+          expect { populate_exif_fields }.to change(photo, :date_taken).from(nil).to(Time.current)
+        end
       end
     end
   end

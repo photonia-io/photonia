@@ -27,7 +27,7 @@ namespace :flickr do
           description: photo_hash['description'],
           date_taken: photo_hash['date_taken'],
           license: photo_hash['license'],
-          exif: photo_hash['exif'],
+          exif: photo_hash['exif'], # TODO: Import - This should be set later by our own means
           serial_number: photo_hash['id'],
           flickr_impressions_count: photo_hash['count_views'],
           flickr_faves: photo_hash['count_faves'],
@@ -35,6 +35,7 @@ namespace :flickr do
           flickr_photopage: photo_hash['photopage'],
           flickr_original: photo_hash['original'],
           flickr_json: photo_hash
+          # TODO: Import - timezone: ? - deal with this some way
         )
 
         photo.image_attacher(model_cache: false)

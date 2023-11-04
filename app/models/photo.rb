@@ -22,6 +22,7 @@
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
 #  slug                     :string
+#  timezone                 :string           default("UTC"), not null
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -140,20 +141,49 @@ class Photo < ApplicationRecord
     )&.photo
   end
 
-  def exif(file)
-    Exif::Data.new(file.tempfile)
+  def exif_from_file
+    @exif_from_file ||= begin
+      file = image_attacher.file
+      file.open do
+        Rails.logger.info "Downloaded file: #{file.id}"
+        Exif::Data.new(file.tempfile)
+      rescue Exif::NotReadable
+        Rails.logger.error "EXIF Not Readable: #{file.id}"
+        nil
+      end
+    end
+  end
+
+  def exif
+    # calling this the first time will call exif_from_file and save the result into the field
+    unless self[:exif]
+      if exif_from_file
+        # we need to clean up the strings in the hash because they might contain
+        # invalid UTF-8 characters and those will cause the to_json method to fail
+        self[:exif] = exif_from_file.to_h.force_encoding_to_iso_8859_1.to_json
+      else
+        self[:exif] = { error: 'EXIF Not Readable' }.to_json
+      end
+      save
+    end
+    # byebug
+    JSON.parse(self[:exif])
+  end
+
+  def exif_exists?
+    # check if exif doesn't contain the error key and only that
+    exif.keys != ['error']
   end
 
   def populate_exif_fields
-    file = image_attacher.file
-    file.open do
-      if exif(file)&.date_time_original
-        self.date_taken = DateTime.strptime(exif(file).date_time_original, '%Y:%m:%d %H:%M:%S')
-      end
-    rescue Exif::NotReadable
-      Rails.logger.error "Exif Not Readable: #{file.tempfile}"
+    if exif_exists?
+      exif_date_taken = exif['exif']['date_time_original']
+      exif_date_format = '%Y:%m:%d %H:%M:%S'
+      Time.zone = user.timezone
+      self.date_taken = Time.zone.strptime(exif_date_taken, exif_date_format)
+    else
+      self.date_taken = Time.current
     end
-    self.date_taken ||= Time.current # if date taken was not found in EXIF default to current timestamp
     self
   end
 

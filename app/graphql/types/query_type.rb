@@ -70,6 +70,8 @@ module Types
 
     field :user_settings, UserType, 'User settings', null: false
 
+    field :timezones, [TimezoneType], 'List of timezones', null: false
+
     # Photos
 
     def photos(page: nil, query: nil)
@@ -162,6 +164,13 @@ module Types
 
     def user_settings
       context[:current_user]
+    end
+
+    # Timezones
+    def timezones
+      ActiveSupport::TimeZone::MAPPING.map do |name, key|
+        { name: name, key: key }
+      end.sort_by { |timezone| timezone[:name] }
     end
   end
 end

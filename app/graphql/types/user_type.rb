@@ -6,5 +6,10 @@ module Types
     description 'A user'
     field :email, String, 'Email', null: true
     field :id, String, 'User ID', null: false
+    field :timezone, Types::TimezoneType, 'Timezone', null: false
+
+    def timezone
+      { name: @object.timezone }
+    end
   end
 end

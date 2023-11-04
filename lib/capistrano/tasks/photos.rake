@@ -14,4 +14,24 @@ namespace :photos do
       end
     end
   end
+
+  task :reset_exif do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:reset_exif'
+        end
+      end
+    end
+  end
+
+  task :populate_exif_fields do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:populate_exif_fields'
+        end
+      end
+    end
+  end
 end

@@ -22,6 +22,7 @@
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
 #  slug                     :string
+#  timezone                 :string           default("UTC"), not null
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -42,6 +43,6 @@ FactoryBot.define do
   factory :photo do
     name { Faker::Lorem.sentence }
     description { Faker::Lorem.paragraph }
-    association :user
+    user
   end
 end

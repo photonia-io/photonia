@@ -27,4 +27,18 @@ namespace :photos do
       end
     end
   end
+
+  desc 'Reset exif database field for all photos'
+  task reset_exif: :environment do
+    Photo.unscoped.update_all(exif: nil)
+  end
+
+  desc 'Populate EXIF fields'
+  task populate_exif_fields: :environment do |_task, args|
+    Photo.unscoped.find_each do |photo|
+      # this will also pull the exif from the file and cache it into the database
+      photo.populate_exif_fields
+      putc '.'
+    end
+  end
 end

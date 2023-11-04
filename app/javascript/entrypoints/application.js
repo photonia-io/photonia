@@ -26,6 +26,7 @@ import gql from "graphql-tag";
 
 import { useTokenStore } from "../stores/token";
 import { useUserStore } from "../stores/user";
+import { useApplicationStore } from "../stores/application";
 
 import * as Sentry from "@sentry/vue";
 
@@ -168,10 +169,14 @@ document.addEventListener("DOMContentLoaded", () => {
       userStore.email = value.userSettings.email;
     });
 
+    // if the query fails, the token is invalid
+    // and the user is not signed in anymore
     watch(error, (value) => {
+      const applicationStore = useApplicationStore(pinia);
       if (value && value.graphQLErrors && value.graphQLErrors.length > 0) {
         tokenStore.authorization = "";
         userStore.signedIn = false;
+        applicationStore.exitSelectionMode();
         router.push({ name: "users-sign-in" });
       }
     });
