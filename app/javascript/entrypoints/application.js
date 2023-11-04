@@ -28,6 +28,8 @@ import { useTokenStore } from "../stores/token";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "../stores/application";
 
+import toaster from "../mixins/toaster";
+
 import * as Sentry from "@sentry/vue";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -152,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // if a token was found in local storage, fetch the user
 
   if (tokenStore.authorization) {
-    // we will suppose that the token is valid, later we will check the error
+    // we will suppose that the token is valid, later we will check for an error
     userStore.signedIn = true;
     provideApolloClient(apolloClient);
     const { result, loading, error } = useQuery(
@@ -174,10 +176,12 @@ document.addEventListener("DOMContentLoaded", () => {
     watch(error, (value) => {
       const applicationStore = useApplicationStore(pinia);
       if (value && value.graphQLErrors && value.graphQLErrors.length > 0) {
-        tokenStore.authorization = "";
-        userStore.signedIn = false;
-        applicationStore.exitSelectionMode();
-        router.push({ name: "users-sign-in" });
+        userStore.signOut();
+        toaster(
+          "Your session has expired. Please sign in again.",
+          "is-warning"
+        );
+        router.push({ name: "root" });
       }
     });
   }
