@@ -225,7 +225,7 @@ RSpec.describe Photo do
 
       let(:timezone) { 'Bucharest' }
       let(:user) { create(:user, timezone: timezone) }
-      let(:photo) { create(:photo, user: user, image: File.open(filename)) }
+      let(:photo) { create(:photo, user: user, timezone: user.timezone, image: File.open(filename)) }
 
       context 'when the file has EXIF data' do
         let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }

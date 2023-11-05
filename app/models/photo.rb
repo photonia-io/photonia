@@ -179,7 +179,7 @@ class Photo < ApplicationRecord
     if exif_exists?
       exif_date_taken = exif['exif']['date_time_original']
       exif_date_format = '%Y:%m:%d %H:%M:%S'
-      Time.zone = user.timezone
+      Time.zone = timezone
       self.date_taken = Time.zone.strptime(exif_date_taken, exif_date_format)
     else
       self.date_taken = Time.current
