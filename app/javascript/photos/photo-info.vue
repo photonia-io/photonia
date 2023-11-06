@@ -13,6 +13,12 @@
       <span v-if="!loading" class="ml-1">{{
         momentFormat(photo.dateTaken)
       }}</span>
+      <span
+        v-if="!loading && photo.isDateTakenFromExif"
+        class="tag has-background ml-1 has-text-weight-bold"
+      >
+        EXIF
+      </span>
     </span>
     <span class="icon-text is-size-7">
       <span class="icon"><i class="fas fa-arrow-circle-up"></i></span>

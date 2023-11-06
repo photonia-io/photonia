@@ -6,6 +6,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  date_taken               :datetime
+#  date_taken_from_exif     :boolean          default(FALSE)
 #  description              :text
 #  exif                     :jsonb
 #  flickr_faves             :integer

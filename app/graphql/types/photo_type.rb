@@ -13,6 +13,7 @@ module Types
     field :imported_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
+    field :is_date_taken_from_exif, Boolean, 'Whether the date taken is from EXIF', null: true
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
@@ -71,6 +72,10 @@ module Types
     def impressions_count
       total_impressions_count = @object.impressions_count + @object.flickr_impressions_count
       total_impressions_count.zero? ? 1 : total_impressions_count
+    end
+
+    def is_date_taken_from_exif
+      @object.date_taken_from_exif?
     end
 
     def rekognition_label_model_version

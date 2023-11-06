@@ -6,6 +6,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  date_taken               :datetime
+#  date_taken_from_exif     :boolean          default(FALSE)
 #  description              :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
@@ -241,13 +242,15 @@ RSpec.describe Photo do
         let(:filename) { 'spec/support/images/zell-am-see-without-exif.jpg' }
 
         before do
-          # freeze Time.current so it doesn't change between when the field is set
-          # and when the spec checks the value (poor man's Timecop)
-          allow(Time).to receive(:current).and_return(Time.zone.parse('2023-10-27 23:23:23'))
+          Timecop.freeze
+        end
+
+        after do
+          Timecop.return
         end
 
         it 'sets date_taken to the current time' do
-          expect { populate_exif_fields }.to change(photo, :date_taken).from(nil).to(Time.current)
+          expect { populate_exif_fields }.to change(photo, :date_taken).from(nil).to(Time.zone.now)
         end
       end
     end

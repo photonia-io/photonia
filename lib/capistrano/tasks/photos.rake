@@ -15,6 +15,16 @@ namespace :photos do
     end
   end
 
+  task :reset_exif_and_timezone do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:reset_exif_and_timezone'
+        end
+      end
+    end
+  end
+
   task :fix_exif do
     on roles(:app) do
       within current_path.to_s do

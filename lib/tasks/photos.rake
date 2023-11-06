@@ -28,15 +28,18 @@ namespace :photos do
     end
   end
 
-  # fixes related to the EXIF refactor of Nov 2023
+  desc 'Reset EXIF cache and set timezone for all photos'
+  task reset_exif_and_timezone: :environment do
+    Photo.unscoped.update_all(exif: nil, timezone: 'Bucharest')
+  end
+
   desc 'Fix EXIF related stuff for all photos'
   task fix_exif: :environment do
-    Photo.unscoped.update_all(exif: nil, timezone: 'Bucharest')
     Photo.unscoped.find_each do |photo|
       # the following will also pull the exif from the file and cache it into the database
+      # if it doesn't already exist
       photo.populate_exif_fields
       photo.save(validate: false)
-      putc '.'
     end
   end
 end
