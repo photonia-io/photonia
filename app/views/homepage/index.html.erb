@@ -1,8 +1,8 @@
 <%
   content_for(
     :autodiscovery_link,
-    auto_discovery_link_tag(:rss, feed_photos_url(format: :xml), title: 'Photonia Photos RSS') + "\n    " +
-    auto_discovery_link_tag(:rss, feed_albums_url(format: :xml), title: 'Photonia Albums RSS')
+    auto_discovery_link_tag(:rss, feed_photos_url(format: :xml), title: Setting.site_name + ' - Photos RSS') + "\n    " +
+    auto_discovery_link_tag(:rss, feed_albums_url(format: :xml), title: Setting.site_name + ' - Albums RSS')
   )
 %>
 <div>

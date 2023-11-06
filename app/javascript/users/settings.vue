@@ -1,27 +1,174 @@
 <template>
   <section class="section-pt-pb-0">
     <div class="container">
-      <h1 class="title mt-5 mb-0">User Settings</h1>
-      <hr class="mt-2 mb-4">
-      <p v-if="result">{{ result.userSettings.email }}</p>
+      <div class="level mb-0 mt-5">
+        <div class="level-left">
+          <div class="level-item">
+            <h1 class="title">User Settings</h1>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <router-link
+              :to="{ name: 'users-admin-settings' }"
+              v-if="userStore.admin"
+              class="button is-small is-link"
+            >
+              Admin Settings
+            </router-link>
+          </div>
+        </div>
+      </div>
+      <hr class="mt-2 mb-4" />
+      <div class="card">
+        <div class="card-content">
+          <form @submit.prevent="submit">
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label">Email</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <p class="control is-expanded has-icons-left has-icons-right">
+                    <input
+                      class="input"
+                      type="email"
+                      placeholder="Email"
+                      v-model="email"
+                      disabled
+                    />
+                    <span class="icon is-small is-left">
+                      <i class="far fa-envelope"></i>
+                    </span>
+                    <span class="icon is-small is-right"
+                      ><i class="mdi mdi-check"></i
+                    ></span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label">Timezone</label>
+              </div>
+              <div class="field-body">
+                <div class="field is-expanded">
+                  <div class="control">
+                    <div class="select is-fullwidth">
+                      <select v-if="result" v-model="timezone">
+                        <option
+                          v-for="tz in result.timezones"
+                          :value="tz.name"
+                          :key="tz.name"
+                        >
+                          {{ tz.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="help">
+                    Select the timezone your camera's time is set to. This will
+                    apply to photos uploaded from this point forward.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <hr />
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <!-- Left empty for spacing -->
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="field is-grouped">
+                    <div class="control">
+                      <button type="submit" class="button is-primary">
+                        <span>Save</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
-  import gql from 'graphql-tag'
-  import { useQuery } from '@vue/apollo-composable'
-  import { useTitle } from 'vue-page-title'
+import { ref, computed } from "vue";
+import gql from "graphql-tag";
+import { useQuery, useMutation } from "@vue/apollo-composable";
+import { useTitle } from "vue-page-title";
+import { useUserStore } from "@/stores/user";
+import toaster from "../mixins/toaster";
 
-  useTitle('User Settings')
+const USER_SETTINGS_QUERY = gql`
+  query UserSettingsQuery {
+    userSettings {
+      email
+      timezone {
+        name
+      }
+    }
+    timezones {
+      name
+    }
+  }
+`;
 
-  const { result } = useQuery(
-    gql`
-      query UserSettingsQuery {
-        userSettings {
-          email
+useTitle("User Settings");
+
+const userStore = useUserStore();
+
+const newTimezone = ref(null);
+
+const { result } = useQuery(USER_SETTINGS_QUERY);
+
+const email = computed(() => result.value?.userSettings.email);
+const timezone = computed({
+  get: () => result.value?.userSettings.timezone.name,
+  set: (value) => (newTimezone.value = value),
+});
+
+const {
+  mutate: submit,
+  onDone,
+  onError,
+} = useMutation(
+  gql`
+    mutation ($email: String!, $timezone: String!) {
+      updateUserSettings(email: $email, timezone: $timezone) {
+        email
+        timezone {
+          name
         }
       }
-    `
-  )
+    }
+  `,
+  () => ({
+    variables: {
+      email: email.value,
+      timezone: newTimezone.value || timezone.value,
+    },
+    update: (cache, { data }) => {
+      cache.writeQuery({
+        query: USER_SETTINGS_QUERY,
+        data: {
+          userSettings: data.updateUserSettings,
+        },
+      });
+    },
+  })
+);
+
+onDone(({ data }) => {
+  toaster("Settings saved");
+});
+
+onError((error) => {
+  toaster("Error saving settings", "is-danger");
+});
 </script>

@@ -14,4 +14,14 @@ namespace :photos do
       end
     end
   end
+
+  task :fix_exif do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:fix_exif'
+        end
+      end
+    end
+  end
 end

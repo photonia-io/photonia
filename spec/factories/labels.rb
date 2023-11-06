@@ -32,6 +32,6 @@ FactoryBot.define do
     width { 0.5 }
     height { 0.5 }
 
-    association :photo, factory: :photo
+    photo
   end
 end

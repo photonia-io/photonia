@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= (yield(:page_title) + " - " unless yield(:page_title).blank?).to_s + "Photonia" %></title>
+    <title><%= (yield(:page_title) + " - " unless yield(:page_title).blank?).to_s + Setting.site_name %></title>
 
     <%= render partial: 'layouts/opengraph' if @photo %>
 
@@ -16,7 +16,7 @@
     <%= yield(:autodiscovery_link) %>
 
     <%= javascript_tag nonce: true do %>
-      window.configuration_json = <%= @configuration_json.html_safe %>
+      window.settings = <%= @settings.html_safe %>
       window.gql_queries = <%= @gql_queries.html_safe %>
       <% if(@gql_cached_query) %>
         window.gql_cached_query = "<%= j(@gql_cached_query.html_safe) %>"
@@ -31,7 +31,7 @@
     <div id='app'>
       <nav>
         <ul>
-          <li><a href="<%= root_path %>">Photonia</a></li>
+          <li><a href="<%= root_path %>"><%= Setting.site_name %></a></li>
           <li><a href="<%= photos_path %>">Photos</a></li>
           <li><a href="<%= albums_path %>">Albums</a></li>
           <li><a href="<%= tags_path %>">Tags</a></li>

@@ -28,6 +28,7 @@ import { useTokenStore } from "../stores/token";
 import { useUserStore } from "../stores/user";
 
 import toaster from "../mixins/toaster";
+import settings from "../mixins/settings";
 
 import * as Sentry from "@sentry/vue";
 
@@ -40,75 +41,85 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const cj = window.configuration_json;
-  const cjda = cj.data.attributes;
+  const redirectIfNotAdmin = (to, from) => {
+    if (!userStore.admin) {
+      toaster("You are not authorized to access that page.", "is-warning");
+      return { name: "root" };
+    }
+  };
 
   const routes = [
     {
-      path: cjda.root_path,
+      path: settings.root_path,
       name: "root",
       component: () => import("../homepage/index.vue"),
     },
     {
-      path: cjda.photos_path,
+      path: settings.photos_path,
       name: "photos-index",
       component: () => import("../photos/index.vue"),
     },
     {
-      path: cjda.photos_path + "/:id",
+      path: settings.photos_path + "/:id",
       name: "photos-show",
       component: () => import("../photos/show.vue"),
     },
     {
-      path: cjda.albums_path,
+      path: settings.albums_path,
       name: "albums-index",
       component: () => import("../albums/index.vue"),
     },
     {
-      path: cjda.albums_path + "/:id",
+      path: settings.albums_path + "/:id",
       name: "albums-show",
       component: () => import("../albums/show.vue"),
     },
     {
-      path: cjda.tags_path,
+      path: settings.tags_path,
       name: "tags-index",
       component: () => import("../tags/index.vue"),
     },
     {
-      path: cjda.tags_path + "/:id",
+      path: settings.tags_path + "/:id",
       name: "tags-show",
       component: () => import("../tags/show.vue"),
     },
     {
-      path: cjda.users_sign_in_path,
+      path: settings.users_sign_in_path,
       name: "users-sign-in",
       component: () => import("../users/sign-in.vue"),
     },
     {
-      path: cjda.users_sign_out_path,
+      path: settings.users_sign_out_path,
       name: "users-sign-out",
       component: () => import("../users/sign-out.vue"),
     },
     {
-      path: cjda.users_settings_path,
+      path: settings.users_settings_path,
       name: "users-settings",
       component: () => import("../users/settings.vue"),
       beforeEnter: redirectIfNotSignedIn,
     },
     {
-      path: cjda.photos_path + "/upload",
+      path: settings.users_admin_settings_path,
+      name: "users-admin-settings",
+      component: () => import("../users/admin-settings.vue"),
+      beforeEnter: [redirectIfNotSignedIn, redirectIfNotAdmin],
+    },
+    {
+      path: settings.photos_path + "/upload",
       name: "photos-upload",
       component: () => import("../photos/upload.vue"),
       beforeEnter: redirectIfNotSignedIn,
     },
     {
-      path: cjda.photos_path + "/organizer",
+      path: settings.photos_path + "/organizer",
       name: "photos-organizer",
       component: () => import("../photos/organizer.vue"),
       beforeEnter: redirectIfNotSignedIn,
     },
     {
-      path: cjda.photos_path + "/deselected",
+      path: settings.photos_path + "/deselected",
       name: "photos-deselected",
       component: () => import("../photos/deselected.vue"),
       beforeEnter: redirectIfNotSignedIn,
@@ -122,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tokenStore = useTokenStore(pinia);
 
-  const httpLink = createHttpLink({ uri: cjda.graphql_url });
+  const httpLink = createHttpLink({ uri: settings.graphql_path });
   const authLink = setContext((_, { headers }) => {
     return {
       headers: {
@@ -156,11 +167,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // we will suppose that the token is valid, later we will check for an error
     userStore.signedIn = true;
     provideApolloClient(apolloClient);
-    const { result, loading, error } = useQuery(
+    const { result, error } = useQuery(
       gql`
         query UserSettingsQuery {
           userSettings {
             email
+            admin
           }
         }
       `
@@ -168,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     watch(result, (value) => {
       userStore.email = value.userSettings.email;
+      userStore.admin = value.userSettings.admin;
     });
 
     // if the query fails, the token is invalid
@@ -204,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (import.meta.env.PROD) {
     Sentry.init({
       app,
-      dsn: cjda.sentry_dsn,
+      dsn: settings.sentry_dsn,
       integrations: [
         new Sentry.BrowserTracing({
           routingInstrumentation: Sentry.vueRouterInstrumentation(router),
@@ -214,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Set tracesSampleRate to 1.0 to capture 100%
       // of transactions for performance monitoring.
       // We recommend adjusting this value in production
-      tracesSampleRate: cjda.sentry_sample_rate,
+      tracesSampleRate: settings.sentry_sample_rate,
     });
   }
 
@@ -223,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   app.use(
     pageTitle({
-      suffix: "Photonia",
+      suffix: settings.site_name,
       separator: " - ",
       mixin: true,
     })

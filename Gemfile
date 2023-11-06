@@ -38,7 +38,6 @@ gem 'graphql'
 gem 'graphql-pagination'
 gem 'image_processing', '~> 1.8'
 gem 'impressionist', '~> 2.0'
-gem 'jsonapi-serializer'
 gem 'pagy', '~> 6'
 gem 'pg_search'
 gem 'pundit'
@@ -89,9 +88,12 @@ group :test do
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 3.38.0'
   gem 'selenium-webdriver'
+  gem 'shoulda-matchers', '~> 5.0'
   # Easy installation and use of web drivers to run system tests with browsers
   gem 'webdrivers'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
+
+gem "rails-settings-cached", "~> 2.9"

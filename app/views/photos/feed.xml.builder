@@ -3,7 +3,7 @@
 xml.instruct! :xml, version: '1.0'
 xml.rss version: '2.0', 'xmlns:media': 'http://search.yahoo.com/mrss/' do
   xml.channel do
-    xml.title 'Photonia - Photos'
+    xml.title Setting.site_name + ' - Photos'
     xml.description 'Photos by Janos Rusiczki'
     xml.link photos_url
 

@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   get '/users/sign_in', to: 'users#sign_in'
   get '/users/sign_out', to: 'users#sign_out'
   get '/users/settings', to: 'users#settings'
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+  get '/users/admin-settings', to: 'users#admin_settings'
 
   devise_for :users, skip: :all
 

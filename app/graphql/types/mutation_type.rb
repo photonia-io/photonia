@@ -55,6 +55,18 @@ module Types
       argument :id, String, 'Photo Id', required: true
     end
 
+    field :update_user_settings, UserType, null: false do
+      description 'Update user settings'
+      argument :email, String, 'User email', required: true
+      argument :timezone, String, 'User timezone', required: true
+    end
+
+    field :update_admin_settings, AdminSettingsType, null: false do
+      description 'Update admin settings'
+      argument :site_name, String, 'Site name', required: true
+      argument :site_description, String, 'Site description', required: true
+    end
+
     def add_photos_to_album(album_id:, photo_ids:)
       album = Album.includes(:photos).friendly.find(album_id)
       context[:authorize].call(album, :update?)
@@ -138,6 +150,23 @@ module Types
       context[:authorize].call(photo, :update?)
       photo.update(description:)
       photo
+    end
+
+    def update_user_settings(email:, timezone:)
+      user = context[:current_user]
+      context[:authorize].call(user, :update?)
+      # for now we don't allow users to change their email
+      # as that should trigger a devise's confirmation email
+      # user.update(email: email)
+      user.update(timezone: timezone)
+      user
+    end
+
+    def update_admin_settings(site_name:, site_description:)
+      context[:authorize].call(Setting, :update?)
+      Setting.site_name = site_name
+      Setting.site_description = site_description
+      Setting
     end
   end
 end

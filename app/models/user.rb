@@ -5,10 +5,12 @@
 # Table name: users
 #
 #  id                  :bigint           not null, primary key
+#  admin               :boolean          default(FALSE)
 #  email               :string           default(""), not null
 #  encrypted_password  :string           default(""), not null
 #  jti                 :string
 #  remember_created_at :datetime
+#  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -30,4 +32,7 @@ class User < ApplicationRecord
          :jwt_authenticatable, jwt_revocation_strategy: self
 
   has_many :photos
+
+  validates :email, presence: true, uniqueness: { case_sensitive: false }
+  validates :timezone, presence: true
 end

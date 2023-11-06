@@ -40,6 +40,7 @@ class PhotosController < ApplicationController
     authorize @photo
 
     @photo.user = current_user
+    @photo.timezone = current_user.timezone
     @photo.populate_exif_fields
 
     if @photo.valid?
