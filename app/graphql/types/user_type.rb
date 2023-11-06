@@ -7,6 +7,7 @@ module Types
     field :email, String, 'Email', null: true
     field :id, String, 'User ID', null: false
     field :timezone, Types::TimezoneType, 'Timezone', null: false
+    field :admin, Boolean, 'Admin', null: false
 
     def timezone
       { name: @object.timezone }

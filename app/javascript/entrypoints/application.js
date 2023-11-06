@@ -41,6 +41,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const redirectIfNotAdmin = (to, from) => {
+    if (!userStore.admin) {
+      toaster("You are not authorized to access that page.", "is-warning");
+      return { name: "root" };
+    }
+  };
+
   const routes = [
     {
       path: settings.root_path,
@@ -92,6 +99,12 @@ document.addEventListener("DOMContentLoaded", () => {
       name: "users-settings",
       component: () => import("../users/settings.vue"),
       beforeEnter: redirectIfNotSignedIn,
+    },
+    {
+      path: settings.users_admin_settings_path,
+      name: "users-admin-settings",
+      component: () => import("../users/admin-settings.vue"),
+      beforeEnter: [redirectIfNotSignedIn, redirectIfNotAdmin],
     },
     {
       path: settings.photos_path + "/upload",
@@ -159,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         query UserSettingsQuery {
           userSettings {
             email
+            admin
           }
         }
       `
@@ -166,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     watch(result, (value) => {
       userStore.email = value.userSettings.email;
+      userStore.admin = value.userSettings.admin;
     });
 
     // if the query fails, the token is invalid

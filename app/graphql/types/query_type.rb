@@ -72,6 +72,8 @@ module Types
 
     field :timezones, [TimezoneType], 'List of timezones', null: false
 
+    field :admin_settings, AdminSettingsType, 'Admin settings', null: false
+
     # Photos
 
     def photos(page: nil, query: nil)
@@ -164,6 +166,12 @@ module Types
 
     def user_settings
       context[:current_user]
+    end
+
+    # Admin settings
+
+    def admin_settings
+      context[:authorize].call(Setting, :show?)
     end
 
     # Timezones

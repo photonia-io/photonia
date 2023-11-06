@@ -1,7 +1,24 @@
 <template>
   <section class="section-pt-pb-0">
     <div class="container">
-      <h1 class="title mt-5 mb-0">User Settings</h1>
+      <div class="level mb-0 mt-5">
+        <div class="level-left">
+          <div class="level-item">
+            <h1 class="title">User Settings</h1>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <router-link
+              :to="{ name: 'users-admin-settings' }"
+              v-if="userStore.admin"
+              class="button is-small is-link"
+            >
+              Admin Settings
+            </router-link>
+          </div>
+        </div>
+      </div>
       <hr class="mt-2 mb-4" />
       <div class="card">
         <div class="card-content">
@@ -81,32 +98,40 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
+import { useUserStore } from "@/stores/user";
 import toaster from "../mixins/toaster";
 
-useTitle("User Settings");
-
-const { result } = useQuery(
-  gql`
-    query UserSettingsQuery {
-      userSettings {
-        email
-        timezone {
-          name
-        }
-      }
-      timezones {
+const USER_SETTINGS_QUERY = gql`
+  query UserSettingsQuery {
+    userSettings {
+      email
+      timezone {
         name
       }
     }
-  `
-);
+    timezones {
+      name
+    }
+  }
+`;
+
+useTitle("User Settings");
+
+const userStore = useUserStore();
+
+const newTimezone = ref(null);
+
+const { result } = useQuery(USER_SETTINGS_QUERY);
 
 const email = computed(() => result.value?.userSettings.email);
-const timezone = computed(() => result.value?.userSettings.timezone.name);
+const timezone = computed({
+  get: () => result.value?.userSettings.timezone.name,
+  set: (value) => (newTimezone.value = value),
+});
 
 const {
   mutate: submit,
@@ -126,7 +151,15 @@ const {
   () => ({
     variables: {
       email: email.value,
-      timezone: timezone.value,
+      timezone: newTimezone.value || timezone.value,
+    },
+    update: (cache, { data }) => {
+      cache.writeQuery({
+        query: USER_SETTINGS_QUERY,
+        data: {
+          userSettings: data.updateUserSettings,
+        },
+      });
     },
   })
 );
