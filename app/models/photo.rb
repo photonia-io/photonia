@@ -6,6 +6,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  date_taken               :datetime
+#  date_taken_from_exif     :boolean          default(FALSE)
 #  description              :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
@@ -154,19 +155,23 @@ class Photo < ApplicationRecord
     end
   end
 
+  def exif_from_file_json
+    # we need to clean up the strings in the hash because they might contain
+    # invalid UTF-8 characters and those will cause the to_json method to fail
+    exif_from_file.to_h.force_encoding_to_iso_8859_1.to_json
+  end
+
   def exif
-    # calling this the first time will call exif_from_file and save the result into the field
     unless self[:exif]
       if exif_from_file
-        # we need to clean up the strings in the hash because they might contain
-        # invalid UTF-8 characters and those will cause the to_json method to fail
-        self[:exif] = exif_from_file.to_h.force_encoding_to_iso_8859_1.to_json
+        self[:exif] = exif_from_file_json
       else
         self[:exif] = { error: 'EXIF Not Readable' }.to_json
       end
-      save
+      # if this is a new record, we only want to set the exif field
+      # if it's not a new record, we want to save it to cache the exif
+      save(validate: false) if persisted?
     end
-    # byebug
     JSON.parse(self[:exif])
   end
 
@@ -177,13 +182,29 @@ class Photo < ApplicationRecord
 
   def populate_exif_fields
     if exif_exists?
-      exif_date_taken = exif['exif']['date_time_original']
-      exif_date_format = '%Y:%m:%d %H:%M:%S'
-      Time.zone = timezone
-      self.date_taken = Time.zone.strptime(exif_date_taken, exif_date_format)
-    else
-      self.date_taken = Time.current
+      exif_date_taken = exif['exif']['date_time_original'] || exif['ifd0']['date_time']
+      if exif_date_taken
+        exif_date_format = '%Y:%m:%d %H:%M:%S'
+        Time.zone = timezone
+        begin
+          parsed_date_taken = Time.zone.strptime(exif_date_taken, exif_date_format)
+        rescue ArgumentError
+          Rails.logger.error "Invalid date format #{exif_date_taken} for slug = #{slug}"
+        end
+      else
+        Rails.logger.error "No date taken for slug = #{slug}"
+      end
     end
+
+    if parsed_date_taken
+      self.date_taken_from_exif = true
+      self.date_taken = parsed_date_taken
+    else
+      self.date_taken_from_exif = false
+      Time.zone = timezone
+      self.date_taken ||= Time.zone.now
+    end
+
     self
   end
 

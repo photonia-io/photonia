@@ -273,7 +273,8 @@ CREATE TABLE public.photos (
     user_id bigint,
     tsv tsvector,
     impressions_count integer DEFAULT 0 NOT NULL,
-    timezone character varying DEFAULT 'UTC'::character varying NOT NULL
+    timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
+    date_taken_from_exif boolean DEFAULT false
 );
 
 
@@ -1002,6 +1003,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20231015101852'),
 ('20231015122341'),
 ('20231015122407'),
-('20231105152447');
+('20231105152447'),
+('20231106215849');
 
 
