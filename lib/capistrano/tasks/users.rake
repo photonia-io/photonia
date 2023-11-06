@@ -20,4 +20,14 @@ namespace :users do
       end
     end
   end
+
+  task :make_admin, :email do |_task, args|
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, "users:make_admin[#{args[:email]}]"
+        end
+      end
+    end
+  end
 end

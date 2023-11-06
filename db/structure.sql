@@ -452,7 +452,8 @@ CREATE TABLE public.users (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     jti character varying,
-    timezone character varying DEFAULT 'UTC'::character varying NOT NULL
+    timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
+    admin boolean DEFAULT false
 );
 
 
@@ -1000,6 +1001,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230712191829'),
 ('20231015101852'),
 ('20231015122341'),
-('20231015122407');
+('20231015122407'),
+('20231105152447');
 
 
