@@ -1,4 +1,4 @@
-# 2023.11.06
+# 2023.11.06 - 0.12.0
 
 [Settings pages & EXIF improvements](https://github.com/photonia-io/photonia/pull/607)
 
