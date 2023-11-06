@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # config valid for current version and patch releases of Capistrano
-lock '~> 3.17.2'
+lock '~> 3.18.0'
 
 set :application, 'photonia'
 set :repo_url, 'git@github.com:photonia-io/photonia.git'
