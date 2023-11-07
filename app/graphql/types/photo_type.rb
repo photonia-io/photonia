@@ -9,7 +9,6 @@ module Types
     field :description, String, 'Description', null: false
     field :height, Integer, 'Height of the photo in pixels', null: true
     field :id, String, 'ID of the photo', null: false
-    field :imported_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
     field :is_taken_at_from_exif, Boolean, 'Whether the date taken is from EXIF', null: true
@@ -18,6 +17,7 @@ module Types
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
     field :name, String, 'Title of the photo', null: false
     field :next_photo, PhotoType, 'Next photo', null: true
+    field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true

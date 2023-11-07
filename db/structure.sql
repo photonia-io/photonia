@@ -261,7 +261,7 @@ CREATE TABLE public.photos (
     serial_number bigint NOT NULL,
     flickr_impressions_count integer DEFAULT 0 NOT NULL,
     flickr_faves integer,
-    imported_at timestamp without time zone,
+    posted_at timestamp without time zone,
     flickr_photopage character varying,
     flickr_original character varying,
     image_data jsonb,
@@ -1005,6 +1005,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20231015122407'),
 ('20231105152447'),
 ('20231106215849'),
-('20231107073727');
+('20231107073727'),
+('20231107075611');
 
 

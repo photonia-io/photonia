@@ -9,7 +9,7 @@ module HomepageLoader
   end
 
   def load_homepage
-    @latest_photo = Photo.order(imported_at: :desc).first
+    @latest_photo = Photo.order(posted_at: :desc).first
     @random_photo = Photo.order(Arel.sql('RANDOM()')).first
     @most_used_tags = ActsAsTaggableOn::Tag.photonia_most_used(limit: 60)
 

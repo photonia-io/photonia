@@ -16,7 +16,7 @@ module Types
     end
 
     def photos(page: nil)
-      pagy, @photos = context[:pagy].call(Photo.distinct.tagged_with(@object).order(imported_at: :desc), page:)
+      pagy, @photos = context[:pagy].call(Photo.distinct.tagged_with(@object).order(posted_at: :desc), page:)
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.items }

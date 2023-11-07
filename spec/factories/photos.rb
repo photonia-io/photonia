@@ -13,10 +13,10 @@
 #  flickr_original          :string
 #  flickr_photopage         :string
 #  image_data               :jsonb
-#  imported_at              :datetime
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
 #  name                     :string
+#  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null

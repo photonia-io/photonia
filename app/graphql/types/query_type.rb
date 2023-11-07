@@ -78,7 +78,7 @@ module Types
 
     def photos(page: nil, query: nil)
       pagy, photos = context[:pagy].call(
-        query.present? ? Photo.search(query) : Photo.all.order(imported_at: :desc),
+        query.present? ? Photo.search(query) : Photo.all.order(posted_at: :desc),
         page:
       )
       photos.define_singleton_method(:total_pages) { pagy.pages }
@@ -149,7 +149,7 @@ module Types
     # Homepage
 
     def latest_photo
-      latest_photo = object ? object[:latest_photo] : Photo.order(imported_at: :desc).first
+      latest_photo = object ? object[:latest_photo] : Photo.order(posted_at: :desc).first
       context[:impressionist].call(latest_photo, 'graphql', unique: [:session_hash])
       latest_photo
     end

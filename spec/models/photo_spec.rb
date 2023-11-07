@@ -13,10 +13,10 @@
 #  flickr_original          :string
 #  flickr_photopage         :string
 #  image_data               :jsonb
-#  imported_at              :datetime
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
 #  name                     :string
+#  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
@@ -86,7 +86,7 @@ RSpec.describe Photo do
     describe '#next' do
       it 'returns the next photo' do
         photo = create(:photo)
-        next_photo = create(:photo, imported_at: photo.imported_at + 1.day)
+        next_photo = create(:photo, posted_at: photo.posted_at + 1.day)
         expect(photo.next).to eq(next_photo)
       end
     end
@@ -94,7 +94,7 @@ RSpec.describe Photo do
     describe '#prev' do
       it 'returns the previous photo' do
         photo = create(:photo)
-        prev_photo = create(:photo, imported_at: photo.imported_at - 1.day)
+        prev_photo = create(:photo, posted_at: photo.posted_at - 1.day)
         expect(photo.prev).to eq(prev_photo)
       end
     end

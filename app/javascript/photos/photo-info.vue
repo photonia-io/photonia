@@ -24,7 +24,7 @@
       <span class="icon"><i class="fas fa-arrow-circle-up"></i></span>
       <span class="has-text-weight-semibold">Date Posted:</span>
       <span v-if="!loading" class="ml-1">{{
-        momentFormat(photo.importedAt)
+        momentFormat(photo.postedAt)
       }}</span>
     </span>
     <span

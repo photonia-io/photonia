@@ -13,10 +13,10 @@
 #  flickr_original          :string
 #  flickr_photopage         :string
 #  image_data               :jsonb
-#  imported_at              :datetime
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
 #  name                     :string
+#  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
@@ -119,11 +119,11 @@ class Photo < ApplicationRecord
   before_validation :set_fields, prepend: true
 
   def next
-    Photo.where('imported_at > ?', imported_at).order(:imported_at).first
+    Photo.where('posted_at > ?', posted_at).order(:posted_at).first
   end
 
   def prev
-    Photo.where('imported_at < ?', imported_at).order(imported_at: :desc).first
+    Photo.where('posted_at < ?', posted_at).order(posted_at: :desc).first
   end
 
   def next_in_album(album)
@@ -300,6 +300,6 @@ class Photo < ApplicationRecord
 
   def set_fields
     set_serial_number
-    self.imported_at = Time.current if imported_at.nil?
+    self.posted_at = Time.current if posted_at.nil?
   end
 end
