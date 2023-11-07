@@ -34,4 +34,14 @@ namespace :photos do
       end
     end
   end
+
+  task :fix_taken_at do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:fix_taken_at'
+        end
+      end
+    end
+  end
 end
