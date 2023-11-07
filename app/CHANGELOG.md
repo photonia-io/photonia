@@ -1,3 +1,13 @@
+# 2023.11.07 - 0.12.3
+
+### Relevant PRs
+
+- [Photo date tweaks](https://github.com/photonia-io/photonia/pull/609)
+
+### Tasks to be run
+
+`cap production photos:fix_taken_at`
+
 # 2023.11.07 - 0.12.2
 
 ### Relevant PRs
