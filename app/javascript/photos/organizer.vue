@@ -48,12 +48,12 @@ watch(selectedPhotos, (newValue, oldValue) => {
     selectionStore.showRemoveNotification = true;
     return;
   }
-  
+
   if (newValue.length < oldValue.length) {
     const removedPhoto = oldValue
       .filter((photo) => !newValue.includes(photo))
       .pop();
-    toaster(`"${removedPhoto.name}" was removed from the selection`);
+    toaster(`"${removedPhoto.title}" was removed from the selection`);
   }
 });
 </script>

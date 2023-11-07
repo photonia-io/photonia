@@ -25,7 +25,7 @@
                 <router-link
                   :to="{ name: 'photos-show', params: { id: photo.id } }"
                 >
-                  {{ photo.name }}
+                  {{ photo.title }}
                 </router-link>
               </p>
             </div>

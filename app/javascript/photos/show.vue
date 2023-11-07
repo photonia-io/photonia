@@ -225,7 +225,7 @@ const route = useRoute();
 const router = useRouter();
 
 const emptyPhoto = {
-  name: "",
+  title: "",
   description: "",
   largeImageUrl: "",
   previousPhoto: null,
@@ -257,7 +257,7 @@ const {
     mutation ($id: String!, $title: String!) {
       updatePhotoTitle(id: $id, title: $title) {
         id
-        name
+        title
       }
     }
   `
@@ -293,7 +293,7 @@ const {
 );
 
 onUpdateTitleDone(({ data }) => {
-  console.log(data);
+  toaster("The title has been updated");
 });
 
 onUpdateTitleError((error) => {
@@ -301,7 +301,7 @@ onUpdateTitleError((error) => {
 });
 
 onUpdateDescriptionDone(({ data }) => {
-  console.log(data);
+  toaster("The description has been updated");
 });
 
 onUpdateDescriptionError((error) => {
@@ -331,7 +331,7 @@ const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
 
 const noTitle = "(no title)";
 const photoTitle = () =>
-  loading.value ? "Loading..." : photo.value.name || noTitle;
+  loading.value ? "Loading..." : photo.value.title || noTitle;
 
 const noDescription = "(no description)";
 const photoDescription = () =>

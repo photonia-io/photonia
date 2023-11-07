@@ -44,7 +44,7 @@ CREATE TYPE public.tag_source AS ENUM (
 
 CREATE FUNCTION public.photos_trigger() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ declare photo_tags record; photo_albums record; begin select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags'; select string_agg(albums.title, ' ') as title into photo_albums from albums inner join albums_photos on albums.id = albums_photos.album_id where albums_photos.photo_id = new.id; new.tsv := setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.name, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.description, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_tags.name, ''))), 'B') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_albums.title, ''))), 'B'); return new; end $$;
+    AS $$ declare photo_tags record; photo_albums record; begin select string_agg(tags.name, ' ') as name into photo_tags from tags inner join taggings on tags.id = taggings.tag_id where taggings.taggable_id = new.id and taggings.taggable_type = 'Photo' and taggings.context = 'tags'; select string_agg(albums.title, ' ') as title into photo_albums from albums inner join albums_photos on albums.id = albums_photos.album_id where albums_photos.photo_id = new.id; new.tsv := setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.title, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(new.description, ''))), 'A') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_tags.name, ''))), 'B') || setweight(to_tsvector('pg_catalog.english', unaccent(coalesce(photo_albums.title, ''))), 'B'); return new; end $$;
 
 
 SET default_tablespace = '';
@@ -253,7 +253,7 @@ ALTER SEQUENCE public.labels_id_seq OWNED BY public.labels.id;
 CREATE TABLE public.photos (
     id bigint NOT NULL,
     slug character varying,
-    name character varying,
+    title character varying,
     description text,
     taken_at timestamp without time zone,
     license character varying,
@@ -1006,6 +1006,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20231105152447'),
 ('20231106215849'),
 ('20231107073727'),
-('20231107075611');
+('20231107075611'),
+('20231107090043'),
+('20231107090606');
 
 

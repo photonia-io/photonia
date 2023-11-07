@@ -141,7 +141,7 @@ module Types
     def update_photo_title(id:, title:)
       photo = Photo.friendly.find(id)
       context[:authorize].call(photo, :update?)
-      photo.update(name: title)
+      photo.update(title:)
       photo
     end
 

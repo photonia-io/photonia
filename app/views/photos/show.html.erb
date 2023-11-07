@@ -1,7 +1,7 @@
-<% content_for(:page_title, @photo.name) %>
+<% content_for(:page_title, @photo.title) %>
 <div>
   <div>
-    <h1><%= @photo.name.presence || '(no title)' %></h1>
+    <h1><%= @photo.title.presence || '(no title)' %></h1>
   </div>
   <div>
     <% if @photo.prev %>

@@ -41,7 +41,7 @@
               <input
                 type="text"
                 class="input is-small"
-                v-model="file.data['photo[name]']"
+                v-model="file.data['photo[title]']"
               />
               <textarea
                 class="textarea is-small"
@@ -233,7 +233,7 @@ const inputFilter = function (newFile, oldFile, prevent) {
       }
       // Add some extra info
       newFile.data = {
-        "photo[name]": newFile.name,
+        "photo[title]": newFile.name,
         "photo[description]": newFile.name,
       };
     }

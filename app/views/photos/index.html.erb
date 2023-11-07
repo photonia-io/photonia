@@ -7,7 +7,7 @@
     <div>
       <a href="<%= photo_path(photo) %>">
         <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" />
-        <%= photo.name.presence || '(no title)' %>
+        <%= photo.title.presence || '(no title)' %>
       </a>
     </div>
   <% end %>
