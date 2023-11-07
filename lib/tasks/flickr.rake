@@ -25,13 +25,13 @@ namespace :flickr do
         photo = Photo.create(
           name: photo_hash['name'],
           description: photo_hash['description'],
-          date_taken: photo_hash['date_taken'],
+          taken_at: photo_hash['date_taken'],
           license: photo_hash['license'],
           exif: photo_hash['exif'], # TODO: Import - This should be set later by our own means
           serial_number: photo_hash['id'],
           flickr_impressions_count: photo_hash['count_views'],
           flickr_faves: photo_hash['count_faves'],
-          imported_at: photo_hash['date_imported'],
+          posted_at: photo_hash['date_imported'],
           flickr_photopage: photo_hash['photopage'],
           flickr_original: photo_hash['original'],
           flickr_json: photo_hash

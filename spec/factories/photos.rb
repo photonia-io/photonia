@@ -5,8 +5,6 @@
 # Table name: photos
 #
 #  id                       :bigint           not null, primary key
-#  date_taken               :datetime
-#  date_taken_from_exif     :boolean          default(FALSE)
 #  description              :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
@@ -15,14 +13,16 @@
 #  flickr_original          :string
 #  flickr_photopage         :string
 #  image_data               :jsonb
-#  imported_at              :datetime
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
 #  name                     :string
+#  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
 #  slug                     :string
+#  taken_at                 :datetime
+#  taken_at_from_exif       :boolean          default(FALSE)
 #  timezone                 :string           default("UTC"), not null
 #  tsv                      :tsvector
 #  created_at               :datetime         not null

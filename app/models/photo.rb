@@ -5,8 +5,6 @@
 # Table name: photos
 #
 #  id                       :bigint           not null, primary key
-#  date_taken               :datetime
-#  date_taken_from_exif     :boolean          default(FALSE)
 #  description              :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
@@ -15,14 +13,16 @@
 #  flickr_original          :string
 #  flickr_photopage         :string
 #  image_data               :jsonb
-#  imported_at              :datetime
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
 #  name                     :string
+#  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
 #  slug                     :string
+#  taken_at                 :datetime
+#  taken_at_from_exif       :boolean          default(FALSE)
 #  timezone                 :string           default("UTC"), not null
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
@@ -119,11 +119,11 @@ class Photo < ApplicationRecord
   before_validation :set_fields, prepend: true
 
   def next
-    Photo.where('imported_at > ?', imported_at).order(:imported_at).first
+    Photo.where('posted_at > ?', posted_at).order(:posted_at).first
   end
 
   def prev
-    Photo.where('imported_at < ?', imported_at).order(imported_at: :desc).first
+    Photo.where('posted_at < ?', posted_at).order(posted_at: :desc).first
   end
 
   def next_in_album(album)
@@ -182,27 +182,27 @@ class Photo < ApplicationRecord
 
   def populate_exif_fields
     if exif_exists?
-      exif_date_taken = exif['exif']['date_time_original'] || exif['ifd0']['date_time']
-      if exif_date_taken
+      exif_taken_at = exif['exif']['date_time_original'] || exif['ifd0']['date_time']
+      if exif_taken_at
         exif_date_format = '%Y:%m:%d %H:%M:%S'
         Time.zone = timezone
         begin
-          parsed_date_taken = Time.zone.strptime(exif_date_taken, exif_date_format)
+          parsed_taken_at = Time.zone.strptime(exif_taken_at, exif_date_format)
         rescue ArgumentError
-          Rails.logger.error "Invalid date format #{exif_date_taken} for slug = #{slug}"
+          Rails.logger.error "Invalid date format #{exif_taken_at} for slug = #{slug}"
         end
       else
         Rails.logger.error "No date taken for slug = #{slug}"
       end
     end
 
-    if parsed_date_taken
-      self.date_taken_from_exif = true
-      self.date_taken = parsed_date_taken
+    if parsed_taken_at
+      self.taken_at_from_exif = true
+      self.taken_at = parsed_taken_at
     else
-      self.date_taken_from_exif = false
+      self.taken_at_from_exif = false
       Time.zone = timezone
-      self.date_taken ||= Time.zone.now
+      self.taken_at ||= Time.zone.now
     end
 
     self
@@ -300,6 +300,6 @@ class Photo < ApplicationRecord
 
   def set_fields
     set_serial_number
-    self.imported_at = Time.current if imported_at.nil?
+    self.posted_at = Time.current if posted_at.nil?
   end
 end

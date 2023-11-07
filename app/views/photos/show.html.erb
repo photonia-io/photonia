@@ -74,10 +74,10 @@
     <% end %>
 
     <h3>Date Taken</h3>
-    <p><%= @photo.date_taken.strftime('%B %e, %Y') %></p>
+    <p><%= @photo.taken_at.strftime('%B %e, %Y') %></p>
 
     <h3>Date Posted</h3>
-    <p><%= @photo.imported_at.strftime('%B %e, %Y') %></p>
+    <p><%= @photo.posted_at.strftime('%B %e, %Y') %></p>
 
     <h3>Tags</h3>
     <div>

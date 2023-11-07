@@ -11,10 +11,10 @@
       <span class="icon"><i class="fas fa-camera"></i></span>
       <span class="has-text-weight-semibold">Date Taken:</span>
       <span v-if="!loading" class="ml-1">{{
-        momentFormat(photo.dateTaken)
+        momentFormat(photo.takenAt)
       }}</span>
       <span
-        v-if="!loading && photo.isDateTakenFromExif"
+        v-if="!loading && photo.isTakenAtFromExif"
         class="tag has-background ml-1 has-text-weight-bold"
       >
         EXIF
@@ -24,7 +24,7 @@
       <span class="icon"><i class="fas fa-arrow-circle-up"></i></span>
       <span class="has-text-weight-semibold">Date Posted:</span>
       <span v-if="!loading" class="ml-1">{{
-        momentFormat(photo.importedAt)
+        momentFormat(photo.postedAt)
       }}</span>
     </span>
     <span

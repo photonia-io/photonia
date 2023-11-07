@@ -13,6 +13,6 @@ class TagsController < ApplicationController
 
   def show
     @tag = ActsAsTaggableOn::Tag.friendly.find(params[:id])
-    @pagy, @photos = pagy(Photo.distinct.tagged_with(@tag).order(imported_at: :desc))
+    @pagy, @photos = pagy(Photo.distinct.tagged_with(@tag).order(posted_at: :desc))
   end
 end

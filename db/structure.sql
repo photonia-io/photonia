@@ -255,13 +255,13 @@ CREATE TABLE public.photos (
     slug character varying,
     name character varying,
     description text,
-    date_taken timestamp without time zone,
+    taken_at timestamp without time zone,
     license character varying,
     exif jsonb,
     serial_number bigint NOT NULL,
     flickr_impressions_count integer DEFAULT 0 NOT NULL,
     flickr_faves integer,
-    imported_at timestamp without time zone,
+    posted_at timestamp without time zone,
     flickr_photopage character varying,
     flickr_original character varying,
     image_data jsonb,
@@ -274,7 +274,7 @@ CREATE TABLE public.photos (
     tsv tsvector,
     impressions_count integer DEFAULT 0 NOT NULL,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
-    date_taken_from_exif boolean DEFAULT false
+    taken_at_from_exif boolean DEFAULT false
 );
 
 
@@ -1004,6 +1004,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20231015122341'),
 ('20231015122407'),
 ('20231105152447'),
-('20231106215849');
+('20231106215849'),
+('20231107073727'),
+('20231107075611');
 
 

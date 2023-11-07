@@ -42,4 +42,9 @@ namespace :photos do
       photo.save(validate: false)
     end
   end
+
+  desc 'Fix date taken for photos without EXIF'
+  task fix_taken_at: :environment do
+    Photo.unscoped.where(taken_at_from_exif: false).update_all('taken_at = posted_at')
+  end
 end
