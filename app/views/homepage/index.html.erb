@@ -12,7 +12,7 @@
   </a>
   <div>
     <div>
-      <a href="<%= photo_path(@latest_photo) %>"><span><%= @latest_photo.name %></span></a>
+      <a href="<%= photo_path(@latest_photo) %>"><span><%= @latest_photo.title %></span></a>
     </div>
     <div>
       <a href="<%= photos_path %>">See all photos...</a>
@@ -26,7 +26,7 @@
       <h1>Random photo</h1>
       <a href="<%= photo_path(@random_photo) %>">
         <img src="<%= @random_photo.image_url(:large) %>" />
-        <%= @random_photo.name %>
+        <%= @random_photo.title %>
       </a>
     </div>
     <div>

@@ -51,7 +51,7 @@ watch(deselectedPhotos, (newValue, oldValue) => {
     const removedPhoto = oldValue
       .filter((photo) => !newValue.includes(photo))
       .pop();
-    toaster(`"${removedPhoto.name}" was moved to the selection`);
+    toaster(`"${removedPhoto.title}" was moved to the selection`);
   }
 });
 </script>

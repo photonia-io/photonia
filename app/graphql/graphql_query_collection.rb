@@ -7,12 +7,12 @@ class GraphqlQueryCollection
       query HomepageQuery {
         latestPhoto {
           id
-          name
+          title
           extralargeImageUrl: imageUrl(type: "extralarge")
         }
         randomPhotos {
           id
-          name
+          title
           intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
         }
         mostUsedTags {
@@ -51,7 +51,7 @@ class GraphqlQueryCollection
           photos(page: $page) {
             collection {
               id
-              name
+              title
               intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
             }
             metadata {
@@ -96,7 +96,7 @@ class GraphqlQueryCollection
           photos(page: $page) {
             collection {
               id
-              name
+              title
               intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
             }
             metadata {
@@ -114,7 +114,7 @@ class GraphqlQueryCollection
         photos(page: $page, query: $query) {
           collection {
             id
-            name
+            title
             intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
           }
           metadata {
@@ -130,7 +130,7 @@ class GraphqlQueryCollection
       query PhotosShowQuery($id: ID!) {
         photo(id: $id) {
           id
-          name
+          title
           description
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
@@ -140,12 +140,12 @@ class GraphqlQueryCollection
           impressionsCount
           previousPhoto {
             id
-            name
+            title
             intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
           }
           nextPhoto {
             id
-            name
+            title
             intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
           }
           albums {
@@ -153,12 +153,12 @@ class GraphqlQueryCollection
             title
             previousPhotoInAlbum(photoId: $id) {
               id
-              name
+              title
               intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
             }
             nextPhotoInAlbum(photoId: $id) {
               id
-              name
+              title
               intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
             }
           }

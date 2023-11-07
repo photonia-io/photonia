@@ -15,13 +15,13 @@ module Types
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
-    field :name, String, 'Title of the photo', null: false
     field :next_photo, PhotoType, 'Next photo', null: true
     field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
     field :taken_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was taken', null: true
+    field :title, String, 'Title of the photo', null: false
     field :user_tags, [TagType], 'User (non-Rekognition) tags', null: true
     field :width, Integer, 'Width of the photo in pixels', null: true
 

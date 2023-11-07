@@ -5,7 +5,7 @@
       :to="{ name: 'photos-show', params: { id: photo.id } }"
     >
       <ItemImage :photo="photo" />
-      {{ photo.name }}
+      {{ photo.title }}
     </router-link>
     <div v-else>
       <div class="selectable-item is-clickable" @click="toggleSelection()">
@@ -16,7 +16,7 @@
         />
       </div>
       <router-link :to="{ name: 'photos-show', params: { id: photo.id } }">
-        {{ photo.name }}
+        {{ photo.title }}
       </router-link>
     </div>
   </div>

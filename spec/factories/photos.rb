@@ -15,7 +15,6 @@
 #  image_data               :jsonb
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
-#  name                     :string
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
@@ -24,6 +23,7 @@
 #  taken_at                 :datetime
 #  taken_at_from_exif       :boolean          default(FALSE)
 #  timezone                 :string           default("UTC"), not null
+#  title                    :string
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -42,7 +42,7 @@
 #
 FactoryBot.define do
   factory :photo do
-    name { Faker::Lorem.sentence }
+    title { Faker::Lorem.sentence }
     description { Faker::Lorem.paragraph }
     user
   end

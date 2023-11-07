@@ -23,7 +23,7 @@ namespace :flickr do
 
       if photo_file
         photo = Photo.create(
-          name: photo_hash['name'],
+          title: photo_hash['name'],
           description: photo_hash['description'],
           taken_at: photo_hash['date_taken'],
           license: photo_hash['license'],

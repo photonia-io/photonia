@@ -63,6 +63,6 @@ class ImageUploader < Shrine
   end
 
   def record_name(record, uuid)
-    record.name.presence || record.slug.presence || uuid
+    record.title.presence || record.slug.presence || uuid
   end
 end

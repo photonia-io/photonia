@@ -15,7 +15,6 @@
 #  image_data               :jsonb
 #  impressions_count        :integer          default(0), not null
 #  license                  :string
-#  name                     :string
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
@@ -24,6 +23,7 @@
 #  taken_at                 :datetime
 #  taken_at_from_exif       :boolean          default(FALSE)
 #  timezone                 :string           default("UTC"), not null
+#  title                    :string
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -51,7 +51,7 @@ class Photo < ApplicationRecord
 
   include PgSearch::Model
   pg_search_scope :search,
-                  against: %i[name description],
+                  against: %i[title description],
                   ignoring: :accents,
                   using: {
                     tsearch: {
@@ -64,8 +64,8 @@ class Photo < ApplicationRecord
 
   default_scope { where(privacy: 'public') }
 
-  # validate name and description
-  validates :name, presence: true
+  # validate title and description
+  validates :title, presence: true
   validates :description, presence: true
 
   belongs_to :user
