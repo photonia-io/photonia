@@ -134,8 +134,8 @@ class GraphqlQueryCollection
           description
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
-          dateTaken
-          isDateTakenFromExif
+          takenAt
+          isTakenAtFromExif
           importedAt
           impressionsCount
           previousPhoto {

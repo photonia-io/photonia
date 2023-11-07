@@ -6,14 +6,13 @@ module Types
     description 'A Photo'
 
     field :albums, [AlbumType], 'Albums the photo belongs to', null: true
-    field :date_taken, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was taken', null: true
     field :description, String, 'Description', null: false
     field :height, Integer, 'Height of the photo in pixels', null: true
     field :id, String, 'ID of the photo', null: false
     field :imported_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
     field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
-    field :is_date_taken_from_exif, Boolean, 'Whether the date taken is from EXIF', null: true
+    field :is_taken_at_from_exif, Boolean, 'Whether the date taken is from EXIF', null: true
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
@@ -22,6 +21,7 @@ module Types
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
+    field :taken_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was taken', null: true
     field :user_tags, [TagType], 'User (non-Rekognition) tags', null: true
     field :width, Integer, 'Width of the photo in pixels', null: true
 
@@ -74,8 +74,8 @@ module Types
       total_impressions_count.zero? ? 1 : total_impressions_count
     end
 
-    def is_date_taken_from_exif
-      @object.date_taken_from_exif?
+    def is_taken_at_from_exif
+      @object.taken_at_from_exif?
     end
 
     def rekognition_label_model_version

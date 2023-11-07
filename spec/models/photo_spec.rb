@@ -5,8 +5,6 @@
 # Table name: photos
 #
 #  id                       :bigint           not null, primary key
-#  date_taken               :datetime
-#  date_taken_from_exif     :boolean          default(FALSE)
 #  description              :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
@@ -23,6 +21,8 @@
 #  rekognition_response     :jsonb
 #  serial_number            :bigint           not null
 #  slug                     :string
+#  taken_at                 :datetime
+#  taken_at_from_exif       :boolean          default(FALSE)
 #  timezone                 :string           default("UTC"), not null
 #  tsv                      :tsvector
 #  created_at               :datetime         not null
@@ -231,9 +231,9 @@ RSpec.describe Photo do
       context 'when the file has EXIF data' do
         let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }
 
-        it 'sets date_taken from the exif data' do
+        it 'sets taken_at from the exif data' do
           Time.use_zone(timezone) do
-            expect { populate_exif_fields }.to change(photo, :date_taken).from(nil).to(Time.zone.parse('2014-08-31 17:25:34'))
+            expect { populate_exif_fields }.to change(photo, :taken_at).from(nil).to(Time.zone.parse('2014-08-31 17:25:34'))
           end
         end
       end
@@ -249,8 +249,8 @@ RSpec.describe Photo do
           Timecop.return
         end
 
-        it 'sets date_taken to the current time' do
-          expect { populate_exif_fields }.to change(photo, :date_taken).from(nil).to(Time.zone.now)
+        it 'sets taken_at to the current time' do
+          expect { populate_exif_fields }.to change(photo, :taken_at).from(nil).to(Time.zone.now)
         end
       end
     end
