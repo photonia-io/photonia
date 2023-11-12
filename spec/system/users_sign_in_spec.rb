@@ -10,21 +10,21 @@ describe 'Sign In' do
 
   context 'with valid email and password' do
     it 'signs in the user' do
-      sign_in_with(email, password)
+      sign_in_with(email:, password:)
       expect(page).to have_field('email', with: email, disabled: true)
     end
   end
 
   context 'with invalid email' do
     it 'does not sign in the user' do
-      sign_in_with('another.user@domain.com', password)
+      sign_in_with(email: 'another.user@domain.com', password:)
       expect(page).to have_content('There was an error signing you in. Please try again.')
     end
   end
 
   context 'with invalid password' do
     it 'does not sign in the user' do
-      sign_in_with(email, 'wrongpassword')
+      sign_in_with(email:, password: 'wrongpassword')
       expect(page).to have_content('There was an error signing you in. Please try again.')
     end
   end
