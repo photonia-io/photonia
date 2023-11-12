@@ -32,7 +32,7 @@ In separate terminals:
     bin/vite dev
     bundle exec sidekiq
 
-Or use overmind: `overmind s -N -f Procfile.dev`
+Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procfile.dev`
 
 ## Starting Docker containers for system specs
 
