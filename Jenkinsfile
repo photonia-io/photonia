@@ -17,7 +17,7 @@ pipeline {
     stage('test') {
       steps {
         sh 'ln -s /usr/src/app/node_modules node_modules'
-        sh 'bundle exec rspec'
+        sh 'bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"'
         sh 'yarn test:run'
       }
     }

@@ -33,6 +33,7 @@
                     <input
                       class="input"
                       type="email"
+                      name="email"
                       placeholder="Email"
                       v-model="email"
                       disabled
