@@ -33,7 +33,6 @@ export const useApplicationStore = defineStore("application", () => {
   }
 
   watch(showLabelsOnHero, (newValue) => {
-    console.log("showLabelsOnHero", newValue);
     localStorage.setItem("showLabelsOnHero", newValue);
   });
 
