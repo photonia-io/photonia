@@ -63,6 +63,14 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+  RSpec.configure do |config|
+    config.include SystemSpecsHelper, type: :system
+  end
+
+  config.before(:each, type: :system) do
+    driven_by :remote_chrome
+  end
 end
 
 Shoulda::Matchers.configure do |config|
@@ -71,3 +79,17 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
+
+Capybara.register_driver :remote_chrome do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+
+  Capybara::Selenium::Driver.new(
+    app,
+    url: 'http://localhost:4444/wd/hub',
+    browser: :remote,
+    options: options
+  )
+end
+
+Capybara.server_port = 3020
+Capybara.app_host = 'http://host.docker.internal:3020'

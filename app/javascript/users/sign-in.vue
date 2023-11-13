@@ -9,6 +9,7 @@
               <input
                 v-model="email"
                 type="email"
+                name="email"
                 placeholder="e.g. johnsmith@gmail.com"
                 class="input"
                 required
@@ -24,6 +25,7 @@
               <input
                 v-model="password"
                 type="password"
+                name="password"
                 placeholder="********"
                 class="input"
                 required
@@ -48,6 +50,7 @@ import gql from "graphql-tag";
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "../stores/user";
 import { useRouter } from "vue-router";
+import toaster from "../mixins/toaster";
 
 const email = ref("");
 const password = ref("");
@@ -83,7 +86,9 @@ onDone(({ data }) => {
 });
 
 onError((error) => {
-  // todo console.log(error)
+  const userStore = useUserStore();
+  userStore.signOut();
+  toaster("There was an error signing you in. Please try again.", "is-danger");
 });
 </script>
 
