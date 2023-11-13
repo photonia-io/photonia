@@ -1,12 +1,13 @@
 <template>
   <div
-    class="tag has-background-grey-lighter label-instance"
-    @mouseover="hovered(true)"
-    @mouseout="hovered(false)"
+    :class="[
+      'tag has-background-grey-lighter',
+      { 'label-list-item-hoverable': hoverable },
+    ]"
+    @mouseover="hoverable && hovered(true)"
+    @mouseout="hoverable && hovered(false)"
   >
-    <span class="icon"><i class="far fa-square"></i></span>{{ label.name }} ({{
-      Math.ceil(label.confidence)
-    }}%)
+    {{ label.name }} ({{ Math.ceil(label.confidence) }}%)
   </div>
 </template>
 
@@ -15,6 +16,11 @@ const props = defineProps({
   label: {
     type: Object,
     required: true,
+  },
+  hoverable: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
 });
 
@@ -29,8 +35,8 @@ const hovered = (state) => {
 };
 </script>
 
-<style>
-.label-instance {
+<style scoped>
+.label-list-item-hoverable {
   cursor: pointer;
 }
 </style>

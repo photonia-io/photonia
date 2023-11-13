@@ -1,5 +1,5 @@
 <template>
-  <div class="message is-warning">
+  <div class="message is-warning is-smallish">
     <div class="message-header">
       <p>Photo Administration</p>
     </div>
@@ -68,3 +68,13 @@ const performDelete = () => {
   closeConfirmationModal();
 };
 </script>
+
+<style scoped>
+.message.is-smallish {
+  font-size: 0.84rem;
+}
+
+.message-body {
+  padding: 1em 1em;
+}
+</style>

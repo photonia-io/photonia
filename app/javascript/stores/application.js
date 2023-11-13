@@ -4,6 +4,9 @@ import { ref, watch } from "vue";
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
   const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
+  const showLabelsOnHero = ref(
+    localStorage.getItem("showLabelsOnHero") === "true"
+  );
 
   function enableNavigationShortcuts() {
     navigationShortcutsEnabled.value = true;
@@ -29,6 +32,10 @@ export const useApplicationStore = defineStore("application", () => {
     selectionMode.value = !selectionMode.value;
   }
 
+  watch(showLabelsOnHero, (newValue) => {
+    localStorage.setItem("showLabelsOnHero", newValue);
+  });
+
   function signOut() {
     exitSelectionMode();
   }
@@ -41,6 +48,7 @@ export const useApplicationStore = defineStore("application", () => {
     enterSelectionMode,
     exitSelectionMode,
     toggleSelectionMode,
+    showLabelsOnHero,
     signOut,
   };
 });

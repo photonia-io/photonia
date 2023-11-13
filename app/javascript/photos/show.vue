@@ -1,6 +1,12 @@
 <template>
   <div>
-    <DisplayHero :photo="photo" :labelHighlights="labelHighlights" />
+    <DisplayHero
+      :photo="photo"
+      :loading="loading"
+      :labelHighlights="labelHighlights"
+      @highlight-label="highlightLabel"
+      @un-highlight-label="unHighlightLabel"
+    />
     <section class="section-pt-pb-0">
       <div class="container">
         <div class="level mb-4">
@@ -55,19 +61,27 @@
 
               <PhotoInfo :photo="photo" :loading="loading" />
 
-              <SidebarHeader
+              <div
+                class="message is-smallish is-lightgray"
                 v-if="photo.labels?.length > 0"
-                icon="far fa-square"
-                title="Labels"
-              />
-              <div v-if="photo.labels?.length > 0" class="tags">
-                <SidebarLabel
-                  v-for="label in photo.labels"
-                  @highlight-label="highlightLabel"
-                  @un-highlight-label="unHighlightLabel"
-                  :label="label"
-                  :key="label.id"
-                />
+              >
+                <div class="message-header">Labels</div>
+                <div class="message-body">
+                  <div class="tags">
+                    <LabelListItem
+                      v-for="label in photo.labels"
+                      @highlight-label="highlightLabel"
+                      @un-highlight-label="unHighlightLabel"
+                      :label="label"
+                      :hoverable="false"
+                      :key="label.id"
+                    />
+                  </div>
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="showLabelsOnHero" />
+                    Display labels on the photo
+                  </label>
+                </div>
               </div>
 
               <SidebarHeader icon="fas fa-tag" title="Tags" />
@@ -216,7 +230,7 @@ import PhotoInfo from "./photo-info.vue";
 import SmallNavigationButton from "@/photos/small-navigation-button.vue";
 import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";
-import SidebarLabel from "@/photos/sidebar-label.vue";
+import LabelListItem from "@/photos/label-list-item.vue";
 import Tag from "@/tags/tag.vue";
 import Empty from "@/empty.vue";
 
@@ -343,6 +357,18 @@ useTitle(title);
 const userStore = useUserStore();
 const applicationStore = useApplicationStore();
 
+const showLabelsOnHero = computed({
+  get() {
+    return applicationStore.showLabelsOnHero;
+  },
+  set(value) {
+    if (value === true) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    applicationStore.showLabelsOnHero = value;
+  },
+});
+
 onMounted(() => {
   document.addEventListener("keydown", handleKeyDown);
 });
@@ -379,3 +405,26 @@ const navigateToPreviousPhoto = () => {
   }
 };
 </script>
+
+<style scoped>
+.message.is-smallish {
+  font-size: 0.84rem;
+}
+.message-body {
+  padding: 1em 1em;
+}
+
+.message-body .tags {
+  margin-bottom: 0.2em;
+}
+
+.message.is-lightgray .message-header {
+  background-color: #dedede;
+  color: #363636;
+}
+
+.message.is-lightgray .message-body {
+  background-color: #f0f0f4;
+  color: #363636;
+}
+</style>

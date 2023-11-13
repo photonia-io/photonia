@@ -43,13 +43,12 @@ watch(toRef(props, "highlighted"), (newHighlighted) => {
 
 <style scoped>
 .label {
-  cursor: pointer;
   border: 1px solid black;
   position: absolute;
   outline: 1px solid rgba(255, 255, 255, 0.9);
-  position: absolute;
   transition: 0.3s;
   opacity: v-bind(opacity);
+  z-index: 50;
 }
 .label > p {
   position: absolute;
