@@ -124,6 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
       component: () => import("../photos/deselected.vue"),
       beforeEnter: redirectIfNotSignedIn,
     },
+    {
+      path: settings.stats_path,
+      name: "stats-index",
+      component: () => import("../stats/index.vue"),
+      beforeEnter: redirectIfNotSignedIn,
+    },
   ];
 
   const router = createRouter({

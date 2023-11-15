@@ -74,11 +74,18 @@ module Types
 
     field :admin_settings, AdminSettingsType, 'Admin settings', null: false
 
+    field :impression_counts_by_date, [ImpressionType], 'List of impressions grouped by date', null: false do
+      description 'Find impression counts by type and date range'
+      argument :end_date, GraphQL::Types::ISO8601DateTime, 'End date', required: true
+      argument :start_date, GraphQL::Types::ISO8601DateTime, 'Start date', required: true
+      argument :type, String, 'Type of impression', required: true
+    end
+
     # Photos
 
     def photos(page: nil, query: nil)
       pagy, photos = context[:pagy].call(
-        query.present? ? Photo.search(query) : Photo.all.order(posted_at: :desc),
+        query.present? ? Photo.search(query) : Photo.order(posted_at: :desc),
         page:
       )
       photos.define_singleton_method(:total_pages) { pagy.pages }
@@ -135,9 +142,9 @@ module Types
 
     def albums_with_photos(photo_ids:)
       Album.joins(:photos)
-      .where(photos: { slug: photo_ids })
-      .group('albums.id')
-      .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
+           .where(photos: { slug: photo_ids })
+           .group('albums.id')
+           .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
     end
 
     def album(id:)
@@ -177,8 +184,18 @@ module Types
     # Timezones
     def timezones
       ActiveSupport::TimeZone::MAPPING.map do |name, key|
-        { name: name, key: key }
+        { name:, key: }
       end.sort_by { |timezone| timezone[:name] }
+    end
+
+    # Impressions
+    def impression_counts_by_date(type:, start_date:, end_date:)
+      context[:authorize].call(Impression, :index?)
+      Impression.where(impressionable_type: type)
+                .where(created_at: start_date..end_date)
+                .group_by_day(:created_at, range: start_date..end_date, format: '%Y-%m-%d')
+                .count
+                .map { |date, count| { date:, count: } }
     end
   end
 end

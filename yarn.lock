@@ -266,6 +266,11 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.15.tgz#d7c6e6755c78567a951e04ab52ef0fd26de59f32"
   integrity sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==
 
+"@kurkle/color@^0.3.0":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@kurkle/color/-/color-0.3.2.tgz#5acd38242e8bde4f9986e7913c8fdf49d3aa199f"
+  integrity sha512-fuscdXJ9G1qb7W8VdHi+IwRqij3lBkosAm4ydQtEmbY58OzHXqQhvlxqEkoz0yssNVn38bcpRWgA9PP+OGoisw==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -418,21 +423,21 @@
     loupe "^2.3.6"
     pretty-format "^27.5.1"
 
-"@vue/apollo-composable@^4.0.0-alpha.19":
-  version "4.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/@vue/apollo-composable/-/apollo-composable-4.0.0-beta.4.tgz#a93cbccfdcf9558ada0161294b42f77bee5e6a0b"
-  integrity sha512-lErWL+9LGfWfdfrSYY3DQB/A8Asqs46MiKwmgKeKSj7fe01tx0UpH43aiwMGj+VgEzBZ9AfqEa/Bxf0Nff/NNw==
+"@vue/apollo-composable@^4.0.0-beta.11":
+  version "4.0.0-beta.11"
+  resolved "https://registry.yarnpkg.com/@vue/apollo-composable/-/apollo-composable-4.0.0-beta.11.tgz#17af7ec824f521e306ea0c12ac3d94e743621903"
+  integrity sha512-ZtztRDrQe2sTn31h+teBfYw81AePfxlBssTaZVk2jOagdZgTfZigR7aJjO98FxwvGnB80ElWHKubvqYwNf8heg==
   dependencies:
-    throttle-debounce "^3.0.1"
-    ts-essentials "^9.1.2"
-    vue-demi "^0.13.1"
+    throttle-debounce "^5.0.0"
+    ts-essentials "^9.4.0"
+    vue-demi "^0.14.6"
 
-"@vue/apollo-option@^4.0.0-alpha.14":
-  version "4.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/@vue/apollo-option/-/apollo-option-4.0.0-beta.4.tgz#b81a16327d98770c42b37cbed8fa0ff004a13afb"
-  integrity sha512-eGONgeLBzy4PqYytxF+5ivRGjLQ7TqUF/qVK3vi1xTdnW7+3Oy02cfDrxL8ErWUG/tNIaZF7Qm1N/HIvPfaxIg==
+"@vue/apollo-option@^4.0.0-beta.9":
+  version "4.0.0-beta.9"
+  resolved "https://registry.yarnpkg.com/@vue/apollo-option/-/apollo-option-4.0.0-beta.9.tgz#56209e4e75acda342f4100fa5683dc8dc0265673"
+  integrity sha512-hxWk9vfYFmw/CwlGm0afcCcREWxxmTUpiLad1xpaxpYC0UMqXDJEXz7WU5G0e5KdRi0/HFr1EBkqVN1UyzhsiQ==
   dependencies:
-    throttle-debounce "^3.0.1"
+    throttle-debounce "^5.0.0"
 
 "@vue/compiler-core@3.2.47":
   version "3.2.47"
@@ -731,6 +736,13 @@ chalk@^2.4.2:
     ansi-styles "^3.2.1"
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
+
+chart.js@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-4.4.0.tgz#df843fdd9ec6bd88d7f07e2b95348d221bd2698c"
+  integrity sha512-vQEj6d+z0dcsKLlQvbKIMYFHd3t8W/7L2vfJIbYcfyPcRx92CsHqECpueN8qVGNlKyDcr5wBrYAYKnfu/9Q1hQ==
+  dependencies:
+    "@kurkle/color" "^0.3.0"
 
 check-error@^1.0.2:
   version "1.0.2"
@@ -1514,10 +1526,10 @@ throttle-debounce@^2.1.0:
   resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-2.3.0.tgz#fd31865e66502071e411817e241465b3e9c372e2"
   integrity sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==
 
-throttle-debounce@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-3.0.1.tgz#32f94d84dfa894f786c9a1f290e7a645b6a19abb"
-  integrity sha512-dTEWWNu6JmeVXY0ZYoPuH5cRIwc0MeGbJwah9KUNYSJwommQpCzTySTpEe8Gs1J23aeWEuAobe4Ag7EHVt/LOg==
+throttle-debounce@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-5.0.0.tgz#a17a4039e82a2ed38a5e7268e4132d6960d41933"
+  integrity sha512-2iQTSgkkc1Zyk0MeVrt/3BvuOXYPl/R8Z0U2xxo9rjwNciaHDG3R+Lm6dh4EeUci49DanvBnuqI6jshoQQRGEg==
 
 time-zone@^1.0.0:
   version "1.0.0"
@@ -1546,10 +1558,10 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
-ts-essentials@^9.1.2:
-  version "9.3.1"
-  resolved "https://registry.yarnpkg.com/ts-essentials/-/ts-essentials-9.3.1.tgz#f2d1e1584ef53c0251012258338421d7cf78a4d0"
-  integrity sha512-9CChSvQMyVRo29Vb1A2jbs+LKo3d/bAf+ndSaX0T8cEiy/HChVaRN/HY5DqUryZ8hZ6uol9bEgCnGmnDbwBR9Q==
+ts-essentials@^9.4.0:
+  version "9.4.1"
+  resolved "https://registry.yarnpkg.com/ts-essentials/-/ts-essentials-9.4.1.tgz#6a6b6f81c2138008a5eef216e9fa468d8d9e2ab4"
+  integrity sha512-oke0rI2EN9pzHsesdmrOrnqv1eQODmJpd/noJjwj2ZPC3Z4N2wbjrOEqnsEgmvlO2+4fBb0a794DCna2elEVIQ==
 
 ts-invariant@^0.10.3:
   version "0.10.3"
@@ -1662,6 +1674,11 @@ vue-apollo@^3.1.1:
     serialize-javascript "^4.0.0"
     throttle-debounce "^2.1.0"
 
+vue-chartjs@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/vue-chartjs/-/vue-chartjs-5.2.0.tgz#3d0076ccf8016d1bf8fab5ccd837e7fb81005ded"
+  integrity sha512-d3zpKmGZr2OWHQ1xmxBcAn5ShTG917+/UCLaSpaCDDqT0U7DBsvFzTs69ZnHCgKoXT55GZDW8YEj9Av+dlONLA==
+
 vue-component-type-helpers@1.8.4:
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/vue-component-type-helpers/-/vue-component-type-helpers-1.8.4.tgz#302d85fac912519cdf0dd2fb51402e5215d85628"
@@ -1672,10 +1689,10 @@ vue-demi@>=0.14.5:
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.14.5.tgz#676d0463d1a1266d5ab5cba932e043d8f5f2fbd9"
   integrity sha512-o9NUVpl/YlsGJ7t+xuqJKx8EBGf1quRhCiT6D/J0pfwmk9zUwYkC7yrF4SZCe6fETvSM3UNL2edcbYrSyc4QHA==
 
-vue-demi@^0.13.1:
-  version "0.13.11"
-  resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.13.11.tgz#7d90369bdae8974d87b1973564ad390182410d99"
-  integrity sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==
+vue-demi@^0.14.6:
+  version "0.14.6"
+  resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.14.6.tgz#dc706582851dc1cdc17a0054f4fec2eb6df74c92"
+  integrity sha512-8QA7wrYSHKaYgUxDA5ZC24w+eHm3sYCbp0EzcDwKqN3p6HqtTCGR/GVsPyZW92unff4UlcSh++lmqDWN3ZIq4w==
 
 vue-moment@^4.1.0:
   version "4.1.0"

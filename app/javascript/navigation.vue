@@ -3,7 +3,7 @@
     <div class="container">
       <div class="navbar-brand">
         <router-link :to="{ name: 'root' }" class="navbar-item">
-          <img src="@/assets/photonia-logo.png" width="156" height="30">
+          <img src="@/assets/photonia-logo.png" width="156" height="30" />
         </router-link>
         <a
           role="button"
@@ -44,6 +44,17 @@
             <span class="icon-text">
               <span class="icon"><i class="fas fa-upload"></i></span>
               <span>Upload</span>
+            </span>
+          </router-link>
+
+          <router-link
+            v-if="userStore.signedIn"
+            :to="{ name: 'stats-index' }"
+            class="navbar-item"
+          >
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-chart-line"></i></span>
+              <span>Stats</span>
             </span>
           </router-link>
 
@@ -91,10 +102,10 @@
                     class="input"
                     placeholder="Find a photo"
                     v-model="query"
-                  >
+                  />
                 </p>
                 <p class="control">
-                  <input type="submit" class="button" value="Search">
+                  <input type="submit" class="button" value="Search" />
                 </p>
               </div>
             </form>
@@ -106,22 +117,22 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue'
-  import { useUserStore } from '@/stores/user'
-  import { useRoute, useRouter } from 'vue-router'
+import { ref, watch } from "vue";
+import { useUserStore } from "@/stores/user";
+import { useRoute, useRouter } from "vue-router";
 
-  const router = useRouter()
-  const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
-  const showNavigation = ref(false)
-  const query = ref('')
+const showNavigation = ref(false);
+const query = ref("");
 
-  watch(useRoute(), (route) => {
-    query.value = route.query.q
-  });
+watch(useRoute(), (route) => {
+  query.value = route.query.q;
+});
 
-  function doSearch() {
-    const routeQuery = query.value ? { q: query.value } : {}
-    router.push({ name: 'photos-index', query: routeQuery })
-  }
+function doSearch() {
+  const routeQuery = query.value ? { q: query.value } : {};
+  router.push({ name: "photos-index", query: routeQuery });
+}
 </script>
