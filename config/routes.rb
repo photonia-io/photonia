@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   get '/users/settings', to: 'users#settings'
   get '/users/admin-settings', to: 'users#admin_settings'
 
+  get '/stats', to: 'stats#index'
+
   devise_for :users, skip: :all
 
   resources :photos, except: %i[new] do
