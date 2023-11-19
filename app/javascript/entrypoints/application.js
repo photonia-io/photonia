@@ -135,6 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior(to, from, savedPosition) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve({ top: 0, behavior: "smooth" });
+        }, 50);
+      });
+    },
   });
 
   const tokenStore = useTokenStore(pinia);

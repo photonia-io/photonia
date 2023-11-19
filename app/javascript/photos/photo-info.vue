@@ -1,13 +1,14 @@
 <template>
-  <SidebarHeader icon="fas fa-info-circle" title="Info" />
-  <div class="block">
-    <span class="icon-text is-size-7">
-      <!-- display views -->
+  <PhotoInfobox>
+    <template #header>
+      <SidebarHeader icon="fas fa-info-circle" title="Info" />
+    </template>
+    <div class="icon-text">
       <span class="icon"><i class="fas fa-eye"></i></span>
       <span class="has-text-weight-semibold">Views:</span>
       <span v-if="!loading" class="ml-1">{{ photo.impressionsCount }}</span>
-    </span>
-    <span class="icon-text is-size-7">
+    </div>
+    <div class="icon-text">
       <span class="icon"><i class="fas fa-camera"></i></span>
       <span class="has-text-weight-semibold">Date Taken:</span>
       <span v-if="!loading" class="ml-1">{{
@@ -19,28 +20,29 @@
       >
         EXIF
       </span>
-    </span>
-    <span class="icon-text is-size-7">
+    </div>
+    <div class="icon-text">
       <span class="icon"><i class="fas fa-arrow-circle-up"></i></span>
       <span class="has-text-weight-semibold">Date Posted:</span>
       <span v-if="!loading" class="ml-1">{{
         momentFormat(photo.postedAt)
       }}</span>
-    </span>
-    <span
+    </div>
+    <div
       v-if="!loading && photo.rekognitionLabelModelVersion !== ''"
-      class="icon-text is-size-7"
+      class="icon-text"
     >
       <span class="icon"><i class="fas fa-robot"></i></span>
       <span class="has-text-weight-semibold"
         >Rekognition Label Model Version:</span
       >
       <span class="ml-1">{{ photo.rekognitionLabelModelVersion }}</span>
-    </span>
-  </div>
+    </div>
+  </PhotoInfobox>
 </template>
 
 <script setup>
+import PhotoInfobox from "./photo-infobox.vue";
 import SidebarHeader from "./sidebar-header.vue";
 import moment from "moment/min/moment-with-locales";
 
