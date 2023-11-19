@@ -11,7 +11,7 @@
 
 <style scoped>
 .message {
-  background: none;
+  background-color: hsl(0, 0%, 98%);
 }
 .message p {
   display: block;
@@ -29,7 +29,6 @@
 }
 
 .message.is-lightgray .message-body {
-  background-color: hsl(0, 0%, 98%);
   color: #363636;
 }
 </style>

@@ -59,7 +59,7 @@
                 @delete-photo="deletePhoto"
               />
 
-              <div class="columns">
+              <div class="columns equal-height-columns">
                 <div class="column is-half">
                   <PhotoInfo :photo="photo" :loading="loading" />
                 </div>
@@ -77,16 +77,6 @@
                       <span class="icon"
                         ><i class="fas fa-arrow-circle-down"></i></span
                       >On four
-                    </div>
-                    <div class="icon-text">
-                      <span class="icon"
-                        ><i class="fas fa-arrow-circle-left"></i></span
-                      >different
-                    </div>
-                    <div class="icon-text">
-                      <span class="icon"
-                        ><i class="fas fa-arrow-circle-right"></i></span
-                      >lines
                     </div>
                   </PhotoInfobox>
                 </div>
@@ -447,5 +437,9 @@ const navigateToPreviousPhoto = () => {
 <style scoped>
 .message-body .tags {
   margin-bottom: 0.2em;
+}
+
+.equal-height-columns .message {
+  height: 100%;
 }
 </style>
