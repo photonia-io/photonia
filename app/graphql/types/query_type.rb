@@ -191,11 +191,18 @@ module Types
     # Impressions
     def impression_counts_by_date(type:, start_date:, end_date:)
       context[:authorize].call(Impression, :index?)
-      Impression.where(impressionable_type: type)
+      Impression.where(impressionable_type: impressionable_type(type))
                 .where(created_at: start_date..end_date)
                 .group_by_day(:created_at, range: start_date..end_date, format: '%Y-%m-%d')
                 .count
                 .map { |date, count| { date:, count: } }
+    end
+
+    private
+
+    def impressionable_type(type)
+      raise GraphQL::ExecutionError, "Invalid impression type: #{type}" unless %w[Photo Tag Album].include?(type)
+      type == 'Tag' ? 'ActsAsTaggableOn::Tag' : type
     end
   end
 end

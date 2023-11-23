@@ -67,6 +67,14 @@ const { result } = useQuery(
         date
         count
       }
+      tagImpressionCountsByDate: impressionCountsByDate(
+        type: "Tag"
+        startDate: $startDate
+        endDate: $endDate
+      ) {
+        date
+        count
+      }
     }
   `,
   {
@@ -79,24 +87,32 @@ const { result } = useQuery(
 const chartData = computed(() => {
   const photoData = result.value?.photoImpressionCountsByDate;
   const albumData = result.value?.albumImpressionCountsByDate;
+  const tagData = result.value?.tagImpressionCountsByDate;
+
   if (!photoData) return;
 
   const labels = photoData.map((d) => d.date);
   const photoValues = photoData.map((d) => d.count);
   const albumValues = albumData.map((d) => d.count);
+  const tagValues = tagData.map((d) => d.count);
 
   return {
     labels,
     datasets: [
       {
-        label: "Photo Impressions",
+        label: "Photo Views",
         backgroundColor: "#f87979",
         data: photoValues,
       },
       {
-        label: "Album Impressions",
+        label: "Album Views",
         backgroundColor: "#7f7fff",
         data: albumValues,
+      },
+      {
+        label: "Tag Views",
+        backgroundColor: "#8cff8c",
+        data: tagValues,
       },
     ],
   };
