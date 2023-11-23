@@ -29,7 +29,7 @@ RUN apt-get install -y libexif-dev
 WORKDIR /usr/src/app
 
 # bundle install
-RUN gem install bundler:2.2.26
+RUN gem install bundler:2.4.22
 COPY Gemfile .
 COPY Gemfile.lock .
 RUN bundle install --jobs 5
