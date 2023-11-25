@@ -40,3 +40,5 @@ COPY yarn.lock .
 RUN yarn install
 
 COPY . .
+
+RUN yarn install
