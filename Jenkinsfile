@@ -17,7 +17,7 @@ pipeline {
   stages {
     stage('test') {
       steps {
-        sh 'ls node_modules'
+        sh 'ls node_modules/*'
         sh 'ln -s /photonia/node_modules node_modules'
         sh 'bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"'
         sh 'yarn test:run'
