@@ -40,3 +40,5 @@ COPY yarn.lock .
 RUN yarn install
 
 COPY . .
+
+CMD ["tail", "-f", "/dev/null"]
