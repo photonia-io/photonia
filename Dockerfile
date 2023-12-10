@@ -2,15 +2,15 @@
 
 FROM ruby:3.2.1
 
-RUN apt-get update
-
 # versions
 ENV NODE_VERSION=20.10.0
 ENV NVM_VERSION=0.39.5
 ENV YARN_VERSION=1.22.21
 
+RUN apt-get update
+
 # nodejs via nvm
-RUN apt install -y curl
+RUN apt-get install -y curl
 RUN curl --silent -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
