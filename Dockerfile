@@ -5,9 +5,9 @@ FROM ruby:3.2.1
 RUN apt-get update
 
 # versions
-ENV NODE_VERSION=16.18.0
-ENV NVM_VERSION=0.39.2
-ENV YARN_VERSION=1.22.19
+ENV NODE_VERSION=20.10.0
+ENV NVM_VERSION=0.39.5
+ENV YARN_VERSION=1.22.21
 
 # nodejs via nvm
 RUN apt install -y curl
