@@ -1,6 +1,6 @@
 # Dockerfile - Development environment
 
-FROM ruby:3.2.1
+FROM ruby:3.2.3
 
 # versions
 ENV NODE_VERSION=20.10.0

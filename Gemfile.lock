@@ -539,7 +539,7 @@ DEPENDENCIES
   whenever
 
 RUBY VERSION
-   ruby 3.2.1p31
+   ruby 3.2.3
 
 BUNDLED WITH
    2.4.22
