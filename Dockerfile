@@ -1,6 +1,6 @@
 # Dockerfile - Development environment
 
-FROM ruby:3.2.1
+FROM ruby:3.2.2
 
 # versions
 ENV NODE_VERSION=20.10.0
@@ -26,7 +26,7 @@ RUN apt-get install -y postgresql-client
 RUN apt-get install -y libexif-dev
 
 # Create and switch to app directory
-WORKDIR /usr/src/app
+WORKDIR /photonia
 
 # bundle install
 RUN gem install bundler:2.4.22
@@ -38,3 +38,7 @@ RUN bundle install --jobs 5
 COPY package.json .
 COPY yarn.lock .
 RUN yarn install
+
+COPY . .
+
+CMD ["tail", "-f", "/dev/null"]
