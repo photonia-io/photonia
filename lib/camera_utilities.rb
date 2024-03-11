@@ -24,12 +24,12 @@ class CameraUtilities
   end
 
   def report_missing_make(make)
-    Sentry.capture_message("Make: #{make} not found", level: 'warning', tags: 'CameraUtilities')
+    Sentry.capture_message("Make: #{make} not found", level: 'warning')
     {}
   end
 
   def report_missing_model(make, model)
-    Sentry.capture_message("Model: #{model} not found for make: #{make}", level: 'warning', tags: 'CameraUtilities')
+    Sentry.capture_message("Model: #{model} not found for make: #{make}", level: 'warning')
     {}
   end
 end
