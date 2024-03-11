@@ -1,10 +1,8 @@
 <template>
-  <h3 class="mb-2">
-    <span class="icon-text">
-      <span class="icon"><i :class="icon"></i></span>
-      <span>{{ title }}</span>
-    </span>
-  </h3>
+  <span class="icon-text">
+    <span class="icon"><i :class="icon"></i></span>
+    <span>{{ title }}</span>
+  </span>
 </template>
 
 <script setup>

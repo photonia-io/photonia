@@ -136,6 +136,12 @@ class GraphqlQueryCollection
           extralargeImageUrl: imageUrl(type: "extralarge")
           takenAt
           isTakenAtFromExif
+          exifExists
+          exifCameraFriendlyName
+          exifFNumber
+          exifExposureTime
+          exifFocalLength
+          exifIso
           postedAt
           impressionsCount
           previousPhoto {

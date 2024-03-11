@@ -48,6 +48,7 @@ class Photo < ApplicationRecord
 
   include ImageUploader::Attachment(:image)
   include SerialNumberSetter
+  include EXIFUtilities
 
   include PgSearch::Model
   pg_search_scope :search,

@@ -44,10 +44,11 @@ Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procf
         -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
         selenium/node-chrome:latest
 
-## Deployment
+## Versioning & Deployment
 
-1. Draft a new release on the [releases page](https://github.com/photonia-io/photonia/releases)
+1. Update the [changelog](CHANGELOG.md)
+2. Draft a new release on the [releases page](https://github.com/photonia-io/photonia/releases)
    - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
    - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
-2. Publish the release
-3. Go to Jenkins and build the tag
+3. Publish the release
+4. Go to Jenkins and build the tag

@@ -59,45 +59,89 @@
                 @delete-photo="deletePhoto"
               />
 
-              <PhotoInfo :photo="photo" :loading="loading" />
-
-              <div
-                class="message is-smallish is-lightgray"
-                v-if="photo.labels?.length > 0"
-              >
-                <div class="message-header">Labels</div>
-                <div class="message-body">
-                  <div class="tags">
-                    <LabelListItem
-                      v-for="label in photo.labels"
-                      @highlight-label="highlightLabel"
-                      @un-highlight-label="unHighlightLabel"
-                      :label="label"
-                      :hoverable="false"
-                      :key="label.id"
-                    />
-                  </div>
-                  <label class="checkbox">
-                    <input type="checkbox" v-model="showLabelsOnHero" />
-                    Display labels on the photo
-                  </label>
+              <div class="columns equal-height-columns">
+                <div class="column is-half">
+                  <PhotoInfo :photo="photo" :loading="loading" />
+                </div>
+                <div class="column is-half">
+                  <PhotoInfobox>
+                    <template #header>
+                      <SidebarHeader icon="fas fa-camera" title="EXIF" />
+                    </template>
+                    <div class="icon-text">
+                      <span class="icon"
+                        ><i class="fas fa-camera-retro"></i
+                      ></span>
+                      <span v-if="!loading">
+                        <span v-if="photo.exifExists">
+                          {{ photo.exifCameraFriendlyName }}
+                        </span>
+                        <span v-else>
+                          <em>No EXIF data available</em>
+                        </span>
+                      </span>
+                    </div>
+                    <div class="icon-text">
+                      <span class="icon"><i class="fas fa-cog"></i></span>
+                      <span v-if="!loading">
+                        <span v-if="photo.exifExists">
+                          f/{{ photo.exifFNumber }} &middot;
+                          {{ photo.exifExposureTime }}s &middot;
+                          {{ photo.exifFocalLength }}mm &middot; ISO
+                          {{ photo.exifIso }}
+                        </span>
+                        <span v-else>
+                          <em>No EXIF data available</em>
+                        </span>
+                      </span>
+                    </div>
+                  </PhotoInfobox>
                 </div>
               </div>
 
-              <SidebarHeader icon="fas fa-tag" title="Tags" />
-              <div class="tags">
-                <Tag v-for="tag in photo.userTags" :key="tag.id" :tag="tag" />
-              </div>
+              <PhotoInfobox v-if="photo.labels?.length > 0">
+                <template #header>Labels</template>
+                <div class="tags">
+                  <LabelListItem
+                    v-for="label in photo.labels"
+                    @highlight-label="highlightLabel"
+                    @un-highlight-label="unHighlightLabel"
+                    :label="label"
+                    :hoverable="false"
+                    :key="label.id"
+                  />
+                </div>
+                <label class="checkbox">
+                  <input type="checkbox" v-model="showLabelsOnHero" />
+                  Display labels on the photo
+                </label>
+              </PhotoInfobox>
 
-              <SidebarHeader icon="fas fa-robot" title="Machine Tags" />
-              <div class="tags">
-                <Tag
-                  v-for="tag in photo.machineTags"
-                  :key="tag.id"
-                  :tag="tag"
-                  type="machine"
-                />
-              </div>
+              <PhotoInfobox>
+                <template #header
+                  ><SidebarHeader icon="fas fa-tag" title="Tags"
+                /></template>
+                <div class="tags" v-if="photo.userTags?.length > 0">
+                  <Tag v-for="tag in photo.userTags" :key="tag.id" :tag="tag" />
+                </div>
+                <span v-else>
+                  <em>There are no user tags for this photo.</em>
+                </span>
+              </PhotoInfobox>
+
+              <PhotoInfobox>
+                <template #header>
+                  <SidebarHeader icon="fas fa-robot" title="Machine Tags" />
+                </template>
+                <div class="tags">
+                  <Tag
+                    v-for="tag in photo.machineTags"
+                    :key="tag.id"
+                    :tag="tag"
+                    type="machine"
+                  />
+                </div>
+              </PhotoInfobox>
             </div>
             <!-- End left column -->
             <div class="column is-one-quarter">
@@ -227,6 +271,7 @@ import PhotoTitleEditable from "./photo-title-editable.vue";
 import PhotoDescriptionEditable from "./photo-description-editable.vue";
 import PhotoAdministration from "./photo-administration.vue";
 import PhotoInfo from "./photo-info.vue";
+import PhotoInfobox from "./photo-infobox.vue";
 import SmallNavigationButton from "@/photos/small-navigation-button.vue";
 import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";
@@ -407,24 +452,11 @@ const navigateToPreviousPhoto = () => {
 </script>
 
 <style scoped>
-.message.is-smallish {
-  font-size: 0.84rem;
-}
-.message-body {
-  padding: 1em 1em;
-}
-
 .message-body .tags {
   margin-bottom: 0.2em;
 }
 
-.message.is-lightgray .message-header {
-  background-color: #dedede;
-  color: #363636;
-}
-
-.message.is-lightgray .message-body {
-  background-color: #f0f0f4;
-  color: #363636;
+.equal-height-columns .message {
+  height: 100%;
 }
 </style>

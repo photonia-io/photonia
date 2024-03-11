@@ -143,7 +143,7 @@ const showLabels = computed(() => {
   display: flex;
   flex-direction: column;
   border-radius: 5px;
-  overflow: scroll;
+  overflow: auto;
   max-height: calc(100% - 15px);
 }
 
