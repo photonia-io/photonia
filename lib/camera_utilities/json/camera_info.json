@@ -5,14 +5,46 @@
       "launch_month": "6",
       "friendly_name": "Apple iPhone 4"
     },
-    "iPhone 4S": "Apple iPhone 4S",
-    "iPhone 5": "Apple iPhone 5",
-    "iPhone 5c": "Apple iPhone 5c",
-    "iPhone 5s": "Apple iPhone 5s",
-    "iPhone 6": "Apple iPhone 6",
-    "iPhone 6 Plus": "Apple iPhone 6 Plus",
-    "iPhone 6s": "Apple iPhone 6s",
-    "iPhone 6s Plus": "Apple iPhone 6s Plus",
+    "iPhone 4S": {
+      "friendly_name": "Apple iPhone 4S",
+      "launch_year": 2011,
+      "launch_month": 10
+    },
+    "iPhone 5": {
+      "friendly_name": "Apple iPhone 5",
+      "launch_year": 2012,
+      "launch_month": 9
+    },
+    "iPhone 5c": {
+      "friendly_name": "Apple iPhone 5c",
+      "launch_year": 2013,
+      "launch_month": 9
+    },
+    "iPhone 5s": {
+      "friendly_name": "Apple iPhone 5s",
+      "launch_year": 2013,
+      "launch_month": 9
+    },
+    "iPhone 6": {
+      "friendly_name": "Apple iPhone 6",
+      "launch_year": 2014,
+      "launch_month": 9
+    },
+    "iPhone 6 Plus": {
+      "friendly_name": "Apple iPhone 6 Plus",
+      "launch_year": 2014,
+      "launch_month": 9
+    },
+    "iPhone 6s": {
+      "friendly_name": "Apple iPhone 6s",
+      "launch_year": 2015,
+      "launch_month": 9
+    },
+    "iPhone 6s Plus": {
+      "friendly_name": "Apple iPhone 6s Plus",
+      "launch_year": 2015,
+      "launch_month": 9
+    },
     "iPhone SE": "Apple iPhone SE",
     "iPhone 7": "Apple iPhone 7",
     "iPhone 7 Plus": "Apple iPhone 7 Plus",
@@ -61,7 +93,11 @@
     "HERO7 Black": "GoPro HERO7 Black",
     "HERO8 Black": "GoPro HERO8 Black",
     "HERO9 Black": "GoPro HERO9 Black",
-    "HERO10 Black": "GoPro HERO10 Black"
+    "HERO10 Black": {
+      "launch_year": "2021",
+      "launch_month": "9",
+      "friendly_name": "GoPro HERO10 Black"
+    }
   },
   "HUAWEI": {
     "CLT-L29": {
@@ -81,7 +117,11 @@
     }
   },
   "NIKON CORPORATION": {
-    "NIKON D700": "Nikon D700",
+    "NIKON D700": {
+      "launch_year": "2008",
+      "launch_month": "7",
+      "friendly_name": "Nikon D700"
+    },
     "NIKON D800": "Nikon D800",
     "NIKON D800E": "Nikon D800E",
     "NIKON D810": "Nikon D810",
@@ -100,8 +140,16 @@
     "NIKON D7000": "Nikon D7000",
     "NIKON D7100": "Nikon D7100",
     "NIKON D7200": "Nikon D7200",
-    "NIKON D90": "Nikon D90",
-    "NIKON D60": "Nikon D60"
+    "NIKON D90": {
+      "launch_year": "2008",
+      "launch_month": "8",
+      "friendly_name": "Nikon D90"
+    },
+    "NIKON D60": {
+      "launch_year": "2008",
+      "launch_month": "2",
+      "friendly_name": "Nikon D60"
+    }
   },
   "OLYMPUS IMAGING CORP.": {
     "E-M1": {

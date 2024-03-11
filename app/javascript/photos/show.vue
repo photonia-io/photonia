@@ -70,13 +70,30 @@
                     </template>
                     <div class="icon-text">
                       <span class="icon"
-                        ><i class="fas fa-arrow-circle-up"></i></span
-                      >Here comes some EXIF data
+                        ><i class="fas fa-camera-retro"></i
+                      ></span>
+                      <span v-if="!loading">
+                        <span v-if="photo.exifExists">
+                          {{ photo.exifCameraFriendlyName }}
+                        </span>
+                        <span v-else>
+                          <em>No EXIF data available</em>
+                        </span>
+                      </span>
                     </div>
                     <div class="icon-text">
-                      <span class="icon"
-                        ><i class="fas fa-arrow-circle-down"></i></span
-                      >On four
+                      <span class="icon"><i class="fas fa-cog"></i></span>
+                      <span v-if="!loading">
+                        <span v-if="photo.exifExists">
+                          f/{{ photo.exifFNumber }} &middot;
+                          {{ photo.exifExposureTime }}s &middot;
+                          {{ photo.exifFocalLength }}mm &middot; ISO
+                          {{ photo.exifIso }}
+                        </span>
+                        <span v-else>
+                          <em>No EXIF data available</em>
+                        </span>
+                      </span>
                     </div>
                   </PhotoInfobox>
                 </div>
