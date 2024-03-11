@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 env:
-  PHOTONIA_DATABASE_URL: postgres://postgres:postgres@postgres/
+  PHOTONIA_DATABASE_URL: postgres://postgres:postgres@localhost/
 
 jobs:
   build:
