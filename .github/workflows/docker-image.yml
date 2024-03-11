@@ -6,12 +6,15 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  IMAGE_TAG: photonia:$(date +%s)
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag photonia:$(date +%s)
+        run: docker build . --file Dockerfile --tag ${{ env.IMAGE_TAG }}
       - name: Run rspec tests
-        run: docker run photonia:$(date +%s) bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
+        run: docker run ${{ env.IMAGE_TAG }} bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
