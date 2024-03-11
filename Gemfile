@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.2.1'
+ruby '3.3.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 7.0'
@@ -38,7 +38,7 @@ gem 'graphql-pagination'
 gem 'groupdate'
 gem 'image_processing', '~> 1.8'
 gem 'impressionist', '~> 2.0'
-gem 'pagy', '~> 6'
+gem 'pagy', '~> 7'
 gem 'pg_search'
 gem 'pundit'
 gem 'redis'
@@ -88,7 +88,7 @@ group :test do
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 3.38.0'
   gem 'selenium-webdriver'
-  gem 'shoulda-matchers', '~> 5.0'
+  gem 'shoulda-matchers', '~> 6.1'
   gem 'timecop'
 end
 

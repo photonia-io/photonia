@@ -16,7 +16,7 @@ A photo hosting service tailored to my needs.
 ## Features
 
 - The photos are stored on [Amazon S3](https://aws.amazon.com/s3/)
-- [Amazon Rekognition](https://aws.amazon.com/rekognition/) is run on each photo
+- [Amazon Rekognition](https://aws.amazon.com/rekognition/) is run on each photo - this creates labels and tags
 - Thumbnails are based on what Rekognition identifies in the photos
 - Imports photos and metadata exported from Flickr
 
