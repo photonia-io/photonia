@@ -1,6 +1,7 @@
 {
   "name": "photonia",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@apollo/client": "^3.9.6",
     "@creativebulma/bulma-divider": "^1.1.0",
