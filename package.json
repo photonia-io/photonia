@@ -35,7 +35,7 @@
     "prettier": "2.8.8",
     "vite": "^5.1.5",
     "vite-plugin-ruby": "^5.0.0",
-    "vitest": "^0.30.1"
+    "vitest": "^1.3.1"
   },
   "scripts": {
     "test:run": "vitest run --no-color"
