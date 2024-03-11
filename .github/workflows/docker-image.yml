@@ -32,4 +32,4 @@ jobs:
           docker build . --file Dockerfile --tag ${{ github.event.repository.name }}.${{ github.sha }}
       - name: Run rspec tests
         run: |
-          docker run ${{ github.event.repository.name }}.${{ github.sha }} bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
+          docker run -e PHOTONIA_DATABASE_URL=$PHOTONIA_DATABASE_URL ${{ github.event.repository.name }}.${{ github.sha }} bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
