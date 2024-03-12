@@ -100,6 +100,11 @@
       "launch_month": "1",
       "friendly_name": "GoPro HD Hero"
     },
+    "Hero3-Black Edition": {
+      "launch_year": "2012",
+      "launch_month": "10",
+      "friendly_name": "GoPro HERO3 - Black Edition"
+    },
     "HERO7 Black": "GoPro HERO7 Black",
     "HERO8 Black": "GoPro HERO8 Black",
     "HERO9 Black": "GoPro HERO9 Black",
