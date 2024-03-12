@@ -128,7 +128,7 @@ module Types
     # Albums
 
     def albums(page: nil)
-      pagy, albums = context[:pagy].call(Album.includes(:albums_photos, :photos).order(created_at: :desc), page:)
+      pagy, albums = context[:pagy].call(Album.distinct.joins(:photos).order(created_at: :desc), page:)
       albums.define_singleton_method(:total_pages) { pagy.pages }
       albums.define_singleton_method(:current_page) { pagy.page }
       albums.define_singleton_method(:limit_value) { pagy.items }

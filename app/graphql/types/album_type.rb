@@ -41,7 +41,7 @@ module Types
     end
 
     def photos_count
-      @object.albums_photos.size
+      @object.photos.size
     end
 
     def cover_photo
