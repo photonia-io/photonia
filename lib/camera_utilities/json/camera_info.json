@@ -131,6 +131,13 @@
       "friendly_name": "Huawei P10"
     }
   },
+  "LGE": {
+    "Nexus 5": {
+      "launch_year": "2013",
+      "launch_month": "11",
+      "friendly_name": "LG Nexus 5"
+    },
+  },
   "NIKON CORPORATION": {
     "NIKON D700": {
       "launch_year": "2008",
