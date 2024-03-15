@@ -9,8 +9,8 @@ class CameraUtilities
 
   def friendly_name
     camera_make_model_lookup_table
-      .fetch(@exif_make) { report_missing_make(@exif_make) }
-      .fetch(@exif_model) { report_missing_model(@exif_make, @exif_model) }
+      .fetch(@exif_make.downcase) { report_missing_make(@exif_make) }
+      .fetch(@exif_model.downcase) { report_missing_model(@exif_make, @exif_model) }
       .fetch('friendly_name', "#{@exif_make} #{@exif_model}")
   end
 
@@ -19,7 +19,7 @@ class CameraUtilities
   def camera_make_model_lookup_table
     @camera_make_model_lookup_table ||= begin
       file = File.read(File.join(File.dirname(__FILE__), 'camera_utilities', 'json', 'camera_info.json'))
-      JSON.parse(file)
+      JSON.parse(file).deep_transform_keys { |key| key.to_s.downcase }
     end
   end
 
