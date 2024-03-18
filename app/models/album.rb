@@ -53,19 +53,33 @@ class Album < ApplicationRecord
     # quick unscoped photo count
     # photos_count = Photo.unscoped { albums_photos.count }
 
-    all_photos = Photo
-                 .unscoped
-                 .joins(:albums)
-                 .where(albums: { id: })
-                 .order('albums_photos.ordering')
-                 .select('photos.id, photos.privacy')
-    public_album_photos = all_photos.select(&:public?)
+    @public_photos = all_photos(refetch: true).select(&:public?)
 
-    photos_count = all_photos.size
-    public_photos_count = public_album_photos.size
+    @photos_count = all_photos.size
+    public_photos_count = @public_photos.size
 
-    if photos_count.positive?
-      pcpi = public_album_photos.first&.id
+    pcpi, ucpi = cover_photo_ids
+
+    maintenance_update(public_photos_count:, photos_count: @photos_count, public_cover_photo_id: pcpi,
+                       user_cover_photo_id: ucpi)
+
+    self
+  end
+
+  def all_photos(refetch: false)
+    return @all_photos if @all_photos && !refetch
+
+    @all_photos = Photo
+                  .unscoped
+                  .joins(:albums)
+                  .where(albums: { id: })
+                  .order('albums_photos.ordering')
+                  .select('photos.id, photos.privacy')
+  end
+
+  def cover_photo_ids
+    if @photos_count.positive?
+      pcpi = @public_photos.first&.id
       ucp = all_photos.find { |p| p.id == user_cover_photo_id }
       ucpi = ucp&.id
 
@@ -75,15 +89,7 @@ class Album < ApplicationRecord
         ucpi = nil
       end
     end
-
-    maintenance_update(
-      public_photos_count:,
-      photos_count:,
-      public_cover_photo_id: pcpi,
-      user_cover_photo_id: ucpi
-    )
-
-    self
+    [pcpi, ucpi]
   end
 
   def maintenance_update(
@@ -97,12 +103,7 @@ class Album < ApplicationRecord
        self.photos_count != photos_count ||
        self.public_cover_photo_id != public_cover_photo_id ||
        self.user_cover_photo_id != user_cover_photo_id
-      update_columns(
-        public_photos_count:,
-        photos_count:,
-        public_cover_photo_id:,
-        user_cover_photo_id:
-      )
+      update_columns(public_photos_count:, photos_count:, public_cover_photo_id:, user_cover_photo_id:)
     end
     # rubocop:enable Rails/SkipsModelValidations
   end
