@@ -53,7 +53,12 @@ class Album < ApplicationRecord
     # quick unscoped photo count
     # photos_count = Photo.unscoped { albums_photos.count }
 
-    all_photos = Photo.unscoped.joins(:albums).where(albums: { id: }).select('photos.id, photos.privacy')
+    all_photos = Photo
+                 .unscoped
+                 .joins(:albums)
+                 .where(albums: { id: })
+                 .order('albums_photos.ordering')
+                 .select('photos.id, photos.privacy')
     public_album_photos = all_photos.select(&:public?)
 
     photos_count = all_photos.size
@@ -102,14 +107,14 @@ class Album < ApplicationRecord
     # rubocop:enable Rails/SkipsModelValidations
   end
 
-  scope :albums_with_photos, -> (photo_ids:, ids_are_slugs: false, user_id:) {
+  scope :albums_with_photos, lambda { |photo_ids:, user_id:, ids_are_slugs: false|
     where_clause = ids_are_slugs ? { slug: photo_ids } : { id: photo_ids }
     Photo.unscoped
-      .joins(:albums)
-      .where(where_clause)
-      .where(albums: { user_id: user_id })
-      .where(user_id: user_id)
-      .group('albums.id')
-      .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
+         .joins(:albums)
+         .where(where_clause)
+         .where(albums: { user_id: })
+         .where(user_id:)
+         .group('albums.id')
+         .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
   }
 end
