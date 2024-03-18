@@ -54,3 +54,6 @@ node_modules
 # https://vitejs.dev/guide/env-and-mode.html#env-files
 *.local
 
+# Coverage directory used by tools like SimpleCov
+/coverage/
+
