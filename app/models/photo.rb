@@ -285,6 +285,10 @@ class Photo < ApplicationRecord
     # end
   end
 
+  def public?
+    privacy == 'public'
+  end
+
   private
 
   def intelligent_crop

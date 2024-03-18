@@ -10,4 +10,11 @@ namespace :albums do
       SQL
     )
   end
+
+  desc 'Run maintenance on all albums'
+  task maintenance: :environment do
+    Album.unscoped.find_each do |album|
+      album.maintenance
+    end
+  end
 end

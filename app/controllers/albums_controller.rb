@@ -6,17 +6,17 @@ class AlbumsController < ApplicationController
 
   def index
     @pagy, @albums = pagy(
-      Album.includes(:albums_photos, :photos).order(created_at: :desc)
+      Album.includes(:public_cover_photos).order(created_at: :desc)
     )
   end
 
   def show
-    @album = Album.includes(:albums_photos).friendly.find(params[:id])
+    @album = Album.includes(:photos, :albums_photos).friendly.find(params[:id])
     @pagy, @photos = pagy(@album.photos.order(:ordering))
   end
 
   def feed
-    @albums = Album.all.order(created_at: :desc).limit(30)
+    @albums = Album.where('public_photos_count > ?', 0).includes(:public_cover_photo).order(created_at: :desc).limit(30)
     respond_to do |format|
       format.xml
     end

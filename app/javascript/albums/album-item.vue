@@ -2,25 +2,28 @@
   <div class="column is-one-quarter">
     <router-link :to="{ name: 'albums-show', params: { id: album.id } }">
       <img
-        v-if="album.coverPhoto && album.coverPhoto.intelligentOrSquareMediumImageUrl"
-        :src="album.coverPhoto.intelligentOrSquareMediumImageUrl"
+        v-if="
+          album.publicCoverPhoto &&
+          album.publicCoverPhoto.intelligentOrSquareMediumImageUrl
+        "
+        :src="album.publicCoverPhoto.intelligentOrSquareMediumImageUrl"
         class="image is-fullwidth"
       />
-      <ImagePlaceholder
-        v-else
-      />
+      <ImagePlaceholder v-else />
       {{ album.title }}
-    </router-link> ({{ album.photosCount }} {{ album.photosCount == 1 ? 'photo' : 'photos' }})
+    </router-link>
+    ({{ album.publicPhotosCount }}
+    {{ album.publicPhotosCount == 1 ? "photo" : "photos" }})
   </div>
 </template>
 
 <script setup>
-  import ImagePlaceholder from '@/shared/image-placeholder.vue'
-  
-  const props = defineProps({
-    album: {
-      type: Object,
-      required: true
-    }
-  })
+import ImagePlaceholder from "@/shared/image-placeholder.vue";
+
+const props = defineProps({
+  album: {
+    type: Object,
+    required: true,
+  },
+});
 </script>

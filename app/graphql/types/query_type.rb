@@ -128,7 +128,7 @@ module Types
     # Albums
 
     def albums(page: nil)
-      pagy, albums = context[:pagy].call(Album.distinct.joins(:photos).order(created_at: :desc), page:)
+      pagy, albums = context[:pagy].call(Album.includes(:public_cover_photo).where('public_photos_count > ?', 0).order(created_at: :desc), page:)
       albums.define_singleton_method(:total_pages) { pagy.pages }
       albums.define_singleton_method(:current_page) { pagy.page }
       albums.define_singleton_method(:limit_value) { pagy.items }
@@ -137,14 +137,13 @@ module Types
     end
 
     def all_albums
-      Album.includes(:albums_photos, :photos).order(created_at: :desc)
+      context[:authorize].call(Album, :create?)
+      Album.where(user_id: context[:current_user].id).order(created_at: :desc)
     end
 
     def albums_with_photos(photo_ids:)
-      Album.joins(:photos)
-           .where(photos: { slug: photo_ids })
-           .group('albums.id')
-           .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
+      context[:authorize].call(Album, :create?)
+      Album.albums_with_photos(photo_ids:, ids_are_slugs: true, user_id: context[:current_user].id)
     end
 
     def album(id:)

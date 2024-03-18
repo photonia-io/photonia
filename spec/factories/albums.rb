@@ -8,16 +8,22 @@
 #  description              :text
 #  flickr_impressions_count :integer          default(0), not null
 #  impressions_count        :integer          default(0), not null
+#  photos_count             :integer          default(0), not null
+#  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
 #  slug                     :string
 #  title                    :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
+#  public_cover_photo_id    :bigint
+#  user_cover_photo_id      :bigint
 #  user_id                  :bigint           default(1), not null
 #
 # Indexes
 #
-#  index_albums_on_user_id  (user_id)
+#  index_albums_on_public_cover_photo_id  (public_cover_photo_id)
+#  index_albums_on_user_cover_photo_id    (user_cover_photo_id)
+#  index_albums_on_user_id                (user_id)
 #
 # Foreign Keys
 #
