@@ -28,6 +28,7 @@
   },
   "version": "0.1.0",
   "devDependencies": {
+    "@codecov/vite-plugin": "^0.0.1-beta.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/compiler-dom": "^3.4.21",
     "@vue/server-renderer": "3.4.21",
