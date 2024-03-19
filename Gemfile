@@ -89,6 +89,7 @@ group :test do
   gem 'capybara', '>= 3.38.0'
   gem 'selenium-webdriver'
   gem 'simplecov', require: false
+  gem 'simplecov-cobertura', require: false
   gem 'shoulda-matchers', '~> 6.1'
   gem 'timecop'
 end
