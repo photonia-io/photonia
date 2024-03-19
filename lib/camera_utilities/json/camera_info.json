@@ -95,6 +95,16 @@
     }
   },
   "GoPro": {
+    "YHDC5170": {
+      "launch_year": "2010",
+      "launch_month": "1",
+      "friendly_name": "GoPro HD Hero"
+    },
+    "Hero3-Black Edition": {
+      "launch_year": "2012",
+      "launch_month": "10",
+      "friendly_name": "GoPro HERO3 - Black Edition"
+    },
     "HERO7 Black": "GoPro HERO7 Black",
     "HERO8 Black": "GoPro HERO8 Black",
     "HERO9 Black": "GoPro HERO9 Black",
@@ -119,6 +129,13 @@
       "launch_year": "2017",
       "launch_month": "3",
       "friendly_name": "Huawei P10"
+    }
+  },
+  "LGE": {
+    "Nexus 5": {
+      "launch_year": "2013",
+      "launch_month": "11",
+      "friendly_name": "LG Nexus 5"
     }
   },
   "NIKON CORPORATION": {
@@ -166,6 +183,18 @@
       "launch_year": "2013",
       "launch_month": "10",
       "friendly_name": "Olympus PEN E-P5"
+    }
+  },
+  "Sony Ericsson": {
+    "G502": {
+      "launch_year": "2008",
+      "launch_month": "6",
+      "friendly_name": "Sony Ericsson G502"
+    },
+    "w660i": {
+      "launch_year": "2007",
+      "launch_month": "3",
+      "friendly_name": "Sony Ericsson W660i"
     }
   }
 }
