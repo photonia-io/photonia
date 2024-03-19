@@ -185,6 +185,62 @@ RSpec.describe Album do
           end
         end
       end
+
+      context 'when the album has no photos' do
+        before do
+          album.maintenance
+        end
+
+        it 'sets the photos_count to 0' do
+          expect(album.photos_count).to eq(0)
+        end
+
+        it 'sets the public_photos_count to 0' do
+          expect(album.public_photos_count).to eq(0)
+        end
+
+        it 'sets the public_cover_photo_id to nil' do
+          expect(album.public_cover_photo_id).to be_nil
+        end
+      end
+
+      context 'when the album has no public photos' do
+        before do
+          album.photos << create(:photo, privacy: 'private')
+          album.maintenance
+        end
+
+        it 'sets the photos_count to 1' do
+          expect(album.photos_count).to eq(1)
+        end
+
+        it 'sets the public_photos_count to 0' do
+          expect(album.public_photos_count).to eq(0)
+        end
+
+        it 'sets the public_cover_photo_id to nil' do
+          expect(album.public_cover_photo_id).to be_nil
+        end
+      end
+
+      context 'when the album has only public photos' do
+        before do
+          album.photos << create_list(:photo, 2, privacy: 'public')
+          album.maintenance
+        end
+
+        it 'sets the photos_count to 2' do
+          expect(album.photos_count).to eq(2)
+        end
+
+        it 'sets the public_photos_count to 2' do
+          expect(album.public_photos_count).to eq(2)
+        end
+
+        it 'sets the public_cover_photo_id to the first public photo' do
+          expect(album.public_cover_photo_id).to eq(album.photos.first.id)
+        end
+      end
     end
   end
 end
