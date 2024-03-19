@@ -17,10 +17,10 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 
 
 --
--- Name: photo_privacy; Type: TYPE; Schema: public; Owner: -
+-- Name: privacy; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.photo_privacy AS ENUM (
+CREATE TYPE public.privacy AS ENUM (
     'public',
     'friend & family',
     'private'
@@ -69,7 +69,8 @@ CREATE TABLE public.albums (
     public_cover_photo_id bigint,
     user_cover_photo_id bigint,
     public_photos_count integer DEFAULT 0 NOT NULL,
-    photos_count integer DEFAULT 0 NOT NULL
+    photos_count integer DEFAULT 0 NOT NULL,
+    privacy public.privacy DEFAULT 'public'::public.privacy
 );
 
 
@@ -272,7 +273,7 @@ CREATE TABLE public.photos (
     flickr_json jsonb,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
+    privacy public.privacy DEFAULT 'public'::public.privacy,
     rekognition_response jsonb,
     user_id bigint,
     tsv tsvector,
@@ -976,6 +977,8 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240319074139'),
+('20240319073415'),
 ('20240318152358'),
 ('20240315100311'),
 ('20240315095159'),

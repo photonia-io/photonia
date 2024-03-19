@@ -9,6 +9,7 @@
 #  flickr_impressions_count :integer          default(0), not null
 #  impressions_count        :integer          default(0), not null
 #  photos_count             :integer          default(0), not null
+#  privacy                  :enum             default("public")
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
 #  slug                     :string

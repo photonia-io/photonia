@@ -9,6 +9,7 @@
 #  flickr_impressions_count :integer          default(0), not null
 #  impressions_count        :integer          default(0), not null
 #  photos_count             :integer          default(0), not null
+#  privacy                  :enum             default("public")
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
 #  slug                     :string
@@ -41,13 +42,15 @@ class Album < ApplicationRecord
   after_create :maintenance
   after_update :maintenance
 
+  default_scope { where(privacy: 'public') }
+
+  validates :title, presence: true
+
   belongs_to :user
   has_many :albums_photos, dependent: :destroy, inverse_of: :album
   has_many :photos, through: :albums_photos
   belongs_to :public_cover_photo, class_name: 'Photo', optional: true
   belongs_to :user_cover_photo, class_name: 'Photo', optional: true
-
-  validates :title, presence: true
 
   def maintenance
     # quick unscoped photo count
