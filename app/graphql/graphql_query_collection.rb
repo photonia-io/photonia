@@ -28,8 +28,8 @@ class GraphqlQueryCollection
           collection {
             id
             title
-            photosCount
-            coverPhoto {
+            publicPhotosCount
+            publicCoverPhoto {
               intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
             }
           }

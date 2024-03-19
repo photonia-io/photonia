@@ -15,10 +15,11 @@ module Types
       argument :photo_id, ID, 'Id of the photo for which the next photo is to be found', required: true
     end
 
-    field :cover_photo, PhotoType, 'Cover photo of the album', null: true
+    field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
-    field :photos_count, Integer, 'Number of photos in the album', null: false
+    field :public_photos_count, Integer, 'Number of public photos in the album', null: false
+    field :photos_count, Integer, 'Total number of photos in the album', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :title, String, 'Title of the album', null: false
 
@@ -41,11 +42,12 @@ module Types
     end
 
     def photos_count
-      @object.albums_photos.size
+      context[:authorize].call(@object, :update?)
+      @object.photos_count
     end
 
-    def cover_photo
-      @object&.photos&.first
+    def public_cover_photo
+      @object.public_cover_photo
     end
 
     def previous_photo_in_album(photo_id:)

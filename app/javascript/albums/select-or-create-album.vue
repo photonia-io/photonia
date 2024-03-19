@@ -57,15 +57,13 @@ const reset = () => {
 
 defineExpose({ selectedAlbumId, newAlbumTitle, reset });
 
-const { result } = useQuery(
-  gql`
-    query AllAlbumsQuery {
-      allAlbums {
-        id
-        title
-        photosCount
-      }
+const { result } = useQuery(gql`
+  query AllAlbumsQuery {
+    allAlbums {
+      id
+      title
+      photosCount
     }
-  `
-);
+  }
+`);
 </script>

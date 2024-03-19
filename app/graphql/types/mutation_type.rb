@@ -76,7 +76,7 @@ module Types
         # only add photo if it's not already in the album
         album.photos << photo unless album.photos.include?(photo)
       end
-      album
+      album.maintenance
     end
 
     def create_album_with_photos(title:, photo_ids:)
@@ -88,25 +88,29 @@ module Types
         context[:authorize].call(photo, :update?)
         album.photos << photo
       end
-      album
+      album.maintenance
     end
 
     def delete_photo(id:)
-      photo = Photo.friendly.find(id)
+      photo = Photo.includes(:albums).friendly.find(id)
       context[:authorize].call(photo, :destroy?)
+      album_ids = photo.albums.pluck(:id)
       photo.destroy
+      Album.where(id: album_ids).each(&:maintenance)
       photo
     end
 
     def delete_photos(ids:)
       deleted_photos = []
+      album_ids = []
       ids.each do |id|
-        photo = Photo.friendly.find(id)
+        photo = Photo.includes(:albums).friendly.find(id)
         context[:authorize].call(photo, :destroy?)
-        puts 'destroying photo with id: ' + id
-        # photo.destroy
+        album_ids |= photo.albums.pluck(:id)
+        photo.destroy
         deleted_photos << photo
       end
+      Album.where(id: album_ids).each(&:maintenance)
       deleted_photos
     end
 
@@ -119,7 +123,7 @@ module Types
         # only remove photo if it's in the album
         album.photos.delete(photo) if album.photos.include?(photo)
       end
-      album
+      album.maintenance
     end
 
     def sign_in(email:, password:)

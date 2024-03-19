@@ -14,7 +14,7 @@ xml.rss version: '2.0' do
         xml.pubDate album.created_at.to_fs(:rfc822)
         xml.link album_url(album)
         xml.guid album_url(album)
-        if (cover_image = album&.photos&.first&.image(:medium_intelligent).presence || album&.photos&.first&.image(:medium_square))
+        if (cover_image = album.public_cover_photo&.image(:medium_intelligent).presence || album.public_cover_photo&.image(:medium_square))
           xml.enclosure url: cover_image.url, type: cover_image.mime_type, length: cover_image.size
         end
       end

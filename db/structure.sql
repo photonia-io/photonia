@@ -17,10 +17,10 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 
 
 --
--- Name: photo_privacy; Type: TYPE; Schema: public; Owner: -
+-- Name: privacy; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.photo_privacy AS ENUM (
+CREATE TYPE public.privacy AS ENUM (
     'public',
     'friend & family',
     'private'
@@ -65,7 +65,12 @@ CREATE TABLE public.albums (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     impressions_count integer DEFAULT 0 NOT NULL,
-    user_id bigint DEFAULT 1 NOT NULL
+    user_id bigint DEFAULT 1 NOT NULL,
+    public_cover_photo_id bigint,
+    user_cover_photo_id bigint,
+    public_photos_count integer DEFAULT 0 NOT NULL,
+    photos_count integer DEFAULT 0 NOT NULL,
+    privacy public.privacy DEFAULT 'public'::public.privacy
 );
 
 
@@ -268,7 +273,7 @@ CREATE TABLE public.photos (
     flickr_json jsonb,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    privacy public.photo_privacy DEFAULT 'public'::public.photo_privacy,
+    privacy public.privacy DEFAULT 'public'::public.privacy,
     rekognition_response jsonb,
     user_id bigint,
     tsv tsvector,
@@ -687,6 +692,20 @@ CREATE INDEX impressionable_type_message_index ON public.impressions USING btree
 
 
 --
+-- Name: index_albums_on_public_cover_photo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_albums_on_public_cover_photo_id ON public.albums USING btree (public_cover_photo_id);
+
+
+--
+-- Name: index_albums_on_user_cover_photo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_albums_on_user_cover_photo_id ON public.albums USING btree (user_cover_photo_id);
+
+
+--
 -- Name: index_albums_on_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -958,56 +977,60 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
-('20201125121839'),
-('20201126064043'),
-('20201127201610'),
-('20201127215921'),
-('20201127215922'),
-('20201127215923'),
-('20201127215924'),
-('20201127215925'),
-('20201127215926'),
-('20201129082610'),
-('20201129084036'),
-('20201129204208'),
-('20201202140043'),
-('20201202140044'),
-('20201202144952'),
-('20201226121349'),
-('20201226180141'),
-('20201229204909'),
-('20201229211939'),
-('20201229212934'),
-('20201230100525'),
-('20210103163610'),
-('20210103163930'),
-('20210104115821'),
-('20210108215322'),
-('20210109083341'),
-('20210109204633'),
-('20210109214524'),
-('20210823184309'),
-('20221111194506'),
-('20230319213542'),
-('20230319213543'),
-('20230319213544'),
-('20230328161122'),
-('20230403133751'),
-('20230409165520'),
-('20230409171752'),
-('20230409171819'),
-('20230409184758'),
-('20230410080718'),
-('20230410080845'),
-('20230712191829'),
-('20231015101852'),
-('20231015122341'),
-('20231015122407'),
-('20231105152447'),
-('20231106215849'),
-('20231107073727'),
-('20231107075611'),
+('20240319074139'),
+('20240319073415'),
+('20240318152358'),
+('20240315100311'),
+('20240315095159'),
+('20231107090606'),
 ('20231107090043'),
-('20231107090606');
-
+('20231107075611'),
+('20231107073727'),
+('20231106215849'),
+('20231105152447'),
+('20231015122407'),
+('20231015122341'),
+('20231015101852'),
+('20230712191829'),
+('20230410080845'),
+('20230410080718'),
+('20230409184758'),
+('20230409171819'),
+('20230409171752'),
+('20230409165520'),
+('20230403133751'),
+('20230328161122'),
+('20230319213544'),
+('20230319213543'),
+('20230319213542'),
+('20221111194506'),
+('20210823184309'),
+('20210109214524'),
+('20210109204633'),
+('20210109083341'),
+('20210108215322'),
+('20210104115821'),
+('20210103163930'),
+('20210103163610'),
+('20201230100525'),
+('20201229212934'),
+('20201229211939'),
+('20201229204909'),
+('20201226180141'),
+('20201226121349'),
+('20201202144952'),
+('20201202140044'),
+('20201202140043'),
+('20201129204208'),
+('20201129084036'),
+('20201129082610'),
+('20201127215926'),
+('20201127215925'),
+('20201127215924'),
+('20201127215923'),
+('20201127215922'),
+('20201127215921'),
+('20201127201610'),
+('20201126064043'),
+('20201125121839');
 
