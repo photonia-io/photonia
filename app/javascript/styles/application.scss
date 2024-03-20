@@ -11,12 +11,16 @@ $divider-margin-size: 0.75rem;
   margin-right: 0.3em !important;
 }
 
-*[contenteditable="true"]:hover {
-  background-color: yellow;
-}
+.editable {
+  transition: background 0.5s, margin 0.5s, padding 0.5s;
 
-*[contenteditable="true"]:focus {
-  background-color: white !important;
+  &:hover {
+    cursor: pointer;
+    background: #faffa4;
+    margin: -5px -10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
 }
 
 .button.is-image-button {

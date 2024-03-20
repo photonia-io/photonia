@@ -1,6 +1,12 @@
 <template>
-  <h1 v-if="!editing" class="title level-item mb-0" @click="startEditing">
-    {{ localTitle }}
+  <h1
+    v-if="!editing"
+    class="title level-item mb-0 is-flex-grow-1 is-justify-content-flex-start"
+    @click="startEditing"
+  >
+    <div class="editable">
+      {{ localTitle }}
+    </div>
   </h1>
   <div v-else class="field is-grouped level-item is-flex-grow-1">
     <p class="control is-expanded">
@@ -69,8 +75,7 @@ const updateTitle = () => {
 </script>
 
 <style scoped>
-/* [contenteditable="true"]:focus {
-    background: green;
-    min-width: 50%;
-  } */
+.editable {
+  flex-grow: 1;
+}
 </style>

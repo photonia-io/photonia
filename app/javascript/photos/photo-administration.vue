@@ -4,6 +4,9 @@
       <p>Photo Administration</p>
     </div>
     <div class="message-body">
+      <p class="mb-3">
+        To edit the photo's title or description click / tap on the text.
+      </p>
       <!-- delete photo button -->
       <button class="button is-danger" @click="showConfirmationModal">
         Delete Photo
