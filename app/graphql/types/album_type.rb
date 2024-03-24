@@ -18,6 +18,7 @@ module Types
     field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
+    field :description_html, String, 'HTML description of the album', null: true
     field :public_photos_count, Integer, 'Number of public photos in the album', null: false
     field :photos_count, Integer, 'Total number of photos in the album', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false

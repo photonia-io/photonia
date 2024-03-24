@@ -47,4 +47,12 @@ namespace :photos do
   task fix_taken_at: :environment do
     Photo.unscoped.where(taken_at_from_exif: false).update_all('taken_at = posted_at')
   end
+
+  desc 'Set HTML description for all photos'
+  task set_description_html: :environment do
+    Photo.unscoped.find_each do |photo|
+      photo.send(:set_description_html)
+      photo.save(validate: false)
+    end
+  end
 end

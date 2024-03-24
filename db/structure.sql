@@ -70,7 +70,8 @@ CREATE TABLE public.albums (
     user_cover_photo_id bigint,
     public_photos_count integer DEFAULT 0 NOT NULL,
     photos_count integer DEFAULT 0 NOT NULL,
-    privacy public.privacy DEFAULT 'public'::public.privacy
+    privacy public.privacy DEFAULT 'public'::public.privacy,
+    description_html text
 );
 
 
@@ -978,6 +979,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240321083201'),
 ('20240320150852'),
 ('20240319074139'),
 ('20240319073415'),

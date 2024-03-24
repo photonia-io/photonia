@@ -50,6 +50,7 @@ class Photo < ApplicationRecord
   include ImageUploader::Attachment(:image)
   include SerialNumberSetter
   include EXIFUtilities
+  include HtmlDescriptionable
 
   include PgSearch::Model
   pg_search_scope :search,
@@ -122,7 +123,6 @@ class Photo < ApplicationRecord
   end
 
   before_validation :set_fields, prepend: true
-  before_save :set_description_html, if: -> { description_changed? }
 
   def next
     Photo.where('posted_at > ?', posted_at).order(:posted_at).first
@@ -311,10 +311,5 @@ class Photo < ApplicationRecord
   def set_fields
     set_serial_number
     self.posted_at = Time.current if posted_at.nil?
-  end
-
-  def set_description_html
-    html = Kramdown::Document.new(description).to_html.strip
-    self.description_html = (html == '<p></p>' ? '' : ActionController::Base.helpers.sanitize(html))
   end
 end

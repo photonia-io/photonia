@@ -6,6 +6,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  description              :text
+#  description_html         :text
 #  flickr_impressions_count :integer          default(0), not null
 #  impressions_count        :integer          default(0), not null
 #  photos_count             :integer          default(0), not null
