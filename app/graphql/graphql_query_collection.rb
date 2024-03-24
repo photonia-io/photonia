@@ -47,7 +47,7 @@ class GraphqlQueryCollection
         album(id: $id) {
           id
           title
-          description
+          descriptionHtml
           photos(page: $page) {
             collection {
               id
@@ -132,6 +132,7 @@ class GraphqlQueryCollection
           id
           title
           description
+          descriptionHtml
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
           takenAt

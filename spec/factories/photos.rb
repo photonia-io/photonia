@@ -6,6 +6,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  description              :text
+#  description_html         :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
 #  flickr_impressions_count :integer          default(0), not null
@@ -45,5 +46,9 @@ FactoryBot.define do
     title { Faker::Lorem.sentence }
     description { Faker::Lorem.paragraph }
     user
+
+    trait :with_taken_at do
+      taken_at { Faker::Time.between(from: 1.year.ago, to: Time.zone.now) }
+    end
   end
 end

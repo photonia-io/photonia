@@ -1,3 +1,0 @@
-backend: bex rails s
-frontend: bin/vite dev
-sidekiq: bex sidekiq

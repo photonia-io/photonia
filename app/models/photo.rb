@@ -6,6 +6,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  description              :text
+#  description_html         :text
 #  exif                     :jsonb
 #  flickr_faves             :integer
 #  flickr_impressions_count :integer          default(0), not null
@@ -49,6 +50,7 @@ class Photo < ApplicationRecord
   include ImageUploader::Attachment(:image)
   include SerialNumberSetter
   include EXIFUtilities
+  include HtmlDescriptionable
 
   include PgSearch::Model
   pg_search_scope :search,
@@ -104,6 +106,8 @@ class Photo < ApplicationRecord
       @name_counts = Hash.new(0)
       @name_counters = Hash.new(0)
       proxy_association.target.each { |label| @name_counts[label.name] += 1 }
+      # we can't combine these loops because we need to know the count for each name
+      # rubocop:disable Style/CombinableLoops
       proxy_association.target.each do |label|
         label_name = label.name
         if @name_counts[label_name] > 1
@@ -113,6 +117,7 @@ class Photo < ApplicationRecord
           label.sequenced_name = label_name
         end
       end
+      # rubocop:enable Style/CombinableLoops
       self
     end
   end
@@ -164,11 +169,11 @@ class Photo < ApplicationRecord
 
   def exif
     unless self[:exif]
-      if exif_from_file
-        self[:exif] = exif_from_file_json
-      else
-        self[:exif] = { error: 'EXIF Not Readable' }.to_json
-      end
+      self[:exif] = if exif_from_file
+                      exif_from_file_json
+                    else
+                      { error: 'EXIF Not Readable' }.to_json
+                    end
       # if this is a new record, we only want to set the exif field
       # if it's not a new record, we want to save it to cache the exif
       save(validate: false) if persisted?

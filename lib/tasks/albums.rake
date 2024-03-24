@@ -17,4 +17,12 @@ namespace :albums do
       album.maintenance
     end
   end
+
+  desc 'Set HTML description for all albums'
+  task set_description_html: :environment do
+    Album.unscoped.find_each do |album|
+      album.send(:set_description_html)
+      album.save(validate: false)
+    end
+  end
 end

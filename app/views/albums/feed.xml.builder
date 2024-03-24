@@ -10,7 +10,7 @@ xml.rss version: '2.0' do
     @albums.each do |album|
       xml.item do
         xml.title album.title
-        xml.description album.description
+        xml.description album.description_html
         xml.pubDate album.created_at.to_fs(:rfc822)
         xml.link album_url(album)
         xml.guid album_url(album)

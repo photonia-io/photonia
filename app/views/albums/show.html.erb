@@ -2,7 +2,7 @@
 <h1>Album: <%= @album.title %></h1>
 <hr>
 <% if @album.description.present? %>
-<div><%= @album.description %></div>
+<div><%= @album.description_html %></div>
 <% end %>
 <div>
   <% @photos.each do |photo| %>

@@ -44,4 +44,14 @@ namespace :photos do
       end
     end
   end
+
+  task :set_description_html do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:set_description_html'
+        end
+      end
+    end
+  end
 end

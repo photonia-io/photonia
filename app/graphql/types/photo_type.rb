@@ -7,6 +7,7 @@ module Types
 
     field :albums, [AlbumType], 'Albums the photo belongs to', null: true
     field :description, String, 'Description', null: false
+    field :description_html, String, 'Description in HTML', null: true
     field :exif_camera_friendly_name, String, 'Camera friendly name', null: true
     field :exif_f_number, Float, 'F number', null: true
     field :exif_exposure_time, String, 'Exposure time', null: true
