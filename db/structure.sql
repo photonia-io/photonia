@@ -279,7 +279,8 @@ CREATE TABLE public.photos (
     tsv tsvector,
     impressions_count integer DEFAULT 0 NOT NULL,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
-    taken_at_from_exif boolean DEFAULT false
+    taken_at_from_exif boolean DEFAULT false,
+    description_html text
 );
 
 
@@ -977,6 +978,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240320150852'),
 ('20240319074139'),
 ('20240319073415'),
 ('20240318152358'),

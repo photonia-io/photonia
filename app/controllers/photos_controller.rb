@@ -20,7 +20,6 @@ class PhotosController < ApplicationController
 
   def show
     @photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(params[:id])
-    @photo.description = Kramdown::Document.new(@photo.description).to_html
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
   end

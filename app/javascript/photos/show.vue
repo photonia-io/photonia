@@ -48,9 +48,7 @@
                 :description="photoDescription()"
                 @update-description="updatePhotoDescription"
               />
-              <div v-else class="content">
-                {{ photoDescription() }}
-              </div>
+              <div v-else class="content" v-html="photoDescriptionHtml()"></div>
 
               <PhotoAdministration
                 v-if="userStore.signedIn"
@@ -301,7 +299,7 @@ const { result, loading } = useQuery(
   gql`
     ${gql_queries.photos_show}
   `,
-  { id: id }
+  { id: id },
 );
 const labelHighlights = ref({});
 
@@ -311,45 +309,39 @@ const {
   mutate: updatePhotoTitle,
   onDone: onUpdateTitleDone,
   onError: onUpdateTitleError,
-} = useMutation(
-  gql`
-    mutation ($id: String!, $title: String!) {
-      updatePhotoTitle(id: $id, title: $title) {
-        id
-        title
-      }
+} = useMutation(gql`
+  mutation ($id: String!, $title: String!) {
+    updatePhotoTitle(id: $id, title: $title) {
+      id
+      title
     }
-  `
-);
+  }
+`);
 
 const {
   mutate: updatePhotoDescription,
   onDone: onUpdateDescriptionDone,
   onError: onUpdateDescriptionError,
-} = useMutation(
-  gql`
-    mutation ($id: String!, $description: String!) {
-      updatePhotoDescription(id: $id, description: $description) {
-        id
-        description
-      }
+} = useMutation(gql`
+  mutation ($id: String!, $description: String!) {
+    updatePhotoDescription(id: $id, description: $description) {
+      id
+      description
     }
-  `
-);
+  }
+`);
 
 const {
   mutate: deletePhoto,
   onDone: onDeletePhotoDone,
   onError: onDeletePhotoError,
-} = useMutation(
-  gql`
-    mutation ($id: String!) {
-      deletePhoto(id: $id) {
-        id
-      }
+} = useMutation(gql`
+  mutation ($id: String!) {
+    deletePhoto(id: $id) {
+      id
     }
-  `
-);
+  }
+`);
 
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
@@ -395,6 +387,8 @@ const photoTitle = () =>
 const noDescription = "(no description)";
 const photoDescription = () =>
   loading.value ? "Loading..." : photo.value.description || noDescription;
+const photoDescriptionHtml = () =>
+  loading.value ? "Loading..." : photo.value.descriptionHtml || noDescription;
 
 const title = computed(() => photoTitle());
 useTitle(title);

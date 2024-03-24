@@ -132,6 +132,7 @@ class GraphqlQueryCollection
           id
           title
           description
+          descriptionHtml
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
           takenAt
