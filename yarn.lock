@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@apollo/client@^3.9.10":
-  version "3.9.10"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.9.10.tgz#f381f67f3559cb5f5b66ce9183f84f49616acbe4"
-  integrity sha512-w8i/Lk1P0vvWZF0Xb00XPonn79/0rgRJ1vopBlVudVuy9QP29/NZXK0rI2xJIN6VrKuEqJZaVGJC+7k23I2sfA==
+"@apollo/client@^3.9.11":
+  version "3.9.11"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.9.11.tgz#737e5c35c21d6f3b78423033ad81837a8a6992e0"
+  integrity sha512-H7e9m7cRcFO93tokwzqrsbnfKorkpV24xU30hFH5u2g6B+c1DMo/ouyF/YrBPdrTzqxQCjTUmds/FLmJ7626GA==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
     "@wry/caches" "^1.0.0"
@@ -1831,10 +1831,10 @@ type-detect@^4.0.0, type-detect@^4.0.8:
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
 
-typescript@^5.4.4:
-  version "5.4.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.4.tgz#eb2471e7b0a5f1377523700a21669dce30c2d952"
-  integrity sha512-dGE2Vv8cpVvw28v8HCPqyb08EzbBURxDpuhJvTrusShUfGnhHBafDsLdS1EhhxyL6BJQE+2cT3dDPAv+MQ6oLw==
+typescript@^5.4.5:
+  version "5.4.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.5.tgz#42ccef2c571fdbd0f6718b1d1f5e6e5ef006f611"
+  integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
 
 ufo@^1.3.2:
   version "1.4.0"
@@ -1917,10 +1917,10 @@ vue-apollo@^3.1.2:
     serialize-javascript "^4.0.0"
     throttle-debounce "^2.1.0"
 
-vue-chartjs@^5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/vue-chartjs/-/vue-chartjs-5.3.0.tgz#59920a07d72f37a2375d495256e486b92813bf6e"
-  integrity sha512-8XqX0JU8vFZ+WA2/knz4z3ThClduni2Nm0BMe2u0mXgTfd9pXrmJ07QBI+WAij5P/aPmPMX54HCE1seWL37ZdQ==
+vue-chartjs@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/vue-chartjs/-/vue-chartjs-5.3.1.tgz#73484d569ec4994ba5accd30fe6714ef28e86f5b"
+  integrity sha512-rZjqcHBxKiHrBl0CIvcOlVEBwRhpWAVf6rDU3vUfa7HuSRmGtCslc0Oc8m16oAVuk0erzc1FCtH1VCriHsrz+A==
 
 vue-component-type-helpers@^2.0.0:
   version "2.0.6"
