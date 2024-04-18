@@ -6,7 +6,7 @@ class AlbumsController < ApplicationController
 
   def index
     @pagy, @albums = pagy(
-      Album.includes(:public_cover_photos).order(created_at: :desc)
+      Album.includes(:public_cover_photo).order(created_at: :desc)
     )
   end
 
