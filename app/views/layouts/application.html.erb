@@ -3,6 +3,8 @@
   <head>
     <title><%= (yield(:page_title) + " - " unless yield(:page_title).blank?).to_s + Setting.site_name %></title>
 
+    <%= render partial: 'layouts/favicon' %>
+
     <%= render partial: 'layouts/opengraph' if @photo %>
 
     <%= vite_client_tag %>
