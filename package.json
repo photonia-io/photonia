@@ -5,7 +5,7 @@
   "dependencies": {
     "@apollo/client": "^3.9.11",
     "@creativebulma/bulma-divider": "^1.1.0",
-    "@sentry/vue": "^7.109.0",
+    "@sentry/vue": "^7.110.1",
     "@vue/apollo-composable": "^4.0.0-beta.11",
     "@vue/apollo-option": "^4.0.0-beta.9",
     "animate.css": "^4.1.1",
@@ -17,9 +17,9 @@
     "graphql-tag": "^2.12.5",
     "marked": "^12.0.1",
     "pinia": "^2.1.7",
-    "sass": "^1.74.1",
+    "sass": "^1.75.0",
     "typescript": "^5.4.5",
-    "vue": "^3.4.21",
+    "vue": "^3.4.23",
     "vue-apollo": "^3.1.2",
     "vue-chartjs": "^5.3.1",
     "vue-moment": "^4.1.0",
@@ -30,14 +30,14 @@
   "version": "0.1.0",
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vue/compiler-dom": "^3.4.21",
+    "@vue/compiler-dom": "^3.4.23",
     "@vue/server-renderer": "3.4.21",
     "@vue/test-utils": "^2.4.5",
     "happy-dom": "^13.10.1",
     "prettier": "3.2.5",
-    "vite": "^5.2.7",
+    "vite": "^5.2.9",
     "vite-plugin-ruby": "^5.0.0",
-    "vitest": "^1.4.0"
+    "vitest": "^1.5.0"
   },
   "scripts": {
     "test:run": "vitest run --no-color"
