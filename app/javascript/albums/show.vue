@@ -3,7 +3,11 @@
     <div class="container">
       <h1 class="title mt-5 mb-0">Album: {{ album.title }}</h1>
       <hr class="mt-2 mb-4" />
-      <div class="content" v-html="album.descriptionHtml"></div>
+      <div
+        class="content"
+        v-html="album.descriptionHtml"
+        v-if="album.descriptionHtml"
+      />
       <div class="columns is-1 is-variable is-multiline">
         <PhotoItem
           v-for="photo in album.photos.collection"
