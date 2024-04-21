@@ -25,6 +25,5 @@ class Setting < RailsSettings::Base
 
   field :site_name, default: "Photonia", type: :string
   field :site_description, default: "Photonia is a photo sharing site.", type: :string
-
-  field :tracking_code, default: ENV['PHOTONIA_TRACKING_CODE'], type: :string
+  field :site_tracking_code, default: ENV['PHOTONIA_TRACKING_CODE'] || "", type: :string
 end

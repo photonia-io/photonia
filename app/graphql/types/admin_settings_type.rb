@@ -6,5 +6,6 @@ module Types
     description 'Admin Settings'
     field :site_name, String, null: false
     field :site_description, String, null: false
+    field :site_tracking_code, String, null: false
   end
 end

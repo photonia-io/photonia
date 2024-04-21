@@ -40,6 +40,22 @@
                 </div>
               </div>
             </div>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label">Site Tracking Code</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <textarea
+                      class="textarea"
+                      placeholder="Site Tracking Code"
+                      v-model="siteTrackingCode"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
             <hr />
             <div class="field is-horizontal">
               <div class="field-label">
@@ -85,6 +101,7 @@ useTitle("Admin Settings");
 
 const newSiteName = ref(null);
 const newSiteDescription = ref(null);
+const newSiteTrackingCode = ref("");
 const showReloadButton = ref(false);
 
 const ADMIN_SETTINGS_QUERY = gql`
@@ -92,6 +109,7 @@ const ADMIN_SETTINGS_QUERY = gql`
     adminSettings {
       siteName
       siteDescription
+      siteTrackingCode
     }
   }
 `;
@@ -110,6 +128,12 @@ const siteDescription = computed({
     newSiteDescription.value = value;
   },
 });
+const siteTrackingCode = computed({
+  get: () => result.value?.adminSettings.siteTrackingCode,
+  set: (value) => {
+    newSiteTrackingCode.value = value;
+  },
+});
 
 const {
   mutate: submit,
@@ -117,13 +141,19 @@ const {
   onError,
 } = useMutation(
   gql`
-    mutation ($siteName: String!, $siteDescription: String!) {
+    mutation (
+      $siteName: String!
+      $siteDescription: String!
+      $siteTrackingCode: String!
+    ) {
       updateAdminSettings(
         siteName: $siteName
         siteDescription: $siteDescription
+        siteTrackingCode: $siteTrackingCode
       ) {
         siteName
         siteDescription
+        siteTrackingCode
       }
     }
   `,
@@ -131,6 +161,7 @@ const {
     variables: {
       siteName: newSiteName.value || siteName.value,
       siteDescription: newSiteDescription.value || siteDescription.value,
+      siteTrackingCode: newSiteTrackingCode.value,
     },
     update: (cache, { data }) => {
       cache.writeQuery({
@@ -140,7 +171,7 @@ const {
         },
       });
     },
-  })
+  }),
 );
 
 onDone(({ data }) => {
