@@ -7,7 +7,7 @@
           album.publicCoverPhoto.intelligentOrSquareMediumImageUrl
         "
         :src="album.publicCoverPhoto.intelligentOrSquareMediumImageUrl"
-        class="image is-fullwidth"
+        class="image is-fullwidth album-item"
       />
       <ImagePlaceholder v-else />
       {{ album.title }}
@@ -27,3 +27,9 @@ const props = defineProps({
   },
 });
 </script>
+
+<style>
+.album-item {
+  border-radius: 0.3rem;
+}
+</style>
