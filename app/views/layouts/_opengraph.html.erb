@@ -1,14 +1,14 @@
-<meta name="description" content="<%= @photo.description %>">
+<meta name="description" content="<%= strip_tags(@photo.description_html) %>">
 
 <meta property="og:url" content="<%= page_url %>">
 <meta property="og:type" content="website">
 <meta property="og:title" content="<%= @photo.title %>">
-<meta property="og:description" content="<%= @photo.description %>">
+<meta property="og:description" content="<%= strip_tags(@photo.description_html) %>">
 <meta property="og:image" content="<%= @photo.image_url(:large) %>">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta property="twitter:domain" content="<%= request.host %>">
 <meta property="twitter:url" content="<%= page_url %>">
 <meta name="twitter:title" content="<%= @photo.title %>">
-<meta name="twitter:description" content="<%= @photo.description %>">
+<meta name="twitter:description" content="<%= strip_tags(@photo.description_html) %>">
 <meta name="twitter:image" content="<%= @photo.image_url(:large) %>">
