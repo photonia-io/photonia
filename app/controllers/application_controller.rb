@@ -23,7 +23,8 @@ class ApplicationController < ActionController::Base
       sentry_dsn: ENV.fetch('PHOTONIA_FE_SENTRY_DSN', ''),
       sentry_sample_rate: ENV.fetch('PHOTONIA_FE_SENTRY_SAMPLE_RATE', 0.1).to_f,
       site_name: Setting.site_name,
-      site_description: Setting.site_description
+      site_description: Setting.site_description,
+      site_tracking_code: Setting.site_tracking_code
     }.to_json
   end
 

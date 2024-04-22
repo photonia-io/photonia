@@ -65,6 +65,7 @@ module Types
       description 'Update admin settings'
       argument :site_name, String, 'Site name', required: true
       argument :site_description, String, 'Site description', required: true
+      argument :site_tracking_code, String, 'Site tracking code', required: true
     end
 
     def add_photos_to_album(album_id:, photo_ids:)
@@ -166,10 +167,11 @@ module Types
       user
     end
 
-    def update_admin_settings(site_name:, site_description:)
+    def update_admin_settings(site_name:, site_description:, site_tracking_code:)
       context[:authorize].call(Setting, :update?)
       Setting.site_name = site_name
       Setting.site_description = site_description
+      Setting.site_tracking_code = site_tracking_code
       Setting
     end
   end
