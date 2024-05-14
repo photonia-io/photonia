@@ -876,27 +876,24 @@ braces@^3.0.2, braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
-bulma-block-list@0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/bulma-block-list/-/bulma-block-list-0.7.0.tgz#5b409e4f58d6ff5e325f0abcadc5bed733c5b3ab"
-  integrity sha512-IicPQLcw4iX74waDAYhHT4LPbgc3qUPcrF5tOgNQGAUypoAcyiFjW2mBpLe+GCtQAYsDWmpu+X0nxhmUdOdAGw==
+bulma-block-list@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bulma-block-list/-/bulma-block-list-1.0.0.tgz#eb1f8c9d6863ff93c7dd204b3afdf0eb47ffa7e7"
+  integrity sha512-3lGYDMJjRS3aF/zua7Dq69Aagae+55JxSVX03JdlLvS3cqH8sv7uTZLUbzM1ybdLweNh7bQkTX5ERmVY9lbMIA==
   dependencies:
-    bulma "^0.9.3"
-
-bulma-scss@^0.9.4:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/bulma-scss/-/bulma-scss-0.9.4.tgz#d54a9e11b281702a073ce8dda4a1d9ce32bbc031"
-  integrity sha512-iMrNFlR6yEMutYEAi1VseAmsadmmWnb8A2DghUR7jZKJLaw6AibmHOkqwlEPjsXkqJ7Pp1z/bEJ6gFMG0WNdJw==
+    bulma "^1.0.0"
 
 bulma-toast@^2.4.4:
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/bulma-toast/-/bulma-toast-2.4.4.tgz#6fd6ee66c5d0596b2f64acaa03e0fc92ce4df7b8"
   integrity sha512-frK7CiTE7sW6bgJFnWE4aL3Fga9O2U6O536gj6xox+52kqb5S5WaDUq37cArzjuvnSXY5mPIvzt5xNdBeOnShA==
 
-bulma@^0.9.3:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/bulma/-/bulma-0.9.4.tgz#0ca8aeb1847a34264768dba26a064c8be72674a1"
-  integrity sha512-86FlT5+1GrsgKbPLRRY7cGDg8fsJiP/jzTqXXVqiUZZ2aZT8uemEOHlU1CDU+TxklPEZ11HZNNWclRBBecP4CQ==
+bulma@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bulma/-/bulma-1.0.0.tgz#95e8ffa4feb8d64aa1c54a4f0ac6da08e0260672"
+  integrity sha512-7n49v/gdHXaHcU9fVobqGXO2OguiCoMh6CLbeX7jq00XrZ5vOSE4LNS0S/0Q6rlBbckY6kk6W7LwqxS0nu4bug==
+  dependencies:
+    sass "^1.71.1"
 
 cac@^6.7.14:
   version "6.7.14"
@@ -1706,7 +1703,7 @@ safe-buffer@^5.1.0:
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.1.tgz#1eaf9fa9bdb1fdd4ec75f58f9cdb4e6b7827eec6"
   integrity sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==
 
-sass@^1.75.0:
+sass@^1.71.1, sass@^1.75.0:
   version "1.75.0"
   resolved "https://registry.yarnpkg.com/sass/-/sass-1.75.0.tgz#91bbe87fb02dfcc34e052ddd6ab80f60d392be6c"
   integrity sha512-ShMYi3WkrDWxExyxSZPst4/okE9ts46xZmJDSawJQrnte7M1V9fScVB+uNXOVKRBt0PggHOwoZcn8mYX4trnBw==

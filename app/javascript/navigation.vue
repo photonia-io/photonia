@@ -3,7 +3,25 @@
     <div class="container">
       <div class="navbar-brand">
         <router-link :to="{ name: 'root' }" class="navbar-item">
-          <img src="@/assets/photonia-logo.png" width="156" height="30" />
+          <picture>
+            <source
+              srcset="@/assets/photonia-logo-dark.png"
+              media="(prefers-color-scheme: dark)"
+              width="156"
+              height="24"
+            />
+            <source
+              srcset="@/assets/photonia-logo-light.png"
+              media="(prefers-color-scheme: light)"
+              width="156"
+              height="24"
+            />
+            <img
+              src="@/assets/photonia-logo-light.png"
+              width="156"
+              height="24"
+            />
+          </picture>
         </router-link>
         <a
           role="button"
