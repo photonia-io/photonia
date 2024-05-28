@@ -28,16 +28,18 @@ SitemapGenerator::Sitemap.create do
   #   end
 
   add photos_path, priority: 0.5, changefreq: 'daily'
+  add albums_path, priority: 0.5, changefreq: 'daily'
+  add tags_path, priority: 0.2, changefreq: 'monthly'
 
   Photo.find_each do |photo|
     add photo_path(photo), priority: 1.0, changefreq: 'monthly', lastmod: photo.updated_at
   end
 
-  ActsAsTaggableOn::Tag.find_each do |tag|
-    add tag_path(tag), priority: 0.3, changefreq: 'monthly', lastmod: tag.updated_at
-  end
-
   Album.find_each do |album|
     add album_path(album), priority: 0.5, changefreq: 'monthly', lastmod: album.updated_at
+  end
+
+  ActsAsTaggableOn::Tag.find_each do |tag|
+    add tag_path(tag), priority: 0.2, changefreq: 'monthly', lastmod: tag.updated_at
   end
 end
