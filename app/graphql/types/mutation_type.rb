@@ -11,6 +11,18 @@ module Types
       argument :photo_ids, [String], 'Photo Ids', required: true
     end
 
+    field :continue_with_facebook, UserType, null: true do
+      description 'Sign up or sign in with Facebook'
+      argument :access_token, String, 'Facebook access token', required: true
+      argument :signed_request, String, 'Facebook signed request', required: true
+    end
+
+    field :continue_with_google, UserType, null: true do
+      description 'Sign up or sign in with Google'
+      argument :credential, String, 'Google credential JWT', required: true
+      argument :client_id, String, 'Google client ID', required: true
+    end
+
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
       argument :title, String, 'Album title', required: true
@@ -141,6 +153,59 @@ module Types
         id: nil,
         email: nil
       }
+    end
+
+    def continue_with_google(credential:, client_id:)
+      payload = Google::Auth::IDTokens.verify_oidc(
+        credential,
+        aud: client_id
+      )
+      if payload && payload['email_verified']
+        user = User.find_or_create_from_social(
+          email: payload['email'],
+          first_name: payload['given_name'],
+          last_name: payload['family_name'],
+          display_name: payload['name']
+        )
+        context[:sign_in].call(:user, user)
+        user
+      end
+    end
+
+    def continue_with_facebook(access_token:, signed_request:)
+      signature, encoded_payload = signed_request.split('.')
+
+      # Create a SHA256 digest of the encoded_payload using the FB app secret
+      digested_encoded_payload = OpenSSL::HMAC.digest('sha256', ENV['PHOTONIA_FACEBOOK_APP_SECRET'], encoded_payload)
+      # Base64 encode the digest and remove any trailing '='
+      expected_signature = Base64.urlsafe_encode64(digested_encoded_payload).gsub('=', '')
+
+      # If the signature matches the expected signature, decode the payload
+      if signature == expected_signature
+        payload = Base64.urlsafe_decode64(encoded_payload)
+        data = JSON.parse(payload)
+
+        # request user info from Facebook
+        uri = URI("https://graph.facebook.com/me?fields=email,name,first_name,last_name&access_token=#{access_token}")
+        response = Net::HTTP.get(uri)
+        user_info = JSON.parse(response)
+
+        # If the user info matches the data from the signed request, continue
+        if user_info['id'] == data['user_id']
+          user = User.find_or_create_from_social(
+            email: user_info['email'],
+            first_name: user_info['first_name'],
+            last_name: user_info['last_name'],
+            display_name: user_info['name']
+          )
+          context[:sign_in].call(:user, user)
+          user
+        else
+          raise 'Invalid user info'
+        end
+      else
+        raise 'Invalid signature'
+      end
     end
 
     def update_photo_title(id:, title:)
