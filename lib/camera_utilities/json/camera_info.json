@@ -45,27 +45,111 @@
       "launch_year": 2015,
       "launch_month": 9
     },
-    "iPhone SE": "Apple iPhone SE",
-    "iPhone 7": "Apple iPhone 7",
-    "iPhone 7 Plus": "Apple iPhone 7 Plus",
-    "iPhone 8": "Apple iPhone 8",
-    "iPhone 8 Plus": "Apple iPhone 8 Plus",
-    "iPhone X": "Apple iPhone X",
-    "iPhone XR": "Apple iPhone XR",
-    "iPhone XS": "Apple iPhone XS",
-    "iPhone XS Max": "Apple iPhone XS Max",
-    "iPhone 11": "Apple iPhone 11",
-    "iPhone 11 Pro": "Apple iPhone 11 Pro",
-    "iPhone 11 Pro Max": "Apple iPhone 11 Pro Max",
-    "iPhone SE (2nd generation)": "Apple iPhone SE (2nd generation)",
-    "iPhone 12 mini": "Apple iPhone 12 mini",
-    "iPhone 12": "Apple iPhone 12",
-    "iPhone 12 Pro": "Apple iPhone 12 Pro",
-    "iPhone 12 Pro Max": "Apple iPhone 12 Pro Max",
-    "iPhone 13 mini": "Apple iPhone 13 mini",
-    "iPhone 13": "Apple iPhone 13",
-    "iPhone 13 Pro": "Apple iPhone 13 Pro",
-    "iPhone 13 Pro Max": "Apple iPhone 13 Pro Max"
+    "iPhone SE": {
+      "friendly_name": "Apple iPhone SE",
+      "launch_year": 2016,
+      "launch_month": 3
+    },
+    "iPhone 7": {
+      "friendly_name": "Apple iPhone 7",
+      "launch_year": 2016,
+      "launch_month": 9
+    },
+    "iPhone 7 Plus": {
+      "friendly_name": "Apple iPhone 7 Plus",
+      "launch_year": 2016,
+      "launch_month": 9
+    },
+    "iPhone 8": {
+      "friendly_name": "Apple iPhone 8",
+      "launch_year": 2017,
+      "launch_month": 9
+    },
+    "iPhone 8 Plus": {
+      "friendly_name": "Apple iPhone 8 Plus",
+      "launch_year": 2017,
+      "launch_month": 9
+    },
+    "iPhone X": {
+      "friendly_name": "Apple iPhone X",
+      "launch_year": 2017,
+      "launch_month": 11
+    },
+    "iPhone XR": {
+      "friendly_name": "Apple iPhone XR",
+      "launch_year": 2018,
+      "launch_month": 10
+    },
+    "iPhone XS": {
+      "friendly_name": "Apple iPhone XS",
+      "launch_year": 2018,
+      "launch_month": 9
+    },
+    "iPhone XS Max": {
+      "friendly_name": "Apple iPhone XS Max",
+      "launch_year": 2018,
+      "launch_month": 9
+    },
+    "iPhone 11": {
+      "friendly_name": "Apple iPhone 11",
+      "launch_year": 2019,
+      "launch_month": 9
+    },
+    "iPhone 11 Pro": {
+      "friendly_name": "Apple iPhone 11 Pro",
+      "launch_year": 2019,
+      "launch_month": 9
+    },
+    "iPhone 11 Pro Max": {
+      "friendly_name": "Apple iPhone 11 Pro Max",
+      "launch_year": 2019,
+      "launch_month": 9
+    },
+    "iPhone SE (2nd generation)": {
+      "friendly_name": "Apple iPhone SE (2nd generation)",
+      "launch_year": 2020,
+      "launch_month": 4
+    },
+    "iPhone 12 mini": {
+      "friendly_name": "Apple iPhone 12 mini",
+      "launch_year": 2020,
+      "launch_month": 10
+    },
+    "iPhone 12": {
+      "friendly_name": "Apple iPhone 12",
+      "launch_year": 2020,
+      "launch_month": 10
+    },
+    "iPhone 12 Pro": {
+      "friendly_name": "Apple iPhone 12 Pro",
+      "launch_year": 2020,
+      "launch_month": 10
+    },
+    "iPhone 12 Pro Max": {
+      "friendly_name": "Apple iPhone 12 Pro Max",
+      "launch_year": 2020,
+      "launch_month": 10
+    },
+    "iPhone 13 mini": {
+      "friendly_name": "Apple iPhone 13 mini",
+      "launch_year": "2021",
+      "launch_month": "9"
+    },
+    "iPhone 13": {
+      "friendly_name": "Apple iPhone 13",
+      "launch_year": "2021",
+      "launch_month": "9"
+    },
+    "iPhone 13 Pro": {
+      "friendly_name": "Apple iPhone 13 Pro",
+      "launch_year": "2021",
+      "launch_month": "9"
+    },
+    "iPhone 13 Pro Max": {
+      "friendly_name": "Apple iPhone 13 Pro Max",
+      "launch_year": "2021",
+      "launch_month": "9"
+    }
   },
   "Canon": {
     "Canon PowerShot A20": {
@@ -105,9 +189,21 @@
       "launch_month": "10",
       "friendly_name": "GoPro HERO3 - Black Edition"
     },
-    "HERO7 Black": "GoPro HERO7 Black",
-    "HERO8 Black": "GoPro HERO8 Black",
-    "HERO9 Black": "GoPro HERO9 Black",
+    "HERO7 Black": {
+      "launch_year": "2018",
+      "launch_month": "9",
+      "friendly_name": "GoPro HERO7 Black"
+    },
+    "HERO8 Black": {
+      "launch_year": "2019",
+      "launch_month": "10",
+      "friendly_name": "GoPro HERO8 Black"
+    },
+    "HERO9 Black": {
+      "launch_year": "2020",
+      "launch_month": "9",
+      "friendly_name": "GoPro HERO9 Black"
+    },
     "HERO10 Black": {
       "launch_year": "2021",
       "launch_month": "9",
@@ -144,24 +240,6 @@
       "launch_month": "7",
       "friendly_name": "Nikon D700"
     },
-    "NIKON D800": "Nikon D800",
-    "NIKON D800E": "Nikon D800E",
-    "NIKON D810": "Nikon D810",
-    "NIKON D810A": "Nikon D810A",
-    "NIKON D3": "Nikon D3",
-    "NIKON D3S": "Nikon D3S",
-    "NIKON D3X": "Nikon D3X",
-    "NIKON D4": "Nikon D4",
-    "NIKON D4S": "Nikon D4S",
-    "NIKON D5": "Nikon D5",
-    "NIKON D300": "Nikon D300",
-    "NIKON D300S": "Nikon D300S",
-    "NIKON D500": "Nikon D500",
-    "NIKON D600": "Nikon D600",
-    "NIKON D610": "Nikon D610",
-    "NIKON D7000": "Nikon D7000",
-    "NIKON D7100": "Nikon D7100",
-    "NIKON D7200": "Nikon D7200",
     "NIKON D90": {
       "launch_year": "2008",
       "launch_month": "8",
