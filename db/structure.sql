@@ -141,6 +141,90 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
+-- Name: comments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.comments (
+    id bigint NOT NULL,
+    serial_number character varying,
+    commentable_type character varying NOT NULL,
+    commentable_id bigint NOT NULL,
+    user_id bigint,
+    flickr_user_id bigint,
+    flickr_link character varying,
+    body text,
+    body_html text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.comments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.comments_id_seq OWNED BY public.comments.id;
+
+
+--
+-- Name: flickr_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.flickr_users (
+    id bigint NOT NULL,
+    nsid character varying,
+    is_deleted boolean,
+    iconserver character varying,
+    iconfarm character varying,
+    username character varying,
+    realname character varying,
+    location character varying,
+    timezone_label character varying,
+    timezone_offset character varying,
+    timezone_id character varying,
+    description text,
+    photosurl character varying,
+    profileurl character varying,
+    photos_firstdatetaken character varying,
+    photos_firstdate integer,
+    photos_count integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: flickr_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.flickr_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: flickr_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.flickr_users_id_seq OWNED BY public.flickr_users.id;
+
+
+--
 -- Name: friendly_id_slugs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -461,7 +545,10 @@ CREATE TABLE public.users (
     updated_at timestamp(6) without time zone NOT NULL,
     jti character varying,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
-    admin boolean DEFAULT false
+    admin boolean DEFAULT false,
+    first_name character varying,
+    last_name character varying,
+    display_name character varying
 );
 
 
@@ -496,6 +583,20 @@ ALTER TABLE ONLY public.albums ALTER COLUMN id SET DEFAULT nextval('public.album
 --
 
 ALTER TABLE ONLY public.albums_photos ALTER COLUMN id SET DEFAULT nextval('public.albums_photos_id_seq'::regclass);
+
+
+--
+-- Name: comments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.comments_id_seq'::regclass);
+
+
+--
+-- Name: flickr_users id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_users ALTER COLUMN id SET DEFAULT nextval('public.flickr_users_id_seq'::regclass);
 
 
 --
@@ -583,6 +684,22 @@ ALTER TABLE ONLY public.albums
 
 ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: comments comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: flickr_users flickr_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_users
+    ADD CONSTRAINT flickr_users_pkey PRIMARY KEY (id);
 
 
 --
@@ -726,6 +843,27 @@ CREATE INDEX index_albums_photos_on_album_id ON public.albums_photos USING btree
 --
 
 CREATE INDEX index_albums_photos_on_photo_id ON public.albums_photos USING btree (photo_id);
+
+
+--
+-- Name: index_comments_on_commentable; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_comments_on_commentable ON public.comments USING btree (commentable_type, commentable_id);
+
+
+--
+-- Name: index_comments_on_flickr_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_comments_on_flickr_user_id ON public.comments USING btree (flickr_user_id);
+
+
+--
+-- Name: index_comments_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_comments_on_user_id ON public.comments USING btree (user_id);
 
 
 --
@@ -925,6 +1063,22 @@ CREATE TRIGGER tsvupdate BEFORE INSERT OR UPDATE ON public.photos FOR EACH ROW E
 
 
 --
+-- Name: comments fk_rails_03de2dc08c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT fk_rails_03de2dc08c FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: comments fk_rails_2d3346c513; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT fk_rails_2d3346c513 FOREIGN KEY (flickr_user_id) REFERENCES public.flickr_users(id);
+
+
+--
 -- Name: labels fk_rails_6e98447d68; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -979,6 +1133,9 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240627150304'),
+('20240627150254'),
+('20240515124115'),
 ('20240321083201'),
 ('20240320150852'),
 ('20240319074139'),

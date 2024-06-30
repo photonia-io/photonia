@@ -96,7 +96,7 @@ module Types
     end
 
     def photo(id:)
-      photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
+      photo = Photo.includes(:albums, :albums_photos, :comments).friendly.find(id)
       context[:impressionist].call(photo, 'graphql', unique: [:session_hash])
       photo
     end

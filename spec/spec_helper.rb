@@ -1,7 +1,17 @@
 # frozen_string_literal: true
 
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+  add_group 'Controllers', 'app/controllers'
+  add_group 'Models', 'app/models'
+  add_group 'GraphQL', 'app/graphql'
+  add_group 'Policies', 'app/policies'
+  add_group 'Services', 'app/services'
+  add_group 'Jobs', 'app/jobs'
+  add_group 'Mailers', 'app/mailers'
+  add_group 'Helpers', 'app/helpers'
+  add_group 'Libraries', 'lib'
+end
 
 if ENV['CI']
   require 'simplecov-cobertura'

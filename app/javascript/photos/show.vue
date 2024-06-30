@@ -57,6 +57,34 @@
                 @delete-photo="deletePhoto"
               />
 
+              <PhotoInfobox>
+                <template #header>Comments</template>
+                <div v-for="comment in photo.comments" :key="comment.id">
+                  <div class="media">
+                    <!-- <div class="media-left">
+                      <figure class="image is-48x48">
+                        <img
+                          :src="comment.user.avatarUrl"
+                          :alt="comment.user.name"
+                        />
+                      </figure>
+                    </div> -->
+                    <div class="media-content">
+                      <p>
+                        <strong>{{
+                          comment.flickrUser.realname ||
+                          comment.flickrUser.username ||
+                          comment.flickrUser.nsid
+                        }}</strong>
+                        <br />
+                        <small>{{ comment.createdAt }}</small>
+                        <span v-html="marked.parse(comment.body)"></span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </PhotoInfobox>
+
               <div class="columns equal-height-columns">
                 <div class="column is-half">
                   <PhotoInfo :photo="photo" :loading="loading" />
@@ -263,6 +291,7 @@ import { useTitle } from "vue-page-title";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
+import { marked } from "marked";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";

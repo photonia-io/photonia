@@ -25,4 +25,9 @@ namespace :albums do
       album.save(validate: false)
     end
   end
+
+  desc 'Resync serial numbers from slugs'
+  task resync_serial_numbers: :environment do
+    Album.update_all('serial_number = slug::bigint')
+  end
 end

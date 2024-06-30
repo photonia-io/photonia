@@ -155,6 +155,17 @@ class GraphqlQueryCollection
             title
             intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
           }
+          comments {
+            id
+            body
+            bodyHtml
+            flickrUser {
+              nsid
+              username
+              realname
+            }
+            createdAt
+          }
           albums {
             id
             title

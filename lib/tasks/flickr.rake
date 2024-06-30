@@ -116,4 +116,52 @@ namespace :flickr do
       puts '.'
     end
   end
+
+  desc 'Import comments from Flickr'
+  task import_comments: :environment do
+    owner_flickr_user_nsid = '17448318@N00'
+
+    Dir.glob("#{Rails.root}/flickr/json/photo_*.json").each do |file_name|
+      file = File.read(file_name)
+      photo_hash = JSON.parse(file)
+
+      photo = Photo.unscoped.find_by(serial_number: photo_hash['id'])
+
+      if photo.nil?
+        puts "Photo not found: #{photo_hash['id']}"
+        next
+      end
+
+      puts "Processing photo: #{photo_hash['id']} which has #{photo_hash['comments'].size} comments..."
+
+      photo_hash['comments'].each do |comment_hash|
+        # if this is the user who uploaded the photo, associate the comment with the user
+        owner_flickr_user_nsid == comment_hash['user'] ? user = photo.user : user = nil
+        flickr_user = FlickrUser.find_or_create_by(nsid: comment_hash['user'])
+
+        comment = Comment.find_or_create_by(
+          serial_number: comment_hash['id'],
+          commentable: photo
+        ) do |c|
+          c.user = user
+          c.flickr_user = flickr_user
+          c.body = comment_hash['comment']
+          c.flickr_link = comment_hash['url']
+          c.created_at = DateTime.parse(comment_hash['date'])
+        end
+
+        puts "Created comment: #{comment.serial_number}..."
+      end
+    end
+  end
+
+  desc 'Get Flickr user info from Flickr itself'
+  task get_user_info: :environment do
+    seconds_between_requests = 10
+    i = 0
+    FlickrUser.where(is_deleted: nil).each do |flickr_user|
+      FlickrPeopleGetInfoJob.set(wait: (seconds_between_requests * i).seconds).perform_later(flickr_user.id)
+      i += 1
+    end
+  end
 end
