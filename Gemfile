@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.3.0'
+ruby '3.3.3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 7.0'
@@ -39,7 +39,7 @@ gem 'groupdate'
 gem 'image_processing', '~> 1.8'
 gem 'impressionist', '~> 2.0'
 gem 'kramdown'
-gem 'pagy', '~> 7'
+gem 'pagy', '~> 8'
 gem 'pg_search'
 gem 'pundit'
 gem 'redis'

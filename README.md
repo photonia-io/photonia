@@ -60,4 +60,3 @@ Selenium Grid becomes available at http://localhost:4444/ui
    - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
    - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
 3. Publish the release
-4. Go to Jenkins and build the tag
