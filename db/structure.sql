@@ -461,7 +461,10 @@ CREATE TABLE public.users (
     updated_at timestamp(6) without time zone NOT NULL,
     jti character varying,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
-    admin boolean DEFAULT false
+    admin boolean DEFAULT false,
+    first_name character varying,
+    last_name character varying,
+    display_name character varying
 );
 
 
@@ -979,6 +982,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240515124115'),
 ('20240321083201'),
 ('20240320150852'),
 ('20240319074139'),
