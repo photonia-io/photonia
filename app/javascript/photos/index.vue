@@ -37,7 +37,7 @@
         "
         :photos="result.photos.collection"
       />
-      <div class="columns is-1 is-variable is-multiline">
+      <div class="columns is-1 is-multiline">
         <PhotoItem
           v-if="result && result.photos"
           v-for="photo in result.photos.collection"
@@ -76,7 +76,7 @@ const route = useRoute();
 const query = computed(() => route.query.q || null);
 const page = computed(() => parseInt(route.query.page) || 1);
 const additionalQueryParams = computed(() =>
-  query.value !== null ? { q: query.value } : {}
+  query.value !== null ? { q: query.value } : {},
 );
 
 const applicationStore = useApplicationStore();
@@ -86,6 +86,6 @@ const { result } = useQuery(
   gql`
     ${gql_queries.photos_index}
   `,
-  { page: page, query: query }
+  { page: page, query: query },
 );
 </script>
