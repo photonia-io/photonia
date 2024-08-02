@@ -1,8 +1,10 @@
+@use "bulma/sass/utilities/mixins";
+
 $box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1);
 $section-padding: 3rem 0.75rem;
 
-@import "bulma-scss/bulma";
-@import "bulma-block-list/src/block-list";
+@import "bulma/sass";
+@import "node_modules/bulma-block-list/src/block-list";
 
 $divider-margin-size: 0.75rem;
 @import "@creativebulma/bulma-divider";
@@ -33,7 +35,7 @@ $divider-margin-size: 0.75rem;
 }
 
 #photo-title-container {
-  @include from(769px) {
+  @include mixins.from(769px) {
     margin-right: 0.75rem;
   }
 }
@@ -50,4 +52,9 @@ $divider-margin-size: 0.75rem;
   @media screen and (min-width:769px) {
     width: 640px;
   }
+}
+
+.navbar-brand picture {
+  display: flex;
+  align-items: center;
 }
