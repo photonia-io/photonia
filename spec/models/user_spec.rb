@@ -6,9 +6,12 @@
 #
 #  id                  :bigint           not null, primary key
 #  admin               :boolean          default(FALSE)
+#  display_name        :string
 #  email               :string           default(""), not null
 #  encrypted_password  :string           default(""), not null
+#  first_name          :string
 #  jti                 :string
+#  last_name           :string
 #  remember_created_at :datetime
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null

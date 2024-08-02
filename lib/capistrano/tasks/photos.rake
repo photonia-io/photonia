@@ -54,4 +54,14 @@ namespace :photos do
       end
     end
   end
+
+  task :resync_serial_numbers do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'photos:resync_serial_numbers'
+        end
+      end
+    end
+  end
 end
