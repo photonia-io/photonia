@@ -201,7 +201,7 @@ GEM
       activesupport (>= 6.1)
     graphiql-rails (1.10.0)
       railties
-    graphql (2.3.10)
+    graphql (2.3.11)
       base64
     graphql-pagination (2.2.0)
       graphql (~> 2.0)
