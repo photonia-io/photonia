@@ -1,5 +1,5 @@
 <template>
-  <div class="message is-smallish is-lightgray">
+  <div class="message is-smallish">
     <div class="message-header">
       <slot name="header"></slot>
     </div>
@@ -11,7 +11,7 @@
 
 <style scoped>
 .message {
-  background-color: hsl(0, 0%, 98%);
+  /* background-color: hsl(0, 0%, 98%); */
 }
 .message p {
   display: block;

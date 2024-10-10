@@ -8,7 +8,7 @@
         v-html="album.descriptionHtml"
         v-if="album.descriptionHtml"
       />
-      <div class="columns is-1 is-variable is-multiline">
+      <div class="columns is-1 is-multiline">
         <PhotoItem
           v-for="photo in album.photos.collection"
           :photo="photo"
