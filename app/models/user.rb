@@ -6,9 +6,12 @@
 #
 #  id                  :bigint           not null, primary key
 #  admin               :boolean          default(FALSE)
+#  display_name        :string
 #  email               :string           default(""), not null
 #  encrypted_password  :string           default(""), not null
+#  first_name          :string
 #  jti                 :string
+#  last_name           :string
 #  remember_created_at :datetime
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
@@ -31,8 +34,18 @@ class User < ApplicationRecord
          :rememberable,
          :jwt_authenticatable, jwt_revocation_strategy: self
 
-  has_many :photos
+  has_many :photos, dependent: :destroy
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :timezone, presence: true
+
+  def self.find_or_create_from_social(email:, first_name: nil, last_name: nil, display_name: nil)
+    find_by(email:) || create(
+      email:,
+      password: Devise.friendly_token[0, 20],
+      first_name:,
+      last_name:,
+      display_name:
+    )
+  end
 end
