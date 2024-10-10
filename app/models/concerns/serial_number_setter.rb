@@ -11,7 +11,7 @@ module SerialNumberSetter
     end
 
     def set_serial_number
-      self.serial_number = maximum_serial_number + rand(1..10_000_000)
+      self.serial_number = maximum_serial_number + rand(1..10_000_000) if serial_number.blank?
     end
   end
 end
