@@ -68,4 +68,24 @@ describe 'continueWithFacebook Mutation', type: :request do
       expect(data['admin']).to eq(false)
     end
   end
+
+  context 'when the signature is invalid' do
+    before do
+      allow_any_instance_of(ContinueWithFacebookService).to receive(:verify_signature).and_return(false)
+    end
+
+    it 'raises an error' do
+      expect { post_mutation }.to raise_error('Invalid signature')
+    end
+  end
+
+  context 'when the decoded payload user id does not match the user info id' do
+    before do
+      allow_any_instance_of(ContinueWithFacebookService).to receive(:get_decoded_payload).and_return('user_id' => 456)
+    end
+
+    it 'raises an error' do
+      expect { post_mutation }.to raise_error('Invalid user info')
+    end
+  end
 end
