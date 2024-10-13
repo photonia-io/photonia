@@ -34,35 +34,51 @@ describe 'continueWithGoogle Mutation', type: :request do
 
   subject(:post_mutation) { post '/graphql', params: { query: query } }
 
-  context 'when the user does not exist' do
-    it 'creates a new user' do
-      expect { post_mutation }.to change(User, :count).by(1)
+  context 'when continue with google is enabled' do
+    before do
+      Setting.continue_with_google_enabled = true
     end
 
-    it 'returns the user' do
-      post_mutation
-      json = JSON.parse(response.body)
-      data = json['data']['continueWithGoogle']
+    context 'when the user does not exist' do
+      it 'creates a new user' do
+        expect { post_mutation }.to change(User, :count).by(1)
+      end
 
-      expect(data['email']).to eq(email)
-      expect(data['admin']).to eq(false)
+      it 'returns the user' do
+        post_mutation
+        json = JSON.parse(response.body)
+        data = json['data']['continueWithGoogle']
+
+        expect(data['email']).to eq(email)
+        expect(data['admin']).to eq(false)
+      end
+    end
+
+    context 'when the user exists' do
+      let!(:user) { create(:user, email: email) }
+
+      it 'does not create a new user' do
+        expect { post_mutation }.not_to change(User, :count)
+      end
+
+      it 'returns the user' do
+        post_mutation
+        json = JSON.parse(response.body)
+        data = json['data']['continueWithGoogle']
+
+        expect(data['email']).to eq(email)
+        expect(data['admin']).to eq(false)
+      end
     end
   end
 
-  context 'when the user exists' do
-    let!(:user) { create(:user, email: email) }
-
-    it 'does not create a new user' do
-      expect { post_mutation }.not_to change(User, :count)
+  context 'when continue with google is disabled' do
+    before do
+      Setting.continue_with_google_enabled = false
     end
 
-    it 'returns the user' do
-      post_mutation
-      json = JSON.parse(response.body)
-      data = json['data']['continueWithGoogle']
-
-      expect(data['email']).to eq(email)
-      expect(data['admin']).to eq(false)
+    it 'raises an error' do
+      expect { post_mutation }.to raise_error('Continue with Google is disabled')
     end
   end
 end

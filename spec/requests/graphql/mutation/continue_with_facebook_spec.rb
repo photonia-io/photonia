@@ -37,55 +37,71 @@ describe 'continueWithFacebook Mutation', type: :request do
 
   subject(:post_mutation) { post '/graphql', params: { query: query } }
 
-  context 'when the user does not exist' do
-    it 'creates a new user' do
-      expect { post_mutation }.to change(User, :count).by(1)
-    end
-
-    it 'returns the user' do
-      post_mutation
-      json = JSON.parse(response.body)
-      data = json['data']['continueWithFacebook']
-
-      expect(data['email']).to eq(email)
-      expect(data['admin']).to eq(false)
-    end
-  end
-
-  context 'when the user exists' do
-    let!(:user) { create(:user, email: email) }
-
-    it 'does not create a new user' do
-      expect { post_mutation }.not_to change(User, :count)
-    end
-
-    it 'returns the user' do
-      post_mutation
-      json = JSON.parse(response.body)
-      data = json['data']['continueWithFacebook']
-
-      expect(data['email']).to eq(email)
-      expect(data['admin']).to eq(false)
-    end
-  end
-
-  context 'when the signature is invalid' do
+  context 'when continue with facebook is enabled' do
     before do
-      allow_any_instance_of(ContinueWithFacebookService).to receive(:verify_signature).and_return(false)
+      Setting.continue_with_facebook_enabled = true
+    end
+
+    context 'when the user does not exist' do
+      it 'creates a new user' do
+        expect { post_mutation }.to change(User, :count).by(1)
+      end
+
+      it 'returns the user' do
+        post_mutation
+        json = JSON.parse(response.body)
+        data = json['data']['continueWithFacebook']
+
+        expect(data['email']).to eq(email)
+        expect(data['admin']).to eq(false)
+      end
+    end
+
+    context 'when the user exists' do
+      let!(:user) { create(:user, email: email) }
+
+      it 'does not create a new user' do
+        expect { post_mutation }.not_to change(User, :count)
+      end
+
+      it 'returns the user' do
+        post_mutation
+        json = JSON.parse(response.body)
+        data = json['data']['continueWithFacebook']
+
+        expect(data['email']).to eq(email)
+        expect(data['admin']).to eq(false)
+      end
+    end
+
+    context 'when the signature is invalid' do
+      before do
+        allow_any_instance_of(ContinueWithFacebookService).to receive(:verify_signature).and_return(false)
+      end
+
+      it 'raises an error' do
+        expect { post_mutation }.to raise_error('Invalid signature')
+      end
+    end
+
+    context 'when the decoded payload user id does not match the user info id' do
+      before do
+        allow_any_instance_of(ContinueWithFacebookService).to receive(:get_decoded_payload).and_return('user_id' => 456)
+      end
+
+      it 'raises an error' do
+        expect { post_mutation }.to raise_error('Invalid user info')
+      end
+    end
+  end
+
+  context 'when continue with facebook is disabled' do
+    before do
+      Setting.continue_with_facebook_enabled = false
     end
 
     it 'raises an error' do
-      expect { post_mutation }.to raise_error('Invalid signature')
-    end
-  end
-
-  context 'when the decoded payload user id does not match the user info id' do
-    before do
-      allow_any_instance_of(ContinueWithFacebookService).to receive(:get_decoded_payload).and_return('user_id' => 456)
-    end
-
-    it 'raises an error' do
-      expect { post_mutation }.to raise_error('Invalid user info')
+      expect { post_mutation }.to raise_error('Continue with Facebook is disabled')
     end
   end
 end

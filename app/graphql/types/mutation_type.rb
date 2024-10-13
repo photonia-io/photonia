@@ -78,6 +78,8 @@ module Types
       argument :site_name, String, 'Site name', required: true
       argument :site_description, String, 'Site description', required: true
       argument :site_tracking_code, String, 'Site tracking code', required: true
+      argument :continue_with_google_enabled, Boolean, 'Continue with Google active', required: true
+      argument :continue_with_facebook_enabled, Boolean, 'Continue with Facebook active', required: true
     end
 
     def add_photos_to_album(album_id:, photo_ids:)
@@ -156,6 +158,8 @@ module Types
     end
 
     def continue_with_google(credential:, client_id:)
+      raise 'Continue with Google is disabled' if Setting.continue_with_google_enabled == false
+
       payload = Google::Auth::IDTokens.verify_oidc(
         credential,
         aud: client_id
@@ -173,6 +177,8 @@ module Types
     end
 
     def continue_with_facebook(access_token:, signed_request:)
+      raise 'Continue with Facebook is disabled' if Setting.continue_with_facebook_enabled == false
+
       cwfs = ContinueWithFacebookService.new(access_token, signed_request)
 
       if cwfs.verify_signature
@@ -221,11 +227,13 @@ module Types
       user
     end
 
-    def update_admin_settings(site_name:, site_description:, site_tracking_code:)
+    def update_admin_settings(site_name:, site_description:, site_tracking_code:, continue_with_google_enabled:, continue_with_facebook_enabled:)
       context[:authorize].call(Setting, :update?)
       Setting.site_name = site_name
       Setting.site_description = site_description
       Setting.site_tracking_code = site_tracking_code
+      Setting.continue_with_google_enabled = continue_with_google_enabled
+      Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
       Setting
     end
   end
