@@ -7,7 +7,7 @@
           <div v-if="settings.continue_with_google_enabled">
             <div
               id="g_id_onload"
-              data-client_id="1001813754179-e5qgubr1k4787qblpaklhoilih0mgcri.apps.googleusercontent.com"
+              :data-client_id="settings.google_client_id"
               data-context="signin"
               data-ux_mode="popup"
               data-callback="continueWithGoogle"
@@ -140,7 +140,8 @@ onMounted(() => {
   if (window.settings.continue_with_facebook_enabled) {
     const facebookScript = document.createElement("script");
     facebookScript.src =
-      "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v21.0&appId=560245602871568";
+      "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v21.0&appId=" +
+      window.settings.facebook_app_id;
     facebookScript.async = true;
     facebookScript.defer = true;
     facebookScript.crossOrigin = "anonymous";

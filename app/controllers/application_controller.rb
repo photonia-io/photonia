@@ -26,7 +26,9 @@ class ApplicationController < ActionController::Base
       site_description: Setting.site_description,
       site_tracking_code: Setting.site_tracking_code,
       continue_with_google_enabled: Setting.continue_with_google_enabled,
-      continue_with_facebook_enabled: Setting.continue_with_facebook_enabled
+      continue_with_facebook_enabled: Setting.continue_with_facebook_enabled,
+      google_client_id: Setting.google_client_id,
+      facebook_app_id: Setting.facebook_app_id
     }.to_json
   end
 
