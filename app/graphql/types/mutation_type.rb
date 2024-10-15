@@ -11,6 +11,18 @@ module Types
       argument :photo_ids, [String], 'Photo Ids', required: true
     end
 
+    field :continue_with_facebook, UserType, null: true do
+      description 'Sign up or sign in with Facebook'
+      argument :access_token, String, 'Facebook access token', required: true
+      argument :signed_request, String, 'Facebook signed request', required: true
+    end
+
+    field :continue_with_google, UserType, null: true do
+      description 'Sign up or sign in with Google'
+      argument :credential, String, 'Google credential JWT', required: true
+      argument :client_id, String, 'Google client ID', required: true
+    end
+
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
       argument :title, String, 'Album title', required: true
@@ -66,6 +78,8 @@ module Types
       argument :site_name, String, 'Site name', required: true
       argument :site_description, String, 'Site description', required: true
       argument :site_tracking_code, String, 'Site tracking code', required: true
+      argument :continue_with_google_enabled, Boolean, 'Continue with Google active', required: true
+      argument :continue_with_facebook_enabled, Boolean, 'Continue with Facebook active', required: true
     end
 
     def add_photos_to_album(album_id:, photo_ids:)
@@ -143,6 +157,52 @@ module Types
       }
     end
 
+    def continue_with_google(credential:, client_id:)
+      raise 'Continue with Google is disabled' if Setting.continue_with_google_enabled == false
+
+      payload = Google::Auth::IDTokens.verify_oidc(
+        credential,
+        aud: client_id
+      )
+      if payload && payload['email_verified']
+        user = User.find_or_create_from_social(
+          email: payload['email'],
+          first_name: payload['given_name'],
+          last_name: payload['family_name'],
+          display_name: payload['name']
+        )
+        context[:sign_in].call(:user, user)
+        user
+      end
+    end
+
+    def continue_with_facebook(access_token:, signed_request:)
+      raise 'Continue with Facebook is disabled' if Setting.continue_with_facebook_enabled == false
+
+      cwfs = ContinueWithFacebookService.new(access_token, signed_request)
+
+      if cwfs.verify_signature
+        decoded_payload_data = cwfs.get_decoded_payload
+        facebook_user_info = cwfs.fetch_facebook_user_info
+
+        # If the data from the signed request matches the user info, continue
+        if decoded_payload_data['user_id'] == facebook_user_info['id']
+          user = User.find_or_create_from_social(
+            email: facebook_user_info['email'],
+            first_name: facebook_user_info['first_name'],
+            last_name: facebook_user_info['last_name'],
+            display_name: facebook_user_info['name']
+          )
+          context[:sign_in].call(:user, user)
+          user
+        else
+          raise 'Invalid user info'
+        end
+      else
+        raise 'Invalid signature'
+      end
+    end
+
     def update_photo_title(id:, title:)
       photo = Photo.friendly.find(id)
       context[:authorize].call(photo, :update?)
@@ -167,11 +227,13 @@ module Types
       user
     end
 
-    def update_admin_settings(site_name:, site_description:, site_tracking_code:)
+    def update_admin_settings(site_name:, site_description:, site_tracking_code:, continue_with_google_enabled:, continue_with_facebook_enabled:)
       context[:authorize].call(Setting, :update?)
       Setting.site_name = site_name
       Setting.site_description = site_description
       Setting.site_tracking_code = site_tracking_code
+      Setting.continue_with_google_enabled = continue_with_google_enabled
+      Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
       Setting
     end
   end

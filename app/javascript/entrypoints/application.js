@@ -130,6 +130,21 @@ document.addEventListener("DOMContentLoaded", () => {
       component: () => import("../stats/index.vue"),
       beforeEnter: redirectIfNotSignedIn,
     },
+    {
+      path: settings.about_path,
+      name: "about",
+      component: () => import("../pages/handler.vue"),
+    },
+    {
+      path: settings.privacy_policy_path,
+      name: "privacy-policy",
+      component: () => import("../pages/handler.vue"),
+    },
+    {
+      path: settings.terms_of_service_path,
+      name: "terms-of-service",
+      component: () => import("../pages/handler.vue"),
+    },
   ];
 
   const router = createRouter({
@@ -180,16 +195,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // we will suppose that the token is valid, later we will check for an error
     userStore.signedIn = true;
     provideApolloClient(apolloClient);
-    const { result, error } = useQuery(
-      gql`
-        query UserSettingsQuery {
-          userSettings {
-            email
-            admin
-          }
+    const { result, error } = useQuery(gql`
+      query UserSettingsQuery {
+        userSettings {
+          email
+          admin
         }
-      `
-    );
+      }
+    `);
 
     watch(result, (value) => {
       userStore.email = value.userSettings.email;
@@ -203,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
         userStore.signOut();
         toaster(
           "Your session has expired. Please sign in again.",
-          "is-warning"
+          "is-warning",
         );
         router.push({ name: "root" });
       }
@@ -252,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
       suffix: settings.site_name,
       separator: " - ",
       mixin: true,
-    })
+    }),
   );
 
   app.mount("#app");
