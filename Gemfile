@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.3.3'
+ruby '3.3.5'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 7.0'
@@ -26,13 +26,14 @@ gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 10.0'
+gem 'acts-as-taggable-on', '~> 11.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
 gem 'devise-jwt'
 gem 'exif'
 gem 'friendly_id', '~> 5.5.0'
+gem 'googleauth', '~> 1.11'
 gem 'graphql'
 gem 'graphql-pagination'
 gem 'groupdate'

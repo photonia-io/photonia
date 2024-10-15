@@ -26,4 +26,8 @@ class Setting < RailsSettings::Base
   field :site_name, default: "Photonia", type: :string
   field :site_description, default: "Photonia is a photo sharing site.", type: :string
   field :site_tracking_code, default: ENV['PHOTONIA_TRACKING_CODE'] || "", type: :string
+  field :continue_with_google_enabled, default: "0", type: :boolean
+  field :continue_with_facebook_enabled, default: "0", type: :boolean
+  field :google_client_id, default: ENV['PHOTONIA_GOOGLE_CLIENT_ID'] || "", type: :string, readonly: true
+  field :facebook_app_id, default: ENV['PHOTONIA_FACEBOOK_APP_ID'] || "", type: :string, readonly: true
 end

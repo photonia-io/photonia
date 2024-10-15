@@ -44,7 +44,7 @@ append :linked_dirs, '.bundle', 'log', 'flickr'
 
 set :passenger_restart_with_touch, true
 
-set :rbenv_ruby, '3.3.0'
+set :rbenv_ruby, '3.3.4'
 
 set :sidekiq_service_unit_name, 'sidekiq-photonia'
 

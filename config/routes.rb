@@ -26,6 +26,10 @@ Rails.application.routes.draw do
 
   root 'homepage#index'
 
+  ['about', 'terms-of-service', 'privacy-policy'].each do |page|
+    get "/#{page}", to: "pages#handler"
+  end
+
   # sidekiq
   require 'sidekiq/web'
 
