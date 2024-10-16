@@ -5,7 +5,7 @@ Welcome to [Photonia](https://photos.rusiczki.net), a photo-sharing website wher
 #### 1. Content and Ownership
 
    - Exclusive Posting Rights: All photos and images displayed on the Site are owned and uploaded solely by the Site owner. You understand and agree that you do not have the ability to upload or share your own photos on this platform.
-   - Creative Commons Licensing: All photos on the Site are made available under specific Creative Commons licenses. Each photo will clearly display its applicable license, which dictates how you may use the image. You agree to comply with the terms of the relevant Creative Commons license for each photo you use. You can learn more about Creative Commons licenses at [https://creativecommons.org/](https://creativecommons. org/).
+   - Creative Commons Licensing: All photos on the Site are made available under specific Creative Commons licenses. Each photo will clearly display its applicable license, which dictates how you may use the image. You agree to comply with the terms of the relevant Creative Commons license for each photo you use. You can learn more about Creative Commons licenses at [https://creativecommons.org/](https://creativecommons.org/).
    - Your Content: You may contribute to the Site by posting comments and favoriting photos. You are solely responsible for the content you post. You represent and warrant that your content:
      - Does not infringe on the intellectual property rights of others.
      - Does not violate any applicable laws or regulations.
