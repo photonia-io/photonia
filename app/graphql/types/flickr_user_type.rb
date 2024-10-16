@@ -11,9 +11,5 @@ module Types
     field :profileurl, String, 'Flickr profile url of the user', null: true
     field :iconfarm, String, 'Icon farm of the user\'s buddy image', null: true
     field :iconserver, String, 'Icon server of the user\'s buddy image', null: true
-
-    def id
-      @object.serial_number
-    end
   end
 end
