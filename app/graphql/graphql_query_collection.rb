@@ -163,6 +163,9 @@ class GraphqlQueryCollection
               nsid
               username
               realname
+              profileurl
+              iconfarm
+              iconserver
             }
             createdAt
           }

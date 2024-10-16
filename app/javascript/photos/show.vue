@@ -57,33 +57,7 @@
                 @delete-photo="deletePhoto"
               />
 
-              <PhotoInfobox>
-                <template #header>Comments</template>
-                <div v-for="comment in photo.comments" :key="comment.id">
-                  <div class="media">
-                    <!-- <div class="media-left">
-                      <figure class="image is-48x48">
-                        <img
-                          :src="comment.user.avatarUrl"
-                          :alt="comment.user.name"
-                        />
-                      </figure>
-                    </div> -->
-                    <div class="media-content">
-                      <p>
-                        <strong>{{
-                          comment.flickrUser.realname ||
-                          comment.flickrUser.username ||
-                          comment.flickrUser.nsid
-                        }}</strong>
-                        <br />
-                        <small>{{ comment.createdAt }}</small>
-                        <span v-html="marked.parse(comment.body)"></span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </PhotoInfobox>
+              <PhotoComments :photo="photo" :loading="loading" />
 
               <div class="columns equal-height-columns">
                 <div class="column is-half">
@@ -291,7 +265,6 @@ import { useTitle } from "vue-page-title";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
-import { marked } from "marked";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
@@ -299,6 +272,7 @@ import PhotoDescriptionEditable from "./photo-description-editable.vue";
 import PhotoAdministration from "./photo-administration.vue";
 import PhotoInfo from "./photo-info.vue";
 import PhotoInfobox from "./photo-infobox.vue";
+import PhotoComments from "./photo-comments.vue";
 import SmallNavigationButton from "@/photos/small-navigation-button.vue";
 import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";
