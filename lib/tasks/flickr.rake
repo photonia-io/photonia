@@ -155,8 +155,8 @@ namespace :flickr do
     end
   end
 
-  desc 'Get Flickr user info from Flickr itself'
-  task get_user_info: :environment do
+  desc 'Get Flickr user data from the Flickr API'
+  task fetch_user_data: :environment do
     seconds_between_requests = 10
     i = 0
     FlickrUser.where(is_deleted: nil).each do |flickr_user|

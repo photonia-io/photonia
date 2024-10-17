@@ -41,11 +41,11 @@ namespace :flickr do
     end
   end
 
-  task :get_user_info do
+  task :fetch_user_data do
     on roles(:app) do
       within current_path.to_s do
         with rails_env: fetch(:stage).to_s do
-          execute :rake, 'flickr:get_user_info'
+          execute :rake, 'flickr:fetch_user_data'
         end
       end
     end
