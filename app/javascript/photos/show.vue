@@ -294,7 +294,6 @@ const emptyPhoto = {
   tags: [],
   rekognitionTags: [],
   labels: null,
-  intelligentThumbnail: null,
 };
 
 const id = computed(() => route.params.id);

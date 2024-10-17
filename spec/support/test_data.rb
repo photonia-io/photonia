@@ -7,12 +7,13 @@ module TestData
 
     # if you're processing derivatives
     attacher.set_derivatives(
-      large: uploaded_image,
-      medium: uploaded_image,
       thumbnail_square: uploaded_image,
+      medium: uploaded_image,
+      large: uploaded_image,
+      extralarge: uploaded_image,
     )
 
-    attacher.data # or attacher.data in case of postgres jsonb column
+    attacher.data
   end
 
   def uploaded_image

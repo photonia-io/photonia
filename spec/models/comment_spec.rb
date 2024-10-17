@@ -9,7 +9,7 @@
 #  body_html        :text
 #  commentable_type :string           not null
 #  flickr_link      :string
-#  serial_number    :string
+#  serial_number    :bigint
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  commentable_id   :bigint           not null

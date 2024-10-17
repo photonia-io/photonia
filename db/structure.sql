@@ -146,7 +146,7 @@ CREATE TABLE public.ar_internal_metadata (
 
 CREATE TABLE public.comments (
     id bigint NOT NULL,
-    serial_number character varying,
+    serial_number bigint,
     commentable_type character varying NOT NULL,
     commentable_id bigint NOT NULL,
     user_id bigint,
@@ -1133,6 +1133,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241016142426'),
 ('20240627150304'),
 ('20240627150254'),
 ('20240515124115'),
