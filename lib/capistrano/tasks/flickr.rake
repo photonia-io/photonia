@@ -30,4 +30,24 @@ namespace :flickr do
       end
     end
   end
+
+  task :import_comments do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'flickr:import_comments'
+        end
+      end
+    end
+  end
+
+  task :fetch_user_data do
+    on roles(:app) do
+      within current_path.to_s do
+        with rails_env: fetch(:stage).to_s do
+          execute :rake, 'flickr:fetch_user_data'
+        end
+      end
+    end
+  end
 end

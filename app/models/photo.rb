@@ -74,6 +74,7 @@ class Photo < ApplicationRecord
   belongs_to :user
   has_many :albums_photos, dependent: :destroy
   has_many :albums, through: :albums_photos
+  has_many :comments, as: :commentable, dependent: :destroy
   has_many :labels, dependent: :destroy do
     def center_of_gravity
       Photo::Point.new(average(:top), average(:left))

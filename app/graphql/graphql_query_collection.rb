@@ -155,6 +155,20 @@ class GraphqlQueryCollection
             title
             intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
           }
+          comments {
+            id
+            body
+            bodyHtml
+            flickrUser {
+              nsid
+              username
+              realname
+              profileurl
+              iconfarm
+              iconserver
+            }
+            createdAt
+          }
           albums {
             id
             title
@@ -188,21 +202,23 @@ class GraphqlQueryCollection
               height
             }
           }
-          intelligentThumbnail {
-            boundingBox {
-              top
-              left
-              width
-              height
-            }
-            centerOfGravity {
-              top
-              left
-            }
-          }
           rekognitionLabelModelVersion
         }
       }
     GQL
   }.freeze
+
+  # Removed from above as it was not used
+  # intelligentThumbnail {
+  #   boundingBox {
+  #     top
+  #     left
+  #     width
+  #     height
+  #   }
+  #   centerOfGravity {
+  #     top
+  #     left
+  #   }
+  # }
 end

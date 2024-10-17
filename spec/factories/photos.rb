@@ -44,7 +44,7 @@
 FactoryBot.define do
   factory :photo do
     title { Faker::Lorem.sentence }
-    description { Faker::Lorem.paragraph }
+    description { Faker::Markdown.sandwich }
     user
 
     trait :with_taken_at do
