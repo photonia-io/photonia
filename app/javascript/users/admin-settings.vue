@@ -56,6 +56,44 @@
                 </div>
               </div>
             </div>
+            <h3 class="title is-5 mt-5 mb-0">Social Logins</h3>
+            <hr class="mt-2 mb-4" />
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Continue with Google</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <label class="checkbox">
+                      <input
+                        type="checkbox"
+                        v-model="continueWithGoogleEnabled"
+                      />
+                      Enabled
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Continue with Facebook</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <label class="checkbox">
+                      <input
+                        type="checkbox"
+                        v-model="continueWithFacebookEnabled"
+                      />
+                      Enabled
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
             <hr />
             <div class="field is-horizontal">
               <div class="field-label">
@@ -102,6 +140,8 @@ useTitle("Admin Settings");
 const newSiteName = ref(null);
 const newSiteDescription = ref(null);
 const newSiteTrackingCode = ref("");
+const newContinueWithGoogleEnabled = ref(null);
+const newContinueWithFacebookEnabled = ref(null);
 const showReloadButton = ref(false);
 
 const ADMIN_SETTINGS_QUERY = gql`
@@ -110,6 +150,8 @@ const ADMIN_SETTINGS_QUERY = gql`
       siteName
       siteDescription
       siteTrackingCode
+      continueWithGoogleEnabled
+      continueWithFacebookEnabled
     }
   }
 `;
@@ -134,6 +176,18 @@ const siteTrackingCode = computed({
     newSiteTrackingCode.value = value;
   },
 });
+const continueWithGoogleEnabled = computed({
+  get: () => result.value?.adminSettings.continueWithGoogleEnabled,
+  set: (value) => {
+    newContinueWithGoogleEnabled.value = value;
+  },
+});
+const continueWithFacebookEnabled = computed({
+  get: () => result.value?.adminSettings.continueWithFacebookEnabled,
+  set: (value) => {
+    newContinueWithFacebookEnabled.value = value;
+  },
+});
 
 const {
   mutate: submit,
@@ -145,15 +199,21 @@ const {
       $siteName: String!
       $siteDescription: String!
       $siteTrackingCode: String!
+      $continueWithGoogleEnabled: Boolean!
+      $continueWithFacebookEnabled: Boolean!
     ) {
       updateAdminSettings(
         siteName: $siteName
         siteDescription: $siteDescription
         siteTrackingCode: $siteTrackingCode
+        continueWithGoogleEnabled: $continueWithGoogleEnabled
+        continueWithFacebookEnabled: $continueWithFacebookEnabled
       ) {
         siteName
         siteDescription
         siteTrackingCode
+        continueWithGoogleEnabled
+        continueWithFacebookEnabled
       }
     }
   `,
@@ -162,6 +222,14 @@ const {
       siteName: newSiteName.value || siteName.value,
       siteDescription: newSiteDescription.value || siteDescription.value,
       siteTrackingCode: newSiteTrackingCode.value,
+      continueWithGoogleEnabled:
+        newContinueWithGoogleEnabled.value !== null
+          ? newContinueWithGoogleEnabled.value
+          : continueWithGoogleEnabled.value,
+      continueWithFacebookEnabled:
+        newContinueWithFacebookEnabled.value !== null
+          ? newContinueWithFacebookEnabled.value
+          : continueWithFacebookEnabled.value,
     },
     update: (cache, { data }) => {
       cache.writeQuery({

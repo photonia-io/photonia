@@ -6,6 +6,7 @@ module Types
     description 'A Photo'
 
     field :albums, [AlbumType], 'Albums the photo belongs to', null: true
+    field :comments, [CommentType], 'Comments on the photo', null: true
     field :description, String, 'Description', null: false
     field :description_html, String, 'Description in HTML', null: true
     field :exif_camera_friendly_name, String, 'Camera friendly name', null: true
@@ -99,6 +100,10 @@ module Types
 
     def exif_exists
       @object.exif_exists?
+    end
+
+    def comments
+      @object.comments.order(created_at: :asc)
     end
   end
 end

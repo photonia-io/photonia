@@ -11,8 +11,7 @@ module HtmlDescriptionable
     private
 
     def set_description_html
-      html = Kramdown::Document.new(description || '').to_html.strip
-      self.description_html = (html == '<p></p>' ? '' : ActionController::Base.helpers.sanitize(html))
+      self.description_html = MarkdownToHtml.new(description).to_html
     end
   end
 end

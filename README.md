@@ -53,6 +53,8 @@ Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procf
 
 Selenium Grid becomes available at http://localhost:4444/ui
 
+**Note:** For the moment system specs are configured not to run from the [.rspec config file.](.rspec).
+
 ## Versioning & Deployment
 
 1. Update the [changelog](CHANGELOG.md)

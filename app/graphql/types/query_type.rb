@@ -81,6 +81,11 @@ module Types
       argument :type, String, 'Type of impression', required: true
     end
 
+    field :page, PageType, null: false do
+      description 'Find a page by ID'
+      argument :id, ID, 'ID of the page', required: true
+    end
+
     # Photos
 
     def photos(page: nil, query: nil)
@@ -96,7 +101,7 @@ module Types
     end
 
     def photo(id:)
-      photo = Photo.includes(:albums).includes(:albums_photos).friendly.find(id)
+      photo = Photo.includes(:albums, :albums_photos, :comments).friendly.find(id)
       context[:impressionist].call(photo, 'graphql', unique: [:session_hash])
       photo
     end
@@ -195,6 +200,13 @@ module Types
                 .group_by_day(:created_at, range: start_date..end_date, format: '%Y-%m-%d')
                 .count
                 .map { |date, count| { date:, count: } }
+    end
+
+    # Pages
+    def page(id:)
+      title, markdown = PageService.fetch_page(id)
+
+      { title: title, content: Kramdown::Document.new(markdown).to_html.html_safe }
     end
 
     private

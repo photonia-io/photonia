@@ -57,6 +57,8 @@
                 @delete-photo="deletePhoto"
               />
 
+              <PhotoComments :photo="photo" :loading="loading" />
+
               <div class="columns equal-height-columns">
                 <div class="column is-half">
                   <PhotoInfo :photo="photo" :loading="loading" />
@@ -270,6 +272,7 @@ import PhotoDescriptionEditable from "./photo-description-editable.vue";
 import PhotoAdministration from "./photo-administration.vue";
 import PhotoInfo from "./photo-info.vue";
 import PhotoInfobox from "./photo-infobox.vue";
+import PhotoComments from "./photo-comments.vue";
 import SmallNavigationButton from "@/photos/small-navigation-button.vue";
 import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";
@@ -291,7 +294,6 @@ const emptyPhoto = {
   tags: [],
   rekognitionTags: [],
   labels: null,
-  intelligentThumbnail: null,
 };
 
 const id = computed(() => route.params.id);

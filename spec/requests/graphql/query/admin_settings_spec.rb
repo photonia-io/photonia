@@ -8,6 +8,8 @@ describe 'adminSettings Query' do
   let(:site_name) { 'Photonia' }
   let(:site_description) { 'A photo gallery' }
   let(:site_tracking_code) { '<script>some_javascript_code</script>' }
+  let(:continue_with_google_enabled) { true }
+  let(:continue_with_facebook_enabled) { true }
 
   let(:query) do
     <<~GQL
@@ -16,6 +18,8 @@ describe 'adminSettings Query' do
           siteName
           siteDescription
           siteTrackingCode
+          continueWithGoogleEnabled
+          continueWithFacebookEnabled
         }
       }
     GQL
@@ -25,6 +29,8 @@ describe 'adminSettings Query' do
     Setting.site_name = site_name
     Setting.site_description = site_description
     Setting.site_tracking_code = site_tracking_code
+    Setting.continue_with_google_enabled = continue_with_google_enabled
+    Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
   end
 
   subject(:post_query) { post '/graphql', params: { query: query } }
@@ -60,7 +66,9 @@ describe 'adminSettings Query' do
         expect(data).to include(
           "siteName" => site_name,
           "siteDescription" => site_description,
-          "siteTrackingCode" => site_tracking_code
+          "siteTrackingCode" => site_tracking_code,
+          "continueWithGoogleEnabled" => continue_with_google_enabled,
+          "continueWithFacebookEnabled" => continue_with_facebook_enabled
         )
       end
     end

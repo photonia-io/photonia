@@ -19,12 +19,19 @@ class ApplicationController < ActionController::Base
       users_settings_path:,
       users_admin_settings_path:,
       stats_path:,
+      about_path:,
+      privacy_policy_path:,
+      terms_of_service_path:,
       graphql_path:,
       sentry_dsn: ENV.fetch('PHOTONIA_FE_SENTRY_DSN', ''),
       sentry_sample_rate: ENV.fetch('PHOTONIA_FE_SENTRY_SAMPLE_RATE', 0.1).to_f,
       site_name: Setting.site_name,
       site_description: Setting.site_description,
-      site_tracking_code: Setting.site_tracking_code
+      site_tracking_code: Setting.site_tracking_code,
+      continue_with_google_enabled: Setting.continue_with_google_enabled,
+      continue_with_facebook_enabled: Setting.continue_with_facebook_enabled,
+      google_client_id: Setting.google_client_id,
+      facebook_app_id: Setting.facebook_app_id
     }.to_json
   end
 

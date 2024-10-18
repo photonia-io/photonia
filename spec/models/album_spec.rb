@@ -245,4 +245,23 @@ RSpec.describe Album do
       end
     end
   end
+
+  describe 'serial number setting' do
+    it 'sets the serial number before validation' do
+      album = build(:album)
+      album.valid?
+      expect(album.serial_number).not_to be_blank
+    end
+
+    it 'generates a serial number if it is not set' do
+      album = build(:album, serial_number: nil)
+      expect(album.valid?).to be_truthy
+    end
+
+    it 'does not overwrite the serial number if it is already set' do
+      album = build(:album, serial_number: 123)
+      album.valid?
+      expect(album.serial_number).to eq(123)
+    end
+  end
 end

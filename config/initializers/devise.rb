@@ -315,7 +315,7 @@ Devise.setup do |config|
   config.jwt do |jwt|
     jwt.secret = ENV.fetch('PHOTONIA_DEVISE_JWT_SECRET_KEY', nil)
     jwt.dispatch_requests = [
-      ['POST', %r{^/graphql$}, /signIn/]
+      ['POST', %r{^/graphql$}, /signIn|continueWithGoogle|continueWithFacebook/]
     ]
     jwt.revocation_requests = [
       ['POST', %r{^/graphql$}, /signOut/]

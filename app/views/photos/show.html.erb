@@ -73,6 +73,26 @@
       </ul>
     <% end %>
 
+    <h3>Comments</h3>
+    <div>
+      <% if @photo.comments.any? %>
+        <ul>
+          <% @photo.comments.each do |comment| %>
+            <li>
+              <div>
+                <a href="<%= comment.flickr_user.profileurl %>"><%= comment.flickr_user.realname || comment.flickr_user.username || comment.flickr_user.nsid %></a>
+                <span><%= comment.created_at.strftime('%B %e, %Y %l:%M %p') %></span>
+              </div>
+              <div>
+                <%= comment.body_html.html_safe %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p>No comments yet.</p>
+      <% end %>
+
     <h3>Date Taken</h3>
     <p><%= @photo.taken_at.strftime('%B %e, %Y') %></p>
 
