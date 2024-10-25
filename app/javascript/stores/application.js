@@ -1,11 +1,22 @@
 import { defineStore } from "pinia";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
   const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
+
+  const systemColorScheme =
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  const userColorScheme = ref(localStorage.getItem("userColorScheme"));
+  const colorScheme = computed(() =>
+    userColorScheme.value ? userColorScheme.value : systemColorScheme,
+  );
+
   const showLabelsOnHero = ref(
-    localStorage.getItem("showLabelsOnHero") === "true"
+    localStorage.getItem("showLabelsOnHero") === "true",
   );
 
   function enableNavigationShortcuts() {
@@ -32,6 +43,14 @@ export const useApplicationStore = defineStore("application", () => {
     selectionMode.value = !selectionMode.value;
   }
 
+  watch(userColorScheme, (newValue) => {
+    localStorage.setItem("userColorScheme", newValue);
+  });
+
+  function setUserColorScheme(value) {
+    userColorScheme.value = value;
+  }
+
   watch(showLabelsOnHero, (newValue) => {
     localStorage.setItem("showLabelsOnHero", newValue);
   });
@@ -45,6 +64,8 @@ export const useApplicationStore = defineStore("application", () => {
     enableNavigationShortcuts,
     disableNavigationShortcuts,
     selectionMode,
+    colorScheme,
+    setUserColorScheme,
     enterSelectionMode,
     exitSelectionMode,
     toggleSelectionMode,
