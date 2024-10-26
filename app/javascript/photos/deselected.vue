@@ -19,7 +19,7 @@
           <p>Click on a photo to move it back to the selection.</p>
         </div>
       </div>
-      <div class="columns is-1 is-variable is-multiline">
+      <div class="columns is-1 is-multiline">
         <PhotoItem
           v-for="photo in selectionStore.deselectedPhotos"
           :photo="photo"

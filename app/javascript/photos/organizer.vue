@@ -15,7 +15,7 @@
       </div>
       <hr class="mt-2 mb-4" />
       <SelectionActions :photos="selectionStore.selectedPhotos" />
-      <div class="columns is-1 is-variable is-multiline">
+      <div class="columns is-1 is-multiline">
         <PhotoItem
           v-for="photo in selectionStore.selectedPhotos"
           :photo="photo"

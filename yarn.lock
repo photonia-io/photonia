@@ -1016,27 +1016,22 @@ braces@^3.0.3:
   dependencies:
     fill-range "^7.1.1"
 
-bulma-block-list@0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/bulma-block-list/-/bulma-block-list-0.7.0.tgz#5b409e4f58d6ff5e325f0abcadc5bed733c5b3ab"
-  integrity sha512-IicPQLcw4iX74waDAYhHT4LPbgc3qUPcrF5tOgNQGAUypoAcyiFjW2mBpLe+GCtQAYsDWmpu+X0nxhmUdOdAGw==
+bulma-block-list@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bulma-block-list/-/bulma-block-list-1.0.0.tgz#eb1f8c9d6863ff93c7dd204b3afdf0eb47ffa7e7"
+  integrity sha512-3lGYDMJjRS3aF/zua7Dq69Aagae+55JxSVX03JdlLvS3cqH8sv7uTZLUbzM1ybdLweNh7bQkTX5ERmVY9lbMIA==
   dependencies:
-    bulma "^0.9.3"
-
-bulma-scss@^0.9.4:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/bulma-scss/-/bulma-scss-0.9.4.tgz#d54a9e11b281702a073ce8dda4a1d9ce32bbc031"
-  integrity sha512-iMrNFlR6yEMutYEAi1VseAmsadmmWnb8A2DghUR7jZKJLaw6AibmHOkqwlEPjsXkqJ7Pp1z/bEJ6gFMG0WNdJw==
+    bulma "^1.0.0"
 
 bulma-toast@^2.4.4:
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/bulma-toast/-/bulma-toast-2.4.4.tgz#6fd6ee66c5d0596b2f64acaa03e0fc92ce4df7b8"
   integrity sha512-frK7CiTE7sW6bgJFnWE4aL3Fga9O2U6O536gj6xox+52kqb5S5WaDUq37cArzjuvnSXY5mPIvzt5xNdBeOnShA==
 
-bulma@^0.9.3:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/bulma/-/bulma-0.9.4.tgz#0ca8aeb1847a34264768dba26a064c8be72674a1"
-  integrity sha512-86FlT5+1GrsgKbPLRRY7cGDg8fsJiP/jzTqXXVqiUZZ2aZT8uemEOHlU1CDU+TxklPEZ11HZNNWclRBBecP4CQ==
+bulma@^1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/bulma/-/bulma-1.0.2.tgz#47395a660755c9566db3cf981fd4e3a2b637af19"
+  integrity sha512-D7GnDuF6seb6HkcnRMM9E739QpEY9chDzzeFrHMyEns/EXyDJuQ0XA0KxbBl/B2NTsKSoDomW61jFGFaAxhK5A==
 
 cac@^6.7.14:
   version "6.7.14"
@@ -1300,9 +1295,9 @@ fastq@^1.6.0:
     reusify "^1.0.4"
 
 fill-range@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-7.0.1.tgz#1919a6a7c75fe38b2c7c77e5198535da9acdda40"
-  integrity sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-7.1.1.tgz#44265d3cac07e3ea7dc247516380643754a05292"
+  integrity sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==
   dependencies:
     to-regex-range "^5.0.1"
 
@@ -1398,9 +1393,9 @@ immediate@~3.0.5:
   integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
 
 immutable@^4.0.0:
-  version "4.3.5"
-  resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.3.5.tgz#f8b436e66d59f99760dc577f5c99a4fd2a5cc5a0"
-  integrity sha512-8eabxkth9gZatlwl5TBuJnCsoTADlL6ftEr7A4qgdaTsPyreilDSnUk57SO+jfKcNtxPa22U5KK6DSeAYhpBJw==
+  version "4.3.6"
+  resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.3.6.tgz#6a05f7858213238e587fb83586ffa3b4b27f0447"
+  integrity sha512-Ju0+lEMyzMVZarkTn/gqRpdqd5dOPaz1mCZ0SH3JV6iFw81PldE/PEB1hWVEA288HPt4WXW8O7AWxB10M+03QQ==
 
 ini@^1.3.4:
   version "1.3.8"
@@ -1922,17 +1917,12 @@ signal-exit@^4.0.1, signal-exit@^4.1.0:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-4.1.0.tgz#952188c1cbd546070e2dd20d0f41c0ae0530cb04"
   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
 
-"source-map-js@>=0.6.2 <2.0.0", source-map-js@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.2.tgz#adbc361d9c62df380125e7f161f71c826f1e490c"
-  integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
-
-source-map-js@^1.2.0:
+"source-map-js@>=0.6.2 <2.0.0", source-map-js@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.2.0.tgz#16b809c162517b5b8c3e7dcd315a2a5c2612b2af"
   integrity sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==
 
-source-map-js@^1.2.1:
+source-map-js@^1.0.2, source-map-js@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.2.1.tgz#1ce5650fddd87abc099eda37dcff024c2667ae46"
   integrity sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==

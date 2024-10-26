@@ -162,7 +162,7 @@
                       {{ album.title }}
                     </router-link>
                   </h4>
-                  <div class="columns is-variable is-1 is-mobile">
+                  <div class="columns is-1 is-mobile">
                     <div class="column is-half">
                       <router-link
                         v-if="album.previousPhotoInAlbum"

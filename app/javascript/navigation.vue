@@ -3,7 +3,25 @@
     <div class="container">
       <div class="navbar-brand">
         <router-link :to="{ name: 'root' }" class="navbar-item">
-          <img src="@/assets/photonia-logo.png" width="156" height="30" />
+          <picture>
+            <source
+              v-if="applicationStore.colorScheme === 'dark'"
+              srcset="@/assets/photonia-logo-dark.png"
+              width="156"
+              height="24"
+            />
+            <source
+              v-else
+              srcset="@/assets/photonia-logo-light.png"
+              width="156"
+              height="24"
+            />
+            <img
+              src="@/assets/photonia-logo-light.png"
+              width="156"
+              height="24"
+            />
+          </picture>
         </router-link>
         <a
           role="button"
@@ -94,6 +112,22 @@
 
         <div class="navbar-end">
           <div class="navbar-item">
+            <span
+              v-if="applicationStore.colorScheme === 'dark'"
+              class="icon is-clickable"
+              @click="applicationStore.setUserColorScheme('light')"
+            >
+              <i class="fas fa-moon"></i>
+            </span>
+            <span
+              v-else
+              class="icon is-clickable"
+              @click="applicationStore.setUserColorScheme('dark')"
+            >
+              <i class="fas fa-sun"></i>
+            </span>
+          </div>
+          <div class="navbar-item">
             <form @submit.prevent="doSearch">
               <div class="field has-addons">
                 <p class="control">
@@ -118,10 +152,12 @@
 
 <script setup>
 import { ref, watch } from "vue";
+import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "@/stores/user";
 import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
+const applicationStore = useApplicationStore();
 const userStore = useUserStore();
 
 const showNavigation = ref(false);
