@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # config valid for current version and patch releases of Capistrano
-lock '~> 3.18.0'
+lock '~> 3.19.1'
 
 set :application, 'photonia'
 set :repo_url, 'git@github.com:photonia-io/photonia.git'
@@ -44,7 +44,7 @@ append :linked_dirs, '.bundle', 'log', 'flickr'
 
 set :passenger_restart_with_touch, true
 
-set :rbenv_ruby, '3.3.4'
+set :rbenv_ruby, '3.3.5'
 
 set :sidekiq_service_unit_name, 'sidekiq-photonia'
 
