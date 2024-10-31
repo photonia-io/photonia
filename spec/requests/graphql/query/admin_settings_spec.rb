@@ -15,6 +15,7 @@ describe 'adminSettings Query' do
     <<~GQL
       query {
         adminSettings {
+          id
           siteName
           siteDescription
           siteTrackingCode
@@ -64,6 +65,7 @@ describe 'adminSettings Query' do
         data = json['data']['adminSettings']
 
         expect(data).to include(
+          "id" => "admin-settings",
           "siteName" => site_name,
           "siteDescription" => site_description,
           "siteTrackingCode" => site_tracking_code,

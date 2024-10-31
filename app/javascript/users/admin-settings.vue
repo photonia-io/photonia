@@ -147,6 +147,7 @@ const showReloadButton = ref(false);
 const ADMIN_SETTINGS_QUERY = gql`
   query AdminSettingsQuery {
     adminSettings {
+      id
       siteName
       siteDescription
       siteTrackingCode
@@ -209,6 +210,7 @@ const {
         continueWithGoogleEnabled: $continueWithGoogleEnabled
         continueWithFacebookEnabled: $continueWithFacebookEnabled
       ) {
+        id
         siteName
         siteDescription
         siteTrackingCode
@@ -230,14 +232,6 @@ const {
         newContinueWithFacebookEnabled.value !== null
           ? newContinueWithFacebookEnabled.value
           : continueWithFacebookEnabled.value,
-    },
-    update: (cache, { data }) => {
-      cache.writeQuery({
-        query: ADMIN_SETTINGS_QUERY,
-        data: {
-          adminSettings: data.updateAdminSettings,
-        },
-      });
     },
   }),
 );
