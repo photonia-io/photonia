@@ -160,6 +160,7 @@ import toaster from "../mixins/toaster";
 const USER_SETTINGS_QUERY = gql`
   query UserSettingsQuery {
     userSettings {
+      id
       email
       firstName
       lastName
@@ -209,9 +210,25 @@ const {
   onError,
 } = useMutation(
   gql`
-    mutation ($email: String!, $timezone: String!) {
-      updateUserSettings(email: $email, timezone: $timezone) {
+    mutation (
+      $email: String!
+      $firstName: String!
+      $lastName: String!
+      $displayName: String!
+      $timezone: String!
+    ) {
+      updateUserSettings(
+        email: $email
+        firstName: $firstName
+        lastName: $lastName
+        displayName: $displayName
+        timezone: $timezone
+      ) {
+        id
         email
+        firstName
+        lastName
+        displayName
         timezone {
           name
         }
@@ -221,15 +238,10 @@ const {
   () => ({
     variables: {
       email: email.value,
+      firstName: newFirstName.value || firstName.value,
+      lastName: newLastName.value || lastName.value,
+      displayName: newDisplayName.value || displayName.value,
       timezone: newTimezone.value || timezone.value,
-    },
-    update: (cache, { data }) => {
-      cache.writeQuery({
-        query: USER_SETTINGS_QUERY,
-        data: {
-          userSettings: data.updateUserSettings,
-        },
-      });
     },
   }),
 );

@@ -176,7 +176,7 @@ module Types
     # Users
 
     def user_settings
-      context[:current_user]
+      context[:current_user] || raise('User not logged in')
     end
 
     # Admin settings

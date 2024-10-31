@@ -70,6 +70,9 @@ module Types
     field :update_user_settings, UserType, null: false do
       description 'Update user settings'
       argument :email, String, 'User email', required: true
+      argument :first_name, String, 'User first name', required: true
+      argument :last_name, String, 'User last name', required: true
+      argument :display_name, String, 'User display name', required: true
       argument :timezone, String, 'User timezone', required: true
     end
 
@@ -217,12 +220,16 @@ module Types
       photo
     end
 
-    def update_user_settings(email:, timezone:)
+    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
       user = context[:current_user]
+      raise 'User not logged in' unless user
       context[:authorize].call(user, :update?)
       # for now we don't allow users to change their email
-      # as that should trigger a devise's confirmation email
+      # as that should trigger Devise's confirmation email
       # user.update(email: email)
+      user.update(first_name: first_name)
+      user.update(last_name: last_name)
+      user.update(display_name: display_name)
       user.update(timezone: timezone)
       user
     end

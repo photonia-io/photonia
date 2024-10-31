@@ -256,4 +256,23 @@ RSpec.describe Photo do
       end
     end
   end
+
+  describe 'serial number setting' do
+    it 'sets the serial number before validation' do
+      photo = build(:photo)
+      photo.valid?
+      expect(photo.serial_number).not_to be_blank
+    end
+
+    it 'generates a serial number if it is not set' do
+      photo = build(:photo, serial_number: nil)
+      expect { photo.valid? }.to change(photo, :serial_number).from(nil)
+    end
+
+    it 'does not overwrite the serial number if it is already set' do
+      photo = build(:photo, serial_number: 123)
+      photo.valid?
+      expect(photo.serial_number).to eq(123)
+    end
+  end
 end

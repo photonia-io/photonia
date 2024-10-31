@@ -13,6 +13,8 @@
 #  jti                 :string
 #  last_name           :string
 #  remember_created_at :datetime
+#  serial_number       :bigint
+#  slug                :string
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
@@ -66,6 +68,32 @@ RSpec.describe User do
         expect(user.last_name).to eq(last_name)
         expect(user.display_name).to eq(display_name)
       end
+    end
+  end
+
+  describe '#slug' do
+    it 'returns the correct slug' do
+      user = create(:user)
+      expect(user.slug).to eq(user.serial_number.to_s)
+    end
+  end
+
+  describe 'serial number setting' do
+    it 'sets the serial number before validation' do
+      user = build(:user)
+      user.valid?
+      expect(user.serial_number).not_to be_blank
+    end
+
+    it 'generates a serial number if it is not set' do
+      user = build(:user, serial_number: nil)
+      expect { user.valid? }.to change(user, :serial_number).from(nil)
+    end
+
+    it 'does not overwrite the serial number if it is already set' do
+      user = build(:user, serial_number: 123)
+      user.valid?
+      expect(user.serial_number).to eq(123)
     end
   end
 end
