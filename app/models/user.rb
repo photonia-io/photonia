@@ -13,6 +13,8 @@
 #  jti                 :string
 #  last_name           :string
 #  remember_created_at :datetime
+#  serial_number       :bigint
+#  slug                :string
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
@@ -25,6 +27,12 @@
 class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
   include Tokenizable
+
+  extend FriendlyId
+  friendly_id :serial_number, use: :slugged
+
+  include SerialNumberSetter
+  before_validation :set_serial_number, prepend: true
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable

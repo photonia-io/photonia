@@ -25,4 +25,11 @@ namespace :users do
     user = User.find_by(email: args[:email])
     user.update(admin: true)
   end
+
+  desc 'Set serial numbers for all users'
+  task set_serial_numbers: :environment do
+    User.unscoped.each do |user|
+      user.save
+    end
+  end
 end

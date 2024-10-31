@@ -198,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const { result, error } = useQuery(gql`
       query UserSettingsQuery {
         userSettings {
+          id
           email
           admin
         }

@@ -12,6 +12,10 @@ module Types
     field :timezone, Types::TimezoneType, 'Timezone', null: false
     field :admin, Boolean, 'Admin', null: false
 
+    def id
+      @object.slug
+    end
+
     def timezone
       { name: @object.timezone }
     end

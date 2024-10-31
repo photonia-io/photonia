@@ -57,14 +57,6 @@ RSpec.describe Album do
     end
   end
 
-  describe 'callbacks' do
-    it 'calls set_serial_number after create' do
-      album = build(:album)
-      expect(album).to receive(:set_serial_number)
-      album.save
-    end
-  end
-
   describe 'instance methods' do
     describe '#slug' do
       it 'returns the correct slug' do
@@ -255,7 +247,7 @@ RSpec.describe Album do
 
     it 'generates a serial number if it is not set' do
       album = build(:album, serial_number: nil)
-      expect(album.valid?).to be_truthy
+      expect { album.valid? }.to change(album, :serial_number).from(nil)
     end
 
     it 'does not overwrite the serial number if it is already set' do

@@ -548,7 +548,9 @@ CREATE TABLE public.users (
     admin boolean DEFAULT false,
     first_name character varying,
     last_name character varying,
-    display_name character varying
+    display_name character varying,
+    serial_number bigint,
+    slug character varying
 );
 
 
@@ -1133,6 +1135,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241031094724'),
 ('20241016142426'),
 ('20240627150304'),
 ('20240627150254'),

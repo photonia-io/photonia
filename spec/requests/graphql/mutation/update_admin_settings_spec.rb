@@ -89,6 +89,21 @@ describe 'updateAdminSettings Mutation', type: :request do
         expect(Setting.continue_with_google_enabled).to eq(new_continue_with_google_enabled)
         expect(Setting.continue_with_facebook_enabled).to eq(new_continue_with_facebook_enabled)
       end
+
+      it 'returns the updated admin settings' do
+        post_mutation
+
+        json = JSON.parse(response.body)
+        data = json['data']['updateAdminSettings']
+
+        expect(data).to include(
+          'siteName' => new_site_name,
+          'siteDescription' => new_site_description,
+          'siteTrackingCode' => new_site_tracking_code,
+          'continueWithGoogleEnabled' => new_continue_with_google_enabled,
+          'continueWithFacebookEnabled' => new_continue_with_facebook_enabled
+        )
+      end
     end
   end
 end
