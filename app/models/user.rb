@@ -47,13 +47,17 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :timezone, presence: true
 
+  scope :admins, -> { where(admin: true) }
+
   def self.find_or_create_from_social(email:, first_name: nil, last_name: nil, display_name: nil)
-    find_by(email:) || create(
-      email:,
-      password: Devise.friendly_token[0, 20],
-      first_name:,
-      last_name:,
-      display_name:
-    )
+    created = false
+    user = find_or_create_by(email: email) do |user|
+      user.password = Devise.friendly_token[0, 20]
+      user.first_name = first_name
+      user.last_name = last_name
+      user.display_name = display_name
+      created = true
+    end
+    [user, created]
   end
 end

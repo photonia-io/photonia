@@ -39,6 +39,17 @@ RSpec.describe User do
     it { should validate_presence_of(:timezone) }
   end
 
+  describe 'scopes' do
+    describe '.admins' do
+      it 'returns only the admin users' do
+        admin = create(:user, admin: true)
+        create(:user, admin: false)
+
+        expect(described_class.admins).to eq([admin])
+      end
+    end
+  end
+
   describe '.find_or_create_from_social' do
     let(:email) { 'test@test.com' }
     let(:first_name) { 'Test' }
@@ -48,14 +59,14 @@ RSpec.describe User do
     context 'when the user exists' do
       let!(:user) { create(:user, email: email) }
 
-      it 'returns the user' do
-        expect(described_class.find_or_create_from_social(email: email)).to eq(user)
+      it 'returns the user and false' do
+        expect(described_class.find_or_create_from_social(email: email)).to eq([user, false])
       end
     end
 
     context 'when the user does not exist' do
-      it 'creates a new user' do
-        user = described_class.find_or_create_from_social(
+      it 'creates a new user and true' do
+        user, created = described_class.find_or_create_from_social(
           email: email,
           first_name: first_name,
           last_name: last_name,
@@ -67,6 +78,7 @@ RSpec.describe User do
         expect(user.first_name).to eq(first_name)
         expect(user.last_name).to eq(last_name)
         expect(user.display_name).to eq(display_name)
+        expect(created).to be(true)
       end
     end
   end
