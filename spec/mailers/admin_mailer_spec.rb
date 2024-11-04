@@ -24,7 +24,7 @@ RSpec.describe AdminMailer, type: :mailer do
     end
 
     it "renders the body" do
-      expect(mail.body.encoded).to include("New user signed up via <em>#{provider}</em>")
+      expect(mail.body.encoded).to include("A new user signed up via <em>#{provider}</em>")
       expect(mail.body.encoded).to include(first_name)
       expect(mail.body.encoded).to include(last_name)
       expect(mail.body.encoded).to include(email)
