@@ -28,7 +28,8 @@ class Setting < RailsSettings::Base
   field :site_tracking_code, default: ENV['PHOTONIA_TRACKING_CODE'] || "", type: :string
   field :continue_with_google_enabled, default: "0", type: :boolean
   field :continue_with_facebook_enabled, default: "0", type: :boolean
-  field :mailer_from, default: ENV['PHOTONIA_MAILER_FROM'] || "mailer@photonia.io", type: :string
+  field :mailer_from_name, default: ENV['PHOTONIA_MAILER_FROM_NAME'] || "Photonia", type: :string
+  field :mailer_from_address, default: ENV['PHOTONIA_MAILER_FROM_ADDRESS'] || "mailer@photonia.io", type: :string
   field :google_client_id, default: ENV['PHOTONIA_GOOGLE_CLIENT_ID'] || "", type: :string, readonly: true
   field :facebook_app_id, default: ENV['PHOTONIA_FACEBOOK_APP_ID'] || "", type: :string, readonly: true
 end
