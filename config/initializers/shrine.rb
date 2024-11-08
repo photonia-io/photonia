@@ -9,7 +9,7 @@ if Rails.env.test?
     cache: Shrine::Storage::Memory.new,
     store: Shrine::Storage::Memory.new
   }
-else
+elsif ENV.fetch('DOCKER_BUILD', 'false') == 'false'
   require 'shrine/storage/s3'
 
   s3_options = {
