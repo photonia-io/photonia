@@ -7,13 +7,13 @@ if Rails.env.test?
     config.logger.level = Logger::WARN
   end
 else
-  # sidekiq_config = { url: ENV.fetch('PHOTONIA_REDIS_URL', nil) }
+  sidekiq_config = { url: ENV.fetch('PHOTONIA_REDIS_URL', nil) }
 
-  # Sidekiq.configure_server do |config|
-  #   config.redis = sidekiq_config
-  # end
+  Sidekiq.configure_server do |config|
+    config.redis = sidekiq_config
+  end
 
-  # Sidekiq.configure_client do |config|
-  #   config.redis = sidekiq_config
-  # end
+  Sidekiq.configure_client do |config|
+    config.redis = sidekiq_config
+  end
 end
