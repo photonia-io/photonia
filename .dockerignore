@@ -56,7 +56,7 @@
 /.rubocop.yml
 /.vscode
 /coverage
-/flickr
+/flickr/*
 /Procfile*
 /README.md
 /spec/*

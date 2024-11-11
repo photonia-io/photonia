@@ -36,7 +36,7 @@ yarn-debug.log*
 .yarn-integrity
 
 # Ignore flickr directory with private data and photos
-/flickr/
+/flickr/*
 
 # Ignore .env files
 .env*
