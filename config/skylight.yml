@@ -1,1 +1,0 @@
-authentication: <%= ENV.fetch("PHOTONIA_SKYLIGHT_AUTHENTICATION") %>

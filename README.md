@@ -1,6 +1,5 @@
 # Photonia
 
-[![View performance data on Skylight](https://badges.skylight.io/typical/pBXWPB77ozgl.svg?token=ldWA6m6KXWnHWUcp85Hmlw1yv-kph0C2LankE7pzGjQ)](https://www.skylight.io/app/applications/pBXWPB77ozgl)
 [![Test coverage](https://codecov.io/gh/photonia-io/photonia/graph/badge.svg?token=kLLGDkhYew)](https://codecov.io/gh/photonia-io/photonia)
 [![Licensed under the Apache License, Version 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](<[http://www.apache.org/licenses/LICENSE-2.0](https://github.com/photonia-io/photonia/blob/development/LICENSE)>)
 
