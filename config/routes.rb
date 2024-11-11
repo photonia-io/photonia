@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  get "up" => "rails/health#show", as: :rails_health_check
+
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   get '/users/sign_in', to: 'users#sign_in'
   get '/users/sign_out', to: 'users#sign_out'
