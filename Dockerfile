@@ -67,6 +67,9 @@ ENV DOCKER_BUILD=true
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
+# Clean up node_modules
+RUN rm -rf node_modules
+
 
 # Final stage for app image
 FROM base
