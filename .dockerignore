@@ -46,12 +46,18 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+/docker-compose.yml
 
 # Additional files that shouldn't be in the image
+/.browserlistrc
+/.byebug_history
 /.prettierrc.json
-/Procfile*
 /.rspec
 /.rubocop.yml
+/.vscode
+/coverage
+/flickr
+/Procfile*
 /README.md
 /spec/*
-/support/*
+/support
