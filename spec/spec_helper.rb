@@ -11,6 +11,8 @@ SimpleCov.start do
   add_group 'Mailers', 'app/mailers'
   add_group 'Helpers', 'app/helpers'
   add_group 'Libraries', 'lib'
+
+  add_filter 'config/initializers'
 end
 
 if ENV['CI']
