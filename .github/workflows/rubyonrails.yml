@@ -55,6 +55,14 @@ jobs:
           slug: photonia-io/photonia
       - name: Run vitest
         run: yarn test:run
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t photonia .
 
   # lint:
   #   runs-on: ubuntu-latest
