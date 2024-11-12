@@ -56,7 +56,6 @@ jobs:
       - name: Run vitest
         run: yarn test:run
   docker:
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
