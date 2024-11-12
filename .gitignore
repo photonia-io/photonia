@@ -54,3 +54,5 @@ node_modules
 # Coverage directory used by tools like SimpleCov
 /coverage/
 
+# Ignore the Kamal deploy config file
+config/deploy.yml
