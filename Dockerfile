@@ -12,7 +12,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y libjemalloc2 file libpq-dev libexif-dev imagemagick && \
+    apt-get install --no-install-recommends -y libjemalloc2 cron file libpq-dev libexif-dev imagemagick && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
