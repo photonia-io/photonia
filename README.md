@@ -64,7 +64,7 @@ Selenium Grid becomes available at http://localhost:4444/ui
 
 ## Set up Docker host
 
-The sitemap file will be stored outside the container. The following commands should be run in the directory where you plan to run the container before the first deployment:
+The sitemap file will be persisted outside the container. The following commands should be run in the directory where you plan to run the container before the first deployment:
 
 ```
 mkdir -p ./photonia-web/sitemap
