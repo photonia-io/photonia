@@ -36,13 +36,10 @@ yarn-debug.log*
 .yarn-integrity
 
 # Ignore flickr directory with private data and photos
-/flickr/
+/flickr/*
 
 # Ignore .env files
 .env*
-
-# Ignore skylight.io configuration file
-/config/skylight.yml
 
 # Ignore generated sitemap
 /public/sitemap.xml.gz
@@ -57,3 +54,5 @@ node_modules
 # Coverage directory used by tools like SimpleCov
 /coverage/
 
+# Ignore the Kamal deploy config file
+config/deploy.yml
