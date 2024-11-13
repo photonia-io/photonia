@@ -9,7 +9,7 @@ fi
 # and generate the sitemap file if it's size is 0.
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
   ./bin/rails db:prepare
-  if [ ! -s "public/sitemap.xml" ]; then
+  if [ ! -s "public/sitemap.xml.gz" ]; then
     ./bin/rails sitemap:refresh
   fi
 fi
