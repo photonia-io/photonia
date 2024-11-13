@@ -51,7 +51,6 @@ gem 'sidekiq'
 gem 'sitemap_generator'
 gem 'vite_rails', '~> 3.0', '>= 3.0.14'
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
-gem 'whenever', require: false
 
 group :development, :test do
   gem 'bcrypt_pbkdf'
@@ -94,3 +93,5 @@ end
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
 gem "rails-settings-cached", "~> 2.9"
+
+gem "sidekiq-scheduler", "~> 5.0"

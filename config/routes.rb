@@ -35,6 +35,7 @@ Rails.application.routes.draw do
 
   # sidekiq
   require 'sidekiq/web'
+  require 'sidekiq-scheduler/web'
 
   Sidekiq::Web.use Rack::Auth::Basic do |username, password|
     username == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_USERNAME') &&

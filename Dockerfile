@@ -12,7 +12,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y libjemalloc2 cron file libpq-dev libexif-dev imagemagick && \
+    apt-get install --no-install-recommends -y libjemalloc2 file libpq-dev libexif-dev imagemagick && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
@@ -73,9 +73,6 @@ RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
 USER 1000:1000
-
-# Install the crontab
-RUN bundle exec whenever --update-crontab
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]

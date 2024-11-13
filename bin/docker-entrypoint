@@ -6,12 +6,12 @@ if [ -z "${LD_PRELOAD+x}" ] && [ -f /usr/lib/*/libjemalloc.so.2 ]; then
 fi
 
 # If running the rails server then create or migrate existing database
+# and generate the sitemap file if it's size is 0.
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  # if the sitemap file is size 0, generate it
+  ./bin/rails db:prepare
   if [ ! -s "public/sitemap.xml" ]; then
     ./bin/rails sitemap:refresh
   fi
-  ./bin/rails db:prepare
 fi
 
 exec "${@}"
