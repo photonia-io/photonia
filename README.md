@@ -61,3 +61,13 @@ Selenium Grid becomes available at http://localhost:4444/ui
    - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
    - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
 3. Publish the release
+
+## Set up Docker host
+
+The sitemap file will be stored outside the container. The following commands should be run in the directory where you plan to run the container before the first deployment:
+
+```
+mkdir -p ./photonia-web/sitemap
+touch ./photonia-web/sitemap/sitemap.xml.gz
+chmod 777 ./photonia-web/sitemap/sitemap.xml.gz
+```
