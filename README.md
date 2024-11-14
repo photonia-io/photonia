@@ -22,7 +22,7 @@ A photo hosting service tailored to my needs.
 
 ## Setup
 
-    sudo apt install libpq-dev libexif-dev
+    sudo apt install libpq-dev libexif-dev imagemagick
 
 ## Development
 
