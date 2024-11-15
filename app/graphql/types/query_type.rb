@@ -176,8 +176,8 @@ module Types
     # Users
 
     def user_settings
-      current_user = context[:current_user]
-      raise Pundit::NotAuthorizedError, 'User not signed in' unless current_user
+      user = context[:current_user]
+      raise GraphQL::ExecutionError, 'User not signed in' unless user
       context[:authorize].call(context[:current_user], :edit?)
     end
 

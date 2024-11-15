@@ -33,8 +33,14 @@ describe 'userSettings Query' do
   subject(:post_query) { post '/graphql', params: { query: query } }
 
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns an error message in the GraphQL response' do
+      post_query
+
+      json = JSON.parse(response.body)
+
+      expect(json['errors'][0]).to include(
+        'message' => 'User not signed in'
+      )
     end
   end
 
