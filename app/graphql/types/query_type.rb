@@ -95,7 +95,7 @@ module Types
       )
       photos.define_singleton_method(:total_pages) { pagy.pages }
       photos.define_singleton_method(:current_page) { pagy.page }
-      photos.define_singleton_method(:limit_value) { pagy.items }
+      photos.define_singleton_method(:limit_value) { pagy.limit }
       photos.define_singleton_method(:total_count) { pagy.count }
       photos
     end
@@ -136,7 +136,7 @@ module Types
       pagy, albums = context[:pagy].call(Album.includes(:public_cover_photo).where('public_photos_count > ?', 0).order(created_at: :desc), page:)
       albums.define_singleton_method(:total_pages) { pagy.pages }
       albums.define_singleton_method(:current_page) { pagy.page }
-      albums.define_singleton_method(:limit_value) { pagy.items }
+      albums.define_singleton_method(:limit_value) { pagy.limit }
       albums.define_singleton_method(:total_count) { pagy.count }
       albums
     end
