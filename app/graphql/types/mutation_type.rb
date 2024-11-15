@@ -177,7 +177,7 @@ module Types
         )
         if created
           AdminMailer.with(
-            provider: user.provider.capitalize,
+            provider: user.signup_provider.capitalize,
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
@@ -209,7 +209,7 @@ module Types
           )
           if created
             AdminMailer.with(
-              provider: user.provider.capitalize,
+              provider: user.signup_provider.capitalize,
               first_name: user.first_name,
               last_name: user.last_name,
               email: user.email,
