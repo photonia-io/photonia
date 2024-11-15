@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-if Rails.env.production?
+if Rails.env.production? && ENV.fetch('DOCKER_BUILD', 'false') == 'false'
   Sentry.init do |config|
     config.dsn = ENV.fetch('PHOTONIA_BE_SENTRY_DSN')
     config.breadcrumbs_logger = %i[active_support_logger http_logger]

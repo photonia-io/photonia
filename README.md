@@ -1,6 +1,5 @@
 # Photonia
 
-[![View performance data on Skylight](https://badges.skylight.io/typical/pBXWPB77ozgl.svg?token=ldWA6m6KXWnHWUcp85Hmlw1yv-kph0C2LankE7pzGjQ)](https://www.skylight.io/app/applications/pBXWPB77ozgl)
 [![Test coverage](https://codecov.io/gh/photonia-io/photonia/graph/badge.svg?token=kLLGDkhYew)](https://codecov.io/gh/photonia-io/photonia)
 [![Licensed under the Apache License, Version 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](<[http://www.apache.org/licenses/LICENSE-2.0](https://github.com/photonia-io/photonia/blob/development/LICENSE)>)
 
@@ -23,7 +22,7 @@ A photo hosting service tailored to my needs.
 
 ## Setup
 
-    sudo apt install libpq-dev libexif-dev
+    sudo apt install libpq-dev libexif-dev imagemagick
 
 ## Development
 
@@ -53,7 +52,7 @@ Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procf
 
 Selenium Grid becomes available at http://localhost:4444/ui
 
-**Note:** For the moment system specs are configured not to run from the [.rspec config file.](.rspec).
+**Note:** For the moment system specs are configured not to run from the [.rspec config file](.rspec).
 
 ## Versioning & Deployment
 
@@ -62,3 +61,13 @@ Selenium Grid becomes available at http://localhost:4444/ui
    - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
    - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
 3. Publish the release
+
+## Set up Docker host
+
+The sitemap file will be persisted outside the container. The following commands should be run in the directory where you plan to run the container before the first deployment:
+
+```
+mkdir -p ./photonia-web/sitemap
+touch ./photonia-web/sitemap/sitemap.xml.gz
+chmod 777 ./photonia-web/sitemap/sitemap.xml.gz
+```

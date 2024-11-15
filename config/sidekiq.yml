@@ -1,0 +1,5 @@
+:scheduler:
+  :schedule:
+    sitemap_refresh:
+      cron: "0 5 * * *" # 5:00 AM
+      class: SitemapRefreshJob

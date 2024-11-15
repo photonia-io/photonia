@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.3.5'
+ruby '3.3.6'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 7.0'
@@ -26,7 +26,7 @@ gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 11.0'
+gem 'acts-as-taggable-on', '~> 12.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
@@ -40,7 +40,7 @@ gem 'groupdate'
 gem 'image_processing', '~> 1.8'
 gem 'impressionist', '~> 2.0'
 gem 'kramdown'
-gem 'pagy', '~> 8'
+gem 'pagy', '~> 9'
 gem 'pg_search'
 gem 'pundit'
 gem 'redis'
@@ -49,20 +49,13 @@ gem 'sentry-ruby', '~> 5.8'
 gem 'shrine', '~> 3.0'
 gem 'sidekiq'
 gem 'sitemap_generator'
-gem 'skylight'
 gem 'vite_rails', '~> 3.0', '>= 3.0.14'
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
-gem 'whenever', require: false
 
 group :development, :test do
   gem 'bcrypt_pbkdf'
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: %i[mri mingw x64_mingw]
-  gem 'capistrano', '~> 3.14', require: false
-  gem 'capistrano-passenger'
-  gem 'capistrano-rails'
-  gem 'capistrano-rbenv'
-  gem 'capistrano-sidekiq'
   gem 'ed25519'
   gem 'factory_bot_rails'
   gem 'faker'
@@ -100,3 +93,5 @@ end
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
 gem "rails-settings-cached", "~> 2.9"
+
+gem "sidekiq-scheduler", "~> 5.0"
