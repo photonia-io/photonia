@@ -19,7 +19,7 @@ module Types
       pagy, @photos = context[:pagy].call(Photo.distinct.tagged_with(@object).order(posted_at: :desc), page:)
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
-      @photos.define_singleton_method(:limit_value) { pagy.items }
+      @photos.define_singleton_method(:limit_value) { pagy.limit }
       @photos.define_singleton_method(:total_count) { pagy.count }
       @photos
     end

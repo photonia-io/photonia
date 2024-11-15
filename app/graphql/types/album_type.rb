@@ -33,7 +33,7 @@ module Types
       pagy, @photos = context[:pagy].call(@object.photos.order(:ordering), page:)
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
-      @photos.define_singleton_method(:limit_value) { pagy.items }
+      @photos.define_singleton_method(:limit_value) { pagy.limit }
       @photos.define_singleton_method(:total_count) { pagy.count }
       @photos
     end
