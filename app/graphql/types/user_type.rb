@@ -11,6 +11,7 @@ module Types
     field :id, String, 'User ID', null: false
     field :timezone, Types::TimezoneType, 'Timezone', null: false
     field :admin, Boolean, 'Admin', null: false
+    field :uploader, Boolean, 'Uploader', null: false
 
     def id
       @object.slug
@@ -18,6 +19,10 @@ module Types
 
     def timezone
       { name: @object.timezone }
+    end
+
+    def uploader
+      @object.has_role?(:uploader)
     end
   end
 end

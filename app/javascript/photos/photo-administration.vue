@@ -45,10 +45,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  loading: {
-    type: Boolean,
-    required: true,
-  },
 });
 
 const emit = defineEmits(["deletePhoto"]);

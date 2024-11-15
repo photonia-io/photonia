@@ -2,6 +2,6 @@
 
 class ImpressionPolicy < ApplicationPolicy
   def index?
-    user.present?
+    user.present? && user.admin?
   end
 end

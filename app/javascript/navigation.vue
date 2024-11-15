@@ -55,7 +55,7 @@
           </router-link>
 
           <router-link
-            v-if="userStore.signedIn"
+            v-if="userStore.signedIn && userStore.uploader"
             :to="{ name: 'photos-upload' }"
             class="navbar-item"
           >
@@ -66,7 +66,7 @@
           </router-link>
 
           <router-link
-            v-if="userStore.signedIn"
+            v-if="userStore.signedIn && userStore.admin"
             :to="{ name: 'stats-index' }"
             class="navbar-item"
           >

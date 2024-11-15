@@ -11,8 +11,6 @@ describe 'userSettings Query' do
   let(:display_name) { Faker::Name.name }
   let(:timezone) { ActiveSupport::TimeZone.all.sample.name }
 
-  let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
-
   let(:query) do
     <<~GQL
       query {
@@ -25,6 +23,8 @@ describe 'userSettings Query' do
           timezone {
             name
           }
+          admin
+          uploader
         }
       }
     GQL
@@ -33,30 +33,51 @@ describe 'userSettings Query' do
   subject(:post_query) { post '/graphql', params: { query: query } }
 
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_query }.to raise_error(RuntimeError, 'User not logged in')
+    it 'returns an error message in the GraphQL response' do
+      post_query
+
+      json = JSON.parse(response.body)
+
+      expect(json['errors'][0]).to include(
+        'message' => 'User not signed in'
+      )
     end
   end
 
   context 'when the user is logged in' do
-    before do
+    def sign_in_and_post_query(user)
       sign_in(user)
+      post_query
     end
 
-    it 'returns the user settings' do
-      post_query
+    context 'and is a registered user' do
+      let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
 
-      json = JSON.parse(response.body)
-      data = json['data']['userSettings']
+      before do
+        sign_in_and_post_query(user)
+      end
 
-      expect(data).to include(
-        'id' => user.slug,
-        'email' => email,
-        'firstName' => first_name,
-        'lastName' => last_name,
-        'displayName' => display_name,
-        'timezone' => { 'name' => timezone }
-      )
+      it_behaves_like 'user settings', admin: false, uploader: false
+    end
+
+    context 'and is an uploader' do
+      let!(:user) { create(:user, :uploader, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
+
+      before do
+        sign_in_and_post_query(user)
+      end
+
+      it_behaves_like 'user settings', admin: false, uploader: true
+    end
+
+    context 'and is an admin' do
+      let!(:user) { create(:user, admin: true, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
+
+      before do
+        sign_in_and_post_query(user)
+      end
+
+      it_behaves_like 'user settings', admin: true, uploader: true
     end
   end
 end

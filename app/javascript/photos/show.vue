@@ -13,7 +13,7 @@
           <!-- Photo title and navigation -->
           <div class="level-left is-flex-grow-1" id="photo-title-container">
             <PhotoTitleEditable
-              v-if="userStore.signedIn && !loading"
+              v-if="!loading && userStore.signedIn && photo.canEdit"
               :id="photo.id"
               :title="photoTitle()"
               @update-title="updatePhotoTitle"
@@ -43,7 +43,7 @@
             <div class="column is-three-quarters">
               <!-- Left column -->
               <PhotoDescriptionEditable
-                v-if="userStore.signedIn && !loading"
+                v-if="!loading && userStore.signedIn && photo.canEdit"
                 :id="photo.id"
                 :description="photoDescription()"
                 @update-description="updatePhotoDescription"
@@ -51,9 +51,8 @@
               <div v-else class="content" v-html="photoDescriptionHtml()"></div>
 
               <PhotoAdministration
-                v-if="userStore.signedIn"
+                v-if="!loading && userStore.signedIn && photo.canEdit"
                 :photo="photo"
-                :loading="loading"
                 @delete-photo="deletePhoto"
               />
 

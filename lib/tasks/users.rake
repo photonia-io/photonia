@@ -32,4 +32,12 @@ namespace :users do
       user.save
     end
   end
+
+  desc 'Add registered_user role to all users'
+  task add_registered_user_role: :environment do
+    registered_user_role = Role.find_by(symbol: 'registered_user')
+    User.unscoped.each do |user|
+      user.roles << registered_user_role
+    end
+  end
 end

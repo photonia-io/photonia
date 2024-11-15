@@ -242,7 +242,7 @@ module Types
 
     def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
       user = context[:current_user]
-      raise 'User not logged in' unless user
+      raise Pundit::NotAuthorizedError, 'User not signed in' unless user
       context[:authorize].call(user, :update?)
       # for now we don't allow users to change their email
       # as that should trigger Devise's confirmation email

@@ -6,6 +6,7 @@ module Types
     description 'A Photo'
 
     field :albums, [AlbumType], 'Albums the photo belongs to', null: true
+    field :can_edit, Boolean, 'Whether the user can edit the photo', null: false
     field :comments, [CommentType], 'Comments on the photo', null: true
     field :description, String, 'Description', null: false
     field :description_html, String, 'Description in HTML', null: true
@@ -104,6 +105,10 @@ module Types
 
     def comments
       @object.comments.order(created_at: :asc)
+    end
+
+    def can_edit
+      Pundit.policy(context[:current_user], @object)&.edit?
     end
   end
 end

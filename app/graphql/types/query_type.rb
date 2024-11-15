@@ -176,13 +176,15 @@ module Types
     # Users
 
     def user_settings
-      context[:current_user] || raise('User not logged in')
+      user = context[:current_user]
+      raise GraphQL::ExecutionError, 'User not signed in' unless user
+      context[:authorize].call(context[:current_user], :edit?)
     end
 
     # Admin settings
 
     def admin_settings
-      context[:authorize].call(Setting, :show?)
+      context[:authorize].call(Setting, :edit?)
     end
 
     # Timezones
