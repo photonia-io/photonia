@@ -14,6 +14,7 @@
 #  last_name           :string
 #  remember_created_at :datetime
 #  serial_number       :bigint
+#  signup_provider     :string           default("local"), not null
 #  slug                :string
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
@@ -37,6 +38,7 @@ RSpec.describe User do
     it { should validate_presence_of(:email) }
     it { should validate_uniqueness_of(:email).case_insensitive }
     it { should validate_presence_of(:timezone) }
+    it { should validate_inclusion_of(:signup_provider).in_array(%w[local facebook google]) }
   end
 
   describe 'scopes' do
@@ -52,6 +54,7 @@ RSpec.describe User do
 
   describe '.find_or_create_from_social' do
     let(:email) { 'test@test.com' }
+    let(:provider) { %w[facebook google].sample }
     let(:first_name) { 'Test' }
     let(:last_name) { 'User' }
     let(:display_name) { 'Test User' }
@@ -60,14 +63,15 @@ RSpec.describe User do
       let!(:user) { create(:user, email: email) }
 
       it 'returns the user and false' do
-        expect(described_class.find_or_create_from_social(email: email)).to eq([user, false])
+        expect(described_class.find_or_create_from_social(email:, provider:)).to eq([user, false])
       end
     end
 
     context 'when the user does not exist' do
-      it 'creates a new user and true' do
+      it 'creates a new user returns it and true' do
         user, created = described_class.find_or_create_from_social(
           email: email,
+          provider: provider,
           first_name: first_name,
           last_name: last_name,
           display_name: display_name
@@ -75,6 +79,7 @@ RSpec.describe User do
 
         expect(user).to be_persisted
         expect(user.email).to eq(email)
+        expect(user.signup_provider).to eq(provider)
         expect(user.first_name).to eq(first_name)
         expect(user.last_name).to eq(last_name)
         expect(user.display_name).to eq(display_name)

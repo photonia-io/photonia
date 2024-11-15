@@ -170,13 +170,14 @@ module Types
       if payload && payload['email_verified']
         user, created = User.find_or_create_from_social(
           email: payload['email'],
+          provider: 'google',
           first_name: payload['given_name'],
           last_name: payload['family_name'],
           display_name: payload['name']
         )
         if created
           AdminMailer.with(
-            provider: 'Google',
+            provider: user.provider.capitalize,
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
@@ -201,13 +202,14 @@ module Types
         if decoded_payload_data['user_id'] == facebook_user_info['id']
           user, created = User.find_or_create_from_social(
             email: facebook_user_info['email'],
+            provider: 'facebook',
             first_name: facebook_user_info['first_name'],
             last_name: facebook_user_info['last_name'],
             display_name: facebook_user_info['name']
           )
           if created
             AdminMailer.with(
-              provider: 'Facebook',
+              provider: user.provider.capitalize,
               first_name: user.first_name,
               last_name: user.last_name,
               email: user.email,

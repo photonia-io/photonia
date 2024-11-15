@@ -550,7 +550,8 @@ CREATE TABLE public.users (
     last_name character varying,
     display_name character varying,
     serial_number bigint,
-    slug character varying
+    slug character varying,
+    signup_provider character varying DEFAULT 'local'::character varying NOT NULL
 );
 
 
@@ -1135,6 +1136,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241115100214'),
 ('20241031094724'),
 ('20241016142426'),
 ('20240627150304'),

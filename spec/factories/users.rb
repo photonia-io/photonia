@@ -14,6 +14,7 @@
 #  last_name           :string
 #  remember_created_at :datetime
 #  serial_number       :bigint
+#  signup_provider     :string           default("local"), not null
 #  slug                :string
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null

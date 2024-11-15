@@ -44,7 +44,8 @@ describe 'continueWithFacebook Mutation', type: :request do
 
     context 'when the user does not exist' do
       before do
-        allow(User).to receive_message_chain(:admins, :pluck).and_return(['test@test.com'])
+        # this is for the mailer
+        allow(User).to receive_message_chain(:admins, :pluck).and_return(['admin@test.com'])
       end
 
       it 'creates a new user and sends an email to the admin' do
@@ -52,6 +53,12 @@ describe 'continueWithFacebook Mutation', type: :request do
           expect { post_mutation }.to change(User, :count).by(1)
             .and change(ActionMailer::Base.deliveries, :count).by(1)
         end
+      end
+
+      it "sets the user's signup provider to 'facebook'" do
+        post_mutation
+        user = User.last
+        expect(user.signup_provider).to eq('facebook')
       end
 
       it 'returns the user' do
