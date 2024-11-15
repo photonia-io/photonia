@@ -50,6 +50,8 @@ env:
     - PHOTONIA_S3_BUCKET
     - PHOTONIA_REKOGNITION_ACCESS_KEY_ID
     - PHOTONIA_REKOGNITION_SECRET_ACCESS_KEY
+    - PHOTONIA_SES_SMTP_USERNAME
+    - PHOTONIA_SES_SMTP_PASSWORD
     - PHOTONIA_BE_SENTRY_DSN
     - PHOTONIA_FE_SENTRY_DSN
     - PHOTONIA_BE_SENTRY_SAMPLE_RATE
@@ -62,6 +64,9 @@ env:
     - PHOTONIA_FACEBOOK_APP_SECRET
     - PHOTONIA_THUMBNAIL_SIDE
     - PHOTONIA_MEDIUM_SIDE
+    - PHOTONIA_MAILER_FROM_NAME
+    - PHOTONIA_MAILER_FROM_ADDRESS
+
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal logs -r job" will tail logs from the first server in the job section.
 #
