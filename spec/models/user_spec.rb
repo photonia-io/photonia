@@ -113,4 +113,39 @@ RSpec.describe User do
       expect(user.serial_number).to eq(123)
     end
   end
+
+  describe 'roles' do
+    let(:user) { create(:user) }
+
+    it 'has a default role' do
+      expect(user.roles).to eq([Role.find_by(symbol: 'registered_user')])
+    end
+
+    it 'can have multiple roles' do
+      role = create(:role, name: 'Another role', symbol: 'another_role')
+      user.roles << role
+
+      expect(user.roles).to include(role)
+    end
+  end
+
+  describe '#has_role?' do
+    let(:user) { create(:user) }
+
+    it 'returns true if the user is an admin' do
+      user.update(admin: true)
+      expect(user.has_role?(:non_existent_role)).to be(true)
+    end
+
+    it 'returns true if the user has the role' do
+      role = create(:role, name: 'Another role', symbol: 'another_role')
+      user.roles << role
+
+      expect(user.has_role?(:another_role)).to be(true)
+    end
+
+    it 'returns false if the user does not have the role' do
+      expect(user.has_role?(:non_existent_role)).to be(false)
+    end
+  end
 end

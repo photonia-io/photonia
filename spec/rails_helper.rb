@@ -64,12 +64,14 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 
-  RSpec.configure do |config|
-    config.include SystemSpecsHelper, type: :system
-  end
-
+  config.include SystemSpecsHelper, type: :system
   config.before(:each, type: :system) do
     driven_by :remote_chrome
+  end
+
+  # Seed the database before the test suite runs
+  config.before(:suite) do
+    Rails.application.load_seed
   end
 end
 

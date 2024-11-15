@@ -44,12 +44,15 @@ class User < ApplicationRecord
          :jwt_authenticatable, jwt_revocation_strategy: self
 
   has_many :photos, dependent: :destroy
+  has_and_belongs_to_many :roles
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :timezone, presence: true
   validates :signup_provider, inclusion: { in: %w[local facebook google] }
 
   scope :admins, -> { where(admin: true) }
+
+  after_create :assign_default_role
 
   def self.find_or_create_from_social(email:, provider:, first_name: nil, last_name: nil, display_name: nil)
     created = false
@@ -62,5 +65,15 @@ class User < ApplicationRecord
       created = true
     end
     [user, created]
+  end
+
+  def has_role?(role_symbol)
+    admin? || roles.exists?(symbol: role_symbol)
+  end
+
+  private
+
+  def assign_default_role
+    roles << Role.find_by(symbol: 'registered_user')
   end
 end

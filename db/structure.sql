@@ -389,6 +389,48 @@ ALTER SEQUENCE public.photos_id_seq OWNED BY public.photos.id;
 
 
 --
+-- Name: roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.roles (
+    id bigint NOT NULL,
+    name character varying,
+    symbol character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.roles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
+
+
+--
+-- Name: roles_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.roles_users (
+    user_id bigint NOT NULL,
+    role_id bigint NOT NULL
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -631,6 +673,13 @@ ALTER TABLE ONLY public.photos ALTER COLUMN id SET DEFAULT nextval('public.photo
 
 
 --
+-- Name: roles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
+
+
+--
 -- Name: settings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -735,6 +784,14 @@ ALTER TABLE ONLY public.labels
 
 ALTER TABLE ONLY public.photos
     ADD CONSTRAINT photos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
 
 
 --
@@ -930,6 +987,20 @@ CREATE UNIQUE INDEX index_photos_on_slug ON public.photos USING btree (slug);
 --
 
 CREATE INDEX index_photos_on_user_id ON public.photos USING btree (user_id);
+
+
+--
+-- Name: index_roles_users_on_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_roles_users_on_role_id ON public.roles_users USING btree (role_id);
+
+
+--
+-- Name: index_roles_users_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_roles_users_on_user_id ON public.roles_users USING btree (user_id);
 
 
 --
@@ -1136,6 +1207,8 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241115114702'),
+('20241115114615'),
 ('20241115100214'),
 ('20241031094724'),
 ('20241016142426'),
