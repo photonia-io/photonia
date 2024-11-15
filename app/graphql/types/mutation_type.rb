@@ -168,12 +168,22 @@ module Types
         aud: client_id
       )
       if payload && payload['email_verified']
-        user = User.find_or_create_from_social(
+        user, created = User.find_or_create_from_social(
           email: payload['email'],
+          provider: 'google',
           first_name: payload['given_name'],
           last_name: payload['family_name'],
           display_name: payload['name']
         )
+        if created
+          AdminMailer.with(
+            provider: user.signup_provider.capitalize,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            admin_emails: User.admins.pluck(:email)
+          ).new_social_user.deliver_later
+        end
         context[:sign_in].call(:user, user)
         user
       end
@@ -190,12 +200,22 @@ module Types
 
         # If the data from the signed request matches the user info, continue
         if decoded_payload_data['user_id'] == facebook_user_info['id']
-          user = User.find_or_create_from_social(
+          user, created = User.find_or_create_from_social(
             email: facebook_user_info['email'],
+            provider: 'facebook',
             first_name: facebook_user_info['first_name'],
             last_name: facebook_user_info['last_name'],
             display_name: facebook_user_info['name']
           )
+          if created
+            AdminMailer.with(
+              provider: user.signup_provider.capitalize,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              email: user.email,
+              admin_emails: User.admins.pluck(:email)
+            ).new_social_user.deliver_later
+          end
           context[:sign_in].call(:user, user)
           user
         else

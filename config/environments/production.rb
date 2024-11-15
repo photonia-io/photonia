@@ -73,6 +73,17 @@ Rails.application.configure do
   # config.active_job.queue_adapter     = :resque
   # config.active_job.queue_name_prefix = "photonia_production"
 
+  # Configure Action Mailer to use Amazon SES via SMTP
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: 'email-smtp.us-east-1.amazonaws.com',
+    port: 587,
+    user_name: ENV['PHOTONIA_SES_SMTP_USERNAME'],
+    password: ENV['PHOTONIA_SES_SMTP_PASSWORD'],
+    authentication: :login,
+    enable_starttls_auto: true
+  }
+
   config.action_mailer.perform_caching = false
 
   # Ignore bad email addresses and do not raise email delivery errors.
