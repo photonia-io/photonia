@@ -34,7 +34,7 @@ describe 'userSettings Query' do
 
   context 'when the user is not logged in' do
     it 'raises Pundit::NotAuthorizedError' do
-      expect { post_query }.to raise_error(RuntimeError, 'User not logged in')
+      expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
     end
   end
 

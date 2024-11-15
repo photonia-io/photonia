@@ -29,5 +29,12 @@ FactoryBot.define do
   factory :user do
     email { Faker::Internet.email }
     password { Faker::Internet.password }
+
+    trait :uploader do
+      after(:create) do |user|
+        uploader_role = Role.find_by(symbol: 'uploader')
+        user.roles << uploader_role
+      end
+    end
   end
 end

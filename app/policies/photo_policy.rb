@@ -1,16 +1,21 @@
 # frozen_string_literal: true
 
 class PhotoPolicy < ApplicationPolicy
-  def new?
-    create?
+  def index?
+    true
+  end
+
+  def show?
+    # TODO implement private photos
+    true
   end
 
   def create?
-    user.present?
+    user.present? && user.has_role?(:uploader)
   end
 
   def update?
-    record.user_id == user&.id
+    user.present? && (user.admin? || record.user_id == user.id)
   end
 
   def destroy?

@@ -46,7 +46,7 @@ describe 'updateUserSettings Mutation', type: :request do
 
   context 'when the user is not logged in' do
     it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(RuntimeError, 'User not logged in')
+      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError, 'User not signed in')
     end
   end
 

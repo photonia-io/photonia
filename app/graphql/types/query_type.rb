@@ -176,13 +176,15 @@ module Types
     # Users
 
     def user_settings
-      context[:current_user] || raise('User not logged in')
+      current_user = context[:current_user]
+      raise Pundit::NotAuthorizedError, 'User not signed in' unless current_user
+      context[:authorize].call(context[:current_user], :edit?)
     end
 
     # Admin settings
 
     def admin_settings
-      context[:authorize].call(Setting, :show?)
+      context[:authorize].call(Setting, :edit?)
     end
 
     # Timezones
