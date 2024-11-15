@@ -8,6 +8,7 @@ export const useUserStore = defineStore("user", () => {
   const signedIn = ref(false);
   const email = ref("");
   const admin = ref(false);
+  const uploader = ref(false);
 
   function signOut() {
     const tokenStore = useTokenStore();
@@ -19,7 +20,8 @@ export const useUserStore = defineStore("user", () => {
     signedIn.value = false;
     email.value = "";
     admin.value = false;
+    uploader.value = false;
   }
 
-  return { signedIn, email, admin, signOut };
+  return { signedIn, email, admin, uploader, signOut };
 });

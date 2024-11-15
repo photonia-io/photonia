@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const redirectIfNotAdmin = (to, from) => {
-    if (!userStore.admin) {
+  const redirectUnauthorized = (isAuthorized) => (to, from) => {
+    if (!isAuthorized) {
       toaster("You are not authorized to access that page.", "is-warning");
       return { name: "root" };
     }
@@ -104,13 +104,19 @@ document.addEventListener("DOMContentLoaded", () => {
       path: settings.users_admin_settings_path,
       name: "users-admin-settings",
       component: () => import("../users/admin-settings.vue"),
-      beforeEnter: [redirectIfNotSignedIn, redirectIfNotAdmin],
+      beforeEnter: [
+        redirectIfNotSignedIn,
+        redirectUnauthorized(userStore.admin),
+      ],
     },
     {
       path: settings.photos_path + "/upload",
       name: "photos-upload",
       component: () => import("../photos/upload.vue"),
-      beforeEnter: redirectIfNotSignedIn,
+      beforeEnter: [
+        redirectIfNotSignedIn,
+        redirectUnauthorized(userStore.uploader),
+      ],
     },
     {
       path: settings.photos_path + "/organizer",
@@ -201,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
           id
           email
           admin
+          uploader
         }
       }
     `);
@@ -208,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     watch(result, (value) => {
       userStore.email = value.userSettings.email;
       userStore.admin = value.userSettings.admin;
+      userStore.uploader = value.userSettings.uploader;
     });
 
     // if the query fails, the token is invalid

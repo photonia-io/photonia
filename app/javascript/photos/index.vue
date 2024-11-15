@@ -7,7 +7,10 @@
             <h1 class="title">Photos</h1>
           </div>
         </div>
-        <div class="level-right">
+        <div
+          class="level-right"
+          v-if="userStore.signedIn && userStore.uploader"
+        >
           <div class="level-item">
             <button
               class="button is-small"

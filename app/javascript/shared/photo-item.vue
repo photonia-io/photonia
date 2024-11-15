@@ -11,7 +11,7 @@
       <div class="selectable-item is-clickable" @click="toggleSelection()">
         <ItemImage :photo="photo" />
         <ItemCheckbox
-          v-if="userStore.signedIn && applicationStore.selectionMode"
+          v-if="userStore.signedIn && userStore.uploader && photo.canEdit"
           :checked="selected"
         />
       </div>
@@ -45,7 +45,7 @@ const props = defineProps({
 
 const selected = computed(() => {
   return selectionStore.selectedPhotos.some(
-    (photo) => photo.id === props.photo.id
+    (photo) => photo.id === props.photo.id,
   );
 });
 

@@ -116,6 +116,7 @@ class GraphqlQueryCollection
             id
             title
             intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+            canEdit
           }
           metadata {
             totalPages
@@ -203,6 +204,7 @@ class GraphqlQueryCollection
             }
           }
           rekognitionLabelModelVersion
+          canEdit
         }
       }
     GQL

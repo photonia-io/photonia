@@ -48,6 +48,7 @@ describe 'photo Query' do
             }
             createdAt
           }
+          canEdit
         }
       }
     GQL
@@ -101,5 +102,7 @@ describe 'photo Query' do
         expect(flickr_user['iconserver']).to eq first_comment.flickr_user.iconserver
       end
     end
+
+    expect(response_photo['canEdit']).to eq false
   end
 end

@@ -106,6 +106,7 @@ const {
       signIn(email: $email, password: $password) {
         email
         admin
+        uploader
       }
     }
   `,
@@ -221,6 +222,7 @@ const signInAndRedirect = (user) => {
   userStore.signedIn = true;
   userStore.email = user.email;
   userStore.admin = user.admin;
+  userStore.uploader = user.uploader;
   router.push({ name: "users-settings" });
 };
 </script>
