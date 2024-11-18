@@ -20,11 +20,13 @@ A photo hosting service tailored to my needs.
 - Thumbnails are based on what Rekognition identifies in the photos
 - Imports photos and metadata exported from Flickr
 
-## Setup
+## Development
+
+### Setup
 
     sudo apt install libpq-dev libexif-dev imagemagick
 
-## Development
+### Running the dev servers
 
 In separate terminals:
 
@@ -34,7 +36,7 @@ In separate terminals:
 
 Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procfile.dev`
 
-## Starting Docker containers for system specs
+### Starting Docker containers for system specs
 
     docker run -d \
         --name selenium-hub \
@@ -62,7 +64,7 @@ Selenium Grid becomes available at http://localhost:4444/ui
    - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
 3. Publish the release
 
-## Set up Docker host
+## Setting up the Docker host
 
 The sitemap file will be persisted outside the container. The following commands should be run in the directory where you plan to run the container before the first deployment:
 
