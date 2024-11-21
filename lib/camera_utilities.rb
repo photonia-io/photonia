@@ -19,7 +19,7 @@ class CameraUtilities
   def camera_make_model_lookup_table
     @camera_make_model_lookup_table ||= begin
       file = File.read(File.join(File.dirname(__FILE__), 'camera_utilities', 'json', 'camera_info.json'))
-      JSON.parse(file).deep_transform_keys { |key| key.to_s.strip.downcase }
+      JSON.parse(file).deep_transform_keys { |key| key.to_s.downcase }
     end
   end
 
