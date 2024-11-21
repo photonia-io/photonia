@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const redirectUnauthorized = (isAuthorized) => (to, from) => {
-    if (!isAuthorized) {
+  const redirectIfUnauthorized = (key) => (to, from) => {
+    if (!userStore[key]) {
       toaster("You are not authorized to access that page.", "is-warning");
       return { name: "root" };
     }
@@ -104,19 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
       path: settings.users_admin_settings_path,
       name: "users-admin-settings",
       component: () => import("../users/admin-settings.vue"),
-      beforeEnter: [
-        redirectIfNotSignedIn,
-        redirectUnauthorized(userStore.admin),
-      ],
+      beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("admin")],
     },
     {
       path: settings.photos_path + "/upload",
       name: "photos-upload",
       component: () => import("../photos/upload.vue"),
-      beforeEnter: [
-        redirectIfNotSignedIn,
-        redirectUnauthorized(userStore.uploader),
-      ],
+      beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("uploader")],
     },
     {
       path: settings.photos_path + "/organizer",
