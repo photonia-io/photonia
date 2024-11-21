@@ -178,6 +178,13 @@
       "friendly_name": "Canon PowerShot S2 IS"
     }
   },
+  "DJI": {
+    "FC1102": {
+      "friendly_name": "DJI Spark",
+      "launch_year": "2017",
+      "launch_month": "5"
+    }
+  },
   "GoPro": {
     "YHDC5170": {
       "launch_year": "2010",
@@ -234,6 +241,13 @@
       "friendly_name": "LG Nexus 5"
     }
   },
+  "NIKON": {
+    "NIKON D60": {
+      "launch_year": "2008",
+      "launch_month": "2",
+      "friendly_name": "Nikon D60"
+    }
+  },
   "NIKON CORPORATION": {
     "NIKON D700": {
       "launch_year": "2008",
@@ -261,6 +275,27 @@
       "launch_year": "2013",
       "launch_month": "10",
       "friendly_name": "Olympus PEN E-P5"
+    }
+  },
+  "PENTAX Corporation": {
+    "PENTAX K100D": {
+      "launch_year": "2006",
+      "launch_month": "5",
+      "friendly_name": "Pentax K100D"
+    }
+  },
+  "Samsung": {
+    "Galaxy S24 Ultra": {
+      "launch_year": "2023",
+      "launch_month": "2",
+      "friendly_name": "Samsung Galaxy S24 Ultra"
+    }
+  },
+  "Sony": {
+    "Cybershot": {
+      "launch_year": "?",
+      "launch_month": "?",
+      "friendly_name": "Sony Cybershot"
     }
   },
   "Sony Ericsson": {
