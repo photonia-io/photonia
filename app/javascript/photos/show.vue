@@ -349,7 +349,10 @@ onUpdateTitleDone(({ data }) => {
 });
 
 onUpdateTitleError((error) => {
-  // todo console.log(error)
+  toaster(
+    "An error occurred while updating the title: " + error.message,
+    "is-danger",
+  );
 });
 
 onUpdateDescriptionDone(({ data }) => {
@@ -357,7 +360,10 @@ onUpdateDescriptionDone(({ data }) => {
 });
 
 onUpdateDescriptionError((error) => {
-  // todo console.log(error)
+  toaster(
+    "An error occurred while updating the description: " + error.message,
+    "is-danger",
+  );
 });
 
 onDeletePhotoDone(({ data }) => {

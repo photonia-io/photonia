@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 
 module Mutations
-  class BaseMutation < GraphQL::Schema::RelayClassicMutation
-    argument_class Types::BaseArgument
-    field_class Types::BaseField
-    input_object_class Types::BaseInputObject
-    object_class Types::BaseObject
+  class BaseMutation < GraphQL::Schema::Mutation
+    null false
+
+    private
+
+    def handle_photo_update_errors(photo)
+      if photo.errors[:title].include?("can't be blank") && photo.errors[:description].include?("can't be blank")
+        raise GraphQL::ExecutionError, 'Either title or description is required'
+      else
+        raise GraphQL::ExecutionError, photo.errors.full_messages.join(', ')
+      end
+    end
   end
 end
