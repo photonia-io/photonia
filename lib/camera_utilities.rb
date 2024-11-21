@@ -9,8 +9,8 @@ class CameraUtilities
 
   def friendly_name
     camera_make_model_lookup_table
-      .fetch(@exif_make.downcase) { report_missing_make(@exif_make) }
-      .fetch(@exif_model.downcase) { report_missing_model(@exif_make, @exif_model) }
+      .fetch(@exif_make.strip.downcase) { report_missing_make(@exif_make) }
+      .fetch(@exif_model.strip.downcase) { report_missing_model(@exif_make, @exif_model) }
       .fetch('friendly_name', "#{@exif_make} #{@exif_model}")
   end
 

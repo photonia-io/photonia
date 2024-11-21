@@ -21,6 +21,15 @@ RSpec.describe CameraUtilities do
           expect(subject).to eq(expected_friendly_name)
         end
       end
+
+      context 'when there are leading or trailing spaces in the make and model' do
+        let(:make) { '  OLYMPUS IMAGING CORP.  ' }
+        let(:model) { '  E-P5  ' }
+
+        it 'returns the friendly name' do
+          expect(subject).to eq(expected_friendly_name)
+        end
+      end
     end
 
     context 'when the camera make and model are not found in the lookup table' do
