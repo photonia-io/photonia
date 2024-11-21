@@ -56,13 +56,12 @@ Selenium Grid becomes available at http://localhost:4444/ui
 
 **Note:** For the moment system specs are configured not to run from the [.rspec config file](.rspec).
 
-## Versioning & Deployment
+## Versioning & Releases
 
-1. Update the [changelog](CHANGELOG.md)
-2. Draft a new release on the [releases page](https://github.com/photonia-io/photonia/releases)
-   - Create a tag with the prefix **release-** and the version, eg: **0.1.3** (resulting tag: **release-0.1.3**)
-   - Prefix the release title with the release version, eg: **0.1.3 - An awesome release**
-3. Publish the release
+1. Draft a new release on the [releases page](https://github.com/photonia-io/photonia/releases)
+   - Create a tag with the prefix **release-** and the version, eg: **0.20.0** (resulting tag: **release-0.20.0**)
+   - Prefix the release title with the release version, eg: **0.20.0 - An awesome release**
+2. Publish the release
 
 ## Setting up the Docker host
 
