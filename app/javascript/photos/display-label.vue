@@ -48,7 +48,7 @@ watch(toRef(props, "highlighted"), (newHighlighted) => {
   outline: 1px solid rgba(255, 255, 255, 0.9);
   transition: 0.3s;
   opacity: v-bind(opacity);
-  z-index: 50;
+  z-index: 30;
 }
 .label > p {
   position: absolute;
