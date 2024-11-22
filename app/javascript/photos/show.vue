@@ -14,12 +14,11 @@
           <div class="level-left is-flex-grow-1" id="photo-title-container">
             <PhotoTitleEditable
               v-if="!loading && userStore.signedIn && photo.canEdit"
-              :id="photo.id"
-              :title="photoTitle()"
+              :photo="photo"
               @update-title="updatePhotoTitle"
             />
             <h1 v-else class="title level-item">
-              {{ photoTitle() }}
+              {{ title }}
             </h1>
           </div>
           <div class="level-right">
@@ -264,6 +263,7 @@ import { useTitle } from "vue-page-title";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
+import photoTitle from "../mixins/photo-title";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
@@ -387,17 +387,13 @@ const unHighlightLabel = (label) => {
 const photo = computed(() => result.value?.photo ?? emptyPhoto);
 const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
 
-const noTitle = "(no title)";
-const photoTitle = () =>
-  loading.value ? "Loading..." : photo.value.title || noTitle;
-
 const noDescription = "(no description)";
 const photoDescription = () =>
   loading.value ? "Loading..." : photo.value.description || noDescription;
 const photoDescriptionHtml = () =>
   loading.value ? "Loading..." : photo.value.descriptionHtml || noDescription;
 
-const title = computed(() => photoTitle());
+const title = computed(() => photoTitle(photo, loading));
 useTitle(title);
 
 const userStore = useUserStore();
