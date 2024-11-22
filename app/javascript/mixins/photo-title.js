@@ -1,8 +1,8 @@
 import { ref } from "vue";
 
-const photoTitle = (photo, loading = ref(false)) => {
-  const noTitle = "(no title)";
-  return loading.value ? "Loading..." : photo.value.title || noTitle;
-};
+const noTitle = "(no title)";
+
+const photoTitle = (photo, loading = ref(false)) =>
+  loading.value ? "Loading..." : photo.value.title || noTitle;
 
 export default photoTitle;
