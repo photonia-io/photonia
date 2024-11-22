@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
+  const editing = ref(false);
   const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
 
   const systemColorScheme =
@@ -25,6 +26,16 @@ export const useApplicationStore = defineStore("application", () => {
 
   function disableNavigationShortcuts() {
     navigationShortcutsEnabled.value = false;
+  }
+
+  function startEditing() {
+    editing.value = true;
+    disableNavigationShortcuts();
+  }
+
+  function stopEditing() {
+    editing.value = false;
+    enableNavigationShortcuts();
   }
 
   watch(selectionMode, (newValue) => {
@@ -63,6 +74,9 @@ export const useApplicationStore = defineStore("application", () => {
     navigationShortcutsEnabled,
     enableNavigationShortcuts,
     disableNavigationShortcuts,
+    editing,
+    startEditing,
+    stopEditing,
     selectionMode,
     colorScheme,
     setUserColorScheme,

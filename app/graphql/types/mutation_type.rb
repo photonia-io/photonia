@@ -5,6 +5,9 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
+    field :update_photo_title, mutation: Mutations::UpdatePhotoTitle
+    field :update_photo_description, mutation: Mutations::UpdatePhotoDescription
+
     field :add_photos_to_album, AlbumType, null: false do
       description 'Add photos to album'
       argument :album_id, String, 'Album Id', required: true
@@ -53,18 +56,6 @@ module Types
 
     field :sign_out, UserType, null: true do
       description 'Sign out'
-    end
-
-    field :update_photo_title, PhotoType, null: false do
-      description 'Update photo title'
-      argument :id, String, 'Photo Id', required: true
-      argument :title, String, 'New photo title', required: true
-    end
-
-    field :update_photo_description, PhotoType, null: false do
-      description 'Update photo description'
-      argument :description, String, 'New photo description', required: true
-      argument :id, String, 'Photo Id', required: true
     end
 
     field :update_user_settings, UserType, null: false do
@@ -224,20 +215,6 @@ module Types
       else
         raise 'Invalid signature'
       end
-    end
-
-    def update_photo_title(id:, title:)
-      photo = Photo.friendly.find(id)
-      context[:authorize].call(photo, :update?)
-      photo.update(title:)
-      photo
-    end
-
-    def update_photo_description(id:, description:)
-      photo = Photo.friendly.find(id)
-      context[:authorize].call(photo, :update?)
-      photo.update(description:)
-      photo
     end
 
     def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)

@@ -49,8 +49,26 @@ RSpec.describe Photo do
   end
 
   describe 'validations' do
-    it { should validate_presence_of(:title) }
-    it { should validate_presence_of(:description) }
+    context 'when there is no title and no description' do
+      let (:photo) { build(:photo, title: nil, description: nil) }
+      it 'is not valid' do
+        expect(photo).not_to be_valid
+      end
+    end
+
+    context 'when there is a title and no description' do
+      let (:photo) { build(:photo, description: nil) }
+      it 'is valid' do
+        expect(photo).to be_valid
+      end
+    end
+
+    context 'when there is no title and a description' do
+      let (:photo) { build(:photo, title: nil) }
+      it 'is valid' do
+        expect(photo).to be_valid
+      end
+    end
   end
 
   describe 'associations' do

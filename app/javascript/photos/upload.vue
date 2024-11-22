@@ -234,7 +234,6 @@ const inputFilter = function (newFile, oldFile, prevent) {
       // Add some extra info
       newFile.data = {
         "photo[title]": newFile.name,
-        "photo[description]": newFile.name,
       };
     }
   }

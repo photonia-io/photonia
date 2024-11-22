@@ -67,9 +67,9 @@ class Photo < ApplicationRecord
 
   default_scope { where(privacy: 'public') }
 
-  # validate title and description
-  validates :title, presence: true
-  validates :description, presence: true
+  # validate that either title or description is present
+  validates :title, presence: true, if: -> { description.blank? }
+  validates :description, presence: true, if: -> { title.blank? }
 
   belongs_to :user
   has_many :albums_photos, dependent: :destroy
