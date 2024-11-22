@@ -1,30 +1,43 @@
 <template>
   <div class="level-item">
     <router-link
-      :to="{ name: 'photos-show', params: { id: photo.id } }"
-      :class="['button', 'is-light', loading ? 'disabled' : '']"
+      :to="{ name: 'photos-show', params: { id: props.photo.id } }"
+      :class="['button', 'is-light', props.loading ? 'disabled' : '']"
     >
-      <span v-if="direction === 'left'" class="icon">
+      <span v-if="props.direction === 'left'" class="icon">
         <i class="fas fa-chevron-left"></i>
       </span>
-      <span v-if="direction === 'left'">Previous</span>
+      <span v-if="props.direction === 'left'">Previous</span>
       <img
-        :src="photo.intelligentOrSquareThumbnailImageUrl"
+        :src="props.photo.intelligentOrSquareThumbnailImageUrl"
         class="is-24x24 ml-3"
-        :class="['image', 'is-24x24', direction === 'left' ? 'ml-3' : 'mr-3']"
+        :class="[
+          'image',
+          'is-24x24',
+          props.direction === 'left' ? 'ml-3' : 'mr-3',
+        ]"
       />
-      <span v-if="direction === 'right'">Next</span>
-      <span v-if="direction === 'right'" class="icon">
+      <span v-if="props.direction === 'right'">Next</span>
+      <span v-if="props.direction === 'right'" class="icon">
         <i class="fas fa-chevron-right"></i>
       </span>
     </router-link>
   </div>
 </template>
 
-<script>
-export default {
-  props: ["photo", "direction", "loading"],
-};
+<script setup>
+const props = defineProps({
+  photo: {
+    type: Object,
+    required: true,
+  },
+  direction: {
+    type: String,
+    required: true,
+  },
+  loading: {
+    type: Boolean,
+    required: true,
+  },
+});
 </script>
-
-<style></style>

@@ -30,6 +30,7 @@
 <script setup>
 import { computed, ref, toRefs, watch, nextTick } from "vue";
 import { useApplicationStore } from "../stores/application";
+import { storeToRefs } from "pinia";
 import toaster from "../mixins/toaster";
 import photoTitle from "../mixins/photo-title";
 
@@ -47,6 +48,7 @@ const title = computed(() => photoTitle(photo));
 const emit = defineEmits(["updateTitle"]);
 
 const applicationStore = useApplicationStore();
+const { editing: storeEditing } = storeToRefs(applicationStore);
 
 const editing = ref(false);
 const localTitle = ref(photo.value.title);
@@ -55,6 +57,12 @@ var savedTitle = "";
 
 watch(photo, (newPhoto) => {
   localTitle.value = newPhoto.title;
+});
+
+watch(storeEditing, (newEditing) => {
+  if (!newEditing) {
+    editing.value = false;
+  }
 });
 
 const focusInput = () => {
@@ -66,14 +74,14 @@ const focusInput = () => {
 const startEditing = () => {
   savedTitle = localTitle.value;
   editing.value = true;
-  applicationStore.disableNavigationShortcuts();
+  applicationStore.startEditing();
   focusInput();
 };
 
 const cancelEditing = () => {
   localTitle.value = savedTitle;
   editing.value = false;
-  applicationStore.enableNavigationShortcuts();
+  applicationStore.stopEditing();
 };
 
 const updateTitle = () => {
@@ -89,7 +97,7 @@ const updateTitle = () => {
     emit("updateTitle", { id: photo.value.id, title: localTitle.value });
   }
   editing.value = false;
-  applicationStore.enableNavigationShortcuts();
+  applicationStore.stopEditing();
 };
 </script>
 

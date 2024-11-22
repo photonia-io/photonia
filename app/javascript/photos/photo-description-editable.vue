@@ -76,6 +76,7 @@
 <script setup>
 import { computed, ref, toRefs, watch, nextTick } from "vue";
 import { useApplicationStore } from "../stores/application";
+import { storeToRefs } from "pinia";
 import { marked } from "marked";
 import toaster from "../mixins/toaster";
 import { photoDescription } from "../mixins/photo-description";
@@ -94,6 +95,7 @@ const description = computed(() => photoDescription(photo));
 const emit = defineEmits(["updateDescription"]);
 
 const applicationStore = useApplicationStore();
+const { editing: storeEditing } = storeToRefs(applicationStore);
 
 const editing = ref(false);
 const showPreview = ref(true);
@@ -103,6 +105,12 @@ var savedDescription = "";
 
 watch(photo, (newPhoto) => {
   localDescription.value = newPhoto.description;
+});
+
+watch(storeEditing, (newEditing) => {
+  if (!newEditing) {
+    editing.value = false;
+  }
 });
 
 const focusTextarea = () => {
@@ -115,14 +123,14 @@ const startEditing = () => {
   savedDescription = localDescription.value;
   showPreview.value = false;
   editing.value = true;
-  applicationStore.disableNavigationShortcuts();
+  applicationStore.startEditing();
   focusTextarea();
 };
 
 const cancelEditing = () => {
   localDescription.value = savedDescription;
   editing.value = false;
-  applicationStore.enableNavigationShortcuts();
+  applicationStore.stopEditing();
 };
 
 const updateDescription = () => {
@@ -141,6 +149,6 @@ const updateDescription = () => {
     });
   }
   editing.value = false;
-  applicationStore.enableNavigationShortcuts();
+  applicationStore.stopEditing();
 };
 </script>
