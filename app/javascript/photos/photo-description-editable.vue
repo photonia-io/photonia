@@ -1,6 +1,6 @@
 <template>
   <div v-if="!editing" class="content" @click="startEditing">
-    <div class="editable" v-html="marked.parse(localDescription)"></div>
+    <div class="editable" v-html="marked.parse(description)"></div>
   </div>
   <div v-else class="mb-4">
     <div
@@ -14,6 +14,7 @@
           v-model="localDescription"
           class="textarea"
           placeholder="Enter a description for this photo"
+          ref="textarea"
         ></textarea>
       </div>
     </div>
@@ -73,20 +74,22 @@
 </template>
 
 <script setup>
-import { ref, toRef, watch } from "vue";
+import { computed, ref, toRefs, watch, nextTick } from "vue";
 import { useApplicationStore } from "../stores/application";
 import { marked } from "marked";
+import toaster from "../mixins/toaster";
+import { photoDescription } from "../mixins/photo-description";
 
 const props = defineProps({
-  id: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
+  photo: {
+    type: Object,
     required: true,
   },
 });
+
+const { photo } = toRefs(props);
+
+const description = computed(() => photoDescription(photo));
 
 const emit = defineEmits(["updateDescription"]);
 
@@ -94,18 +97,26 @@ const applicationStore = useApplicationStore();
 
 const editing = ref(false);
 const showPreview = ref(true);
-const localDescription = ref(props.description);
+const localDescription = ref(photo.value.description);
+const textarea = ref(null);
 var savedDescription = "";
 
-watch(toRef(props, "description"), (newDescription) => {
-  localDescription.value = newDescription;
+watch(photo, (newPhoto) => {
+  localDescription.value = newPhoto.description;
 });
+
+const focusTextarea = () => {
+  nextTick(() => {
+    textarea.value.focus();
+  });
+};
 
 const startEditing = () => {
   savedDescription = localDescription.value;
   showPreview.value = false;
   editing.value = true;
   applicationStore.disableNavigationShortcuts();
+  focusTextarea();
 };
 
 const cancelEditing = () => {
@@ -116,8 +127,16 @@ const cancelEditing = () => {
 
 const updateDescription = () => {
   if (savedDescription != localDescription.value) {
+    if (
+      localDescription.value.trim() === "" &&
+      photo.value.title.trim() === ""
+    ) {
+      toaster("Either title or description is required", "is-warning");
+      focusTextarea();
+      return;
+    }
     emit("updateDescription", {
-      id: props.id,
+      id: photo.value.id,
       description: localDescription.value,
     });
   }

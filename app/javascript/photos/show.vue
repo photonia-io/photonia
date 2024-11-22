@@ -43,11 +43,10 @@
               <!-- Left column -->
               <PhotoDescriptionEditable
                 v-if="!loading && userStore.signedIn && photo.canEdit"
-                :id="photo.id"
-                :description="photoDescription()"
+                :photo="photo"
                 @update-description="updatePhotoDescription"
               />
-              <div v-else class="content" v-html="photoDescriptionHtml()"></div>
+              <div v-else class="content" v-html="descriptionHtml"></div>
 
               <PhotoAdministration
                 v-if="!loading && userStore.signedIn && photo.canEdit"
@@ -264,6 +263,7 @@ import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
 import photoTitle from "../mixins/photo-title";
+import { photoDescriptionHtml } from "../mixins/photo-description";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
@@ -387,14 +387,10 @@ const unHighlightLabel = (label) => {
 const photo = computed(() => result.value?.photo ?? emptyPhoto);
 const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
 
-const noDescription = "(no description)";
-const photoDescription = () =>
-  loading.value ? "Loading..." : photo.value.description || noDescription;
-const photoDescriptionHtml = () =>
-  loading.value ? "Loading..." : photo.value.descriptionHtml || noDescription;
-
 const title = computed(() => photoTitle(photo, loading));
 useTitle(title);
+
+const descriptionHtml = computed(() => photoDescriptionHtml(photo, loading));
 
 const userStore = useUserStore();
 const applicationStore = useApplicationStore();
