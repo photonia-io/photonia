@@ -11,12 +11,7 @@ module Types
 
     field :photos, resolver: Queries::PhotosQuery
     field :photo, resolver: Queries::PhotoQuery
-
-    field :tag, TagType, null: false do
-      description 'Find a tag by ID'
-      argument :id, ID, 'ID of the tag', required: true
-      argument :page, Integer, 'Page number', required: false
-    end
+    field :tag, resolver: Queries::TagQuery
 
     field :most_used_user_tags, [TagType], null: false do
       description 'Find the most used user tags'
@@ -79,12 +74,6 @@ module Types
     end
 
     # Tags
-
-    def tag(id:)
-      tag = ActsAsTaggableOn::Tag.friendly.find(id)
-      context[:impressionist].call(tag, 'graphql', unique: [:session_hash])
-      tag
-    end
 
     def most_used_user_tags
       ActsAsTaggableOn::Tag.photonia_most_used
