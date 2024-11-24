@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'AlbumsIndexQuery' do
+describe 'albums Query' do
   describe 'paging' do
     subject(:post_query) { post '/graphql', params: { query: } }
 
