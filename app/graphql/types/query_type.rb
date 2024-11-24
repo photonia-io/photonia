@@ -9,11 +9,7 @@ module Types
     include GraphQL::Types::Relay::HasNodeField
     include GraphQL::Types::Relay::HasNodesField
 
-    field :photos, Types::PhotoType.collection_type, null: false do
-      description 'Find all photos or photos matching a query'
-      argument :page, Integer, 'Page number', required: false
-      argument :query, String, 'Search query', required: false
-    end
+    field :photos, resolver: Queries::Photos
 
     field :photo, PhotoType, null: false do
       description 'Find a photo by ID'
@@ -87,18 +83,6 @@ module Types
     end
 
     # Photos
-
-    def photos(page: nil, query: nil)
-      pagy, photos = context[:pagy].call(
-        query.present? ? Photo.search(query) : Photo.order(posted_at: :desc),
-        page:
-      )
-      photos.define_singleton_method(:total_pages) { pagy.pages }
-      photos.define_singleton_method(:current_page) { pagy.page }
-      photos.define_singleton_method(:limit_value) { pagy.limit }
-      photos.define_singleton_method(:total_count) { pagy.count }
-      photos
-    end
 
     def photo(id:)
       photo = Photo.includes(:albums, :albums_photos, :comments).friendly.find(id)
