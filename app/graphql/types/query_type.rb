@@ -9,12 +9,8 @@ module Types
     include GraphQL::Types::Relay::HasNodeField
     include GraphQL::Types::Relay::HasNodesField
 
-    field :photos, resolver: Queries::Photos
-
-    field :photo, PhotoType, null: false do
-      description 'Find a photo by ID'
-      argument :id, ID, 'ID of the photo', required: true
-    end
+    field :photos, resolver: Queries::PhotosQuery
+    field :photo, resolver: Queries::PhotoQuery
 
     field :tag, TagType, null: false do
       description 'Find a tag by ID'
@@ -80,14 +76,6 @@ module Types
     field :page, PageType, null: false do
       description 'Find a page by ID'
       argument :id, ID, 'ID of the page', required: true
-    end
-
-    # Photos
-
-    def photo(id:)
-      photo = Photo.includes(:albums, :albums_photos, :comments).friendly.find(id)
-      context[:impressionist].call(photo, 'graphql', unique: [:session_hash])
-      photo
     end
 
     # Tags
