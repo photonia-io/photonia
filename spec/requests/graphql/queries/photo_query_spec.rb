@@ -5,9 +5,7 @@ require 'rails_helper'
 describe 'photo Query' do
   subject(:post_query) { post '/graphql', params: { query: query } }
 
-  let(:impressions_count) { Faker::Number.number(digits: 3) }
-
-  let(:photo) { create(:photo, impressions_count:, image_data: TestData.image_data) }
+  let(:photo) { create(:photo, image_data: TestData.image_data) }
   let!(:comments) { create_list(:comment, 3, :with_flickr_user, commentable: photo) }
 
   before do
@@ -54,8 +52,8 @@ describe 'photo Query' do
     GQL
   end
 
-  it 'returns the correct photo' do
-    post_query
+  it 'returns the correct photo and records an impression' do
+    expect { post_query }.to change { photo.reload.impressions_count }.by(1)
 
     parsed_body = response.parsed_body
     response_photo = parsed_body['data']['photo']
