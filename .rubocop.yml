@@ -1,10 +1,10 @@
 require:
-  - rubocop-capybara
-  - rubocop-factory_bot
+  # - rubocop-capybara
+  # - rubocop-factory_bot
   - rubocop-graphql
   - rubocop-rails
   - rubocop-rspec
-  - rubocop-rspec_rails
+  # - rubocop-rspec_rails
 
 Naming/VariableNumber:
   EnforcedStyle: snake_case

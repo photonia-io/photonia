@@ -1,9 +1,9 @@
-RSpec.shared_examples 'user settings' do |admin:, uploader:|
-  it 'returns the user settings' do
+RSpec.shared_examples 'current user' do |admin:, uploader:|
+  it 'returns the current user' do
     post_query
 
     json = JSON.parse(response.body)
-    data = json['data']['userSettings']
+    data = json['data']['currentUser']
 
     expect(data).to include(
       'id' => user.slug,

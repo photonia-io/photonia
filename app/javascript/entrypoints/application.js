@@ -196,8 +196,8 @@ document.addEventListener("DOMContentLoaded", () => {
     userStore.signedIn = true;
     provideApolloClient(apolloClient);
     const { result, error } = useQuery(gql`
-      query UserSettingsQuery {
-        userSettings {
+      query CurrentUserQuery {
+        currentUser {
           id
           email
           admin
@@ -207,9 +207,9 @@ document.addEventListener("DOMContentLoaded", () => {
     `);
 
     watch(result, (value) => {
-      userStore.email = value.userSettings.email;
-      userStore.admin = value.userSettings.admin;
-      userStore.uploader = value.userSettings.uploader;
+      userStore.email = value.currentUser.email;
+      userStore.admin = value.currentUser.admin;
+      userStore.uploader = value.currentUser.uploader;
     });
 
     // if the query fails, the token is invalid

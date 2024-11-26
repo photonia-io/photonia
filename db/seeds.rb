@@ -15,3 +15,6 @@
 
 Role.find_or_create_by(name: 'Registered User', symbol: 'registered_user')
 Role.find_or_create_by(name: 'Uploader', symbol: 'uploader')
+
+TaggingSource.find_or_create_by(name: 'Flickr')
+TaggingSource.find_or_create_by(name: 'Rekognition')

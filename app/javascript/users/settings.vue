@@ -157,9 +157,9 @@ import { useTitle } from "vue-page-title";
 import { useUserStore } from "@/stores/user";
 import toaster from "../mixins/toaster";
 
-const USER_SETTINGS_QUERY = gql`
-  query UserSettingsQuery {
-    userSettings {
+const CURRENT_USER_QUERY = gql`
+  query CurrentUserQuery {
+    currentUser {
       id
       email
       firstName
@@ -184,23 +184,23 @@ const newFirstName = ref(null);
 const newLastName = ref(null);
 const newDisplayName = ref(null);
 
-const { result } = useQuery(USER_SETTINGS_QUERY);
+const { result } = useQuery(CURRENT_USER_QUERY);
 
-const email = computed(() => result.value?.userSettings.email);
+const email = computed(() => result.value?.currentUser.email);
 const firstName = computed({
-  get: () => result.value?.userSettings.firstName,
+  get: () => result.value?.currentUser.firstName,
   set: (value) => (newFirstName.value = value),
 });
 const lastName = computed({
-  get: () => result.value?.userSettings.lastName,
+  get: () => result.value?.currentUser.lastName,
   set: (value) => (newLastName.value = value),
 });
 const displayName = computed({
-  get: () => result.value?.userSettings.displayName,
+  get: () => result.value?.currentUser.displayName,
   set: (value) => (newDisplayName.value = value),
 });
 const timezone = computed({
-  get: () => result.value?.userSettings.timezone.name,
+  get: () => result.value?.currentUser.timezone.name,
   set: (value) => (newTimezone.value = value),
 });
 

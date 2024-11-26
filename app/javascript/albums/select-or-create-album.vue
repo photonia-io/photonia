@@ -6,8 +6,8 @@
         <select v-model="selectedAlbumId">
           <option selected></option>
           <option
-            v-if="result && result.allAlbums"
-            v-for="album in result.allAlbums"
+            v-if="result && result.currentUser.albums"
+            v-for="album in result.currentUser.albums"
             :key="album.id"
             :value="album.id"
           >
@@ -34,8 +34,11 @@
   </div>
   <p v-else>
     You have selected
-    <strong v-if="result && result.allAlbums">
-      {{ result.allAlbums.find((album) => album.id === selectedAlbumId).title }}
+    <strong v-if="result && result.currentUser.albums">
+      {{
+        result.currentUser.albums.find((album) => album.id === selectedAlbumId)
+          .title
+      }}
     </strong>
     above. If you wish to create a new album, please select the first (empty)
     option above then enter a title in the field that appears here.
@@ -58,11 +61,13 @@ const reset = () => {
 defineExpose({ selectedAlbumId, newAlbumTitle, reset });
 
 const { result } = useQuery(gql`
-  query AllAlbumsQuery {
-    allAlbums {
-      id
-      title
-      photosCount
+  query CurrentUserAlbumsQuery {
+    currentUser {
+      albums {
+        id
+        title
+        photosCount
+      }
     }
   }
 `);
