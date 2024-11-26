@@ -14,22 +14,6 @@ module Types
     field :tag, resolver: Queries::TagQuery
     field :tags, resolver: Queries::TagsQuery
 
-    field :most_used_user_tags, [TagType], null: false do
-      description 'Find the most used user tags'
-    end
-
-    field :least_used_user_tags, [TagType], null: false do
-      description 'Find the least used user tags'
-    end
-
-    field :most_used_machine_tags, [TagType], null: false do
-      description 'Find the most used machine tags'
-    end
-
-    field :least_used_machine_tags, [TagType], null: false do
-      description 'Find the least used machine tags'
-    end
-
     field :albums, Types::AlbumType.collection_type, null: false do
       description 'Find all albums by page'
       argument :page, Integer, 'Page number', required: false
