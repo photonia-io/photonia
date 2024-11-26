@@ -1,13 +1,16 @@
 <template>
-  <div class="field" v-if="result && result.albumsWithPhotos.length">
+  <div
+    class="field"
+    v-if="result && result.currentUser.albumsWithPhotos.length"
+  >
     <label class="label">Pick an album</label>
     <div class="control">
       <div class="select">
         <select v-model="selectedAlbumId">
           <option selected></option>
           <option
-            v-if="result && result.albumsWithPhotos"
-            v-for="album in result.albumsWithPhotos"
+            v-if="result && result.currentUser.albumsWithPhotos"
+            v-for="album in result.currentUser.albumsWithPhotos"
             :key="album.id"
             :value="album.id"
           >
@@ -48,16 +51,18 @@ defineExpose({ selectedAlbumId, reset });
 
 const { result } = useQuery(
   gql`
-    query AlbumsWithPhotosQuery($photoIds: [String!]!) {
-      albumsWithPhotos(photoIds: $photoIds) {
-        id
-        title
-        containedPhotosCount
+    query CurrentUserAlbumsWithPhotosQuery($photoIds: [String!]!) {
+      currentUser {
+        albumsWithPhotos(photoIds: $photoIds) {
+          id
+          title
+          containedPhotosCount
+        }
       }
     }
   `,
   {
     photoIds: photoIds,
-  }
+  },
 );
 </script>

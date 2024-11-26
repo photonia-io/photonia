@@ -2,8 +2,10 @@
 
 require 'rails_helper'
 
-describe 'userSettings Query' do
+describe 'currentUser Query' do
   include Devise::Test::IntegrationHelpers
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
 
   let(:email) { Faker::Internet.email }
   let(:first_name) { Faker::Name.first_name }
@@ -14,7 +16,7 @@ describe 'userSettings Query' do
   let(:query) do
     <<~GQL
       query {
-        userSettings {
+        currentUser {
           id
           email
           firstName
@@ -29,8 +31,6 @@ describe 'userSettings Query' do
       }
     GQL
   end
-
-  subject(:post_query) { post '/graphql', params: { query: query } }
 
   context 'when the user is not logged in' do
     it 'returns an error message in the GraphQL response' do
@@ -51,33 +51,42 @@ describe 'userSettings Query' do
     end
 
     context 'and is a registered user' do
-      let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
+      let!(:user) do
+        create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name,
+                      timezone: timezone)
+      end
 
       before do
         sign_in_and_post_query(user)
       end
 
-      it_behaves_like 'user settings', admin: false, uploader: false
+      it_behaves_like 'current user', admin: false, uploader: false
     end
 
     context 'and is an uploader' do
-      let!(:user) { create(:user, :uploader, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
+      let!(:user) do
+        create(:user, :uploader, email: email, first_name: first_name, last_name: last_name, display_name: display_name,
+                                 timezone: timezone)
+      end
 
       before do
         sign_in_and_post_query(user)
       end
 
-      it_behaves_like 'user settings', admin: false, uploader: true
+      it_behaves_like 'current user', admin: false, uploader: true
     end
 
     context 'and is an admin' do
-      let!(:user) { create(:user, admin: true, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone) }
+      let!(:user) do
+        create(:user, admin: true, email: email, first_name: first_name, last_name: last_name, display_name: display_name,
+                      timezone: timezone)
+      end
 
       before do
         sign_in_and_post_query(user)
       end
 
-      it_behaves_like 'user settings', admin: true, uploader: true
+      it_behaves_like 'current user', admin: true, uploader: true
     end
   end
 end

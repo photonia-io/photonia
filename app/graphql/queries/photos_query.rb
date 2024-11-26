@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Queries
+  # Get all photos or photos matching a query
   class PhotosQuery < Queries::BaseQuery
     type Types::PhotoType.collection_type, null: false
     description 'Find all photos or photos matching a query'
@@ -13,10 +14,7 @@ module Queries
         query.present? ? Photo.search(query) : Photo.order(posted_at: :desc),
         page:
       )
-      photos.define_singleton_method(:total_pages) { pagy.pages }
-      photos.define_singleton_method(:current_page) { pagy.page }
-      photos.define_singleton_method(:limit_value) { pagy.limit }
-      photos.define_singleton_method(:total_count) { pagy.count }
+      add_pagination_methods(photos, pagy)
       photos
     end
   end
