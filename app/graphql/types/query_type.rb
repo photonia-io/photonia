@@ -12,6 +12,7 @@ module Types
     field :photos, resolver: Queries::PhotosQuery
     field :photo, resolver: Queries::PhotoQuery
     field :tag, resolver: Queries::TagQuery
+    field :tags, resolver: Queries::TagsQuery
 
     field :most_used_user_tags, [TagType], null: false do
       description 'Find the most used user tags'
@@ -53,8 +54,6 @@ module Types
 
     field :random_photos, [PhotoType], 'Random photos', null: false
 
-    field :most_used_tags, [TagType], 'List of most used tags', null: false
-
     field :user_settings, UserType, 'User settings', null: false
 
     field :timezones, [TimezoneType], 'List of timezones', null: false
@@ -71,24 +70,6 @@ module Types
     field :page, PageType, null: false do
       description 'Find a page by ID'
       argument :id, ID, 'ID of the page', required: true
-    end
-
-    # Tags
-
-    def most_used_user_tags
-      ActsAsTaggableOn::Tag.photonia_most_used
-    end
-
-    def least_used_user_tags
-      ActsAsTaggableOn::Tag.photonia_least_used
-    end
-
-    def most_used_machine_tags
-      ActsAsTaggableOn::Tag.photonia_most_used(rekognition: true)
-    end
-
-    def least_used_machine_tags
-      ActsAsTaggableOn::Tag.photonia_least_used(rekognition: true)
     end
 
     # Albums
@@ -128,10 +109,6 @@ module Types
 
     def random_photos
       Photo.order(Arel.sql('RANDOM()')).limit(4)
-    end
-
-    def most_used_tags
-      object ? object[:most_used_tags] : ActsAsTaggableOn::Tag.photonia_most_used(limit: 60)
     end
 
     # Users

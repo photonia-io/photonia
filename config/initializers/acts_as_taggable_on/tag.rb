@@ -27,4 +27,12 @@ ActsAsTaggableOn::Tag.class_eval do
   def self.photonia_least_used(limit: 100, rekognition: false)
     distinct_taggings_count(rekognition:).least_used(limit)
   end
+
+  def self.photonia_latest(limit: 100, rekognition: false)
+    distinct_taggings_count(rekognition:).order(created_at: :desc).limit(limit)
+  end
+
+  def self.photonia_oldest(limit: 100, rekognition: false)
+    distinct_taggings_count(rekognition:).order(created_at: :asc).limit(limit)
+  end
 end

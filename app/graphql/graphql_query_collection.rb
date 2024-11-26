@@ -15,7 +15,7 @@ class GraphqlQueryCollection
           title
           intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
         }
-        mostUsedTags {
+        mostUsedTags: tags(type: "user", order: "most_used", limit: 60) {
           id
           name
           taggingsCount
@@ -66,22 +66,22 @@ class GraphqlQueryCollection
     GQL
     tags_index: <<-GQL.squish,
       query TagsIndexQuery {
-        mostUsedUserTags {
+        mostUsedUserTags: tags(type: "user", order: "most_used") {
           id
           name
           taggingsCount
         }
-        leastUsedUserTags {
+        leastUsedUserTags: tags(type: "user", order: "least_used") {
           id
           name
           taggingsCount
         }
-        mostUsedMachineTags {
+        mostUsedMachineTags: tags(type: "machine", order: "most_used") {
           id
           name
           taggingsCount
         }
-        leastUsedMachineTags {
+        leastUsedMachineTags: tags(type: "machine", order: "least_used") {
           id
           name
           taggingsCount
