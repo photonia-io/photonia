@@ -16,12 +16,11 @@ module Types
     field :photos, resolver: Queries::PhotosQuery, description: 'Find all photos or photos matching a query'
     field :tag, resolver: Queries::TagQuery, description: 'Find a tag by ID'
     field :tags, resolver: Queries::TagsQuery, description: 'Find tags'
+    field :timezones, resolver: Queries::TimezonesQuery, description: 'List of timezones'
 
     field :latest_photo, PhotoType, 'Latest photo', null: false
 
     field :random_photos, [PhotoType], 'Random photos', null: false
-
-    field :timezones, [TimezoneType], 'List of timezones', null: false
 
     field :admin_settings, AdminSettingsType, 'Admin settings', null: false
 
@@ -53,14 +52,6 @@ module Types
 
     def admin_settings
       context[:authorize].call(Setting, :edit?)
-    end
-
-    # Timezones
-    def timezones
-      timezones = ActiveSupport::TimeZone::MAPPING.map do |name, key|
-        { name:, key: }
-      end
-      timezones.sort_by { |timezone| timezone[:name] }
     end
 
     # Impressions
