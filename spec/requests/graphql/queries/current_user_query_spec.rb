@@ -68,12 +68,71 @@ describe 'currentUser Query' do
         create(:user, :uploader, email: email, first_name: first_name, last_name: last_name, display_name: display_name,
                                  timezone: timezone)
       end
+      let(:albums) { create_list(:album, 2, user: user) }
+      let(:photos) { create_list(:photo, 3, user: user) }
+      let(:photo_slug_list) { photos.map { |photo| "\"#{photo.slug}\"" }.join(', ') }
+
+      let(:query) do
+        <<~GQL
+          query {
+            currentUser {
+              id
+              email
+              firstName
+              lastName
+              displayName
+              timezone {
+                name
+              }
+              admin
+              uploader
+              albums {
+                id
+                title
+                photosCount
+              }
+              albumsWithPhotos(photoIds: [#{photo_slug_list}]) {
+                id
+                title
+                containedPhotosCount
+              }
+            }
+          }
+        GQL
+      end
 
       before do
+        albums.first.photos << photos
+        albums.first.maintenance
         sign_in_and_post_query(user)
       end
 
       it_behaves_like 'current user', admin: false, uploader: true
+
+      it 'returns the user with their albums' do
+        expect(response.parsed_body['data']['currentUser']['albums']).to contain_exactly(
+          {
+            'id' => albums.first.slug,
+            'title' => albums.first.title,
+            'photosCount' => 3
+          },
+          {
+            'id' => albums.second.slug,
+            'title' => albums.second.title,
+            'photosCount' => 0
+          }
+        )
+      end
+
+      it 'returns the user with their albumsWithPhotos' do
+        expect(response.parsed_body['data']['currentUser']['albumsWithPhotos']).to contain_exactly(
+          {
+            'id' => albums.first.slug,
+            'title' => albums.first.title,
+            'containedPhotosCount' => 3
+          }
+        )
+      end
     end
 
     context 'and is an admin' do
