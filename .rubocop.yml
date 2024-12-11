@@ -12,6 +12,9 @@ Naming/VariableNumber:
 AllCops:
   NewCops: enable
 
+Layout/LineLength:
+    Max: 180
+
 # rubocop-rails
 
 RSpec/MultipleExpectations:

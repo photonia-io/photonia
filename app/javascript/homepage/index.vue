@@ -11,7 +11,7 @@
           <div class="column is-half">
             <RandomPhotos
               v-if="result && result.randomPhotos"
-              :photos="result.randomPhotos"
+              :photos="result.randomPhotos.collection"
             />
           </div>
           <div class="column is-half">

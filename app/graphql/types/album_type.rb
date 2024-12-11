@@ -15,16 +15,16 @@ module Types
       argument :photo_id, ID, 'Id of the photo for which the next photo is to be found', required: true
     end
 
-    field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
+    field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
-    field :public_photos_count, Integer, 'Number of public photos in the album', null: false
     field :photos_count, Integer, 'Total number of photos in the album', null: false
-    field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
+    field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
+    field :public_photos_count, Integer, 'Number of public photos in the album', null: false
     field :title, String, 'Title of the album', null: false
 
-    field :photos, Types::PhotoType.collection_type, null: false do
+    field :photos, Types::PaginatedPhotoType, null: false do
       argument :page, Integer, 'Page number', required: false
       description 'Photos in the album'
     end

@@ -13,14 +13,10 @@ module Types
     field :albums, resolver: Queries::AlbumsQuery, description: 'Find all albums by page'
     field :current_user, resolver: Queries::CurrentUserQuery, description: 'Get the current user'
     field :photo, resolver: Queries::PhotoQuery, description: 'Find a photo by ID'
-    field :photos, resolver: Queries::PhotosQuery, description: 'Find all photos or photos matching a query'
+    field :photos, resolver: Queries::PhotosQuery, description: 'Find a list of photos'
     field :tag, resolver: Queries::TagQuery, description: 'Find a tag by ID'
     field :tags, resolver: Queries::TagsQuery, description: 'Find tags'
     field :timezones, resolver: Queries::TimezonesQuery, description: 'List of timezones'
-
-    field :latest_photo, PhotoType, 'Latest photo', null: false
-
-    field :random_photos, [PhotoType], 'Random photos', null: false
 
     field :admin_settings, AdminSettingsType, 'Admin settings', null: false
 
@@ -34,18 +30,6 @@ module Types
     field :page, PageType, null: false do
       description 'Find a page by ID'
       argument :id, ID, 'ID of the page', required: true
-    end
-
-    # Homepage
-
-    def latest_photo
-      latest_photo = object ? object[:latest_photo] : Photo.order(posted_at: :desc).first
-      context[:impressionist].call(latest_photo, 'graphql', unique: [:session_hash])
-      latest_photo
-    end
-
-    def random_photos
-      Photo.order(Arel.sql('RANDOM()')).limit(4)
     end
 
     # Admin settings

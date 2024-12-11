@@ -3,17 +3,19 @@
 # This is a collection of all the GQL queries to be shared between Rails and the Vue app
 class GraphqlQueryCollection
   COLLECTION = {
-    homepage_index: <<-GQL.squish,
+    homepage_index: <<~GQL.squish,
       query HomepageQuery {
-        latestPhoto {
+        latestPhoto: photo(fetchType: "latest") {
           id
           title
           extralargeImageUrl: imageUrl(type: "extralarge")
         }
-        randomPhotos {
-          id
-          title
-          intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+        randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+          }
         }
         mostUsedTags: tags(type: "user", order: "most_used", limit: 60) {
           id

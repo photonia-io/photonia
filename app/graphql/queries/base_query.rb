@@ -21,5 +21,13 @@ module Queries
       collection.define_singleton_method(:limit_value) { pagy.limit }
       collection.define_singleton_method(:total_count) { pagy.count }
     end
+
+    def add_dummy_pagination_methods(collection)
+      count = collection.count
+      collection.define_singleton_method(:total_pages) { 1 }
+      collection.define_singleton_method(:current_page) { 1 }
+      collection.define_singleton_method(:limit_value) { count }
+      collection.define_singleton_method(:total_count) { count }
+    end
   end
 end

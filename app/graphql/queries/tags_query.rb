@@ -7,9 +7,9 @@ module Queries
 
     type [Types::TagType], null: false
 
-    argument :type, String, 'Type of tag (user or machine)', default_value: 'user', required: false
-    argument :order, String, 'Order of tags (most used, least used, newest, oldest)', default_value: 'most_used', required: false
     argument :limit, Integer, 'Number of tags to be returned', required: false
+    argument :order, String, 'Order of tags (most used, least used, newest, oldest)', default_value: 'most_used', required: false
+    argument :type, String, 'Type of tag (user or machine)', default_value: 'user', required: false
 
     def resolve(type:, order:, limit: nil)
       tags = fetch_tags(type, order, limit)
