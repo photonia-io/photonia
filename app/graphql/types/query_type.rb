@@ -5,6 +5,7 @@ module Types
   class QueryType < GraphQL::Schema::Object
     description 'The query root of this schema'
 
+    field :admin_settings, resolver: Queries::AdminSettingsQuery, description: 'Get admin settings'
     field :album, resolver: Queries::AlbumQuery, description: 'Find an album by ID'
     field :albums, resolver: Queries::AlbumsQuery, description: 'Find all albums by page'
     field :current_user, resolver: Queries::CurrentUserQuery, description: 'Get the current user'
@@ -15,19 +16,11 @@ module Types
     field :tags, resolver: Queries::TagsQuery, description: 'Find tags'
     field :timezones, resolver: Queries::TimezonesQuery, description: 'List of timezones'
 
-    field :admin_settings, AdminSettingsType, 'Admin settings', null: false
-
     field :impression_counts_by_date, [ImpressionType], 'List of impressions grouped by date', null: false do
       description 'Find impression counts by type and date range'
       argument :end_date, GraphQL::Types::ISO8601DateTime, 'End date', required: true
       argument :start_date, GraphQL::Types::ISO8601DateTime, 'Start date', required: true
       argument :type, String, 'Type of impression', required: true
-    end
-
-    # Admin settings
-
-    def admin_settings
-      context[:authorize].call(Setting, :edit?)
     end
 
     # Impressions

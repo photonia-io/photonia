@@ -7,6 +7,10 @@ module Queries
 
     private
 
+    def authorize(record, action)
+      context[:authorize].call(record, action)
+    end
+
     def current_user
       context[:current_user]
     end
