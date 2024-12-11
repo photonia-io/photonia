@@ -3,7 +3,7 @@
 [![Test coverage](https://codecov.io/gh/photonia-io/photonia/graph/badge.svg?token=kLLGDkhYew)](https://codecov.io/gh/photonia-io/photonia)
 [![Licensed under the Apache License, Version 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](<[http://www.apache.org/licenses/LICENSE-2.0](https://github.com/photonia-io/photonia/blob/development/LICENSE)>)
 
-A photo hosting service tailored to my needs.
+A self hosted photo sharing webapp.
 
 ## Technologies
 
