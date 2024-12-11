@@ -5,10 +5,6 @@ module Types
   class QueryType < GraphQL::Schema::Object
     description 'The query root of this schema'
 
-    # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
-    # include GraphQL::Types::Relay::HasNodeField
-    # include GraphQL::Types::Relay::HasNodesField
-
     field :album, resolver: Queries::AlbumQuery, description: 'Find an album by ID'
     field :albums, resolver: Queries::AlbumsQuery, description: 'Find all albums by page'
     field :current_user, resolver: Queries::CurrentUserQuery, description: 'Get the current user'
