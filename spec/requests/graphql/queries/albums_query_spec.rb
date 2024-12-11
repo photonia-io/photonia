@@ -2,15 +2,17 @@
 
 require 'rails_helper'
 
-describe 'photos Query' do
+describe 'albums Query' do
   describe 'paging' do
     subject(:post_query) { post '/graphql', params: { query: } }
 
-    let(:photo_count) { 3 }
+    let(:album_count) { 3 }
+    let(:albums) { create_list(:album, album_count) }
+    let(:photo) { create(:photo) }
     let(:query) do
       <<~GQL
         query {
-          photos(page: 1) {
+          albums(page: 1) {
             metadata {
               totalPages
               totalCount
@@ -26,24 +28,27 @@ describe 'photos Query' do
     end
 
     before do
-      create_list(:photo, photo_count)
+      albums.each do |album|
+        album.photos << photo
+        album.maintenance
+      end
     end
 
     it 'returns the correct metadata' do
       post_query
 
-      expect(response.parsed_body['data']['photos']['metadata']).to include(
+      expect(response.parsed_body['data']['albums']['metadata']).to include(
         'totalPages' => 1,
-        'totalCount' => photo_count,
+        'totalCount' => album_count,
         'currentPage' => 1,
         'limitValue' => 20
       )
     end
 
-    it 'returns the correct number of photos' do
+    it 'returns the correct number of albums' do
       post_query
 
-      expect(response.parsed_body['data']['photos']['collection'].length).to eq(photo_count)
+      expect(response.parsed_body['data']['albums']['collection'].length).to eq(album_count)
     end
   end
 end
