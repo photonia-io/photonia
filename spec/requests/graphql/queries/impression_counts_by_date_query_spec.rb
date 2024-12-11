@@ -18,8 +18,8 @@ describe 'impressionCountsByDate Query' do
     GQL
   end
 
-  let(:start_date) { 6.days.ago }
-  let(:end_date) { Time.zone.now }
+  let(:start_date) { 6.days.ago.beginning_of_day }
+  let(:end_date) { Time.zone.now.end_of_day }
   let(:impressionable_type) { 'Photo' }
 
   context 'when the user is not logged in' do
