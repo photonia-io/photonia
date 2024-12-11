@@ -8,6 +8,7 @@ module Types
     field :album, resolver: Queries::AlbumQuery, description: 'Find an album by ID'
     field :albums, resolver: Queries::AlbumsQuery, description: 'Find all albums by page'
     field :current_user, resolver: Queries::CurrentUserQuery, description: 'Get the current user'
+    field :page, resolver: Queries::PageQuery, description: 'Find a page by ID'
     field :photo, resolver: Queries::PhotoQuery, description: 'Find a photo by ID'
     field :photos, resolver: Queries::PhotosQuery, description: 'Find a list of photos'
     field :tag, resolver: Queries::TagQuery, description: 'Find a tag by ID'
@@ -21,11 +22,6 @@ module Types
       argument :end_date, GraphQL::Types::ISO8601DateTime, 'End date', required: true
       argument :start_date, GraphQL::Types::ISO8601DateTime, 'Start date', required: true
       argument :type, String, 'Type of impression', required: true
-    end
-
-    field :page, PageType, null: false do
-      description 'Find a page by ID'
-      argument :id, ID, 'ID of the page', required: true
     end
 
     # Admin settings
@@ -42,13 +38,6 @@ module Types
                 .group_by_day(:created_at, range: start_date..end_date, format: '%Y-%m-%d')
                 .count
                 .map { |date, count| { date:, count: } }
-    end
-
-    # Pages
-    def page(id:)
-      title, markdown = PageService.fetch_page(id)
-
-      { title: title, content: MarkdownToHtml.new(markdown).to_html }
     end
 
     private
