@@ -61,7 +61,7 @@ module Types
     end
 
     def can_edit
-      context[:authorize].call(@object, :update?)
+      Pundit.policy(context[:current_user], @object)&.edit?
     end
   end
 end
