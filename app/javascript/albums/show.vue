@@ -8,7 +8,6 @@
           @update-title="updateAlbumTitle"
         />
         <h1 v-else>
-          Album:
           {{ title }}
         </h1>
       </div>      
