@@ -32,7 +32,7 @@ import { computed, ref, toRefs, watch, nextTick } from "vue";
 import { useApplicationStore } from "../stores/application";
 import { storeToRefs } from "pinia";
 import toaster from "../mixins/toaster";
-import photoTitle from "../mixins/photo-title";
+import titleHelper from "../mixins/title-helper";
 
 const props = defineProps({
   photo: {
@@ -43,7 +43,7 @@ const props = defineProps({
 
 const { photo } = toRefs(props);
 
-const title = computed(() => photoTitle(photo));
+const title = computed(() => titleHelper(photo));
 
 const emit = defineEmits(["updateTitle"]);
 
