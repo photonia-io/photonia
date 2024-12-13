@@ -63,6 +63,7 @@ class GraphqlQueryCollection
               limitValue
             }
           }
+          canEdit
         }
       }
     GQL

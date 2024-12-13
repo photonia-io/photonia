@@ -1,7 +1,17 @@
 <template>
   <section class="section-pt-pb-0">
     <div class="container">
-      <h1 class="title mt-5 mb-0">Album: {{ album.title }}</h1>
+      <div class="title mt-5 mb-0">
+        <AlbumTitleEditable
+          v-if="!loading && userStore.signedIn && album.canEdit"
+          :album="album"
+          @update-title="updateAlbumTitle"
+        />
+        <h1 v-else>
+          Album:
+          {{ title }}
+        </h1>
+      </div>      
       <hr class="mt-2 mb-4" />
       <div
         class="content"
@@ -30,10 +40,14 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import gql from "graphql-tag";
-import { useQuery } from "@vue/apollo-composable";
+import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
+import { useUserStore } from "../stores/user";
+import toaster from "../mixins/toaster";
+import titleHelper from "../mixins/title-helper";
 
 // components
+import AlbumTitleEditable from "./album-title-editable.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 
@@ -45,10 +59,12 @@ const emptyAlbum = {
   photos: [],
 };
 
+const userStore = useUserStore();
+
 const id = computed(() => route.params.id);
 const page = computed(() => parseInt(route.query.page) || 1);
 
-const { result } = useQuery(
+const { result, loading } = useQuery(
   gql`
     ${gql_queries.albums_show}
   `,
@@ -56,9 +72,33 @@ const { result } = useQuery(
 );
 
 const album = computed(() => result.value?.album ?? emptyAlbum);
-const title = computed(() => `Album: ${album.value.title}`);
 
+const title = computed(() => `Album: ${titleHelper(album, loading)}`);
 useTitle(title);
+
+const {
+  mutate: updateAlbumTitle,
+  onDone: onUpdateTitleDone,
+  onError: onUpdateTitleError,
+} = useMutation(gql`
+  mutation ($id: String!, $title: String!) {
+    updateAlbumTitle(id: $id, title: $title) {
+      id
+      title
+    }
+  }
+`);
+
+onUpdateTitleDone(({ data }) => {
+  toaster("The title has been updated");
+});
+
+onUpdateTitleError((error) => {
+  toaster(
+    "An error occurred while updating the title: " + error.message,
+    "is-danger",
+  );
+});
 </script>
 
 <style></style>
