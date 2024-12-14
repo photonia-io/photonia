@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
       # Add or replace dependency steps here
       - name: Install OS packages
-        run: sudo apt update && sudo apt install -y libpq-dev libexif-dev
+        run: sudo apt update && sudo apt install -y libpq-dev libexif-dev imagemagick
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@v1
         with:
