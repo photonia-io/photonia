@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/photonia-io/warden-jwt_auth
-  revision: 6d028caecd2029a940749ee9a75e719da1ec1d2c
+  revision: f8dbf1f1dbf9316449b310cb285ef8ce062ce535
   branch: add-request-body-matcher
   specs:
-    warden-jwt_auth (0.7.0)
-      dry-auto_inject (~> 0.8)
-      dry-configurable (~> 0.13)
+    warden-jwt_auth (0.9.0)
+      dry-auto_inject (>= 0.8, < 2)
+      dry-configurable (>= 0.13, < 2)
       jwt (~> 2.1)
       warden (~> 1.2)
 
@@ -150,16 +150,16 @@ GEM
     down (5.4.2)
       addressable (~> 2.8)
     drb (2.2.1)
-    dry-auto_inject (0.9.0)
-      dry-container (>= 0.3.4)
-    dry-cli (1.2.0)
-    dry-configurable (0.16.1)
-      dry-core (~> 0.6)
+    dry-auto_inject (1.0.1)
+      dry-core (~> 1.0)
       zeitwerk (~> 2.6)
-    dry-container (0.11.0)
+    dry-cli (1.2.0)
+    dry-configurable (1.2.0)
+      dry-core (~> 1.0, < 2)
+      zeitwerk (~> 2.6)
+    dry-core (1.0.2)
       concurrent-ruby (~> 1.0)
-    dry-core (0.9.1)
-      concurrent-ruby (~> 1.0)
+      logger
       zeitwerk (~> 2.6)
     ed25519 (1.3.0)
     erubi (1.13.0)
