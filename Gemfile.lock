@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/photonia-io/warden-jwt_auth
-  revision: 6cd24126605fa11eb2384dff79ffd39eb354fa6e
+  revision: ec1b7a9c9f47cfd389cab70c4b5e28c19621877c
   branch: add-request-body-matcher
   specs:
     warden-jwt_auth (0.10.1)
