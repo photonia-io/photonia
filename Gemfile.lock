@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/photonia-io/warden-jwt_auth
-  revision: f8dbf1f1dbf9316449b310cb285ef8ce062ce535
+  revision: 6cd24126605fa11eb2384dff79ffd39eb354fa6e
   branch: add-request-body-matcher
   specs:
-    warden-jwt_auth (0.9.0)
+    warden-jwt_auth (0.10.1)
       dry-auto_inject (>= 0.8, < 2)
       dry-configurable (>= 0.13, < 2)
       jwt (~> 2.1)
@@ -230,7 +230,7 @@ GEM
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    logger (1.6.1)
+    logger (1.6.3)
     loofah (2.23.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
