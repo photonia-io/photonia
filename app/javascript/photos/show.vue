@@ -263,7 +263,7 @@ import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
-import { photoDescriptionHtml } from "../mixins/photo-description";
+import { descriptionHtmlHelper } from "../mixins/description-helper";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
@@ -390,7 +390,7 @@ const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
 const title = computed(() => titleHelper(photo, loading));
 useTitle(title);
 
-const descriptionHtml = computed(() => photoDescriptionHtml(photo, loading));
+const descriptionHtml = computed(() => descriptionHtmlHelper(photo, loading));
 
 const userStore = useUserStore();
 const applicationStore = useApplicationStore();

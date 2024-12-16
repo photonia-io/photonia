@@ -49,6 +49,7 @@ class GraphqlQueryCollection
         album(id: $id) {
           id
           title
+          description
           descriptionHtml
           photos(page: $page) {
             collection {

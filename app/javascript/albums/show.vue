@@ -12,11 +12,18 @@
         </h1>
       </div>      
       <hr class="mt-2 mb-4" />
-      <div
-        class="content"
-        v-html="album.descriptionHtml"
-        v-if="album.descriptionHtml"
+      <AlbumDescriptionEditable
+        v-if="!loading && userStore.signedIn && album.canEdit"
+        :album="album"
+        @update-description="updateAlbumDescription"
       />
+      <div v-else>
+        <div
+          class="content"
+          v-html="descriptionHtml"
+          v-if="album.descriptionHtml"
+        />        
+      </div>
       <div class="columns is-1 is-multiline">
         <PhotoItem
           v-for="photo in album.photos.collection"
@@ -44,9 +51,11 @@ import { useTitle } from "vue-page-title";
 import { useUserStore } from "../stores/user";
 import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
+import { descriptionHtmlHelper } from "../mixins/description-helper";
 
 // components
 import AlbumTitleEditable from "./album-title-editable.vue";
+import AlbumDescriptionEditable from "./album-description-editable.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 
@@ -75,6 +84,8 @@ const album = computed(() => result.value?.album ?? emptyAlbum);
 const title = computed(() => `Album: ${titleHelper(album, loading)}`);
 useTitle(title);
 
+const descriptionHtml = computed(() => descriptionHtmlHelper(album, loading));
+
 const {
   mutate: updateAlbumTitle,
   onDone: onUpdateTitleDone,
@@ -88,6 +99,19 @@ const {
   }
 `);
 
+const {
+  mutate: updateAlbumDescription,
+  onDone: onUpdateDescriptionDone,
+  onError: onUpdateDescriptionError,
+} = useMutation(gql`
+  mutation ($id: String!, $description: String!) {
+    updateAlbumDescription(id: $id, description: $description) {
+      id
+      description
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -95,6 +119,17 @@ onUpdateTitleDone(({ data }) => {
 onUpdateTitleError((error) => {
   toaster(
     "An error occurred while updating the title: " + error.message,
+    "is-danger",
+  );
+});
+
+onUpdateDescriptionDone(({ data }) => {
+  toaster("The description has been updated");
+});
+
+onUpdateDescriptionError((error) => {
+  toaster(
+    "An error occurred while updating the description: " + error.message,
     "is-danger",
   );
 });
