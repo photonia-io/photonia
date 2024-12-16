@@ -161,22 +161,14 @@ module Types
       )
       return unless payload && payload['email_verified']
 
-      user, created = User.find_or_create_from_social(
+      user, created = User.find_or_create_from_provider(
         email: payload['email'],
         provider: 'google',
         first_name: payload['given_name'],
         last_name: payload['family_name'],
         display_name: payload['name']
       )
-      if created
-        AdminMailer.with(
-          provider: user.signup_provider.capitalize,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          admin_emails: User.admins.pluck(:email)
-        ).new_social_user.deliver_later
-      end
+      notify_admins_of_new_user(user) if created
       context[:sign_in].call(:user, user)
       user
     end
@@ -185,31 +177,10 @@ module Types
       raise 'Continue with Facebook is disabled' if Setting.continue_with_facebook_enabled == false
 
       cwfs = ContinueWithFacebookService.new(access_token, signed_request)
+      facebook_user_info = cwfs.facebook_user_info
 
-      raise 'Invalid signature' unless cwfs.verify_signature
-
-      decoded_payload_data = cwfs.get_decoded_payload
-      facebook_user_info = cwfs.fetch_facebook_user_info
-
-      # If the data from the signed request matches the user info, continue
-      raise 'Invalid user info' unless decoded_payload_data['user_id'] == facebook_user_info['id']
-
-      user, created = User.find_or_create_from_social(
-        email: facebook_user_info['email'],
-        provider: 'facebook',
-        first_name: facebook_user_info['first_name'],
-        last_name: facebook_user_info['last_name'],
-        display_name: facebook_user_info['name']
-      )
-      if created
-        AdminMailer.with(
-          provider: user.signup_provider.capitalize,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          admin_emails: User.admins.pluck(:email)
-        ).new_social_user.deliver_later
-      end
+      user, created = find_or_create_facebook_user(facebook_user_info)
+      notify_admins_of_new_user(user) if created
       context[:sign_in].call(:user, user)
       user
     end
@@ -237,6 +208,28 @@ module Types
       Setting.continue_with_google_enabled = continue_with_google_enabled
       Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
       Setting
+    end
+
+    private
+
+    def notify_admins_of_new_user(user)
+      AdminMailer.with(
+        provider: user.signup_provider.capitalize,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        admin_emails: User.admins.pluck(:email)
+      ).new_provider_user.deliver_later
+    end
+
+    def find_or_create_facebook_user(facebook_user_info)
+      User.find_or_create_from_provider(
+        email: facebook_user_info['email'],
+        provider: 'facebook',
+        first_name: facebook_user_info['first_name'],
+        last_name: facebook_user_info['last_name'],
+        display_name: facebook_user_info['name']
+      )
     end
   end
 end
