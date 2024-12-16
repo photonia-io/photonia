@@ -5,11 +5,14 @@ class ContinueWithFacebookService
   class InvalidSignatureError < StandardError; end
   class InvalidUserInfoError < StandardError; end
 
-  def initialize(access_token, signed_request, app_secret: ENV.fetch('PHOTONIA_FACEBOOK_APP_SECRET', nil), http_client: Net::HTTP)
+  def initialize(access_token, signed_request, app_secret: ENV.fetch('PHOTONIA_FACEBOOK_APP_SECRET'), http_client: Net::HTTP)
     @access_token = access_token
     @signed_request = signed_request
     @app_secret = app_secret
     @http_client = http_client
+
+    raise ArgumentError, 'app_secret is required' if @app_secret.blank?
+
     @encoded_signature, @encoded_payload = @signed_request.split('.')
   end
 
@@ -29,7 +32,7 @@ class ContinueWithFacebookService
   def valid_signature?
     digested_encoded_payload = OpenSSL::HMAC.digest('sha256', @app_secret, @encoded_payload)
     expected_signature = Base64.urlsafe_encode64(digested_encoded_payload).gsub('=', '')
-    @encoded_signature == expected_signature
+    ActiveSupport::SecurityUtils.secure_compare(@encoded_signature, expected_signature)
   end
 
   def decoded_payload
