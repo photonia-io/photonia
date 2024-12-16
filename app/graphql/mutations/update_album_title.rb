@@ -11,8 +11,12 @@ module Mutations
     type Types::AlbumType, null: false
 
     def resolve(id:, title:)
-      album = Album.friendly.find(id)
-      context[:authorize].call(album, :update?)
+      begin
+        album = Album.friendly.find(id)
+      rescue ActiveRecord::RecordNotFound
+        raise GraphQL::ExecutionError, 'Album not found'
+      end
+      authorize(album, :update?)
       raise GraphQL::ExecutionError, album.errors.full_messages.join(', ') unless album.update(title: title)
 
       album
