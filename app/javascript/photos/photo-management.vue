@@ -1,11 +1,11 @@
 <template>
   <div class="message is-warning is-smallish">
     <div class="message-header">
-      <p>Photo Administration</p>
+      <p>Photo Management</p>
     </div>
     <div class="message-body">
       <p class="mb-3">
-        To edit the photo's title or description click / tap on the text.
+        To edit the photo's title or description click / tap on the texts themselves.
       </p>
       <!-- delete photo button -->
       <button class="button is-danger" @click="showConfirmationModal">
