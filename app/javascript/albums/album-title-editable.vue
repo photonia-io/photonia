@@ -54,7 +54,8 @@ const { editing: storeEditing } = storeToRefs(applicationStore);
 const editing = ref(false);
 const localTitle = ref(album.value.title);
 const input = ref(null);
-var savedTitle = "";
+
+let savedTitle = "";
 
 watch(album, (newAlbum) => {
   localTitle.value = newAlbum.title;
