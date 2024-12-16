@@ -5,9 +5,9 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
-    field :update_album_title, mutation: Mutations::UpdateAlbumTitle
-    field :update_photo_description, mutation: Mutations::UpdatePhotoDescription
-    field :update_photo_title, mutation: Mutations::UpdatePhotoTitle
+    field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
+    field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
+    field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
     field :add_photos_to_album, AlbumType, null: false do
       description 'Add photos to album'
