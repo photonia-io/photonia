@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@apollo/client": "^3.12.3",
+    "@apollo/client": "^3.12.4",
     "@creativebulma/bulma-divider": "^1.1.0",
     "@sentry/vue": "^7.120.2",
     "@vue/apollo-composable": "^4.0.0-beta.11",
@@ -14,7 +14,7 @@
     "bulma-block-list": "1.0.0",
     "bulma-toast": "^2.4.4",
     "chart.js": "^4.4.7",
-    "graphql": "^16.9.0",
+    "graphql": "^16.10.0",
     "graphql-tag": "^2.12.5",
     "marked": "^12.0.2",
     "pinia": "^2.3.0",
