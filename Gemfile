@@ -41,14 +41,18 @@ gem 'image_processing', '~> 1.8'
 gem 'impressionist', '~> 2.0'
 gem 'kramdown'
 gem 'pagy', '~> 9'
+gem 'paper_trail'
 gem 'pg_search'
 gem 'pundit'
+gem 'rails-settings-cached', '~> 2.9'
 gem 'redis'
 gem 'sentry-rails', '~> 5.8'
 gem 'sentry-ruby', '~> 5.8'
 gem 'shrine', '~> 3.0'
 gem 'sidekiq'
+gem 'sidekiq-scheduler', '~> 5.0'
 gem 'sitemap_generator'
+gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby] # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'vite_rails', '~> 3.0', '>= 3.0.14'
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
 
@@ -84,15 +88,8 @@ group :test do
   gem 'capybara', '>= 3.38.0'
   gem 'pundit-matchers', '~> 3.1'
   gem 'selenium-webdriver'
+  gem 'shoulda-matchers', '~> 6.1'
   gem 'simplecov', require: false
   gem 'simplecov-cobertura', require: false
-  gem 'shoulda-matchers', '~> 6.1'
   gem 'timecop'
 end
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
-
-gem "rails-settings-cached", "~> 2.9"
-
-gem "sidekiq-scheduler", "~> 5.0"

@@ -267,6 +267,9 @@ GEM
     orm_adapter (0.5.0)
     os (1.1.4)
     pagy (9.3.3)
+    paper_trail (16.0.0)
+      activerecord (>= 6.1)
+      request_store (~> 1.4)
     parallel (1.26.3)
     parser (3.3.6.0)
       ast (~> 2.4.1)
@@ -348,6 +351,8 @@ GEM
     regexp_parser (2.9.3)
     reline (0.6.0)
       io-console (~> 0.5)
+    request_store (1.7.0)
+      rack (>= 1.4)
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
@@ -529,6 +534,7 @@ DEPENDENCIES
   kramdown
   listen
   pagy (~> 9)
+  paper_trail
   pg (>= 0.18, < 2.0)
   pg_search
   pry

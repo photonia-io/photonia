@@ -51,6 +51,7 @@ class Photo < ApplicationRecord
   include SerialNumberSetter
   include EXIFUtilities
   include HtmlDescriptionable
+  include TrackableTitleAndDescription
 
   include PgSearch::Model
   pg_search_scope :search,

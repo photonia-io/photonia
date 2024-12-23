@@ -50,21 +50,24 @@ RSpec.describe Photo do
 
   describe 'validations' do
     context 'when there is no title and no description' do
-      let (:photo) { build(:photo, title: nil, description: nil) }
+      let(:photo) { build(:photo, title: nil, description: nil) }
+
       it 'is not valid' do
         expect(photo).not_to be_valid
       end
     end
 
     context 'when there is a title and no description' do
-      let (:photo) { build(:photo, description: nil) }
+      let(:photo) { build(:photo, description: nil) }
+
       it 'is valid' do
         expect(photo).to be_valid
       end
     end
 
     context 'when there is no title and a description' do
-      let (:photo) { build(:photo, title: nil) }
+      let(:photo) { build(:photo, title: nil) }
+
       it 'is valid' do
         expect(photo).to be_valid
       end
@@ -119,9 +122,9 @@ RSpec.describe Photo do
     end
 
     describe '#exif_from_file' do
-      let(:photo) { build_stubbed(:photo, image: File.open(filename)) }
-
       subject { photo.exif_from_file }
+
+      let(:photo) { build_stubbed(:photo, image: File.open(filename)) }
 
       context 'when the file has EXIF data' do
         let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }
@@ -145,10 +148,10 @@ RSpec.describe Photo do
     end
 
     describe '#exif' do
+      subject { photo.exif }
+
       let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
       let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
-
-      subject { photo.exif }
 
       context 'when the exif field is nil in the beginning' do
         let(:photo) { build_stubbed(:photo, exif: nil) }
@@ -213,11 +216,11 @@ RSpec.describe Photo do
     end
 
     describe '#exif_exists?' do
+      subject { photo.exif_exists? }
+
       let(:photo) { build_stubbed(:photo) }
       let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
       let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
-
-      subject { photo.exif_exists? }
 
       context 'when #exif returns some exif data' do
         before do
@@ -293,4 +296,6 @@ RSpec.describe Photo do
       expect(photo.serial_number).to eq(123)
     end
   end
+
+  it_behaves_like 'it has trackable title and description', model: :photo
 end
