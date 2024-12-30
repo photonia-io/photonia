@@ -9,7 +9,7 @@
     "@vue/apollo-composable": "^4.0.0-beta.11",
     "@vue/apollo-option": "^4.0.0-beta.9",
     "animate.css": "^4.1.1",
-    "bulma": "^1.0.0",
+    "bulma": "^1.0.3",
     "bulma-block-list": "1.0.0",
     "bulma-toast": "^2.4.4",
     "chart.js": "^4.4.7",
