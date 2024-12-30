@@ -82,7 +82,7 @@ end
 group :test do
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 3.38.0'
-  gem 'pundit-matchers', '~> 3.1'
+  gem 'pundit-matchers', '~> 4.0'
   gem 'selenium-webdriver'
   gem 'simplecov', require: false
   gem 'simplecov-cobertura', require: false
