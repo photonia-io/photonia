@@ -63,5 +63,6 @@ RSpec.describe Comment do
     end
   end
 
-  it_behaves_like 'it has trackable body', model: :comment
+  it_behaves_like 'it has trackable body', model: :comment, commentable_type: :photo
+  it_behaves_like 'it has trackable body', model: :comment, commentable_type: :album
 end
