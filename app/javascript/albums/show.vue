@@ -10,7 +10,7 @@
         <h1 v-else>
           {{ title }}
         </h1>
-      </div>      
+      </div>
       <hr class="mt-2 mb-4" />
       <AlbumDescriptionEditable
         v-if="!loading && userStore.signedIn && album.canEdit"
@@ -22,7 +22,7 @@
           class="content"
           v-html="descriptionHtml"
           v-if="album.descriptionHtml"
-        />        
+        />
       </div>
       <div class="columns is-1 is-multiline">
         <PhotoItem

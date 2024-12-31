@@ -88,9 +88,7 @@ const cancelEditing = () => {
 
 const updateTitle = () => {
   if (savedTitle != localTitle.value) {
-    if (
-      localTitle.value.trim() === ""
-    ) {
+    if (localTitle.value.trim() === "") {
       toaster("The album title is required", "is-warning");
       focusInput();
       return;
