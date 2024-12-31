@@ -30,8 +30,6 @@
   "version": "0.1.0",
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
-    "@vue/compiler-dom": "^3.5.13",
-    "@vue/server-renderer": "3.4.21",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^15.11.7",
     "prettier": "3.2.5",
