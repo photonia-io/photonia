@@ -38,6 +38,8 @@ Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procf
 
 ### Starting Docker containers for system specs
 
+     docker network create grid
+
     docker run -d \
         --name selenium-hub \
         -p 4442-4444:4442-4444 \
