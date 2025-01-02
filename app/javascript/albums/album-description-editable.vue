@@ -13,7 +13,7 @@
         <textarea
           v-model="localDescription"
           class="textarea"
-          placeholder="Enter a description for this photo"
+          placeholder="Enter a description for this album"
           ref="textarea"
         ></textarea>
       </div>
@@ -82,15 +82,15 @@ import toaster from "../mixins/toaster";
 import { descriptionHelper } from "../mixins/description-helper";
 
 const props = defineProps({
-  photo: {
+  album: {
     type: Object,
     required: true,
   },
 });
 
-const { photo } = toRefs(props);
+const { album } = toRefs(props);
 
-const description = computed(() => descriptionHelper(photo));
+const description = computed(() => descriptionHelper(album));
 
 const emit = defineEmits(["updateDescription"]);
 
@@ -99,12 +99,12 @@ const { editing: storeEditing } = storeToRefs(applicationStore);
 
 const editing = ref(false);
 const showPreview = ref(true);
-const localDescription = ref(photo.value.description);
+const localDescription = ref(album.value.description);
 const textarea = ref(null);
 var savedDescription = "";
 
-watch(photo, (newPhoto) => {
-  localDescription.value = newPhoto.description;
+watch(album, (newAlbum) => {
+  localDescription.value = newAlbum.description;
 });
 
 watch(storeEditing, (newEditing) => {
@@ -137,14 +137,14 @@ const updateDescription = () => {
   if (savedDescription != localDescription.value) {
     if (
       localDescription.value.trim() === "" &&
-      photo.value.title.trim() === ""
+      album.value.title.trim() === ""
     ) {
       toaster("Either title or description is required", "is-warning");
       focusTextarea();
       return;
     }
     emit("updateDescription", {
-      id: photo.value.id,
+      id: album.value.id,
       description: localDescription.value,
     });
   }

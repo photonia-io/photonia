@@ -5,8 +5,10 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
-    field :update_photo_title, mutation: Mutations::UpdatePhotoTitle
-    field :update_photo_description, mutation: Mutations::UpdatePhotoDescription
+    field :update_album_description, mutation: Mutations::UpdateAlbumDescription, description: 'Update album description'
+    field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
+    field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
+    field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
     field :add_photos_to_album, AlbumType, null: false do
       description 'Add photos to album'
@@ -22,14 +24,14 @@ module Types
 
     field :continue_with_google, UserType, null: true do
       description 'Sign up or sign in with Google'
-      argument :credential, String, 'Google credential JWT', required: true
       argument :client_id, String, 'Google client ID', required: true
+      argument :credential, String, 'Google credential JWT', required: true
     end
 
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
-      argument :title, String, 'Album title', required: true
       argument :photo_ids, [String], 'Photo Ids', required: true
+      argument :title, String, 'Album title', required: true
     end
 
     field :delete_photo, PhotoType, null: false do
@@ -60,20 +62,20 @@ module Types
 
     field :update_user_settings, UserType, null: false do
       description 'Update user settings'
+      argument :display_name, String, 'User display name', required: true
       argument :email, String, 'User email', required: true
       argument :first_name, String, 'User first name', required: true
       argument :last_name, String, 'User last name', required: true
-      argument :display_name, String, 'User display name', required: true
       argument :timezone, String, 'User timezone', required: true
     end
 
     field :update_admin_settings, AdminSettingsType, null: false do
       description 'Update admin settings'
-      argument :site_name, String, 'Site name', required: true
-      argument :site_description, String, 'Site description', required: true
-      argument :site_tracking_code, String, 'Site tracking code', required: true
-      argument :continue_with_google_enabled, Boolean, 'Continue with Google active', required: true
       argument :continue_with_facebook_enabled, Boolean, 'Continue with Facebook active', required: true
+      argument :continue_with_google_enabled, Boolean, 'Continue with Google active', required: true
+      argument :site_description, String, 'Site description', required: true
+      argument :site_name, String, 'Site name', required: true
+      argument :site_tracking_code, String, 'Site tracking code', required: true
     end
 
     def add_photos_to_album(album_id:, photo_ids:)
@@ -158,68 +160,36 @@ module Types
         credential,
         aud: client_id
       )
-      if payload && payload['email_verified']
-        user, created = User.find_or_create_from_social(
-          email: payload['email'],
-          provider: 'google',
-          first_name: payload['given_name'],
-          last_name: payload['family_name'],
-          display_name: payload['name']
-        )
-        if created
-          AdminMailer.with(
-            provider: user.signup_provider.capitalize,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            admin_emails: User.admins.pluck(:email)
-          ).new_social_user.deliver_later
-        end
-        context[:sign_in].call(:user, user)
-        user
-      end
+      return unless payload && payload['email_verified']
+
+      user, created = User.find_or_create_from_provider(
+        email: payload['email'],
+        provider: 'google',
+        first_name: payload['given_name'],
+        last_name: payload['family_name'],
+        display_name: payload['name']
+      )
+      notify_admins_of_new_user(user) if created
+      context[:sign_in].call(:user, user)
+      user
     end
 
     def continue_with_facebook(access_token:, signed_request:)
       raise 'Continue with Facebook is disabled' if Setting.continue_with_facebook_enabled == false
 
       cwfs = ContinueWithFacebookService.new(access_token, signed_request)
+      facebook_user_info = cwfs.facebook_user_info
 
-      if cwfs.verify_signature
-        decoded_payload_data = cwfs.get_decoded_payload
-        facebook_user_info = cwfs.fetch_facebook_user_info
-
-        # If the data from the signed request matches the user info, continue
-        if decoded_payload_data['user_id'] == facebook_user_info['id']
-          user, created = User.find_or_create_from_social(
-            email: facebook_user_info['email'],
-            provider: 'facebook',
-            first_name: facebook_user_info['first_name'],
-            last_name: facebook_user_info['last_name'],
-            display_name: facebook_user_info['name']
-          )
-          if created
-            AdminMailer.with(
-              provider: user.signup_provider.capitalize,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              email: user.email,
-              admin_emails: User.admins.pluck(:email)
-            ).new_social_user.deliver_later
-          end
-          context[:sign_in].call(:user, user)
-          user
-        else
-          raise 'Invalid user info'
-        end
-      else
-        raise 'Invalid signature'
-      end
+      user, created = find_or_create_facebook_user(facebook_user_info)
+      notify_admins_of_new_user(user) if created
+      context[:sign_in].call(:user, user)
+      user
     end
 
     def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
       user = context[:current_user]
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
+
       context[:authorize].call(user, :update?)
       # for now we don't allow users to change their email
       # as that should trigger Devise's confirmation email
@@ -239,6 +209,28 @@ module Types
       Setting.continue_with_google_enabled = continue_with_google_enabled
       Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
       Setting
+    end
+
+    private
+
+    def notify_admins_of_new_user(user)
+      AdminMailer.with(
+        provider: user.signup_provider.capitalize,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        admin_emails: User.admins.pluck(:email)
+      ).new_provider_user.deliver_later
+    end
+
+    def find_or_create_facebook_user(facebook_user_info)
+      User.find_or_create_from_provider(
+        email: facebook_user_info['email'],
+        provider: 'facebook',
+        first_name: facebook_user_info['first_name'],
+        last_name: facebook_user_info['last_name'],
+        display_name: facebook_user_info['name']
+      )
     end
   end
 end
