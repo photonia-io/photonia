@@ -15,7 +15,7 @@
     "chart.js": "^4.4.7",
     "graphql": "^16.10.0",
     "graphql-tag": "^2.12.5",
-    "marked": "^15.0.4",
+    "marked": "^15.0.5",
     "pinia": "^2.3.0",
     "sass": "^1.83.0",
     "typescript": "^5.7.2",
@@ -31,7 +31,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/test-utils": "^2.4.6",
-    "happy-dom": "^16.2.9",
+    "happy-dom": "^16.3.0",
     "prettier": "3.4.2",
     "vite": "^5.4.11",
     "vite-plugin-ruby": "^5.1.1",
