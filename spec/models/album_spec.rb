@@ -256,4 +256,6 @@ RSpec.describe Album do
       expect(album.serial_number).to eq(123)
     end
   end
+
+  it_behaves_like 'it has trackable title and description', model: :album
 end

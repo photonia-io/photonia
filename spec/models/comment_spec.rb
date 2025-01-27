@@ -59,7 +59,10 @@ RSpec.describe Comment do
   describe 'callbacks' do
     it 'sets body_html before saving' do
       comment = create(:comment, :with_photo, body: 'This is a **test**')
-      expect(comment.body_html).to eq "<p>This is a <strong>test</strong></p>"
+      expect(comment.body_html).to eq '<p>This is a <strong>test</strong></p>'
     end
   end
+
+  it_behaves_like 'it has trackable body', model: :comment, commentable_type: :photo
+  it_behaves_like 'it has trackable body', model: :comment, commentable_type: :album
 end
