@@ -3,28 +3,28 @@
     <div class="container">
       <div class="title mt-5 mb-0">
         <AlbumTitleEditable
-          v-if="!loading && userStore.signedIn && album.canEdit"
+          v-if="canEditAlbum"
           :album="album"
           @update-title="updateAlbumTitle"
         />
-        <h1 v-else>
+        <h1 class="title" v-else>
           {{ title }}
         </h1>
       </div>
       <hr class="mt-2 mb-4" />
       <AlbumDescriptionEditable
-        v-if="!loading && userStore.signedIn && album.canEdit"
+        v-if="canEditAlbum"
         :album="album"
         @update-description="updateAlbumDescription"
       />
-      <div v-else>
-        <div
-          class="content"
-          v-html="descriptionHtml"
-          v-if="album.descriptionHtml"
-        />
-      </div>
-      <div class="columns is-1 is-multiline">
+      <div
+        v-else
+        class="content"
+        v-html="descriptionHtml"
+        v-if="album.descriptionHtml"
+      />
+      <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
+        <!-- <div class="columns is-1 is-multiline"> -->
         <PhotoItem
           v-for="photo in album.photos.collection"
           :photo="photo"
@@ -83,6 +83,10 @@ const album = computed(() => result.value?.album ?? emptyAlbum);
 
 const title = computed(() => `Album: ${titleHelper(album, loading)}`);
 useTitle(title);
+
+const canEditAlbum = computed(
+  () => !loading.value && userStore.signedIn && album.value.canEdit,
+);
 
 const descriptionHtml = computed(() => descriptionHtmlHelper(album, loading));
 
