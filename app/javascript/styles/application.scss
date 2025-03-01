@@ -5,7 +5,7 @@
   $section-padding: 3rem 0.75rem
 );
 
-@use "node_modules/bulma-block-list/src/block-list";
+@use "bulma-block-list/src/block-list";
 
 @use "bulma-divider" with (
   $divider-margin-size: 0.75rem
