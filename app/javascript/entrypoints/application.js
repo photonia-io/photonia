@@ -248,15 +248,11 @@ document.addEventListener("DOMContentLoaded", () => {
       app,
       dsn: settings.sentry_dsn,
       integrations: [
-        new Sentry.BrowserTracing({
-          routingInstrumentation: Sentry.vueRouterInstrumentation(router),
-          tracePropagationTargets: ["photos.rusiczki.net", /^\//],
-        }),
+        Sentry.browserTracingIntegration({ router }),
+        Sentry.replayIntegration(),
       ],
-      // Set tracesSampleRate to 1.0 to capture 100%
-      // of transactions for performance monitoring.
-      // We recommend adjusting this value in production
       tracesSampleRate: settings.sentry_sample_rate,
+      tracePropagationTargets: ["photos.rusiczki.net", /^\//],
     });
   }
 
