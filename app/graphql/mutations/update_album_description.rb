@@ -6,7 +6,7 @@ module Mutations
     description 'Update album description'
 
     argument :description, String, 'New album description', required: true
-    argument :id, String, 'Photo Id', required: true
+    argument :id, String, 'Album Id', required: true
 
     type Types::AlbumType, null: false
 
