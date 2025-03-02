@@ -15,6 +15,7 @@ module Types
       argument :photo_id, ID, 'Id of the photo for which the next photo is to be found', required: true
     end
 
+    field :can_edit, Boolean, 'Whether the current user can edit the album', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
@@ -57,6 +58,10 @@ module Types
 
     def next_photo_in_album(photo_id:)
       Photo.friendly.find(photo_id).next_in_album(@object)
+    end
+
+    def can_edit
+      Pundit.policy(context[:current_user], @object)&.edit?
     end
   end
 end

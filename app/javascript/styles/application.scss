@@ -16,14 +16,18 @@
 }
 
 .editable {
+  border-radius: 5px;
   transition: background 0.5s, margin 0.5s, padding 0.5s;
 
   &:hover {
     cursor: pointer;
     background: #faffa4;
-    margin: -5px -10px;
-    padding: 5px 10px;
-    border-radius: 5px;
+    margin: -3px -6px;
+    padding: 3px 6px;
+
+    [data-theme="dark"] & {
+      background: #666600;
+    }
   }
 }
 

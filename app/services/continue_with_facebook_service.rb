@@ -2,29 +2,51 @@
 
 # Service class for "Continue with Facebook" related operations
 class ContinueWithFacebookService
-  def initialize(access_token, signed_request)
+  class InvalidSignatureError < StandardError; end
+  class InvalidUserInfoError < StandardError; end
+
+  def initialize(access_token, signed_request, app_secret: ENV.fetch('PHOTONIA_FACEBOOK_APP_SECRET'), http_client: Net::HTTP)
     @access_token = access_token
     @signed_request = signed_request
+    @app_secret = app_secret
+    @http_client = http_client
+
+    raise ArgumentError, 'app_secret is required' if @app_secret.blank?
+
     @encoded_signature, @encoded_payload = @signed_request.split('.')
   end
 
-  def verify_signature
-    # Create a SHA256 digest of the encoded_payload using the FB app secret
-    digested_encoded_payload = OpenSSL::HMAC.digest('sha256', ENV['PHOTONIA_FACEBOOK_APP_SECRET'], @encoded_payload)
-    # Base64 encode the digest and remove any trailing '='
-    expected_signature = Base64.urlsafe_encode64(digested_encoded_payload).gsub('=', '')
-
-    @encoded_signature == expected_signature
+  def facebook_user_info
+    verify_signature!
+    user_info = fetch_facebook_user_info
+    validate_user_info!(user_info)
+    user_info
   end
 
-  def get_decoded_payload
+  private
+
+  def verify_signature!
+    raise InvalidSignatureError unless valid_signature?
+  end
+
+  def valid_signature?
+    digested_encoded_payload = OpenSSL::HMAC.digest('sha256', @app_secret, @encoded_payload)
+    expected_signature = Base64.urlsafe_encode64(digested_encoded_payload).gsub('=', '')
+    ActiveSupport::SecurityUtils.secure_compare(@encoded_signature, expected_signature)
+  end
+
+  def decoded_payload
     decoded_payload = Base64.urlsafe_decode64(@encoded_payload)
     JSON.parse(decoded_payload)
   end
 
   def fetch_facebook_user_info
     uri = URI.parse("https://graph.facebook.com/v8.0/me?fields=email,first_name,last_name,name&access_token=#{@access_token}")
-    response = Net::HTTP.get_response(uri)
+    response = @http_client.get_response(uri)
     JSON.parse(response.body)
+  end
+
+  def validate_user_info!(user_info)
+    raise InvalidUserInfoError unless decoded_payload['user_id'] == user_info['id']
   end
 end

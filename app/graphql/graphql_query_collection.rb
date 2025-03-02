@@ -49,6 +49,7 @@ class GraphqlQueryCollection
         album(id: $id) {
           id
           title
+          description
           descriptionHtml
           photos(page: $page) {
             collection {
@@ -63,6 +64,7 @@ class GraphqlQueryCollection
               limitValue
             }
           }
+          canEdit
         }
       }
     GQL

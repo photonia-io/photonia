@@ -52,7 +52,7 @@ RSpec.describe User do
     end
   end
 
-  describe '.find_or_create_from_social' do
+  describe '.find_or_create_from_provider' do
     let(:email) { 'test@test.com' }
     let(:provider) { %w[facebook google].sample }
     let(:first_name) { 'Test' }
@@ -63,13 +63,13 @@ RSpec.describe User do
       let!(:user) { create(:user, email: email) }
 
       it 'returns the user and false' do
-        expect(described_class.find_or_create_from_social(email:, provider:)).to eq([user, false])
+        expect(described_class.find_or_create_from_provider(email:, provider:)).to eq([user, false])
       end
     end
 
     context 'when the user does not exist' do
       it 'creates a new user returns it and true' do
-        user, created = described_class.find_or_create_from_social(
+        user, created = described_class.find_or_create_from_provider(
           email: email,
           provider: provider,
           first_name: first_name,
