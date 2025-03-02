@@ -26,6 +26,7 @@
             <strong>{{ displayName(comment) }}</strong>
           </a>
           <small class="ml-2">{{ momentFormat(comment.createdAt) }}</small>
+          <small class="ml-2" v-if="comment.bodyEdited"><em>Edited</em></small>
           <div v-html="marked.parse(comment.body)"></div>
         </div>
       </div>
