@@ -45,33 +45,31 @@ describe ContinueWithFacebookService, type: :service do
     end
   end
 
-  describe 'private methods' do
-    describe '#valid_signature?' do
-      context 'when the signature is valid' do
-        # Generated from @encoded_payload using @app_secret
-        let(:encoded_signature) { '5rn1iaby6JxCF6oREuU4ie_wbdCECEXE1ajpXQNUgt8' }
+  describe '#valid_signature?' do
+    context 'when the signature is valid' do
+      let(:expected_signature) { OpenSSL::HMAC.digest('sha256', app_secret, encoded_payload) }
+      let(:encoded_signature) {  Base64.urlsafe_encode64(expected_signature).gsub('=', '') }
 
-        it 'returns true' do
-          expect(instance.send(:valid_signature?)).to eq(true)
-        end
-      end
-
-      context 'when the signature is invalid' do
-        let(:encoded_signature) { 'invalid_signature' }
-
-        it 'returns false' do
-          expect(instance.send(:valid_signature?)).to eq(false)
-        end
+      it 'returns true' do
+        expect(instance.send(:valid_signature?)).to be(true)
       end
     end
 
-    describe '#decoded_payload' do
-      let(:payload) { { 'user_id' => 123 } }
-      let(:encoded_payload) { Base64.urlsafe_encode64(payload.to_json) }
+    context 'when the signature is invalid' do
+      let(:encoded_signature) { 'invalid_signature' }
 
-      it 'decodes the payload' do
-        expect(instance.send(:decoded_payload)).to eq(payload)
+      it 'returns false' do
+        expect(instance.send(:valid_signature?)).to be(false)
       end
+    end
+  end
+
+  describe '#decoded_payload' do
+    let(:payload) { { 'user_id' => 123 } }
+    let(:encoded_payload) { Base64.urlsafe_encode64(payload.to_json) }
+
+    it 'decodes the payload' do
+      expect(instance.send(:decoded_payload)).to eq(payload)
     end
   end
 end
