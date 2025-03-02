@@ -28,6 +28,20 @@ describe 'updateAlbumTitle Mutation', type: :request do
     GQL
   end
 
+  context 'when the album is not found' do
+    before do
+      album.destroy
+    end
+
+    it 'returns an error' do
+      post_mutation
+      json = response.parsed_body
+      errors = json['errors'].first
+
+      expect(errors['message']).to eq('Album not found')
+    end
+  end
+
   context 'when the user is not logged in' do
     it 'raises Pundit::NotAuthorizedError' do
       expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)

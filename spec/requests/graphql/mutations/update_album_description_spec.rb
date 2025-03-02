@@ -5,6 +5,8 @@ require 'rails_helper'
 describe 'updateAlbumDescription Mutation', type: :request do
   include Devise::Test::IntegrationHelpers
 
+  subject(:post_mutation) { post '/graphql', params: { query: query } }
+
   let(:title) { 'Test title' }
   let(:description) { 'Test description' }
   let(:album) { create(:album, title: title, description: description) }
@@ -25,8 +27,6 @@ describe 'updateAlbumDescription Mutation', type: :request do
       }
     GQL
   end
-
-  subject(:post_mutation) { post '/graphql', params: { query: query } }
 
   context 'when the album is not found' do
     before do
@@ -55,7 +55,7 @@ describe 'updateAlbumDescription Mutation', type: :request do
 
     it 'updates the album description' do
       post_mutation
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       data = json['data']['updateAlbumDescription']
 
       expect(data).to include(
@@ -70,7 +70,7 @@ describe 'updateAlbumDescription Mutation', type: :request do
 
       it 'updates the album description' do
         post_mutation
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         data = json['data']['updateAlbumDescription']
 
         expect(data).to include(

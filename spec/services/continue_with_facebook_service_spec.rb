@@ -15,11 +15,10 @@ describe ContinueWithFacebookService, type: :service do
   describe '#facebook_user_info' do
     let(:facebook_user_info) { { 'id' => 123 } }
     let(:decoded_payload) { { 'user_id' => 123 } }
-    let(:response) { double('response', body: facebook_user_info.to_json) }
+    let(:response) { instance_double(Net::HTTPResponse, body: facebook_user_info.to_json) }
 
     before do
-      allow(instance).to receive(:valid_signature?).and_return(true)
-      allow(instance).to receive(:decoded_payload).and_return(decoded_payload)
+      allow(instance).to receive_messages(valid_signature?: true, decoded_payload: decoded_payload)
       allow(http_client).to receive(:get_response).and_return(response)
     end
 
