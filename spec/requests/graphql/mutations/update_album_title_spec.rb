@@ -17,7 +17,7 @@ describe 'updateAlbumTitle Mutation', type: :request do
     <<~GQL
       mutation {
         updateAlbumTitle(
-          id: "#{album.id}"
+          id: "#{album.slug}"
           title: "#{new_title}"
         ) {
           id
@@ -54,7 +54,7 @@ describe 'updateAlbumTitle Mutation', type: :request do
     context 'when updating to an empty title' do
       let(:new_title) { '' }
 
-      it 'updates the album title' do
+      it 'returns an error' do
         post_mutation
         json = response.parsed_body
         errors = json['errors'].first
