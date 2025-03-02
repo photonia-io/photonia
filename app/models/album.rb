@@ -41,6 +41,7 @@ class Album < ApplicationRecord
   before_validation :set_serial_number, prepend: true
 
   include HtmlDescriptionable
+  include TrackableTitleAndDescription
 
   after_create :maintenance
   after_update :maintenance
