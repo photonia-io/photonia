@@ -4,24 +4,30 @@
   $box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1),
   $section-padding: 3rem 0.75rem
 );
-@import "node_modules/bulma-block-list/src/block-list";
 
-$divider-margin-size: 0.75rem;
-@import "@creativebulma/bulma-divider";
+@use "bulma-block-list/src/block-list";
+
+@use "bulma-divider" with (
+  $divider-margin-size: 0.75rem
+);
 
 .tag span.icon {
   margin-right: 0.3em !important;
 }
 
 .editable {
+  border-radius: 5px;
   transition: background 0.5s, margin 0.5s, padding 0.5s;
 
   &:hover {
     cursor: pointer;
     background: #faffa4;
-    margin: -5px -10px;
-    padding: 5px 10px;
-    border-radius: 5px;
+    margin: -3px -6px;
+    padding: 3px 6px;
+
+    [data-theme="dark"] & {
+      background: #666600;
+    }
   }
 }
 

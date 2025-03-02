@@ -5,6 +5,7 @@
     @click="startEditing"
   >
     <div class="editable">
+      Album:
       {{ title }}
     </div>
   </h1>
@@ -14,7 +15,7 @@
         v-model="localTitle"
         class="input"
         type="text"
-        placeholder="Enter a title for this photo"
+        placeholder="Enter a title for this album"
         ref="input"
       />
     </p>
@@ -35,15 +36,15 @@ import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
 
 const props = defineProps({
-  photo: {
+  album: {
     type: Object,
     required: true,
   },
 });
 
-const { photo } = toRefs(props);
+const { album } = toRefs(props);
 
-const title = computed(() => titleHelper(photo));
+const title = computed(() => titleHelper(album));
 
 const emit = defineEmits(["updateTitle"]);
 
@@ -51,12 +52,13 @@ const applicationStore = useApplicationStore();
 const { editing: storeEditing } = storeToRefs(applicationStore);
 
 const editing = ref(false);
-const localTitle = ref(photo.value.title);
+const localTitle = ref(album.value.title);
 const input = ref(null);
-var savedTitle = "";
 
-watch(photo, (newPhoto) => {
-  localTitle.value = newPhoto.title;
+let savedTitle = "";
+
+watch(album, (newAlbum) => {
+  localTitle.value = newAlbum.title;
 });
 
 watch(storeEditing, (newEditing) => {
@@ -86,15 +88,12 @@ const cancelEditing = () => {
 
 const updateTitle = () => {
   if (savedTitle != localTitle.value) {
-    if (
-      localTitle.value.trim() === "" &&
-      photo.value.description.trim() === ""
-    ) {
-      toaster("Either title or description is required", "is-warning");
+    if (localTitle.value.trim() === "") {
+      toaster("The album title is required", "is-warning");
       focusInput();
       return;
     }
-    emit("updateTitle", { id: photo.value.id, title: localTitle.value });
+    emit("updateTitle", { id: album.value.id, title: localTitle.value });
   }
   editing.value = false;
   applicationStore.stopEditing();

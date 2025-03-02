@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.3.6'
+ruby '3.4.2'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 7.0'
@@ -86,7 +86,7 @@ end
 group :test do
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 3.38.0'
-  gem 'pundit-matchers', '~> 3.1'
+  gem 'pundit-matchers', '~> 4.0'
   gem 'selenium-webdriver'
   gem 'shoulda-matchers', '~> 6.1'
   gem 'simplecov', require: false

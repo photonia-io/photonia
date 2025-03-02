@@ -94,4 +94,10 @@ Capybara.register_driver :remote_chrome do |app|
 end
 
 Capybara.server_port = 3020
+
+# The host will be different depending on the environment you are running the tests in
+# For Docker on Mac, Windows and Docker Desktop on Linux use host.docker.internal
+# I couldn't get the following to work yet:
+# For Docker on Linux (without Docker Desktop), use the IP address of the host machine
+# Or get the IP address by doing `ip addr show docker0`, it is usually something like 172.17.0.1
 Capybara.app_host = 'http://host.docker.internal:3020'

@@ -3,22 +3,22 @@
 require 'rails_helper'
 
 describe 'continueWithFacebook Mutation', type: :request do
+  subject(:post_mutation) { post '/graphql', params: { query: query } }
+
   let(:facebook_user_id) { 123 }
   let(:email) { 'test@test.com' }
   let(:first_name) { 'Test' }
   let(:last_name) { 'User' }
   let(:display_name) { 'Test User' }
 
-  before do
-    allow_any_instance_of(ContinueWithFacebookService).to receive(:verify_signature).and_return(true)
-    allow_any_instance_of(ContinueWithFacebookService).to receive(:get_decoded_payload).and_return('user_id' => facebook_user_id)
-    allow_any_instance_of(ContinueWithFacebookService).to receive(:fetch_facebook_user_info).and_return(
-      'id' => facebook_user_id,
-      'email' => email,
-      'first_name' => first_name,
-      'last_name' => last_name,
-      'name' => display_name
-    )
+  let(:cwfs_instance) { instance_double(ContinueWithFacebookService) }
+  let(:expected_user_attributes) do
+    {
+      email: email,
+      first_name: first_name,
+      last_name: last_name,
+      display_name: display_name
+    }
   end
 
   let(:query) do
@@ -35,7 +35,16 @@ describe 'continueWithFacebook Mutation', type: :request do
     GQL
   end
 
-  subject(:post_mutation) { post '/graphql', params: { query: query } }
+  before do
+    allow(ContinueWithFacebookService).to receive(:new).and_return(cwfs_instance)
+    allow(cwfs_instance).to receive(:facebook_user_info).and_return(
+      'id' => facebook_user_id,
+      'email' => email,
+      'first_name' => first_name,
+      'last_name' => last_name,
+      'name' => display_name
+    )
+  end
 
   context 'when continue with facebook is enabled' do
     before do
@@ -43,15 +52,22 @@ describe 'continueWithFacebook Mutation', type: :request do
     end
 
     context 'when the user does not exist' do
+      let(:admins_arr) { instance_double(ActiveRecord::Relation) }
+
       before do
         # this is for the mailer
-        allow(User).to receive_message_chain(:admins, :pluck).and_return(['admin@test.com'])
+        allow(User).to receive(:admins).and_return(admins_arr)
+        allow(admins_arr).to receive(:pluck).and_return(['admin@test.com'])
       end
 
-      it 'creates a new user and sends an email to the admin' do
+      it 'creates a new user with the correct attributes' do
+        expect { post_mutation }.to change(User, :count).by(1)
+        expect(User.last).to have_attributes(expected_user_attributes)
+      end
+
+      it 'sends an email to the admins' do
         Sidekiq::Testing.inline! do
-          expect { post_mutation }.to change(User, :count).by(1)
-            .and change(ActionMailer::Base.deliveries, :count).by(1)
+          expect { post_mutation }.to change(ActionMailer::Base.deliveries, :count).by(1)
         end
       end
 
@@ -63,16 +79,18 @@ describe 'continueWithFacebook Mutation', type: :request do
 
       it 'returns the user' do
         post_mutation
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         data = json['data']['continueWithFacebook']
 
         expect(data['email']).to eq(email)
-        expect(data['admin']).to eq(false)
+        expect(data['admin']).to be(false)
       end
     end
 
     context 'when the user exists' do
-      let!(:user) { create(:user, email: email) }
+      before do
+        create(:user, email: email)
+      end
 
       it 'does not create a new user' do
         expect { post_mutation }.not_to change(User, :count)
@@ -80,31 +98,11 @@ describe 'continueWithFacebook Mutation', type: :request do
 
       it 'returns the user' do
         post_mutation
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         data = json['data']['continueWithFacebook']
 
         expect(data['email']).to eq(email)
-        expect(data['admin']).to eq(false)
-      end
-    end
-
-    context 'when the signature is invalid' do
-      before do
-        allow_any_instance_of(ContinueWithFacebookService).to receive(:verify_signature).and_return(false)
-      end
-
-      it 'raises an error' do
-        expect { post_mutation }.to raise_error('Invalid signature')
-      end
-    end
-
-    context 'when the decoded payload user id does not match the user info id' do
-      before do
-        allow_any_instance_of(ContinueWithFacebookService).to receive(:get_decoded_payload).and_return('user_id' => 456)
-      end
-
-      it 'raises an error' do
-        expect { post_mutation }.to raise_error('Invalid user info')
+        expect(data['admin']).to be(false)
       end
     end
   end

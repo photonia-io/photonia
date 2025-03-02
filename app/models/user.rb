@@ -54,7 +54,7 @@ class User < ApplicationRecord
 
   after_create :assign_default_role
 
-  def self.find_or_create_from_social(email:, provider:, first_name: nil, last_name: nil, display_name: nil)
+  def self.find_or_create_from_provider(email:, provider:, first_name: nil, last_name: nil, display_name: nil)
     created = false
     user = find_or_create_by(email: email) do |user|
       user.signup_provider = provider

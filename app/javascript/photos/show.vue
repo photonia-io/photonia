@@ -48,7 +48,7 @@
               />
               <div v-else class="content" v-html="descriptionHtml"></div>
 
-              <PhotoAdministration
+              <PhotoManagement
                 v-if="!loading && userStore.signedIn && photo.canEdit"
                 :photo="photo"
                 @delete-photo="deletePhoto"
@@ -262,13 +262,13 @@ import { useTitle } from "vue-page-title";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
-import photoTitle from "../mixins/photo-title";
-import { photoDescriptionHtml } from "../mixins/photo-description";
+import titleHelper from "../mixins/title-helper";
+import { descriptionHtmlHelper } from "../mixins/description-helper";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
 import PhotoDescriptionEditable from "./photo-description-editable.vue";
-import PhotoAdministration from "./photo-administration.vue";
+import PhotoManagement from "./photo-management.vue";
 import PhotoInfo from "./photo-info.vue";
 import PhotoInfobox from "./photo-infobox.vue";
 import PhotoComments from "./photo-comments.vue";
@@ -387,10 +387,10 @@ const unHighlightLabel = (label) => {
 const photo = computed(() => result.value?.photo ?? emptyPhoto);
 const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
 
-const title = computed(() => photoTitle(photo, loading));
+const title = computed(() => titleHelper(photo, loading));
 useTitle(title);
 
-const descriptionHtml = computed(() => photoDescriptionHtml(photo, loading));
+const descriptionHtml = computed(() => descriptionHtmlHelper(photo, loading));
 
 const userStore = useUserStore();
 const applicationStore = useApplicationStore();

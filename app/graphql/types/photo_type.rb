@@ -11,11 +11,11 @@ module Types
     field :description, String, 'Description', null: false
     field :description_html, String, 'Description in HTML', null: true
     field :exif_camera_friendly_name, String, 'Camera friendly name', null: true
-    field :exif_f_number, Float, 'F number', null: true
-    field :exif_exposure_time, String, 'Exposure time', null: true
-    field :exif_iso, Integer, 'ISO', null: true
     field :exif_exists, Boolean, 'Whether EXIF data exists', null: true
+    field :exif_exposure_time, String, 'Exposure time', null: true
+    field :exif_f_number, Float, 'F number', null: true
     field :exif_focal_length, Float, 'Focal length', null: true
+    field :exif_iso, Integer, 'ISO', null: true
     field :height, Integer, 'Height of the photo in pixels', null: true
     field :id, String, 'ID of the photo', null: false
     field :impressions_count, Integer, 'Number of impressions', null: true
