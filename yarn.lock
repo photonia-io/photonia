@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@apollo/client@^3.13.1":
-  version "3.13.1"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.13.1.tgz#c0633c69c5446967b0e517a590595eeea61dd176"
-  integrity sha512-HaAt62h3jNUXpJ1v5HNgUiCzPP1c5zc2Q/FeTb2cTk/v09YlhoqKKHQFJI7St50VCJ5q8JVIc03I5bRcBrQxsg==
+"@apollo/client@^3.13.4":
+  version "3.13.4"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.13.4.tgz#4a26adb58eb4365dca7d6b0202cbb78ba47f1e11"
+  integrity sha512-Ot3RaN2M/rhIKDqXBdOVlN0dQbHydUrYJ9lTxkvd6x7W1pAjwduUccfoz2gsO4U9by7oWtRj/ySF0MFNUp+9Aw==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
     "@wry/caches" "^1.0.0"
@@ -537,18 +537,18 @@
     tinyrainbow "^2.0.0"
 
 "@vue/apollo-composable@^4.0.0-beta.11":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@vue/apollo-composable/-/apollo-composable-4.2.1.tgz#acc46e71f52bec60ec91fd059753a3cdfee75b86"
-  integrity sha512-9PZ/pSl4Miqgg9uUOkAbg38ALyjm1j7QL9iZeppgUCBcJI3Sa7SA3LOCB2IV1jYsLjXuKVMHh2cwHJE1wzhfSA==
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@vue/apollo-composable/-/apollo-composable-4.2.2.tgz#96278e420daa6fe66d54d04efb90e52ef49b306a"
+  integrity sha512-5j+Jl07Gemz5vmuS8u/FfWtYgr04Rh0rjQ5HBv6DZDP7d+pvQfsCIRgX5adJoZJcznJLsQ0JupO/mZmRCBWGaQ==
   dependencies:
     throttle-debounce "^5.0.0"
     ts-essentials "^9.4.0"
     vue-demi "^0.14.6"
 
 "@vue/apollo-option@^4.0.0-beta.9":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@vue/apollo-option/-/apollo-option-4.2.0.tgz#c81dd22198680953063276a83a4ebcb1baf9bd93"
-  integrity sha512-JYqtSY+dHoOM10o2L+EVY+nDxsmT9lb1Z3Z7VBzBQ3f0np+A1TFldZw9gYNbSS6QYgyGw376+Z/EtOqJ9JoaZw==
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@vue/apollo-option/-/apollo-option-4.2.2.tgz#a385a81edce24f71b5320caa95e4d53bf19cf43a"
+  integrity sha512-70yKre9/cLV5Ye98x1gCcT3217mpYnWd3tp6gQCNHJSLtXvHs2J6kqNGJM7Xi1FYlHfhkElRklkixAdnh7OamQ==
   dependencies:
     throttle-debounce "^5.0.0"
 
@@ -1061,10 +1061,10 @@ graphql@^16.10.0:
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.10.0.tgz#24c01ae0af6b11ea87bf55694429198aaa8e220c"
   integrity sha512-AjqGKbDGUFRKIRCP9tCKiIGHyriz2oHEbPIbEtcSLSs4YjReZOIPQQWek4+6hjw62H9QShXHyaGivGiYVLeYFQ==
 
-happy-dom@^17.2.2:
-  version "17.2.2"
-  resolved "https://registry.yarnpkg.com/happy-dom/-/happy-dom-17.2.2.tgz#8f320b76cf69fbe5c0dd97a55557751ddf73e492"
-  integrity sha512-3I1/CrNi780sdOhuhUnFtgTWhloSc3quSZwsylI41jycx8o97M6Y4aQAu0phSexGusT7+59BxATh4L4xiY0HcA==
+happy-dom@^17.4.4:
+  version "17.4.4"
+  resolved "https://registry.yarnpkg.com/happy-dom/-/happy-dom-17.4.4.tgz#dea96fcc2f3dd2571d688b93dd853975270a623a"
+  integrity sha512-/Pb0ctk3HTZ5xEL3BZ0hK1AqDSAUuRQitOmROPHhfUYEWpmTImwfD8vFDGADmMAX0JYgbcgxWoLFKtsWhcpuVA==
   dependencies:
     webidl-conversions "^7.0.0"
     whatwg-mimetype "^3.0.0"
@@ -1647,10 +1647,10 @@ vite-plugin-ruby@^5.1.1:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vite@^6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-6.2.1.tgz#ae865d4bb93a11844be1bc647c8b2dd1856ea180"
-  integrity sha512-n2GnqDb6XPhlt9B8olZPrgMD/es/Nd1RdChF6CBD/fHW6pUyUTt2sQW2fPRX5GiD9XEa6+8A6A4f2vT6pSsE7Q==
+vite@^6.2.2:
+  version "6.2.2"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-6.2.2.tgz#8098b12a6bfd95abe39399aa7d5faa56545d7a1a"
+  integrity sha512-yW7PeMM+LkDzc7CgJuRLMW2Jz0FxMOsVJ8Lv3gpgW9WLcb9cTW+121UEr1hvmfR7w3SegR5ItvYyzVz1vxNJgQ==
   dependencies:
     esbuild "^0.25.0"
     postcss "^8.5.3"
