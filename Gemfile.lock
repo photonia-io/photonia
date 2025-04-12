@@ -93,7 +93,7 @@ GEM
       rake (>= 10.4, < 14.0)
     ast (2.4.3)
     aws-eventstream (1.3.2)
-    aws-partitions (1.1082.0)
+    aws-partitions (1.1086.0)
     aws-sdk-core (3.222.1)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
@@ -175,7 +175,7 @@ GEM
       railties (>= 5.0.0)
     faker (3.5.1)
       i18n (>= 1.8.11, < 2)
-    faraday (2.12.2)
+    faraday (2.13.0)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -204,7 +204,7 @@ GEM
       signet (>= 0.16, < 2.a)
     graphiql-rails (1.10.4)
       railties
-    graphql (2.5.1)
+    graphql (2.5.2)
       base64
       fiber-storage
       logger
@@ -395,7 +395,7 @@ GEM
       rubocop-ast (>= 1.44.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
-    rubocop-ast (1.44.0)
+    rubocop-ast (1.44.1)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
     rubocop-graphql (1.5.5)
