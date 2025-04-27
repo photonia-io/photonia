@@ -37,6 +37,8 @@ describe 'photo Query' do
               id
               body
               bodyHtml
+              bodyEdited
+              bodyLastEditedAt
               flickrUser {
                 nsid
                 username
@@ -90,6 +92,8 @@ describe 'photo Query' do
         expect(comment['id']).to eq first_comment.serial_number.to_s
         expect(comment['body']).to eq first_comment.body
         expect(comment['bodyHtml']).to eq first_comment.body_html
+        expect(comment['bodyEdited']).to eq first_comment.body_edited?
+        expect(comment['bodyLastEditedAt']).to eq first_comment.body_last_edited_at&.iso8601
         expect(comment['createdAt']).to eq first_comment.created_at.iso8601
 
         comment['flickrUser'].tap do |flickr_user|
