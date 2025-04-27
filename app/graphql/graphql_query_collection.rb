@@ -164,6 +164,8 @@ class GraphqlQueryCollection
             id
             body
             bodyHtml
+            bodyEdited
+            bodyLastEditedAt
             flickrUser {
               nsid
               username

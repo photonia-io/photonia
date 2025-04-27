@@ -122,6 +122,9 @@ GEM
     bootsnap (1.18.4)
       msgpack (~> 1.2)
     builder (3.3.0)
+    bullet (8.0.5)
+      activesupport (>= 3.0.0)
+      uniform_notifier (~> 1.11)
     byebug (12.0.0)
     capybara (3.40.0)
       addressable
@@ -275,6 +278,9 @@ GEM
     orm_adapter (0.5.0)
     os (1.1.4)
     pagy (9.3.4)
+    paper_trail (16.0.0)
+      activerecord (>= 6.1)
+      request_store (~> 1.4)
     parallel (1.27.0)
     parser (3.3.8.0)
       ast (~> 2.4.1)
@@ -361,6 +367,8 @@ GEM
     regexp_parser (2.10.0)
     reline (0.6.1)
       io-console (~> 0.5)
+    request_store (1.7.0)
+      rack (>= 1.4)
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
@@ -493,6 +501,7 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
+    uniform_notifier (1.16.0)
     uri (1.0.3)
     useragent (0.16.11)
     vite_rails (3.0.19)
@@ -530,6 +539,7 @@ DEPENDENCIES
   aws-sdk-s3 (~> 1.14)
   bcrypt_pbkdf
   bootsnap (>= 1.4.2)
+  bullet
   byebug
   capybara (>= 3.38.0)
   devise
@@ -550,6 +560,7 @@ DEPENDENCIES
   kramdown
   listen
   pagy (~> 9)
+  paper_trail
   pg (>= 0.18, < 2.0)
   pg_search
   pry

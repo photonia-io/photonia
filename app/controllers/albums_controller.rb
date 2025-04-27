@@ -11,7 +11,7 @@ class AlbumsController < ApplicationController
   end
 
   def show
-    @album = Album.includes(:photos, :albums_photos).friendly.find(params[:id])
+    @album = Album.friendly.find(params[:id])
     @pagy, @photos = pagy(@album.photos.order(:ordering))
   end
 

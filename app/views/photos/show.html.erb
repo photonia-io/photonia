@@ -1,39 +1,39 @@
 <% content_for(:page_title, @photo.title) %>
 <div>
-  <div>
-    <h1><%= @photo.title.presence || '(no title)' %></h1>
-  </div>
-  <div>
-    <% if @photo.prev %>
-      <div>
-        <a href="<%= photo_path(@photo.prev) %>">
-          Previous
-          <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>">
-        </a>
-      </div>
-    <% end %>
-    <% if @photo.next %>
-      <div>
-        <a href="<%= photo_path(@photo.next) %>">
-          <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>">
-          Next
-        </a>
-      </div>
-    <% end %>
-  </div>
+  <h1><%= @photo.title.presence || '(no title)' %></h1>
+  <% if @photo.prev %>
+    <div>
+      <a href="<%= photo_path(@photo.prev) %>">
+        Previous
+        <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>">
+      </a>
+    </div>
+  <% end %>
+  <% if @photo.next %>
+    <div>
+      <a href="<%= photo_path(@photo.next) %>">
+        <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>">
+        Next
+      </a>
+    </div>
+  <% end %>
 </div>
 <hr>
 <div>
   <div>
-    <div>
-      <img src="<%= @photo.image_url(:large) %>" />
-    </div>
+    <img src="<%= @photo.image_url(:large) %>" />
     <% if @photo.description_html.presence %>
       <h2>Description</h2>
       <div>
         <%= @photo.description_html.html_safe %>
-     </div>
+      </div>
     <% end %>
+
+    <h3>Date Taken</h3>
+    <p><%= @photo.taken_at.strftime('%B %e, %Y') %></p>
+
+    <h3>Date Posted</h3>
+    <p><%= @photo.posted_at.strftime('%B %e, %Y') %></p>
   </div>
   <div>
     <% if @photo.albums.any? %>
@@ -43,30 +43,20 @@
         <li>
           <h4><a href="<%= album_path(album) %>"><%= album.title %></a></h4>
           <div>
-            <div>
-              <% if(@prev = @photo.prev_in_album(album)) %>
-                <a href="<%= photo_path(@prev) %>">
-                  <img src="<%= @prev.image_url(:thumbnail_intelligent).presence || @prev.image_url(:thumbnail_square) %>">
-                  Previous
-                </a>
-              <% else %>
-                <button disabled>
-                  Previous
-                </button>
-              <% end %>
-            </div>
-            <div>
-              <% if(@next = @photo.next_in_album(album)) %>
-                <a href="<%= photo_path(@next) %>">
-                  <img src="<%= @next.image_url(:thumbnail_intelligent).presence || @next.image_url(:thumbnail_square) %>">
-                  Next
-                </a>
-              <% else %>
-                <button disabled>
-                  Next
-                </button>
-              <% end %>
-            </div>
+          <% if (prev_photo = @photo.prev_in_album(album)) %>
+            <a href="<%= photo_path(prev_photo) %>">
+              <img src="<%= prev_photo.image_url(:thumbnail_intelligent).presence || prev_photo.image_url(:thumbnail_square) %>">
+              Previous
+            </a>
+          <% end %>
+        </div>
+        <div>
+          <% if (next_photo = @photo.next_in_album(album)) %>
+            <a href="<%= photo_path(next_photo) %>">
+              <img src="<%= next_photo.image_url(:thumbnail_intelligent).presence || next_photo.image_url(:thumbnail_square) %>">
+              Next
+            </a>
+          <% end %>
           </div>
         </li>
       <% end %>
@@ -74,30 +64,23 @@
     <% end %>
 
     <h3>Comments</h3>
-    <div>
-      <% if @photo.comments.any? %>
-        <ul>
-          <% @photo.comments.each do |comment| %>
-            <li>
-              <div>
-                <a href="<%= comment.flickr_user.profileurl %>"><%= comment.flickr_user.realname || comment.flickr_user.username || comment.flickr_user.nsid %></a>
-                <span><%= comment.created_at.strftime('%B %e, %Y %l:%M %p') %></span>
-              </div>
-              <div>
-                <%= comment.body_html.html_safe %>
-              </div>
-            </li>
-          <% end %>
-        </ul>
-      <% else %>
-        <p>No comments yet.</p>
-      <% end %>
-
-    <h3>Date Taken</h3>
-    <p><%= @photo.taken_at.strftime('%B %e, %Y') %></p>
-
-    <h3>Date Posted</h3>
-    <p><%= @photo.posted_at.strftime('%B %e, %Y') %></p>
+    <% if @photo.comments.any? %>
+      <ul>
+        <% @photo.comments.each do |comment| %>
+          <li>
+            <div>
+              <a href="<%= comment.flickr_user.profileurl %>"><%= comment.flickr_user.realname || comment.flickr_user.username || comment.flickr_user.nsid %></a>
+              <span><%= comment.created_at.strftime('%B %e, %Y %l:%M %p') %></span>
+            </div>
+            <div>
+              <%= comment.body_html.html_safe %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p>No comments yet.</p>
+    <% end %>
 
     <h3>Tags</h3>
     <div>

@@ -19,7 +19,7 @@ class PhotosController < ApplicationController
   end
 
   def show
-    @photo = Photo.includes(:albums).includes(:albums_photos).includes(comments: :flickr_user).friendly.find(params[:id])
+    @photo = Photo.includes(comments: :flickr_user).friendly.find(params[:id])
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
   end

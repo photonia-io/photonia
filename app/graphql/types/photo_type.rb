@@ -103,10 +103,6 @@ module Types
       @object.exif_exists?
     end
 
-    def comments
-      @object.comments.order(created_at: :asc)
-    end
-
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
     end

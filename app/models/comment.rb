@@ -32,6 +32,7 @@ class Comment < ApplicationRecord
   before_validation :set_serial_number, prepend: true
 
   include HtmlBodyable
+  include TrackableBody
 
   belongs_to :commentable, polymorphic: true
   belongs_to :user, optional: true
