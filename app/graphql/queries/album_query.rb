@@ -9,7 +9,7 @@ module Queries
     argument :id, ID, 'ID of the album', required: true
 
     def resolve(id:)
-      album = Album.includes(:albums_photos).friendly.find(id)
+      album = Album.friendly.find(id)
       record_impression(album)
       album
     end
