@@ -43,20 +43,20 @@
         <li>
           <h4><a href="<%= album_path(album) %>"><%= album.title %></a></h4>
           <div>
-            <% if(@prev = @photo.prev_in_album(album)) %>
-              <a href="<%= photo_path(@prev) %>">
-                <img src="<%= @prev.image_url(:thumbnail_intelligent).presence || @prev.image_url(:thumbnail_square) %>">
-                Previous
-              </a>
-            <% end %>
-          </div>
-          <div>
-            <% if(@next = @photo.next_in_album(album)) %>
-              <a href="<%= photo_path(@next) %>">
-                <img src="<%= @next.image_url(:thumbnail_intelligent).presence || @next.image_url(:thumbnail_square) %>">
-                Next
-              </a>
-            <% end %>
+          <% if (prev_photo = @photo.prev_in_album(album)) %>
+            <a href="<%= photo_path(prev_photo) %>">
+              <img src="<%= prev_photo.image_url(:thumbnail_intelligent).presence || prev_photo.image_url(:thumbnail_square) %>">
+              Previous
+            </a>
+          <% end %>
+        </div>
+        <div>
+          <% if (next_photo = @photo.next_in_album(album)) %>
+            <a href="<%= photo_path(next_photo) %>">
+              <img src="<%= next_photo.image_url(:thumbnail_intelligent).presence || next_photo.image_url(:thumbnail_square) %>">
+              Next
+            </a>
+          <% end %>
           </div>
         </li>
       <% end %>
