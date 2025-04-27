@@ -27,4 +27,19 @@ RSpec.shared_examples 'it has trackable body' do |model:, commentable_type: nil|
       end
     end
   end
+
+  describe '#body_last_edited_at' do
+    context 'when the body has been set to a new body' do
+      it 'returns the last edited time' do
+        trackable.update(body: 'New Body')
+        expect(trackable.body_last_edited_at).to be_within(1.second).of(Time.current)
+      end
+    end
+
+    context 'when the body has not been edited' do
+      it 'returns nil' do
+        expect(trackable.body_last_edited_at).to be_nil
+      end
+    end
+  end
 end

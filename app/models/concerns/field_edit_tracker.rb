@@ -5,7 +5,9 @@ module FieldEditTracker
   private
 
   def field_edited?(field)
-    versions.offset(1).any? do |version|
+    # Use preloaded versions if available
+    preloaded_versions = versions.to_a.drop(1) # Drop the first version (initial creation)
+    preloaded_versions.any? do |version|
       changes = version.object_changes
       changes && changes[field].present?
     end
