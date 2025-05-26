@@ -69,7 +69,7 @@ import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "@/stores/user";
 
 // components
-import SelectionOptions from "@/shared/selection-options.vue";
+import SelectionOptions from "selection-options.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 

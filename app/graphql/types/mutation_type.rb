@@ -34,6 +34,11 @@ module Types
       argument :title, String, 'Album title', required: true
     end
 
+    field :delete_album, AlbumType, null: false do
+      description 'Delete album'
+      argument :id, String, 'Album Id', required: true
+    end
+
     field :delete_photo, PhotoType, null: false do
       description 'Delete photo'
       argument :id, String, 'Photo Id', required: true
@@ -100,6 +105,14 @@ module Types
         album.photos << photo
       end
       album.maintenance
+    end
+
+    def delete_album(id:)
+      album = Album.includes(:photos).friendly.find(id)
+      context[:authorize].call(album, :destroy?)
+      # Todo
+      # album.destroy
+      album
     end
 
     def delete_photo(id:)

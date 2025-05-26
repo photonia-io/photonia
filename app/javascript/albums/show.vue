@@ -1,16 +1,35 @@
 <template>
   <section class="section-pt-pb-0">
     <div class="container">
-      <div class="title mt-5 mb-0">
-        <AlbumTitleEditable
-          v-if="canEditAlbum"
-          :album="album"
-          @update-title="updateAlbumTitle"
-        />
-        <h1 class="title" v-else>
-          {{ title }}
-        </h1>
+      <div class="level mt-5 mb-0">
+        <div class="level-left is-flex-grow-1">
+          <div class="level-item is-flex-grow-1 is-justify-content-flex-start">
+            <AlbumTitleEditable
+              v-if="canEditAlbum"
+              :album="album"
+              @update-title="updateAlbumTitle"
+            />
+            <h1 class="title" v-else>
+              {{ title }}
+            </h1>
+          </div>
+        </div>
+        <div
+          class="level-right"
+          v-if="userStore.signedIn && userStore.uploader"
+        >
+          <div class="level-item">
+            <button
+              class="button is-small"
+              v-if="userStore.signedIn && !applicationStore.editingAlbum"
+              @click="applicationStore.startEditingAlbum()"
+            >
+              Edit
+            </button>
+          </div>
+        </div>
       </div>
+
       <hr class="mt-2 mb-4" />
       <AlbumDescriptionEditable
         v-if="canEditAlbum"
@@ -23,11 +42,23 @@
         v-html="descriptionHtml"
         v-if="album.descriptionHtml"
       />
+
+      <AlbumManagement
+        v-if="
+          !loading &&
+          userStore.signedIn &&
+          album.canEdit &&
+          applicationStore.editingAlbum
+        "
+        :album="album"
+        @delete-album="deleteAlbum"
+      />
+
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
-        <!-- <div class="columns is-1 is-multiline"> -->
         <PhotoItem
           v-for="photo in album.photos.collection"
           :photo="photo"
+          :in-album="true"
           :key="photo.id"
         />
       </div>
@@ -44,10 +75,11 @@
 
 <script setup>
 import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
+import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "../stores/user";
 import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
@@ -56,17 +88,20 @@ import { descriptionHtmlHelper } from "../mixins/description-helper";
 // components
 import AlbumTitleEditable from "./album-title-editable.vue";
 import AlbumDescriptionEditable from "./album-description-editable.vue";
+import AlbumManagement from "./album-management.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 
 // route
 const route = useRoute();
+const router = useRouter();
 
 const emptyAlbum = {
   title: "",
   photos: [],
 };
 
+const applicationStore = useApplicationStore();
 const userStore = useUserStore();
 
 const id = computed(() => route.params.id);
@@ -116,6 +151,18 @@ const {
   }
 `);
 
+const {
+  mutate: deleteAlbum,
+  onDone: onDeleteAlbumDone,
+  onError: onDeleteAlbumError,
+} = useMutation(gql`
+  mutation ($id: String!) {
+    deleteAlbum(id: $id) {
+      id
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -134,6 +181,19 @@ onUpdateDescriptionDone(({ data }) => {
 onUpdateDescriptionError((error) => {
   toaster(
     "An error occurred while updating the description: " + error.message,
+    "is-danger",
+  );
+});
+
+onDeleteAlbumDone(({ data }) => {
+  toaster("The album has been deleted");
+  applicationStore.stopEditingAlbum();
+  router.push({ name: "albums-index" });
+});
+
+onDeleteAlbumError((error) => {
+  toaster(
+    "An error occurred while deleting the album: " + error.message,
     "is-danger",
   );
 });

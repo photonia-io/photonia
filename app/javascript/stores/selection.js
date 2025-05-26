@@ -2,11 +2,13 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 
 export const useSelectionStore = defineStore("selection", () => {
+  // --- (de)selectedPhotos refers to the photos selected from the photo stream ---
+
   const selectedPhotos = ref(
-    JSON.parse(localStorage.getItem("selectedPhotos") || "[]")
+    JSON.parse(localStorage.getItem("selectedPhotos") || "[]"),
   );
   const deselectedPhotos = ref(
-    JSON.parse(localStorage.getItem("deselectedPhotos") || "[]")
+    JSON.parse(localStorage.getItem("deselectedPhotos") || "[]"),
   );
   const showRemoveNotification = ref(true);
 
@@ -15,7 +17,7 @@ export const useSelectionStore = defineStore("selection", () => {
     (newValue) => {
       localStorage.setItem("selectedPhotos", JSON.stringify(newValue));
     },
-    { deep: true }
+    { deep: true },
   );
 
   watch(
@@ -23,7 +25,7 @@ export const useSelectionStore = defineStore("selection", () => {
     (newValue) => {
       localStorage.setItem("deselectedPhotos", JSON.stringify(newValue));
     },
-    { deep: true }
+    { deep: true },
   );
 
   const addPhoto = (photo) => {
@@ -33,14 +35,14 @@ export const useSelectionStore = defineStore("selection", () => {
     }
     // remove from deselectedPhotos if there
     deselectedPhotos.value = deselectedPhotos.value.filter(
-      (item) => item.id !== photo.id
+      (item) => item.id !== photo.id,
     );
   };
 
   const removePhoto = (photo) => {
     // remove from selectedPhotos if there
     selectedPhotos.value = selectedPhotos.value.filter(
-      (item) => item.id !== photo.id
+      (item) => item.id !== photo.id,
     );
     // add to deselectedPhotos if not already there
     if (!deselectedPhotos.value.find((item) => item.id === photo.id)) {
@@ -73,8 +75,30 @@ export const useSelectionStore = defineStore("selection", () => {
 
   const removePhotos = (photos) => {
     selectedPhotos.value = selectedPhotos.value.filter(
-      (item) => !photos.find((photo) => photo.id === item.id)
+      (item) => !photos.find((photo) => photo.id === item.id),
     );
+  };
+
+  // --- selectedAlbumPhotos refers to the photos selected when editing an album ---
+
+  const selectedAlbumPhotos = ref(new Array());
+
+  const addAlbumPhoto = (photo) => {
+    // add to selectedAlbumPhotos if not already there
+    if (!selectedAlbumPhotos.value.find((item) => item.id === photo.id)) {
+      selectedAlbumPhotos.value.push(photo);
+    }
+  };
+
+  const removeAlbumPhoto = (photo) => {
+    // remove from selectedAlbumPhotos if there
+    selectedAlbumPhotos.value = selectedAlbumPhotos.value.filter(
+      (item) => item.id !== photo.id,
+    );
+  };
+
+  const clearSelectedAlbumPhotos = () => {
+    selectedAlbumPhotos.value = new Array();
   };
 
   return {
@@ -88,5 +112,9 @@ export const useSelectionStore = defineStore("selection", () => {
     clearPhotoSelection,
     addPhotos,
     removePhotos,
+    selectedAlbumPhotos,
+    addAlbumPhoto,
+    removeAlbumPhoto,
+    clearSelectedAlbumPhotos,
   };
 });
