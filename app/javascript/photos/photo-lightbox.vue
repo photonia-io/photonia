@@ -307,9 +307,14 @@ const handleKeydown = (event) => {
 // Add/remove keyboard listener
 watch(() => props.isOpen, (newValue) => {
   if (newValue) {
+    nextTick(() => {
+      resetZoom();
+      showControls();
+    });
     document.addEventListener('keydown', handleKeydown);
     document.body.style.overflow = 'hidden';
   } else {
+    clearTimeout(hideControlsTimeout.value);
     document.removeEventListener('keydown', handleKeydown);
     document.body.style.overflow = '';
   }
