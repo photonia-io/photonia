@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import DisplayLabel from "./display-label.vue";
 import LabelListItem from "./label-list-item.vue";
 import PhotoLightbox from "./photo-lightbox.vue";
@@ -114,6 +114,11 @@ const lightboxOpen = ref(false);
 
 // Image loading state
 const imageLoading = ref(true);
+
+// Reset loading state when photo changes
+watch(() => props.photo.id, () => {
+  imageLoading.value = true;
+});
 
 const openLightbox = () => {
   lightboxOpen.value = true;
