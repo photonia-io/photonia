@@ -13,13 +13,31 @@
     </div>
     <div class="hero-body pt-4 pb-4" style="text-align: center">
       <div id="image-wrapper">
+        <!-- Loading spinner -->
+        <div v-if="loading || imageLoading" class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+
         <router-link
           v-if="isHomepage"
           :to="{ name: 'photos-show', params: { id: photo.id } }"
         >
-          <img :src="photo.extralargeImageUrl" />
+          <img
+            :src="photo.extralargeImageUrl"
+            @load="onImageLoad"
+            @error="onImageError"
+            :style="{ opacity: imageLoading ? 0 : 1 }"
+          />
         </router-link>
-        <img v-else :src="photo.extralargeImageUrl" />
+        <img
+          v-else
+          :src="photo.extralargeImageUrl"
+          :alt="photo.title"
+          @click="openLightbox"
+          @load="onImageLoad"
+          @error="onImageError"
+          :style="{ cursor: 'pointer', opacity: imageLoading ? 0 : 1 }"
+        />
         <div v-if="photo.labels" class="labels">
           <DisplayLabel
             v-for="label in photo.labels"
@@ -49,13 +67,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Lightbox -->
+    <PhotoLightbox
+      :photo="photo"
+      :loading="loading"
+      :is-open="lightboxOpen"
+      @close="closeLightbox"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import DisplayLabel from "./display-label.vue";
 import LabelListItem from "./label-list-item.vue";
+import PhotoLightbox from "./photo-lightbox.vue";
 import { useApplicationStore } from "@/stores/application";
 
 const props = defineProps({
@@ -82,6 +109,36 @@ const props = defineProps({
 const emit = defineEmits(["highlightLabel", "unHighlightLabel"]);
 
 const applicationStore = useApplicationStore();
+
+// Lightbox state
+const lightboxOpen = ref(false);
+
+// Image loading state
+const imageLoading = ref(true);
+
+// Reset loading state when photo changes
+watch(
+  () => props.photo.id,
+  () => {
+    imageLoading.value = true;
+  },
+);
+
+const openLightbox = () => {
+  lightboxOpen.value = true;
+};
+
+const closeLightbox = () => {
+  lightboxOpen.value = false;
+};
+
+const onImageLoad = () => {
+  imageLoading.value = false;
+};
+
+const onImageError = () => {
+  imageLoading.value = false;
+};
 
 const showLabels = computed(() => {
   return (
@@ -156,6 +213,36 @@ const showLabels = computed(() => {
 #label-list .tag {
   text-align: left;
   margin: 0.2rem;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#image-wrapper img {
+  transition: opacity 0.3s ease-in-out;
 }
 
 // #image-wrapper > .overlay {
