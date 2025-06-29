@@ -3,28 +3,44 @@
     <div class="lightbox-container">
       <!-- Controls -->
       <div class="lightbox-controls" :class="{ 'fade-out': controlsHidden }">
-        <button @click="zoomIn" class="control-button" title="Zoom In" :disabled="scale >= 2">
+        <button
+          @click="zoomIn"
+          class="control-button"
+          title="Zoom In"
+          :disabled="scale >= 2"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/>
+            <path
+              d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+            />
+            <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
           </svg>
         </button>
-        <button @click="zoomOut" class="control-button" title="Zoom Out" :disabled="scale <= 1">
+        <button
+          @click="zoomOut"
+          class="control-button"
+          title="Zoom Out"
+          :disabled="scale <= 1"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            <path d="M7 9h5v1H7z"/>
+            <path
+              d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+            />
+            <path d="M7 9h5v1H7z" />
           </svg>
         </button>
         <button @click="close" class="control-button" title="Close">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            <path
+              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            />
           </svg>
         </button>
       </div>
 
       <!-- Image container -->
-      <div 
-        ref="imageContainer" 
+      <div
+        ref="imageContainer"
         class="image-container"
         @mousedown="startDrag"
         @mousemove="handleMouseMove"
@@ -36,9 +52,9 @@
         @touchend="handleTouchEnd"
         @wheel="handleWheel"
       >
-        <img 
+        <img
           ref="lightboxImage"
-          :src="photo.extralargeImageUrl" 
+          :src="photo.extralargeImageUrl"
           :style="imageStyle"
           @load="handleImageLoad"
           draggable="false"
@@ -54,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick } from "vue";
 
 const props = defineProps({
   photo: {
@@ -67,7 +83,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
 
 // Reactive state
 const scale = ref(1);
@@ -90,14 +106,15 @@ const hideControlsTimeout = ref(null);
 // Computed styles
 const imageStyle = computed(() => ({
   transform: `scale(${scale.value}) translate(${translateX.value}px, ${translateY.value}px)`,
-  transformOrigin: 'center center',
-  transition: isDragging.value ? 'none' : 'transform 0.3s ease',
-  cursor: scale.value > 1 ? (isDragging.value ? 'grabbing' : 'grab') : 'default',
+  transformOrigin: "center center",
+  transition: isDragging.value ? "none" : "transform 0.3s ease",
+  cursor:
+    scale.value > 1 ? (isDragging.value ? "grabbing" : "grab") : "default",
 }));
 
 // Methods
 const close = () => {
-  emit('close');
+  emit("close");
 };
 
 const handleOverlayClick = (event) => {
@@ -131,9 +148,17 @@ const showControls = () => {
   }, 3000);
 };
 
+window.addEventListener("resize", () => {
+  updateContainerDimensions();
+  constrainPosition();
+});
+
 const handleImageLoad = () => {
   imageLoaded.value = true;
-  resetZoom();
+  nextTick(() => {
+    updateContainerDimensions();
+    resetZoom();
+  });
 };
 
 const resetZoom = () => {
@@ -142,29 +167,46 @@ const resetZoom = () => {
   translateY.value = 0;
 };
 
+const containerDimensions = ref({ width: 0, height: 0 });
+
+const updateContainerDimensions = () => {
+  if (!imageContainer.value) return;
+  const rect = imageContainer.value.getBoundingClientRect();
+  containerDimensions.value = { width: rect.width, height: rect.height };
+};
+
 const constrainPosition = () => {
   if (!lightboxImage.value || !imageContainer.value) return;
 
   const img = lightboxImage.value;
-  const container = imageContainer.value;
-  
   const imgRect = img.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  
+
   const scaledWidth = imgRect.width;
   const scaledHeight = imgRect.height;
-  
-  const maxTranslateX = Math.max(0, (scaledWidth - containerRect.width) / 2);
-  const maxTranslateY = Math.max(0, (scaledHeight - containerRect.height) / 2);
-  
-  translateX.value = Math.max(-maxTranslateX, Math.min(maxTranslateX, translateX.value));
-  translateY.value = Math.max(-maxTranslateY, Math.min(maxTranslateY, translateY.value));
+
+  const maxTranslateX = Math.max(
+    0,
+    (scaledWidth - containerDimensions.value.width) / 2,
+  );
+  const maxTranslateY = Math.max(
+    0,
+    (scaledHeight - containerDimensions.value.height) / 2,
+  );
+
+  translateX.value = Math.max(
+    -maxTranslateX,
+    Math.min(maxTranslateX, translateX.value),
+  );
+  translateY.value = Math.max(
+    -maxTranslateY,
+    Math.min(maxTranslateY, translateY.value),
+  );
 };
 
 // Mouse drag handlers
 const startDrag = (event) => {
   if (scale.value <= 1) return;
-  
+
   isDragging.value = true;
   dragStart.value = {
     x: event.clientX - translateX.value,
@@ -180,7 +222,7 @@ const handleMouseMove = (event) => {
 
 const drag = (event) => {
   if (!isDragging.value || scale.value <= 1) return;
-  
+
   translateX.value = event.clientX - dragStart.value.x;
   translateY.value = event.clientY - dragStart.value.y;
   constrainPosition();
@@ -209,8 +251,8 @@ const handleTouchStart = (event) => {
     const touch1 = event.touches[0];
     const touch2 = event.touches[1];
     const distance = Math.sqrt(
-      Math.pow(touch2.clientX - touch1.clientX, 2) + 
-      Math.pow(touch2.clientY - touch1.clientY, 2)
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2),
     );
     lastTouchDistance.value = distance;
     isDragging.value = false;
@@ -230,10 +272,10 @@ const handleTouchMove = (event) => {
     const touch1 = event.touches[0];
     const touch2 = event.touches[1];
     const distance = Math.sqrt(
-      Math.pow(touch2.clientX - touch1.clientX, 2) + 
-      Math.pow(touch2.clientY - touch1.clientY, 2)
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2),
     );
-    
+
     if (lastTouchDistance.value > 0) {
       const scaleChange = distance / lastTouchDistance.value;
       scale.value = Math.max(1, Math.min(2, scale.value * scaleChange));
@@ -244,7 +286,7 @@ const handleTouchMove = (event) => {
         constrainPosition();
       }
     }
-    
+
     lastTouchDistance.value = distance;
   }
   event.preventDefault();
@@ -270,55 +312,66 @@ const handleWheel = (event) => {
 };
 
 // Watch for photo changes and reset zoom
-watch(() => props.photo, () => {
-  if (props.isOpen) {
-    nextTick(() => {
-      resetZoom();
-    });
-  }
-}, { deep: true });
+watch(
+  () => props.photo,
+  () => {
+    if (props.isOpen) {
+      nextTick(() => {
+        resetZoom();
+      });
+    }
+  },
+  { deep: true },
+);
 
 // Watch for lightbox open/close
-watch(() => props.isOpen, (newValue) => {
-  if (newValue) {
-    nextTick(() => {
-      resetZoom();
-      showControls();
-    });
-  } else {
-    clearTimeout(hideControlsTimeout.value);
-  }
-});
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    if (newValue) {
+      nextTick(() => {
+        updateContainerDimensions();
+        resetZoom();
+        showControls();
+      });
+    } else {
+      clearTimeout(hideControlsTimeout.value);
+    }
+  },
+);
 
 // Keyboard handling
 const handleKeydown = (event) => {
   if (!props.isOpen) return;
-  
-  if (event.key === 'Escape') {
+
+  if (event.key === "Escape") {
     close();
-  } else if (event.key === '+' || event.key === '=') {
+  } else if (event.key === "+" || event.key === "=") {
     zoomIn();
-  } else if (event.key === '-') {
+  } else if (event.key === "-") {
     zoomOut();
   }
   showControls();
 };
 
 // Add/remove keyboard listener
-watch(() => props.isOpen, (newValue) => {
-  if (newValue) {
-    nextTick(() => {
-      resetZoom();
-      showControls();
-    });
-    document.addEventListener('keydown', handleKeydown);
-    document.body.style.overflow = 'hidden';
-  } else {
-    clearTimeout(hideControlsTimeout.value);
-    document.removeEventListener('keydown', handleKeydown);
-    document.body.style.overflow = '';
-  }
-});
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    if (newValue) {
+      nextTick(() => {
+        resetZoom();
+        showControls();
+      });
+      document.addEventListener("keydown", handleKeydown);
+      document.body.style.overflow = "hidden";
+    } else {
+      clearTimeout(hideControlsTimeout.value);
+      document.removeEventListener("keydown", handleKeydown);
+      document.body.style.overflow = "";
+    }
+  },
+);
 </script>
 
 <style scoped lang="scss">
