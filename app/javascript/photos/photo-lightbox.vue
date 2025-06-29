@@ -1,5 +1,12 @@
 <template>
-  <div v-if="isOpen" class="lightbox-overlay" @click="handleOverlayClick">
+  <div
+    v-if="isOpen"
+    class="lightbox-overlay"
+    @click="handleOverlayClick"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Photo Lightbox"
+  >
     <div class="lightbox-container">
       <!-- Controls -->
       <div class="lightbox-controls" :class="{ 'fade-out': controlsHidden }">
@@ -56,6 +63,7 @@
           ref="lightboxImage"
           :src="photo.extralargeImageUrl"
           :style="imageStyle"
+          :alt="photo.title"
           @load="handleImageLoad"
           draggable="false"
         />
