@@ -22,6 +22,7 @@
         <img 
           v-else 
           :src="photo.extralargeImageUrl" 
+          :alt="photo.title"
           @click="openLightbox"
           style="cursor: pointer"
         />
