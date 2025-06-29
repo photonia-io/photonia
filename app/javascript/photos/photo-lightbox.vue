@@ -127,6 +127,7 @@ const imageStyle = computed(() => ({
 
 // Methods
 const close = () => {
+  resetZoom();
   emit("close");
 };
 
