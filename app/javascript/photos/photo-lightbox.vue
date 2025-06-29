@@ -21,12 +21,7 @@
           title="Zoom In"
           :disabled="scale >= 2"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-            />
-            <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
-          </svg>
+          <ZoomInSVG />
         </button>
         <button
           @click="zoomOut"
@@ -34,19 +29,10 @@
           title="Zoom Out"
           :disabled="scale <= 1"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-            />
-            <path d="M7 9h5v1H7z" />
-          </svg>
+          <ZoomOutSVG />
         </button>
         <button @click="close" class="control-button" title="Close">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-            />
-          </svg>
+          <CloseSVG />
         </button>
       </div>
 
@@ -84,6 +70,9 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
+import ZoomInSVG from "../shared/svg/zoom-in.vue";
+import ZoomOutSVG from "../shared/svg/zoom-out.vue";
+import CloseSVG from "../shared/svg/close.vue";
 
 const props = defineProps({
   photo: {
