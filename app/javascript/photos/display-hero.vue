@@ -19,7 +19,12 @@
         >
           <img :src="photo.extralargeImageUrl" />
         </router-link>
-        <img v-else :src="photo.extralargeImageUrl" />
+        <img 
+          v-else 
+          :src="photo.extralargeImageUrl" 
+          @click="openLightbox"
+          style="cursor: pointer"
+        />
         <div v-if="photo.labels" class="labels">
           <DisplayLabel
             v-for="label in photo.labels"
@@ -49,13 +54,21 @@
         </div>
       </div>
     </div>
+    
+    <!-- Lightbox -->
+    <PhotoLightbox 
+      :photo="photo"
+      :is-open="lightboxOpen"
+      @close="closeLightbox"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import DisplayLabel from "./display-label.vue";
 import LabelListItem from "./label-list-item.vue";
+import PhotoLightbox from "./photo-lightbox.vue";
 import { useApplicationStore } from "@/stores/application";
 
 const props = defineProps({
@@ -82,6 +95,17 @@ const props = defineProps({
 const emit = defineEmits(["highlightLabel", "unHighlightLabel"]);
 
 const applicationStore = useApplicationStore();
+
+// Lightbox state
+const lightboxOpen = ref(false);
+
+const openLightbox = () => {
+  lightboxOpen.value = true;
+};
+
+const closeLightbox = () => {
+  lightboxOpen.value = false;
+};
 
 const showLabels = computed(() => {
   return (
