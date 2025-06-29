@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
   photo: {
@@ -156,9 +156,17 @@ const showControls = () => {
   }, 3000);
 };
 
-window.addEventListener("resize", () => {
+const handleResize = () => {
   updateContainerDimensions();
   constrainPosition();
+};
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 const handleImageLoad = () => {
