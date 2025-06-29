@@ -9,7 +9,12 @@
   >
     <div class="lightbox-container">
       <!-- Controls -->
-      <div class="lightbox-controls" :class="{ 'fade-out': controlsHidden }">
+      <div
+        class="lightbox-controls"
+        :class="{ 'fade-out': controlsHidden }"
+        role="toolbar"
+        aria-label="Lightbox Controls"
+      >
         <button
           @click="zoomIn"
           class="control-button"
