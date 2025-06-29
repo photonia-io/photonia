@@ -14,24 +14,24 @@
     <div class="hero-body pt-4 pb-4" style="text-align: center">
       <div id="image-wrapper">
         <!-- Loading spinner -->
-        <div v-if="imageLoading" class="loading-spinner">
+        <div v-if="loading || imageLoading" class="loading-spinner">
           <div class="spinner"></div>
         </div>
-        
+
         <router-link
           v-if="isHomepage"
           :to="{ name: 'photos-show', params: { id: photo.id } }"
         >
-          <img 
-            :src="photo.extralargeImageUrl" 
+          <img
+            :src="photo.extralargeImageUrl"
             @load="onImageLoad"
             @error="onImageError"
             :style="{ opacity: imageLoading ? 0 : 1 }"
           />
         </router-link>
-        <img 
-          v-else 
-          :src="photo.extralargeImageUrl" 
+        <img
+          v-else
+          :src="photo.extralargeImageUrl"
           :alt="photo.title"
           @click="openLightbox"
           @load="onImageLoad"
@@ -67,9 +67,9 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Lightbox -->
-    <PhotoLightbox 
+    <PhotoLightbox
       :photo="photo"
       :is-open="lightboxOpen"
       @close="closeLightbox"
@@ -116,9 +116,12 @@ const lightboxOpen = ref(false);
 const imageLoading = ref(true);
 
 // Reset loading state when photo changes
-watch(() => props.photo.id, () => {
-  imageLoading.value = true;
-});
+watch(
+  () => props.photo.id,
+  () => {
+    imageLoading.value = true;
+  },
+);
 
 const openLightbox = () => {
   lightboxOpen.value = true;
@@ -229,8 +232,12 @@ const showLabels = computed(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 #image-wrapper img {
