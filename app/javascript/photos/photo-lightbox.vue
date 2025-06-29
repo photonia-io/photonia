@@ -57,12 +57,18 @@
         @touchend="handleTouchEnd"
         @wheel="handleWheel"
       >
+        <!-- Loading spinner -->
+        <div v-if="imageLoading" class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+
         <img
           ref="lightboxImage"
           :src="photo.extralargeImageUrl"
-          :style="imageStyle"
+          :style="{ ...imageStyle, opacity: imageLoading ? 0 : 1 }"
           :alt="photo.title"
           @load="handleImageLoad"
+          @error="handleImageError"
           draggable="false"
         />
       </div>
@@ -103,6 +109,9 @@ const dragStart = ref({ x: 0, y: 0 });
 const imageContainer = ref(null);
 const lightboxImage = ref(null);
 const imageLoaded = ref(false);
+
+// Image loading state
+const imageLoading = ref(true);
 
 // Touch handling
 const lastTouchDistance = ref(0);
@@ -173,10 +182,15 @@ onUnmounted(() => {
 
 const handleImageLoad = () => {
   imageLoaded.value = true;
+  imageLoading.value = false;
   nextTick(() => {
     updateContainerDimensions();
     resetZoom();
   });
+};
+
+const handleImageError = () => {
+  imageLoading.value = false;
 };
 
 const resetZoom = () => {
@@ -334,6 +348,7 @@ watch(
   () => props.photo,
   () => {
     if (props.isOpen) {
+      imageLoading.value = true;
       nextTick(() => {
         resetZoom();
       });
@@ -347,6 +362,7 @@ watch(
   () => props.isOpen,
   (newValue) => {
     if (newValue) {
+      imageLoading.value = true;
       nextTick(() => {
         updateContainerDimensions();
         resetZoom();
@@ -474,6 +490,33 @@ watch(
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .title-bar {
