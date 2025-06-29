@@ -71,6 +71,7 @@
     <!-- Lightbox -->
     <PhotoLightbox
       :photo="photo"
+      :loading="loading"
       :is-open="lightboxOpen"
       @close="closeLightbox"
     />

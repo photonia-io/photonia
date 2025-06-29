@@ -58,7 +58,7 @@
         @wheel="handleWheel"
       >
         <!-- Loading spinner -->
-        <div v-if="imageLoading" class="loading-spinner">
+        <div v-if="loading || imageLoading" class="loading-spinner">
           <div class="spinner"></div>
         </div>
 
@@ -92,6 +92,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
   isOpen: {
     type: Boolean,
     required: true,
@@ -108,7 +112,6 @@ const isDragging = ref(false);
 const dragStart = ref({ x: 0, y: 0 });
 const imageContainer = ref(null);
 const lightboxImage = ref(null);
-const imageLoaded = ref(false);
 
 // Image loading state
 const imageLoading = ref(true);
@@ -181,7 +184,6 @@ onUnmounted(() => {
 });
 
 const handleImageLoad = () => {
-  imageLoaded.value = true;
   imageLoading.value = false;
   nextTick(() => {
     updateContainerDimensions();
