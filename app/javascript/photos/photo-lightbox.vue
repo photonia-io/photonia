@@ -19,6 +19,7 @@
           @click="zoomIn"
           class="control-button"
           title="Zoom In"
+          data-testid="zoom-in-button"
           :disabled="scale >= 2"
         >
           <ZoomInSVG />
@@ -27,11 +28,17 @@
           @click="zoomOut"
           class="control-button"
           title="Zoom Out"
+          data-testid="zoom-out-button"
           :disabled="scale <= 1"
         >
           <ZoomOutSVG />
         </button>
-        <button @click="close" class="control-button" title="Close">
+        <button
+          @click="close"
+          class="control-button"
+          title="Close"
+          data-testid="close-button"
+        >
           <CloseSVG />
         </button>
       </div>
