@@ -124,6 +124,10 @@
                 <span v-else>
                   <em>There are no user tags for this photo.</em>
                 </span>
+                <PhotoTagInput 
+                  v-if="!loading && userStore.signedIn && photo.canEdit" 
+                  :photo="photo" 
+                />
               </PhotoInfobox>
 
               <PhotoInfobox>
@@ -278,6 +282,7 @@ import SidebarHeader from "./sidebar-header.vue";
 import LabelListItem from "@/photos/label-list-item.vue";
 import Tag from "@/tags/tag.vue";
 import Empty from "@/empty.vue";
+import PhotoTagInput from "./photo-tag-input.vue";
 
 // route & router
 const route = useRoute();
