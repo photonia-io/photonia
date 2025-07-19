@@ -33,16 +33,18 @@ module Queries
     end
 
     def search_user_tags(query, limit)
-      ActsAsTaggableOn::Tag.where('name LIKE ?', "#{query}%")
-                           .order(taggings_count: :desc)
-                           .limit(limit)
+      ActsAsTaggableOn::Tag.photonia_most_used(rekognition: false, limit: limit)
+                           .where('name LIKE ?', "#{sanitize_like(query)}%")
     end
 
     def search_machine_tags(query, limit)
-      ActsAsTaggableOn::Tag.where('name LIKE ?', "#{query}%")
-                           .rekognition(true)
-                           .order(taggings_count: :desc)
-                           .limit(limit)
+      ActsAsTaggableOn::Tag.photonia_most_used(rekognition: true, limit: limit)
+                           .where('name LIKE ?', "#{sanitize_like(query)}%")
+    end
+
+    def sanitize_like(string)
+      # Escape special characters (%, _, \) for SQL LIKE queries
+      string.gsub(/[%_\\]/) { |x| "\\#{x}" }
     end
 
     def fetch_tags(type, order, limit)

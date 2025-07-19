@@ -12,10 +12,16 @@ module Mutations
     field :tag, Types::TagType, null: false
 
     def resolve(id:, tag_name:)
-      photo = Photo.friendly.find(id)
-      authorize(photo, :update?)
+      begin
+        photo = Photo.friendly.find(id)
+      rescue ActiveRecord::RecordNotFound
+        raise GraphQL::ExecutionError, 'Photo not found'
+      end
 
       normalized_tag_name = TagNormalizer.normalize(tag_name)
+      raise GraphQL::ExecutionError, 'Tag name cannot be empty' if normalized_tag_name.empty?
+
+      authorize(photo, :update?)
 
       unless photo.all_tags_list.include?(normalized_tag_name)
         photo.tag_list.add(normalized_tag_name)
@@ -24,6 +30,7 @@ module Mutations
 
       # Find the tag that was just added
       tag = ActsAsTaggableOn::Tag.find_by(name: normalized_tag_name)
+      raise GraphQL::ExecutionError, "Failed to find or create tag: #{normalized_tag_name}" if tag.nil?
 
       { photo: photo, tag: tag }
     end

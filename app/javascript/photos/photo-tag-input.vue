@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onUnmounted } from "vue";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import toaster from "../mixins/toaster";
@@ -75,6 +75,10 @@ const minCharsForSuggestions = 3;
 const suggestionsQueryEnabled = ref(false);
 const addingTag = ref(false);
 let debounceTimeout = null;
+
+onUnmounted(() => {
+  clearTimeout(debounceTimeout);
+});
 
 // Query for tag suggestions
 const { result: suggestionsResult, refetch: fetchSuggestions } = useQuery(
@@ -205,6 +209,7 @@ const addTag = async () => {
     addingTag.value = false;
   } catch (error) {
     toaster(`Error adding tag: ${error.message}`, "is-danger");
+    addingTag.value = false;
   }
 };
 </script>

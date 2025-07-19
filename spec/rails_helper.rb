@@ -64,6 +64,7 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 
+  config.include GraphQLResponseHelpers, type: :request
   config.include SystemSpecsHelper, type: :system
   config.before(:each, type: :system) do
     driven_by :remote_chrome
