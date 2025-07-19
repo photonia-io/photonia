@@ -109,4 +109,44 @@ describe 'tags Query', type: :request do
       expect(response_tags.size).to eq(3)
     end
   end
+
+  describe 'with query parameter for user tags' do
+    let(:query) do
+      <<~GQL
+        query {
+          tags(query: "prefix") {
+            id
+            name
+          }
+        }
+      GQL
+    end
+
+    let(:flickr_tags) { build_list(:tag, 5) + build_list(:tag, 3, :with_prefix) }
+
+    it 'returns filtered tags' do
+      post_query
+      expect(data_dig(response, 'tags').size).to eq(3)
+    end
+  end
+
+  describe 'with query parameter for machine tags' do
+    let(:query) do
+      <<~GQL
+        query {
+          tags(type: "machine", query: "prefix") {
+            id
+            name
+          }
+        }
+      GQL
+    end
+
+    let(:rekognition_tags) { build_list(:tag, 6) + build_list(:tag, 2, :with_prefix) }
+
+    it 'returns filtered machine tags' do
+      post_query
+      expect(data_dig(response, 'tags').size).to eq(2)
+    end
+  end
 end

@@ -56,3 +56,6 @@ node_modules
 
 # Ignore the Kamal deploy config file
 config/deploy.yml
+
+# Ignore the Aider AI code generation tool
+.aider*
