@@ -1,5 +1,9 @@
 <template>
-  <a class="tag is-delete is-danger" title="Delete tag" @click="modalActive = true"></a>
+  <a
+    class="tag is-delete is-danger"
+    title="Delete tag"
+    @click="modalActive = true"
+  ></a>
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
@@ -9,14 +13,23 @@
         </header>
         <div class="modal-card-body">
           <p>
-            Are you sure you want to remove the tag "{{ props.tag.name }}" from this photo?
+            Are you sure you want to remove the tag "{{ props.tag.name }}" from
+            this photo?
           </p>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
-          <button class="button is-danger" @click="performDelete" :disabled="loading">
+          <button
+            class="button is-danger"
+            @click="performDelete"
+            :disabled="loading"
+          >
             Remove
           </button>
-          <button class="button is-info" @click="modalActive = false" :disabled="loading">
+          <button
+            class="button is-info"
+            @click="modalActive = false"
+            :disabled="loading"
+          >
             Cancel
           </button>
         </footer>
@@ -29,6 +42,7 @@
 import { ref } from "vue";
 import { useMutation } from "@vue/apollo-composable";
 import gql from "graphql-tag";
+import toaster from "@/mixins/toaster";
 
 const props = defineProps({
   tag: {
@@ -51,7 +65,14 @@ const REMOVE_TAG_FROM_PHOTO = gql`
     removeTagFromPhoto(id: $id, tagName: $tagName) {
       photo {
         id
-        tagList
+        userTags {
+          id
+          name
+        }
+        machineTags {
+          id
+          name
+        }
       }
       tag {
         id
@@ -70,17 +91,13 @@ const performDelete = async () => {
       id: props.photoId,
       tagName: props.tag.name,
     });
-    
+
     if (result?.data?.removeTagFromPhoto) {
-      emit("tagRemoved", {
-        photo: result.data.removeTagFromPhoto.photo,
-        tag: result.data.removeTagFromPhoto.tag,
-      });
+      toaster(`Tag '${props.tag.name}' has been removed.`);
       modalActive.value = false;
     }
   } catch (error) {
-    console.error("Error removing tag:", error);
-    // You might want to show an error message to the user here
+    toaster.error(`Error removing tag: ${error?.message || error}`, "is-error");
   } finally {
     loading.value = false;
   }
