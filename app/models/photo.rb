@@ -296,6 +296,14 @@ class Photo < ApplicationRecord
     privacy == 'public'
   end
 
+  def flickr_tags
+    tags.flickr(true)
+  end
+
+  def rekognition_tags
+    tags.rekognition(true)
+  end
+
   private
 
   def intelligent_crop

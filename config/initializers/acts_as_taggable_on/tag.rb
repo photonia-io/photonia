@@ -16,6 +16,14 @@ ActsAsTaggableOn::Tag.class_eval do
     end
   }
 
+  scope :flickr, lambda { |flickr = false|
+    if flickr
+      where(taggings: { tagger_id: 1 })
+    else
+      where.not(taggings: { tagger_id: 1 }).or(where(taggings: { tagger_id: nil }))
+    end
+  }
+
   def self.distinct_taggings_count(rekognition: false)
     joins(:taggings).distinct(:taggings_count).rekognition(rekognition)
   end
