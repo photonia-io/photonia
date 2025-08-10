@@ -151,7 +151,22 @@
                 <template #header>
                   <SidebarHeader icon="fas fa-robot" title="Machine Tags" />
                 </template>
-                <div class="tags">
+                <div
+                  v-if="canEditPhoto"
+                  class="field is-grouped is-grouped-multiline tag-gaps"
+                >
+                  <div
+                    class="control"
+                    v-for="tag in photo.machineTags"
+                    :key="tag.id"
+                  >
+                    <div class="tags has-addons">
+                      <Tag :tag="tag" />
+                      <RemoveTag :tag="tag" :photoId="photo.id" />
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="tags">
                   <Tag
                     v-for="tag in photo.machineTags"
                     :key="tag.id"

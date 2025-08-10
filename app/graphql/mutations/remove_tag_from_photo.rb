@@ -23,9 +23,9 @@ module Mutations
 
       authorize(photo, :update?)
 
-      unless photo.all_tags_list.include?(normalized_tag_name)
-        raise GraphQL::ExecutionError, "Tag '#{normalized_tag_name}' is not associated with this photo"
-      end
+      raise GraphQL::ExecutionError, "Tag '#{normalized_tag_name}' is not associated with this photo" unless photo.all_tags_list.include?(normalized_tag_name)
+
+      # TODO: remove machine (rekognition) tags and flickr tags
 
       photo.tag_list.remove(normalized_tag_name)
       photo.save!
@@ -35,6 +35,11 @@ module Mutations
       raise GraphQL::ExecutionError, "Failed to find tag: #{normalized_tag_name}" if tag.nil?
 
       { photo: photo, tag: tag }
+    end
+
+    private
+
+    def remove_flickr_tag(photo, tag_name)
     end
   end
 end
