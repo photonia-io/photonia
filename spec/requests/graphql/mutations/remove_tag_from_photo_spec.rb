@@ -20,7 +20,7 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
 
   let(:query) do
     <<~GRAPHQL
-      mutation RemoveTagFromPhoto($id: String!, $tagName: String!) {
+      mutation RemoveTagFromPhoto($id: ID!, $tagName: String!) {
         removeTagFromPhoto(id: $id, tagName: $tagName) {
           photo {
             id
