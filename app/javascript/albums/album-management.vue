@@ -8,8 +8,26 @@
         To edit the album's title or description click / tap on the texts
         themselves.
       </p>
+      <label for="album-privacy" class="label">Album Privacy:</label>
 
-      <div class="buttons">
+      <div class="select">
+        <select id="album-privacy">
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+      <label for="album-sorting" class="label">Photo Sorting:</label>
+
+      <div class="select">
+        <select id="album-sorting">
+          <option value="date-shot">Date Shot</option>
+          <option value="date-uploaded">Date Uploaded</option>
+          <option value="title">Title</option>
+          <option value="manual">Manual (custom order)</option>
+        </select>
+      </div>
+
+      <div class="buttons mt-4">
         <button class="button is-danger" @click="showConfirmationModal">
           Delete Album
         </button>
