@@ -1,5 +1,20 @@
 {
   "Apple": {
+    "iPhone": {
+      "launch_year": "2007",
+      "launch_month": "6",
+      "friendly_name": "Apple iPhone"
+    },
+    "iPhone 3G": {
+      "launch_year": "2008",
+      "launch_month": "7",
+      "friendly_name": "Apple iPhone 3G"
+    },
+    "iPhone 3GS": {
+      "launch_year": "2009",
+      "launch_month": "6",
+      "friendly_name": "Apple iPhone 3GS"
+    },
     "iPhone 4": {
       "launch_year": "2010",
       "launch_month": "6",
@@ -7,128 +22,128 @@
     },
     "iPhone 4S": {
       "friendly_name": "Apple iPhone 4S",
-      "launch_year": 2011,
-      "launch_month": 10
+      "launch_year": "2011",
+      "launch_month": "10"
     },
     "iPhone 5": {
       "friendly_name": "Apple iPhone 5",
-      "launch_year": 2012,
-      "launch_month": 9
+      "launch_year": "2012",
+      "launch_month": "9"
     },
     "iPhone 5c": {
       "friendly_name": "Apple iPhone 5c",
-      "launch_year": 2013,
-      "launch_month": 9
+      "launch_year": "2013",
+      "launch_month": "9"
     },
     "iPhone 5s": {
       "friendly_name": "Apple iPhone 5s",
-      "launch_year": 2013,
-      "launch_month": 9
+      "launch_year": "2013",
+      "launch_month": "9"
     },
     "iPhone 6": {
       "friendly_name": "Apple iPhone 6",
-      "launch_year": 2014,
-      "launch_month": 9
+      "launch_year": "2014",
+      "launch_month": "9"
     },
     "iPhone 6 Plus": {
       "friendly_name": "Apple iPhone 6 Plus",
-      "launch_year": 2014,
-      "launch_month": 9
+      "launch_year": "2014",
+      "launch_month": "9"
     },
     "iPhone 6s": {
       "friendly_name": "Apple iPhone 6s",
-      "launch_year": 2015,
-      "launch_month": 9
+      "launch_year": "2015",
+      "launch_month": "9"
     },
     "iPhone 6s Plus": {
       "friendly_name": "Apple iPhone 6s Plus",
-      "launch_year": 2015,
-      "launch_month": 9
+      "launch_year": "2015",
+      "launch_month": "9"
     },
     "iPhone SE": {
       "friendly_name": "Apple iPhone SE",
-      "launch_year": 2016,
-      "launch_month": 3
+      "launch_year": "2016",
+      "launch_month": "3"
     },
     "iPhone 7": {
       "friendly_name": "Apple iPhone 7",
-      "launch_year": 2016,
-      "launch_month": 9
+      "launch_year": "2016",
+      "launch_month": "9"
     },
     "iPhone 7 Plus": {
       "friendly_name": "Apple iPhone 7 Plus",
-      "launch_year": 2016,
-      "launch_month": 9
+      "launch_year": "2016",
+      "launch_month": "9"
     },
     "iPhone 8": {
       "friendly_name": "Apple iPhone 8",
-      "launch_year": 2017,
-      "launch_month": 9
+      "launch_year": "2017",
+      "launch_month": "9"
     },
     "iPhone 8 Plus": {
       "friendly_name": "Apple iPhone 8 Plus",
-      "launch_year": 2017,
-      "launch_month": 9
+      "launch_year": "2017",
+      "launch_month": "9"
     },
     "iPhone X": {
       "friendly_name": "Apple iPhone X",
-      "launch_year": 2017,
-      "launch_month": 11
+      "launch_year": "2017",
+      "launch_month": "11"
     },
     "iPhone XR": {
       "friendly_name": "Apple iPhone XR",
-      "launch_year": 2018,
-      "launch_month": 10
+      "launch_year": "2018",
+      "launch_month": "10"
     },
     "iPhone XS": {
       "friendly_name": "Apple iPhone XS",
-      "launch_year": 2018,
-      "launch_month": 9
+      "launch_year": "2018",
+      "launch_month": "9"
     },
     "iPhone XS Max": {
       "friendly_name": "Apple iPhone XS Max",
-      "launch_year": 2018,
-      "launch_month": 9
+      "launch_year": "2018",
+      "launch_month": "9"
     },
     "iPhone 11": {
       "friendly_name": "Apple iPhone 11",
-      "launch_year": 2019,
-      "launch_month": 9
+      "launch_year": "2019",
+      "launch_month": "9"
     },
     "iPhone 11 Pro": {
       "friendly_name": "Apple iPhone 11 Pro",
-      "launch_year": 2019,
-      "launch_month": 9
+      "launch_year": "2019",
+      "launch_month": "9"
     },
     "iPhone 11 Pro Max": {
       "friendly_name": "Apple iPhone 11 Pro Max",
-      "launch_year": 2019,
-      "launch_month": 9
+      "launch_year": "2019",
+      "launch_month": "9"
     },
     "iPhone SE (2nd generation)": {
       "friendly_name": "Apple iPhone SE (2nd generation)",
-      "launch_year": 2020,
-      "launch_month": 4
+      "launch_year": "2020",
+      "launch_month": "4"
     },
     "iPhone 12 mini": {
       "friendly_name": "Apple iPhone 12 mini",
-      "launch_year": 2020,
-      "launch_month": 10
+      "launch_year": "2020",
+      "launch_month": "10"
     },
     "iPhone 12": {
       "friendly_name": "Apple iPhone 12",
-      "launch_year": 2020,
-      "launch_month": 10
+      "launch_year": "2020",
+      "launch_month": "10"
     },
     "iPhone 12 Pro": {
       "friendly_name": "Apple iPhone 12 Pro",
-      "launch_year": 2020,
-      "launch_month": 10
+      "launch_year": "2020",
+      "launch_month": "10"
     },
     "iPhone 12 Pro Max": {
       "friendly_name": "Apple iPhone 12 Pro Max",
-      "launch_year": 2020,
-      "launch_month": 10
+      "launch_year": "2020",
+      "launch_month": "10"
     },
     "iPhone 13 mini": {
       "friendly_name": "Apple iPhone 13 mini",
@@ -176,6 +191,11 @@
       "launch_year": "2005",
       "launch_month": "6",
       "friendly_name": "Canon PowerShot S2 IS"
+    },
+    "Canon PowerShot S3 IS": {
+      "launch_year": "2006",
+      "launch_month": "2",
+      "friendly_name": "Canon PowerShot S3 IS"
     }
   },
   "DJI": {
@@ -246,9 +266,19 @@
       "launch_year": "2008",
       "launch_month": "2",
       "friendly_name": "Nikon D60"
+    },
+    "D60": {
+      "launch_year": "2008",
+      "launch_month": "2",
+      "friendly_name": "Nikon D60"
     }
   },
   "NIKON CORPORATION": {
+    "NIKON D2Xs": {
+      "launch_year": "2006",
+      "launch_month": "8",
+      "friendly_name": "Nikon D2Xs"
+    },
     "NIKON D700": {
       "launch_year": "2008",
       "launch_month": "7",
@@ -263,6 +293,11 @@
       "launch_year": "2008",
       "launch_month": "2",
       "friendly_name": "Nikon D60"
+    },
+    "NIKON Z6_3": {
+      "launch_year": "2024",
+      "launch_month": "6",
+      "friendly_name": "Nikon Z6III"
     }
   },
   "OLYMPUS IMAGING CORP.": {
@@ -285,6 +320,16 @@
     }
   },
   "Samsung": {
+    "GT-I9000": {
+      "launch_year": "2010",
+      "launch_month": "6",
+      "friendly_name": "Samsung Galaxy S"
+    },
+    "GT-I9300": {
+      "launch_year": "2012",
+      "launch_month": "5",
+      "friendly_name": "Samsung Galaxy S III"
+    },
     "Galaxy S24 Ultra": {
       "launch_year": "2023",
       "launch_month": "2",
@@ -308,6 +353,11 @@
       "launch_year": "2007",
       "launch_month": "3",
       "friendly_name": "Sony Ericsson W660i"
+    },
+    "w810i": {
+      "launch_year": "2006",
+      "launch_month": "1",
+      "friendly_name": "Sony Ericsson W810i"
     }
   }
 }
