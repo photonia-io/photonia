@@ -18,20 +18,22 @@
           </p>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
-          <button
-            class="button is-danger"
-            @click="performDelete"
-            :disabled="loading"
-          >
-            Remove
-          </button>
-          <button
-            class="button is-info"
-            @click="modalActive = false"
-            :disabled="loading"
-          >
-            Cancel
-          </button>
+          <div class="buttons">
+            <button
+              class="button is-danger"
+              @click="performDelete"
+              :disabled="loading"
+            >
+              Remove
+            </button>
+            <button
+              class="button is-info"
+              @click="modalActive = false"
+              :disabled="loading"
+            >
+              Cancel
+            </button>
+          </div>
         </footer>
       </div>
     </div>
