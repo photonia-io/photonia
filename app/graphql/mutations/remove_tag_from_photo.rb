@@ -5,7 +5,7 @@ module Mutations
   class RemoveTagFromPhoto < BaseMutation
     description 'Remove a tag from a photo'
 
-    argument :id, String, 'Photo Id', required: true
+    argument :id, ID, 'Photo Id', required: true
     argument :tag_name, String, 'Tag name', required: true
 
     field :photo, Types::PhotoType, null: false, description: 'The photo from which the tag was removed'
@@ -24,15 +24,12 @@ module Mutations
 
       raise GraphQL::ExecutionError, "Tag '#{normalized_tag_name}' is not associated with this photo" unless photo.all_tags_list.include?(normalized_tag_name)
 
-      owned_tag_list = photo.all_tags_list - photo.tag_list
+      TaggingSource.find_each do |tagging_source|
+        source_tags = photo.tags_from(tagging_source)
+        next unless source_tags.include?(normalized_tag_name)
 
-      if owned_tag_list.include?(normalized_tag_name)
-        TaggingSource.find_each do |tagging_source|
-          if photo.tags_from(tagging_source).include?(normalized_tag_name)
-            owned_tag_list.delete(normalized_tag_name)
-            tagging_source.tag(photo, with: stringify(owned_tag_list), on: :tags)
-          end
-        end
+        updated_source_tags = source_tags - [normalized_tag_name]
+        tagging_source.tag(photo, with: updated_source_tags, on: :tags)
       end
 
       photo.tag_list.remove(normalized_tag_name) if photo.tag_list.include?(normalized_tag_name)
@@ -40,12 +37,6 @@ module Mutations
       photo.save!
 
       { photo: photo }
-    end
-
-    private
-
-    def stringify(tag_list)
-      tag_list.inject('') { |memo, tag| memo + "#{tag}," }
     end
   end
 end

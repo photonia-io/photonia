@@ -61,7 +61,7 @@ const modalActive = ref(false);
 const loading = ref(false);
 
 const REMOVE_TAG_FROM_PHOTO = gql`
-  mutation RemoveTagFromPhoto($id: String!, $tagName: String!) {
+  mutation RemoveTagFromPhoto($id: ID!, $tagName: String!) {
     removeTagFromPhoto(id: $id, tagName: $tagName) {
       photo {
         id
