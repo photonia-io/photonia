@@ -8,8 +8,7 @@ module Mutations
     argument :id, String, 'Photo Id', required: true
     argument :tag_name, String, 'Tag name', required: true
 
-    field :photo, Types::PhotoType, null: false
-    field :tag, Types::TagType, null: false
+    field :photo, Types::PhotoType, null: false, description: 'The photo from which the tag was removed'
 
     def resolve(id:, tag_name:)
       begin
@@ -40,17 +39,13 @@ module Mutations
 
       photo.save!
 
-      # Find the tag that was just removed
-      tag = ActsAsTaggableOn::Tag.find_by(name: normalized_tag_name)
-      raise GraphQL::ExecutionError, "Failed to find tag: #{normalized_tag_name}" if tag.nil?
-
-      { photo: photo, tag: tag }
+      { photo: photo }
     end
 
     private
 
     def stringify(tag_list)
-      tag_list.inject('') { |memo, tag| memo += "#{tag}," }
+      tag_list.inject('') { |memo, tag| memo + "#{tag}," }
     end
   end
 end

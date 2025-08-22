@@ -74,10 +74,6 @@ const REMOVE_TAG_FROM_PHOTO = gql`
           name
         }
       }
-      tag {
-        id
-        name
-      }
     }
   }
 `;

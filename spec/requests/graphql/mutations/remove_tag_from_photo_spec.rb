@@ -33,10 +33,6 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
               name
             }
           }
-          tag {
-            id
-            name
-          }
         }
       }
     GRAPHQL
@@ -85,12 +81,6 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
           hash_including('name' => normalized_tag_name)
         )
       end
-
-      it 'returns the removed tag' do
-        post_mutation
-        response_tag = data_dig(response, 'removeTagFromPhoto', 'tag')
-        expect(response_tag['name']).to eq(normalized_tag_name)
-      end
     end
 
     context 'when the owned tag exists on the photo' do
@@ -108,31 +98,12 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
           hash_including('name' => normalized_tag_name)
         )
       end
-
-      it 'returns the removed tag' do
-        post_mutation
-        response_tag = data_dig(response, 'removeTagFromPhoto', 'tag')
-        expect(response_tag['name']).to eq(normalized_tag_name)
-      end
     end
 
     context 'when the tag does not exist on the photo' do
       it 'returns an error' do
         post_mutation
         expect(first_error_message(response)).to eq("Tag '#{normalized_tag_name}' is not associated with this photo")
-      end
-    end
-
-    context 'when the tag cannot be found after removal' do
-      before do
-        photo.tag_list.add(normalized_tag_name)
-        photo.save!
-        allow(ActsAsTaggableOn::Tag).to receive(:find_by).with(name: normalized_tag_name).and_return(nil)
-      end
-
-      it 'returns an error' do
-        post_mutation
-        expect(first_error_message(response)).to eq("Failed to find tag: #{normalized_tag_name}")
       end
     end
   end
