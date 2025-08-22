@@ -1187,6 +1187,13 @@ CREATE INDEX taggings_taggable_context_idx ON public.taggings USING btree (tagga
 
 
 --
+-- Name: taggings_tagger_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX taggings_tagger_idx ON public.taggings USING btree (tagger_id, tagger_type);
+
+
+--
 -- Name: photos tsvupdate; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1264,6 +1271,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250822171155'),
 ('20241223145106'),
 ('20241223145105'),
 ('20241115114702'),
