@@ -57,8 +57,6 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["tagRemoved"]);
-
 const modalActive = ref(false);
 const loading = ref(false);
 
@@ -95,7 +93,7 @@ const performDelete = async () => {
       modalActive.value = false;
     }
   } catch (error) {
-    toaster.error(`Error removing tag: ${error?.message || error}`, "is-error");
+    toaster(`Error removing tag: ${error?.message || error}`, "is-warning");
   } finally {
     loading.value = false;
   }
