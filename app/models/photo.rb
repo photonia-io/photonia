@@ -45,6 +45,7 @@ class Photo < ApplicationRecord
   is_impressionable counter_cache: true, unique: :session_hash
 
   extend FriendlyId
+
   friendly_id :serial_number, use: :slugged
 
   include ImageUploader::Attachment(:image)
@@ -54,6 +55,7 @@ class Photo < ApplicationRecord
   include TrackableTitleAndDescription
 
   include PgSearch::Model
+
   pg_search_scope :search,
                   against: %i[title description],
                   ignoring: :accents,
@@ -294,14 +296,6 @@ class Photo < ApplicationRecord
 
   def public?
     privacy == 'public'
-  end
-
-  def flickr_tags
-    tags.flickr(true)
-  end
-
-  def rekognition_tags
-    tags.rekognition(true)
   end
 
   private
