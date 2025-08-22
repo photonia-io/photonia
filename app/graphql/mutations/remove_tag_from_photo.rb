@@ -25,9 +25,19 @@ module Mutations
 
       raise GraphQL::ExecutionError, "Tag '#{normalized_tag_name}' is not associated with this photo" unless photo.all_tags_list.include?(normalized_tag_name)
 
-      # TODO: remove machine (rekognition) tags and flickr tags
+      owned_tag_list = photo.all_tags_list - photo.tag_list
 
-      photo.tag_list.remove(normalized_tag_name)
+      if owned_tag_list.include?(normalized_tag_name)
+        TaggingSource.find_each do |tagging_source|
+          if photo.tags_from(tagging_source).include?(normalized_tag_name)
+            owned_tag_list.delete(normalized_tag_name)
+            tagging_source.tag(photo, with: stringify(owned_tag_list), on: :tags)
+          end
+        end
+      end
+
+      photo.tag_list.remove(normalized_tag_name) if photo.tag_list.include?(normalized_tag_name)
+
       photo.save!
 
       # Find the tag that was just removed
@@ -39,7 +49,8 @@ module Mutations
 
     private
 
-    def remove_flickr_tag(photo, tag_name)
+    def stringify(tag_list)
+      tag_list.inject('') { |memo, tag| memo += "#{tag}," }
     end
   end
 end

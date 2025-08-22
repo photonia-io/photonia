@@ -28,6 +28,10 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
               id
               name
             }
+            machineTags {
+              id
+              name
+            }
           }
           tag {
             id
@@ -67,7 +71,7 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
       sign_in(photo.user)
     end
 
-    context 'when the tag exists on the photo' do
+    context 'when the user tag exists on the photo' do
       before do
         photo.tag_list.add(normalized_tag_name)
         photo.save!
@@ -78,6 +82,29 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
         response_photo = data_dig(response, 'removeTagFromPhoto', 'photo')
         expect(response_photo['id']).to eq(photo.slug)
         expect(response_photo['userTags']).not_to include(
+          hash_including('name' => normalized_tag_name)
+        )
+      end
+
+      it 'returns the removed tag' do
+        post_mutation
+        response_tag = data_dig(response, 'removeTagFromPhoto', 'tag')
+        expect(response_tag['name']).to eq(normalized_tag_name)
+      end
+    end
+
+    context 'when the owned tag exists on the photo' do
+      before do
+        tagging_source = TaggingSource.find_or_create_by(name: 'CustomSource')
+        tagging_source.tag(photo, with: normalized_tag_name, on: :tags)
+        photo.save!
+      end
+
+      it 'removes the tag from the photo' do
+        post_mutation
+        response_photo = data_dig(response, 'removeTagFromPhoto', 'photo')
+        expect(response_photo['id']).to eq(photo.slug)
+        expect(response_photo['machineTags']).not_to include(
           hash_including('name' => normalized_tag_name)
         )
       end
