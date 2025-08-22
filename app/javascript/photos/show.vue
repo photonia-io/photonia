@@ -13,7 +13,7 @@
           <!-- Photo title and navigation -->
           <div class="level-left is-flex-grow-1" id="photo-title-container">
             <PhotoTitleEditable
-              v-if="!loading && userStore.signedIn && photo.canEdit"
+              v-if="!loading && canEditPhoto"
               :photo="photo"
               @update-title="updatePhotoTitle"
             />
@@ -42,14 +42,14 @@
             <div class="column is-three-quarters">
               <!-- Left column -->
               <PhotoDescriptionEditable
-                v-if="!loading && userStore.signedIn && photo.canEdit"
+                v-if="!loading && canEditPhoto"
                 :photo="photo"
                 @update-description="updatePhotoDescription"
               />
               <div v-else class="content" v-html="descriptionHtml"></div>
 
               <PhotoManagement
-                v-if="!loading && userStore.signedIn && photo.canEdit"
+                v-if="!loading && canEditPhoto"
                 :photo="photo"
                 @delete-photo="deletePhoto"
               />
@@ -118,23 +118,55 @@
                 <template #header
                   ><SidebarHeader icon="fas fa-tag" title="Tags"
                 /></template>
-                <div class="tags" v-if="photo.userTags?.length > 0">
-                  <Tag v-for="tag in photo.userTags" :key="tag.id" :tag="tag" />
+                <div v-if="canEditPhoto">
+                  <div class="field is-grouped is-grouped-multiline tag-gaps">
+                    <div
+                      class="control"
+                      v-for="tag in photo.userTags"
+                      :key="tag.id"
+                    >
+                      <div class="tags has-addons">
+                        <Tag :tag="tag" />
+                        <RemoveTag :tag="tag" :photoId="photo.id" />
+                      </div>
+                    </div>
+                  </div>
+                  <PhotoTagInput v-if="!loading" :photo="photo" />
                 </div>
-                <span v-else>
-                  <em>There are no user tags for this photo.</em>
-                </span>
-                <PhotoTagInput 
-                  v-if="!loading && userStore.signedIn && photo.canEdit" 
-                  :photo="photo" 
-                />
+                <div v-else>
+                  <div class="tags" v-if="photo.userTags?.length > 0">
+                    <Tag
+                      v-for="tag in photo.userTags"
+                      :key="tag.id"
+                      :tag="tag"
+                    />
+                  </div>
+                  <span v-else>
+                    <em>There are no user tags for this photo.</em>
+                  </span>
+                </div>
               </PhotoInfobox>
 
               <PhotoInfobox>
                 <template #header>
                   <SidebarHeader icon="fas fa-robot" title="Machine Tags" />
                 </template>
-                <div class="tags">
+                <div
+                  v-if="canEditPhoto"
+                  class="field is-grouped is-grouped-multiline tag-gaps"
+                >
+                  <div
+                    class="control"
+                    v-for="tag in photo.machineTags"
+                    :key="tag.id"
+                  >
+                    <div class="tags has-addons">
+                      <Tag :tag="tag" />
+                      <RemoveTag :tag="tag" :photoId="photo.id" />
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="tags">
                   <Tag
                     v-for="tag in photo.machineTags"
                     :key="tag.id"
@@ -281,6 +313,7 @@ import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";
 import LabelListItem from "@/photos/label-list-item.vue";
 import Tag from "@/tags/tag.vue";
+import RemoveTag from "@/tags/remove-tag.vue";
 import Empty from "@/empty.vue";
 import PhotoTagInput from "./photo-tag-input.vue";
 
@@ -390,6 +423,8 @@ const unHighlightLabel = (label) => {
 };
 
 const photo = computed(() => result.value?.photo ?? emptyPhoto);
+const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
+
 const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
 
 const title = computed(() => titleHelper(photo, loading));
@@ -456,5 +491,10 @@ const navigateToPreviousPhoto = () => {
 
 .equal-height-columns .message {
   height: 100%;
+}
+
+.tag-gaps {
+  row-gap: 0.5em;
+  column-gap: 0.5em;
 }
 </style>
