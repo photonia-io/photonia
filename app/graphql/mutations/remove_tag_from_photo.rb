@@ -24,7 +24,7 @@ module Mutations
 
       raise GraphQL::ExecutionError, "Tag '#{normalized_tag_name}' is not associated with this photo" unless photo.all_tags_list.include?(normalized_tag_name)
 
-      TaggingSource.find_each do |tagging_source|
+      TaggingSource.joins(:taggings).where(taggings: { taggable_id: photo.id, taggable_type: 'Photo' }).distinct.find_each do |tagging_source|
         source_tags = photo.tags_from(tagging_source)
         next unless source_tags.include?(normalized_tag_name)
 

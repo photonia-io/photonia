@@ -13,4 +13,6 @@
 #
 class TaggingSource < ApplicationRecord
   acts_as_tagger
+
+  has_many :taggings, class_name: 'ActsAsTaggableOn::Tagging', as: :tagger, dependent: :destroy
 end
