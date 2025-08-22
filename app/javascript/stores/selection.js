@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 
 export const useSelectionStore = defineStore("selection", () => {
-  // --- (de)selectedPhotos refers to the photos selected from the photo stream ---
+  // selectedPhotos / deselectedPhotos refers to the photos selected from the photo stream / search results
 
   const selectedPhotos = ref(
     JSON.parse(localStorage.getItem("selectedPhotos") || "[]"),
@@ -101,6 +101,22 @@ export const useSelectionStore = defineStore("selection", () => {
     selectedAlbumPhotos.value = new Array();
   };
 
+  const addAlbumPhotos = (photos) => {
+    let newSelectedPhotos = selectedAlbumPhotos.value;
+    photos.forEach((photo) => {
+      if (!newSelectedPhotos.find((item) => item.id === photo.id)) {
+        newSelectedPhotos.push(photo);
+      }
+    });
+    selectedAlbumPhotos.value = newSelectedPhotos;
+  };
+
+  const removeAlbumPhotos = (photos) => {
+    selectedAlbumPhotos.value = selectedAlbumPhotos.value.filter(
+      (item) => !photos.find((photo) => photo.id === item.id),
+    );
+  };
+
   return {
     selectedPhotos,
     deselectedPhotos,
@@ -116,5 +132,7 @@ export const useSelectionStore = defineStore("selection", () => {
     addAlbumPhoto,
     removeAlbumPhoto,
     clearSelectedAlbumPhotos,
+    addAlbumPhotos,
+    removeAlbumPhotos,
   };
 });

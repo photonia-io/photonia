@@ -8,10 +8,12 @@
         To edit the album's title or description click / tap on the texts
         themselves.
       </p>
-      <!-- delete album button -->
-      <button class="button is-danger" @click="showConfirmationModal">
-        Delete Album
-      </button>
+
+      <div class="buttons">
+        <button class="button is-danger" @click="showConfirmationModal">
+          Delete Album
+        </button>
+      </div>
     </div>
   </div>
   <teleport to="#modal-root">
@@ -22,15 +24,20 @@
           <p class="modal-card-title has-text-centered">Delete Album</p>
         </header>
         <div class="modal-card-body">
-          <p>Are you sure you want to delete this album?</p>
+          <p>
+            Are you sure you want to delete this album? This will not delete the
+            photos inside the album, but the album itself will be gone forever.
+          </p>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
-          <button class="button is-danger" @click="performDelete">
-            Delete
-          </button>
-          <button class="button is-info" @click="closeConfirmationModal">
-            Cancel
-          </button>
+          <div class="buttons">
+            <button class="button is-danger" @click="performDelete">
+              Delete
+            </button>
+            <button class="button is-info" @click="closeConfirmationModal">
+              Cancel
+            </button>
+          </div>
         </footer>
       </div>
     </div>

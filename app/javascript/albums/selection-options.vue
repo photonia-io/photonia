@@ -8,9 +8,7 @@
       <p v-else>You have not selected any photos.</p>
       <div class="level">
         <div class="level-left">
-          <div class="buttons">
-            <ClearSelectionButton :disabled="buttonsDisabled" />
-          </div>
+          <div class="buttons">TODO</div>
         </div>
         <div class="level-right">
           <div class="buttons">
@@ -38,8 +36,6 @@ import { computed } from "vue";
 
 import { useSelectionStore } from "@/stores/selection";
 
-import ClearSelectionButton from "@/shared/buttons/clear-selection.vue";
-
 const props = defineProps({
   photos: {
     type: Array,
@@ -49,14 +45,16 @@ const props = defineProps({
 
 const selectionStore = useSelectionStore();
 
-const selectionCount = computed(() => selectionStore.selectedPhotos.length);
+const selectionCount = computed(
+  () => selectionStore.selectedAlbumPhotos.length,
+);
 const buttonsDisabled = computed(() => selectionCount.value === 0);
 
-const addAllOnPage = () => {
-  selectionStore.addPhotos(props.photos);
+const addAll = () => {
+  selectionStore.addAlbumPhotos(props.photos);
 };
 
-const removeAllOnPage = () => {
-  selectionStore.removePhotos(props.photos);
+const removeAll = () => {
+  selectionStore.removeAlbumPhotos(props.photos);
 };
 </script>

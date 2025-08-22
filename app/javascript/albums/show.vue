@@ -21,10 +21,17 @@
           <div class="level-item">
             <button
               class="button is-small"
-              v-if="userStore.signedIn && !applicationStore.editingAlbum"
+              v-if="!applicationStore.editingAlbum"
               @click="applicationStore.startEditingAlbum()"
             >
               Edit
+            </button>
+            <button
+              class="button is-small"
+              v-else
+              @click="applicationStore.stopEditingAlbum()"
+            >
+              Stop Editing
             </button>
           </div>
         </div>
@@ -52,6 +59,16 @@
         "
         :album="album"
         @delete-album="deleteAlbum"
+      />
+
+      <SelectionOptions
+        v-if="
+          !loading &&
+          userStore.signedIn &&
+          album.canEdit &&
+          applicationStore.editingAlbum
+        "
+        :photos="album.photos.collection"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
@@ -89,6 +106,7 @@ import { descriptionHtmlHelper } from "../mixins/description-helper";
 import AlbumTitleEditable from "./album-title-editable.vue";
 import AlbumDescriptionEditable from "./album-description-editable.vue";
 import AlbumManagement from "./album-management.vue";
+import SelectionOptions from "./selection-options.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 
