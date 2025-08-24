@@ -48,9 +48,7 @@ module Types
       @object.photos_count
     end
 
-    def public_cover_photo
-      @object.public_cover_photo
-    end
+    delegate :public_cover_photo, to: :@object
 
     def previous_photo_in_album(photo_id:)
       Photo.friendly.find(photo_id).prev_in_album(@object)
