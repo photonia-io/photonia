@@ -1,39 +1,53 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Health check for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
-  get '/users/sign_in', to: 'users#sign_in'
-  get '/users/sign_out', to: 'users#sign_out'
-  get '/users/settings', to: 'users#settings'
-  get '/users/admin-settings', to: 'users#admin_settings'
-
-  get '/stats', to: 'stats#index'
-
-  devise_for :users, skip: :all
-
-  resources :photos, except: %i[new] do
-    get :upload, on: :collection
-    get :organizer, on: :collection
-    get :deselected, on: :collection
-    get :feed, on: :collection, format: :xml
-  end
-  resources :tags, only: %i[index show]
-  resources :albums, only: %i[index show] do
-    get :feed, on: :collection, format: :xml
-  end
-
-  post '/graphql', to: 'graphql#execute'
-
+  # Root route
   root 'homepage#index'
 
-  ['about', 'terms-of-service', 'privacy-policy'].each do |page|
-    get "/#{page}", to: "pages#handler"
+  # Devise authentication (skipping all default routes)
+  devise_for :users, skip: :all
+
+  # User-related routes
+  scope 'users', controller: 'users' do
+    get 'sign_in', to: :sign_in, as: :user_sign_in
+    get 'sign_out', to: :sign_out, as: :user_sign_out
+    get 'settings', to: :settings, as: :user_settings
+    get 'admin-settings', to: :admin_settings, as: :user_admin_settings
   end
 
-  # sidekiq
+  # Main resource routes
+  resources :photos, except: %i[new] do
+    collection do
+      get :upload
+      get :organizer
+      get :deselected
+      get :feed, defaults: { format: :xml }
+    end
+  end
+
+  resources :albums, only: %i[index show] do
+    collection do
+      get :feed, defaults: { format: :xml }
+    end
+  end
+
+  resources :tags, only: %i[index show]
+
+  # Statistics
+  get 'stats', to: 'stats#index'
+
+  # GraphQL API endpoint
+  post 'graphql', to: 'graphql#execute'
+
+  # Static pages
+  get 'about', to: 'pages#handler'
+  get 'terms-of-service', to: 'pages#handler'
+  get 'privacy-policy', to: 'pages#handler'
+
+  # Administrative interfaces - Sidekiq web UI
   require 'sidekiq/web'
   require 'sidekiq-scheduler/web'
 
