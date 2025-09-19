@@ -2,7 +2,7 @@
 
 Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  get 'up' => 'rails/health#show', as: :rails_health_check
 
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   get '/users/sign_in', to: 'users#sign_in'
@@ -23,14 +23,15 @@ Rails.application.routes.draw do
   resources :tags, only: %i[index show]
   resources :albums, only: %i[index show] do
     get :feed, on: :collection, format: :xml
+    get :sort
   end
 
   post '/graphql', to: 'graphql#execute'
 
   root 'homepage#index'
 
-  ['about', 'terms-of-service', 'privacy-policy'].each do |page|
-    get "/#{page}", to: "pages#handler"
+  %w[about terms-of-service privacy-policy].each do |page|
+    get "/#{page}", to: 'pages#handler'
   end
 
   # sidekiq

@@ -21,4 +21,6 @@ class AlbumsController < ApplicationController
       format.xml
     end
   end
+
+  def sort; end
 end
