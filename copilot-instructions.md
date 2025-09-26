@@ -28,7 +28,7 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 ### Frontend
 - **Vue.js 3** - JavaScript framework
 - **Vite** - Build tool and development server
-- **TypeScript** - Type-safe JavaScript
+- **JavaScript ES6+** - Modern JavaScript with ES modules
 - **Bulma** - CSS framework
 - **Apollo Client** - GraphQL client
 - **Pinia** - State management
@@ -152,7 +152,7 @@ npx prettier --write .
 - Follow Rails naming conventions
 
 ### JavaScript/Vue.js
-- Use TypeScript for type safety
+- Use modern JavaScript ES6+ features
 - Follow Vue.js 3 Composition API patterns
 - Use Pinia for state management
 - Follow ESLint and Prettier configurations
@@ -289,7 +289,7 @@ docker run -d -p 3000:3000 \
 1. Create Vue component in appropriate directory
 2. Add to router if it's a page
 3. Update state management if needed
-4. Add TypeScript types
+4. Follow Vue.js composition API patterns
 5. Write component tests
 
 ### Database Changes
