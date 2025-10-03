@@ -189,9 +189,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  const cache = new InMemoryCache({
+    typePolicies: {
+      Photo: {
+        fields: {
+          userTags: {
+            merge(existing, incoming) {
+              return incoming;
+            },
+          },
+          machineTags: {
+            merge(existing, incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+    },
+  });
+
   const apolloClient = new ApolloClient({
     link: authLink.concat(afterwareLink.concat(httpLink)),
-    cache: new InMemoryCache(),
+    cache,
     connectToDevTools: true,
   });
 
