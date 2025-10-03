@@ -23,11 +23,21 @@ module Types
     field :photos_count, Integer, 'Total number of photos in the album', null: false
     field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
     field :public_photos_count, Integer, 'Number of public photos in the album', null: false
+    field :sorting_order, String, 'Sorting order of the album', null: false
+    field :sorting_type, String, 'Sorting type of the album', null: false
     field :title, String, 'Title of the album', null: false
+
+    field :all_photos, [PhotoType], 'All photos in the album', null: false
 
     field :photos, Types::PaginatedPhotoType, null: false do
       argument :page, Integer, 'Page number', required: false
       description 'Photos in the album'
+    end
+
+    def all_photos
+      context[:authorize].call(@object, :update?)
+      context[:album] = @object
+      @object.photos.includes(:albums_photos).order('albums_photos.ordering ASC')
     end
 
     def photos(page: nil)
@@ -58,8 +68,26 @@ module Types
       Photo.friendly.find(photo_id).next_in_album(@object)
     end
 
+    # rubocop:disable Naming/PredicateMethod
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
+    end
+
+    def sorting_type
+      translate_sorting_type(@object.sorting_type)
+    end
+
+    private
+
+    def translate_sorting_type(sorting_type)
+      case sorting_type
+      when 'taken_at' then 'takenAt'
+      when 'posted_at' then 'postedAt'
+      when 'title' then 'title'
+      when 'manual' then 'manual'
+      else
+        'unknown'
+      end
     end
   end
 end

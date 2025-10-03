@@ -32,7 +32,7 @@
  *
  * Props:
  * - `photo` (Object, required): The photo object to display.
- * - `inAlbum` (Boolean, optional): Indicates if the photo is displayed in an album.
+ * - `inAlbum` (Boolean, optional): Indicates if the photo is displayed in an album. If true, selection is managed via an album-specific selection store.
  *
  * Dependencies:
  * - Uses `ItemImage` to display the photo.

@@ -24,7 +24,7 @@
               v-if="!applicationStore.editingAlbum"
               @click="applicationStore.startEditingAlbum()"
             >
-              Edit
+              Manage
             </button>
             <button
               class="button is-small"

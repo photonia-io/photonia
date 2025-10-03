@@ -49,9 +49,11 @@ class Album < ApplicationRecord
   is_impressionable counter_cache: true, unique: :session_hash
 
   extend FriendlyId
+
   friendly_id :serial_number, use: :slugged
 
   include SerialNumberSetter
+
   before_validation :set_serial_number, prepend: true
 
   include HtmlDescriptionable
@@ -72,14 +74,15 @@ class Album < ApplicationRecord
   belongs_to :user_cover_photo, class_name: 'Photo', optional: true
 
   def maintenance
-    # quick unscoped photo count
-    # photos_count = Photo.unscoped { albums_photos.count }
+    apply_automatic_photo_ordering! if automatic_ordering?
 
     @public_photos = all_photos(refetch: true).select(&:public?)
-
-    @photos_count = all_photos.size
     public_photos_count = @public_photos.size
 
+    @photos_count = all_photos.size
+
+    # pcpi - public_cover_photo_id
+    # ucpi - user_cover_photo_id
     pcpi, ucpi = cover_photo_ids
 
     maintenance_update(public_photos_count:, photos_count: @photos_count, public_cover_photo_id: pcpi,
@@ -88,29 +91,27 @@ class Album < ApplicationRecord
     self
   end
 
-  def all_photos(refetch: false)
+  def all_photos(refetch: false, unordered: false)
     return @all_photos if @all_photos && !refetch
 
     @all_photos = Photo
                   .unscoped
                   .joins(:albums)
                   .where(albums: { id: })
-                  .order('albums_photos.ordering')
                   .select('photos.id, photos.privacy')
+
+    @all_photos = unordered ? @all_photos : @all_photos.order('albums_photos.ordering')
   end
 
   def cover_photo_ids
-    if @photos_count.positive?
-      pcpi = @public_photos.first&.id
-      ucp = all_photos.find { |p| p.id == user_cover_photo_id }
-      ucpi = ucp&.id
+    return [nil, nil] unless @photos_count.positive?
 
-      if ucp&.public?
-        pcpi = ucpi
-      elsif !ucp
-        ucpi = nil
-      end
-    end
+    pcpi = public_cover_photo_id_candidate
+    ucpi = user_cover_photo_id_candidate
+
+    pcpi = ucpi if user_cover_photo_is_public?(ucpi)
+    ucpi = nil unless user_cover_photo_exists?(ucpi)
+
     [pcpi, ucpi]
   end
 
@@ -120,6 +121,7 @@ class Album < ApplicationRecord
     public_cover_photo_id:,
     user_cover_photo_id:
   )
+    # Skip validations and callbacks to avoid infinite loops
     # rubocop:disable Rails/SkipsModelValidations
     if self.public_photos_count != public_photos_count ||
        self.photos_count != photos_count ||
@@ -140,4 +142,74 @@ class Album < ApplicationRecord
          .group('albums.id')
          .select('albums.slug, albums.title, COUNT(photos.id) AS contained_photos_count')
   }
+
+  def manual_ordering?
+    sorting_type == 'manual'
+  end
+
+  def automatic_ordering?
+    !manual_ordering?
+  end
+
+  def apply_automatic_photo_ordering!
+    return if manual_ordering?
+
+    albums_photos = AlbumsPhoto.where(album_id: id).to_a
+    update_albums_photos_ordering(albums_photos)
+  end
+
+  def execute_bulk_ordering_update(ids_and_orderings)
+    ids = ids_and_orderings.pluck(:id)
+    case_sql = ids_and_orderings.map { |iao| "WHEN #{iao[:id]} THEN #{iao[:ordering]}" }.join(' ')
+
+    # We should skip validations and callbacks to avoid infinite loops
+    # Also this is a bulk update, and the data is already validated
+    # rubocop:disable Rails/SkipsModelValidations
+    AlbumsPhoto.where(id: ids).update_all("ordering = CASE id #{case_sql} END")
+    # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  def photos_ordered_by_sorting_fields
+    return @ordered_photos if @ordered_photos
+
+    all_photos = all_photos(refetch: true, unordered: true)
+
+    return @ordered_photos = all_photos.order('albums_photos.ordering ASC') if sorting_type == 'manual'
+
+    @ordered_photos = all_photos.order(sorting_type.to_sym => sorting_order.to_sym)
+  end
+
+  private
+
+  def public_cover_photo_id_candidate
+    @public_photos.first&.id
+  end
+
+  def user_cover_photo_id_candidate
+    ucp = all_photos.find { |p| p.id == user_cover_photo_id }
+    ucp&.id
+  end
+
+  def user_cover_photo_is_public?(ucpi)
+    ucp = all_photos.find { |p| p.id == ucpi }
+    ucp&.public?
+  end
+
+  def user_cover_photo_exists?(ucpi)
+    ucpi.present?
+  end
+
+  def update_albums_photos_ordering(albums_photos)
+    ids_and_orderings = build_ordering_mapping(albums_photos)
+    return unless ids_and_orderings.any?
+
+    execute_bulk_ordering_update(ids_and_orderings)
+  end
+
+  def build_ordering_mapping(albums_photos)
+    albums_photos.map do |ap|
+      photo_index = photos_ordered_by_sorting_fields.index { |p| p.id == ap.photo_id }
+      { id: ap.id, ordering: (photo_index + 1) * 100_000 }
+    end
+  end
 end

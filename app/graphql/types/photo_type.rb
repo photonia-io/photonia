@@ -25,7 +25,8 @@ module Types
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
     field :next_photo, PhotoType, 'Next photo', null: true
-    field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
+    field :ordering, Integer, 'Ordering of the photo in the album', null: true
+    field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was posted', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
@@ -105,6 +106,17 @@ module Types
 
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
+    end
+
+    def ordering
+      # Only resolve if album and albums_photos are present
+      album = context[:album]
+      return nil unless album
+
+      albums_photos = object.try(:albums_photos)
+      return nil unless albums_photos
+
+      albums_photos.detect { |ap| ap.album_id == album.id }&.ordering
     end
   end
 end

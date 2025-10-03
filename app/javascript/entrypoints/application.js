@@ -75,6 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
       component: () => import("../albums/show.vue"),
     },
     {
+      path: settings.albums_path + "/:id/sort",
+      name: "albums-sort",
+      component: () => import("../albums/sort.vue"),
+      beforeEnter: [redirectIfNotSignedIn],
+    },
+    {
       path: settings.tags_path,
       name: "tags-index",
       component: () => import("../tags/index.vue"),

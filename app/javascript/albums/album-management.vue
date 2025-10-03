@@ -16,16 +16,31 @@
           <option value="private">Private</option>
         </select>
       </div>
-      <label for="album-sorting" class="label">Photo Sorting:</label>
 
-      <div class="select">
-        <select id="album-sorting">
+      <label for="album-sorting-type" class="label">Photo Sorting:</label>
+
+      <div class="select is-small">
+        <select id="album-sorting-type" v-model="sortingType">
           <option value="date-shot">Date Shot</option>
           <option value="date-uploaded">Date Uploaded</option>
           <option value="title">Title</option>
           <option value="manual">Manual (custom order)</option>
         </select>
       </div>
+      <div class="select is-small ml-2" v-if="sortingType != 'manual'">
+        <select id="album-sorting-order" v-model="sortingOrder">
+          <option value="asc">{{ sortingOrderAscendingText }}</option>
+          <option value="desc">{{ sortingOrderDescendingText }}</option>
+        </select>
+      </div>
+
+      <button
+        class="button is-small ml-2"
+        @click="manageSorting"
+        v-if="sortingType == 'manual'"
+      >
+        Manage Sorting
+      </button>
 
       <div class="buttons mt-4">
         <button class="button is-danger" @click="showConfirmationModal">
@@ -63,8 +78,12 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 import { useApplicationStore } from "../stores/application";
+
+// router
+const router = useRouter();
 
 const props = defineProps({
   album: {
@@ -86,6 +105,25 @@ const showConfirmationModal = () => {
 const closeConfirmationModal = () => {
   modalActive.value = false;
   applicationStore.enableNavigationShortcuts();
+};
+
+const sortingType = ref("date-shot");
+const sortingOrder = ref("asc");
+
+const sortingOrderAscendingText = computed(() => {
+  return sortingType.value != "title" ? "Oldest First" : "A - Z";
+});
+
+const sortingOrderDescendingText = computed(() => {
+  return sortingType.value != "title" ? "Newest First" : "Z - A";
+});
+
+const manageSorting = () => {
+  applicationStore.stopEditingAlbum();
+  router.push({
+    name: "albums-sort",
+    params: { id: props.album.id },
+  });
 };
 
 const performDelete = () => {

@@ -7,6 +7,7 @@ module Types
 
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
     field :update_album_description, mutation: Mutations::UpdateAlbumDescription, description: 'Update album description'
+    field :update_album_photo_order, mutation: Mutations::UpdateAlbumPhotoOrder, description: 'Update the order of photos in an album'
     field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
     field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
     field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
