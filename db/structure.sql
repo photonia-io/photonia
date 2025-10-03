@@ -71,7 +71,9 @@ CREATE TABLE public.albums (
     public_photos_count integer DEFAULT 0 NOT NULL,
     photos_count integer DEFAULT 0 NOT NULL,
     privacy public.privacy DEFAULT 'public'::public.privacy,
-    description_html text
+    description_html text,
+    sorting_type character varying DEFAULT 'taken_at'::character varying NOT NULL,
+    sorting_order character varying DEFAULT 'asc'::character varying NOT NULL
 );
 
 
@@ -1187,6 +1189,13 @@ CREATE INDEX taggings_taggable_context_idx ON public.taggings USING btree (tagga
 
 
 --
+-- Name: taggings_tagger_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX taggings_tagger_idx ON public.taggings USING btree (tagger_id, tagger_type);
+
+
+--
 -- Name: photos tsvupdate; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1264,6 +1273,8 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250919125004'),
+('20250822171155'),
 ('20241223145106'),
 ('20241223145105'),
 ('20241115114702'),

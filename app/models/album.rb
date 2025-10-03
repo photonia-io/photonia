@@ -14,6 +14,8 @@
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
 #  slug                     :string
+#  sorting_order            :string           default("asc"), not null
+#  sorting_type             :string           default("taken_at"), not null
 #  title                    :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -32,6 +34,18 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Album < ApplicationRecord
+  enum :sorting_type, {
+    taken_at: 'taken_at',
+    posted_at: 'posted_at',
+    title: 'title',
+    manual: 'manual'
+  }, suffix: true
+
+  enum :sorting_order, {
+    asc: 'asc',
+    desc: 'desc'
+  }, suffix: true
+
   is_impressionable counter_cache: true, unique: :session_hash
 
   extend FriendlyId
