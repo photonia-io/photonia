@@ -35,9 +35,9 @@ class AlbumsPhoto < ApplicationRecord
   private
 
   def set_ordering
-    if self.ordering.nil?
-      maximum_ordering = AlbumsPhoto.where(album_id: self.album_id).maximum(:ordering)
-      self.ordering = maximum_ordering.nil? ? 100000 : maximum_ordering + 100000
-    end
+    return unless ordering.nil?
+
+    maximum_ordering = AlbumsPhoto.where(album_id: album_id).maximum(:ordering)
+    self.ordering = maximum_ordering.nil? ? 100_000 : maximum_ordering + 100_000
   end
 end
