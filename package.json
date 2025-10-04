@@ -18,7 +18,7 @@
     "marked": "^15.0.12",
     "pinia": "^3.0.3",
     "sass": "^1.93.2",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "vue": "^3.5.22",
     "vue-apollo": "^3.1.2",
     "vue-chartjs": "^5.3.2",
