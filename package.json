@@ -31,7 +31,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/test-utils": "^2.4.6",
-    "happy-dom": "^20.0.0",
+    "happy-dom": "^20.0.2",
     "prettier": "3.5.2",
     "vite": "^6.3.6",
     "vite-plugin-ruby": "^5.1.1",
