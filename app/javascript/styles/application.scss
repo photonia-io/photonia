@@ -40,12 +40,6 @@
   flex-direction: column;
 }
 
-// #photo-title-container {
-//   @include mixins.from(769px) {
-//     margin-right: 0.75rem;
-//   }
-// }
-
 .section-pt-pb-0 {
   @extend .section;
   padding-top: 0;
