@@ -5,6 +5,7 @@
 Photonia is a self-hosted photo sharing web application that allows users to store, organize, and share their photos. The application leverages AI-powered photo recognition to automatically create labels and tags, making photo discovery and organization seamless.
 
 ### Key Features
+
 - Photo storage on Amazon S3
 - AI-powered photo labeling using Amazon Rekognition
 - Smart thumbnail generation based on photo content
@@ -16,6 +17,7 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 ## Architecture & Technology Stack
 
 ### Backend
+
 - **Ruby on Rails 7.0** - Main web framework
 - **Ruby 3.4.3** - Programming language
 - **PostgreSQL** - Primary database
@@ -26,6 +28,7 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 - **Devise + JWT** - Authentication system
 
 ### Frontend
+
 - **Vue.js 3** - JavaScript framework
 - **Vite** - Build tool and development server
 - **JavaScript ES6+** - Modern JavaScript with ES modules
@@ -35,11 +38,13 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 - **Chart.js** - Data visualization
 
 ### External Services
+
 - **Amazon S3** - Photo storage
 - **Amazon Rekognition** - AI-powered image analysis
 - **Sentry** - Error monitoring
 
 ### Development Tools
+
 - **RuboCop** - Ruby code linting
 - **RSpec** - Ruby testing framework
 - **Vitest** - JavaScript testing framework
@@ -70,6 +75,7 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 ## Development Workflow
 
 ### Setup Requirements
+
 ```bash
 # System dependencies
 sudo apt install libpq-dev libexif-dev imagemagick
@@ -82,6 +88,7 @@ yarn install
 ```
 
 ### Running the Application
+
 ```bash
 # Option 1: Separate terminals
 bin/rails s              # Rails server (port 3000)
@@ -93,6 +100,7 @@ overmind s -N -f Procfile.dev
 ```
 
 ### Testing
+
 ```bash
 # Ruby tests
 bundle exec rspec
@@ -105,6 +113,7 @@ npm run test:run
 ```
 
 ### Code Quality
+
 ```bash
 # Ruby linting
 bundle exec rubocop
@@ -116,6 +125,7 @@ npx prettier --write .
 ## Key Models and Components
 
 ### Core Models
+
 - **User** - User accounts with Devise authentication
 - **Photo** - Main photo model with metadata and processing
 - **Album** - Photo collections
@@ -124,11 +134,13 @@ npx prettier --write .
 - **Tag** - User-defined photo tags
 
 ### Important Services
+
 - **PhotoProcessingService** - Handles photo upload and processing
 - **RekognitionService** - Interfaces with AWS Rekognition
 - **FlickrImportService** - Imports photos from Flickr
 
 ### Background Jobs
+
 - **RekognitionJob** - Processes photos with AI labeling
 - **PromoteJob** - Handles photo upload promotion
 - **AddIntelligentDerivativesJob** - Generates thumbnails and derivatives
@@ -137,14 +149,63 @@ npx prettier --write .
 - **FlickrPeopleGetInfoJob** - Fetches Flickr user information
 
 ### Frontend Structure
+
 - **app.vue** - Main application component
 - **stores/** - Pinia state management
 - **entrypoints/** - Vite entry points
 - **photos/**, **albums/**, **users/** - Domain-specific components
 
+## Architecture Overview
+
+### Albums
+
+- Albums are the primary organizational unit for grouping photos
+- The cover photo for an album is determined by the `public_cover_photo_id` or `user_cover_photo_id` attribute on the `Album` model
+  - `public_cover_photo_id` - The cover photo visible to public viewers
+  - `user_cover_photo_id` - The cover photo visible to the album owner
+  - These fields are automatically set by the `Album#maintenance` method when an album is created or updated
+  - If no cover photo is explicitly set, the first photo in the album (by ordering) is used as the default cover
+- Photos are associated with albums through a many-to-many join table `albums_photos` represented by the `AlbumsPhoto` model
+  - The join model enables photos to belong to multiple albums simultaneously
+  - Each `AlbumsPhoto` record tracks the relationship and ordering position
+- Photos are ordered within albums by the `ordering` attribute (integer) in the `albums_photos` table
+- When a new photo is added to an album (an `albums_photos` record is created), the `ordering` attribute is automatically set by the `AlbumsPhoto#set_ordering` method
+  - New photos are typically appended to the end of the current ordering sequence
+- Albums support both automatic and manual sorting:
+  - Automatic sorting is controlled by the `sorting_type` and `sorting_order` attributes on the `Album` model
+  - Sorting types can be: `created_at` (when the photo was uploaded), `taken_at` (when the photo was taken - possibly retrieved from EXIF data), `title`, or `manual`
+  - Sorting order can be: `asc` (ascending) or `desc` (descending)
+  - Automatic sorting is handled by `Album#apply_automatic_photo_ordering!` which is called from the `Album#maintenance` method
+  - The maintenance method is triggered after album updates to keep ordering synchronized
+- When `sorting_type` is set to `manual`:
+  - Automatic sorting is disabled
+  - Users can drag-and-drop photos to custom positions in the UI
+  - The `ordering` attribute is updated via `Album#execute_bulk_ordering_update` method
+  - Bulk updates accept an array of photo IDs in the desired order
+- Albums track metadata including:
+  - `title` and `description` for display and SEO
+  - `slug` for SEO-friendly URLs (managed by `friendly_id`)
+  - Photo counts cached for performance
+  - Timestamps for creation and updates
+- The `Album#maintenance` method is a critical hook that:
+  - Updates cover photo selections
+  - Applies automatic photo ordering based on sorting preferences
+  - Recalculates cached counters
+  - Should be called after any significant album changes
+- Albums support GraphQL mutations for:
+  - Creation, update, and deletion
+  - Adding/removing photos
+  - Reordering photos (bulk update)
+  - Changing visibility settings
+- Performance considerations:
+  - Counter caches reduce database queries for photo counts
+  - Ordering updates use bulk SQL operations for efficiency
+  - Cover photo selection queries are optimized with proper indexing
+
 ## Coding Conventions
 
 ### Ruby/Rails
+
 - Follow RuboCop configuration in `.rubocop.yml`
 - Use frozen string literals
 - Prefer explicit returns
@@ -152,12 +213,14 @@ npx prettier --write .
 - Follow Rails naming conventions
 
 ### JavaScript/Vue.js
+
 - Use modern JavaScript ES6+ features
 - Follow Vue.js 3 Composition API patterns
 - Use Pinia for state management
 - Follow ESLint and Prettier configurations
 
 ### GraphQL
+
 - Define types in `app/graphql/types/`
 - Implement resolvers in `app/graphql/resolvers/`
 - Mutations in `app/graphql/mutations/`
@@ -168,6 +231,7 @@ npx prettier --write .
 ## Testing Guidelines
 
 ### Ruby Tests (RSpec)
+
 - Unit tests for models in `spec/models/`
 - Controller tests focus on authentication and authorization
 - Service tests in `spec/services/` for business logic
@@ -178,6 +242,7 @@ npx prettier --write .
 - System tests are currently disabled (see `.rspec`)
 
 ### JavaScript Tests (Vitest)
+
 - Component tests in `app/javascript/test/`
 - Use Vue Test Utils for component testing
 - Test configuration in `vite.config.js`
@@ -210,6 +275,7 @@ npx prettier --write .
 - Runs as non-root user for security (rails:rails, UID 1000)
 
 ### Docker Setup
+
 ```bash
 # Build production image
 docker build -t photonia .
@@ -223,6 +289,7 @@ docker run -d -p 3000:3000 \
 ```
 
 ### Kamal Deployment
+
 - Configuration in `.kamal/deploy.yml`
 - Hooks in `.kamal/hooks/` for deployment lifecycle
 - Supports zero-downtime deployments
@@ -250,35 +317,41 @@ docker run -d -p 3000:3000 \
 ## Environment Variables
 
 ### Required for Production
+
 - `RAILS_MASTER_KEY` - Rails encrypted credentials key
 - `DATABASE_URL` - PostgreSQL connection string
 - `REDIS_URL` - Redis connection string
 - `PHOTONIA_BE_SENTRY_DSN` - Sentry error reporting DSN
 
 ### AWS Configuration
+
 - `AWS_ACCESS_KEY_ID` - AWS access key
 - `AWS_SECRET_ACCESS_KEY` - AWS secret key
 - `AWS_REGION` - AWS region for S3 and Rekognition
 - `AWS_S3_BUCKET` - S3 bucket name for photo storage
 
 ### Optional Configuration
+
 - `PHOTONIA_BE_SENTRY_SAMPLE_RATE` - Sentry sampling rate (default: 0.1)
 - `DOCKER_BUILD` - Set to 'true' during Docker build process
 
 ## External API Integration
 
 ### AWS Services
+
 - S3 for photo storage with proper IAM permissions
 - Rekognition for automated photo analysis and labeling
 - Proper error handling for service unavailability
 
 ### Monitoring
+
 - Sentry integration for error tracking
 - Custom metrics for photo processing performance
 
 ## Common Development Tasks
 
 ### Adding New Photo Features
+
 1. Update Photo model if needed
 2. Add GraphQL mutations/queries
 3. Implement background jobs for processing
@@ -286,6 +359,7 @@ docker run -d -p 3000:3000 \
 5. Add appropriate tests
 
 ### Adding New UI Components
+
 1. Create Vue component in appropriate directory
 2. Add to router if it's a page
 3. Update state management if needed
@@ -293,6 +367,7 @@ docker run -d -p 3000:3000 \
 5. Write component tests
 
 ### Database Changes
+
 1. Generate Rails migration
 2. Update model associations
 3. Add appropriate indexes
