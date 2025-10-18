@@ -88,8 +88,6 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import gql from "graphql-tag";
-import { useMutation } from "@vue/apollo-composable";
 import { useApplicationStore } from "../stores/application";
 
 // router
@@ -102,7 +100,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deleteAlbum"]);
+const emit = defineEmits(["deleteAlbum", "updateSorting"]);
 const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
@@ -132,58 +130,13 @@ watch(
   { immediate: true },
 );
 
-// GraphQL mutation
-const UPDATE_ALBUM_PHOTO_ORDER_MUTATION = gql`
-  mutation UpdateAlbumPhotoOrder(
-    $albumId: ID!
-    $sortingType: String!
-    $sortingOrder: String!
-    $orders: [AlbumPhotoOrderInput!]
-  ) {
-    updateAlbumPhotoOrder(
-      albumId: $albumId
-      sortingType: $sortingType
-      sortingOrder: $sortingOrder
-      orders: $orders
-    ) {
-      errors
-      album {
-        id
-        sortingType
-        sortingOrder
-      }
-    }
-  }
-`;
-
-const {
-  mutate: updateAlbumPhotoOrder,
-  onDone: onUpdateAlbumPhotoOrderDone,
-  onError: onUpdateAlbumPhotoOrderError,
-} = useMutation(UPDATE_ALBUM_PHOTO_ORDER_MUTATION);
-
 const updateSorting = () => {
-  const variables = {
-    albumId: props.album.id,
+  emit("updateSorting", {
+    id: props.album.id,
     sortingType: sortingType.value,
     sortingOrder: sortingOrder.value,
-  };
-
-  updateAlbumPhotoOrder(variables);
+  });
 };
-
-onUpdateAlbumPhotoOrderDone((result) => {
-  if (result.data.updateAlbumPhotoOrder.errors.length > 0) {
-    console.error(
-      "Error updating album photo order:",
-      result.data.updateAlbumPhotoOrder.errors,
-    );
-  }
-});
-
-onUpdateAlbumPhotoOrderError((error) => {
-  console.error("GraphQL error updating album photo order:", error);
-});
 
 const sortingOrderAscendingText = computed(() => {
   return sortingType.value != "title" ? "Oldest First" : "A - Z";

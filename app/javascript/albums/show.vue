@@ -59,6 +59,7 @@
         "
         :album="album"
         @delete-album="deleteAlbum"
+        @update-sorting="updateAlbumSorting"
       />
 
       <SelectionOptions
@@ -91,7 +92,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
@@ -124,6 +125,8 @@ const userStore = useUserStore();
 
 const id = computed(() => route.params.id);
 const page = computed(() => parseInt(route.query.page) || 1);
+
+const apolloClient = inject("apolloClient");
 
 const { result, loading } = useQuery(
   gql`
@@ -181,6 +184,50 @@ const {
   }
 `);
 
+const {
+  mutate: updateAlbumPhotoOrder,
+  onDone: onUpdateAlbumPhotoOrderDone,
+  onError: onUpdateAlbumPhotoOrderError,
+} = useMutation(gql`
+  mutation UpdateAlbumPhotoOrder(
+    $albumId: ID!
+    $sortingType: String!
+    $sortingOrder: String!
+    $orders: [AlbumPhotoOrderInput!]
+    $page: Int
+  ) {
+    updateAlbumPhotoOrder(
+      albumId: $albumId
+      sortingType: $sortingType
+      sortingOrder: $sortingOrder
+      orders: $orders
+    ) {
+      errors
+      album {
+        id
+        sortingType
+        sortingOrder
+        photos(page: $page) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(
+              type: "intelligent_or_square_medium"
+            )
+            canEdit
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
+        }
+      }
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -212,6 +259,41 @@ onDeleteAlbumDone(({ data }) => {
 onDeleteAlbumError((error) => {
   toaster(
     "An error occurred while deleting the album: " + error.message,
+    "is-danger",
+  );
+});
+
+const updateAlbumSorting = (sortingData) => {
+  const variables = {
+    albumId: sortingData.id,
+    sortingType: sortingData.sortingType,
+    sortingOrder: sortingData.sortingOrder,
+    page: page.value,
+  };
+
+  updateAlbumPhotoOrder(variables);
+};
+
+onUpdateAlbumPhotoOrderDone((result) => {
+  if (result.data.updateAlbumPhotoOrder.errors.length > 0) {
+    toaster(
+      "Error updating album sorting: " +
+        result.data.updateAlbumPhotoOrder.errors.join(", "),
+      "is-danger",
+    );
+  } else {
+    toaster("Album sorting has been updated");
+    apolloClient.cache.evict({
+      id: apolloClient.cache.identify({ __typename: "Album", id: id.value }),
+      fieldName: "photos",
+    });
+    apolloClient.cache.gc();
+  }
+});
+
+onUpdateAlbumPhotoOrderError((error) => {
+  toaster(
+    "An error occurred while updating album sorting: " + error.message,
     "is-danger",
   );
 });
