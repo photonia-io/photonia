@@ -65,6 +65,8 @@ class GraphqlQueryCollection
               limitValue
             }
           }
+          sortingType
+          sortingOrder
           canEdit
         }
       }

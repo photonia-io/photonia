@@ -20,15 +20,23 @@
       <label for="album-sorting-type" class="label">Photo Sorting:</label>
 
       <div class="select is-small">
-        <select id="album-sorting-type" v-model="sortingType">
-          <option value="date-shot">Date Shot</option>
-          <option value="date-uploaded">Date Uploaded</option>
+        <select
+          id="album-sorting-type"
+          v-model="sortingType"
+          @change="updateSorting"
+        >
+          <option value="takenAt">Date Shot</option>
+          <option value="postedAt">Date Uploaded</option>
           <option value="title">Title</option>
           <option value="manual">Manual (custom order)</option>
         </select>
       </div>
       <div class="select is-small ml-2" v-if="sortingType != 'manual'">
-        <select id="album-sorting-order" v-model="sortingOrder">
+        <select
+          id="album-sorting-order"
+          v-model="sortingOrder"
+          @change="updateSorting"
+        >
           <option value="asc">{{ sortingOrderAscendingText }}</option>
           <option value="desc">{{ sortingOrderDescendingText }}</option>
         </select>
@@ -78,8 +86,10 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import gql from "graphql-tag";
+import { useMutation } from "@vue/apollo-composable";
 import { useApplicationStore } from "../stores/application";
 
 // router
@@ -107,8 +117,73 @@ const closeConfirmationModal = () => {
   applicationStore.enableNavigationShortcuts();
 };
 
-const sortingType = ref("date-shot");
+const sortingType = ref("takenAt");
 const sortingOrder = ref("asc");
+
+// Initialize sorting values from album prop
+watch(
+  () => props.album,
+  (newAlbum) => {
+    if (newAlbum) {
+      sortingType.value = newAlbum.sortingType || "takenAt";
+      sortingOrder.value = newAlbum.sortingOrder || "asc";
+    }
+  },
+  { immediate: true },
+);
+
+// GraphQL mutation
+const UPDATE_ALBUM_PHOTO_ORDER_MUTATION = gql`
+  mutation UpdateAlbumPhotoOrder(
+    $albumId: ID!
+    $sortingType: String!
+    $sortingOrder: String!
+    $orders: [AlbumPhotoOrderInput!]
+  ) {
+    updateAlbumPhotoOrder(
+      albumId: $albumId
+      sortingType: $sortingType
+      sortingOrder: $sortingOrder
+      orders: $orders
+    ) {
+      errors
+      album {
+        id
+        sortingType
+        sortingOrder
+      }
+    }
+  }
+`;
+
+const {
+  mutate: updateAlbumPhotoOrder,
+  onDone: onUpdateAlbumPhotoOrderDone,
+  onError: onUpdateAlbumPhotoOrderError,
+} = useMutation(UPDATE_ALBUM_PHOTO_ORDER_MUTATION);
+
+const updateSorting = () => {
+  const variables = {
+    albumId: props.album.id,
+    sortingType: sortingType.value,
+    sortingOrder: sortingOrder.value,
+  };
+
+  updateAlbumPhotoOrder(variables);
+};
+
+onUpdateAlbumPhotoOrderDone((result) => {
+  if (result.data.updateAlbumPhotoOrder.errors.length > 0) {
+    console.error(
+      "Error updating album photo order:",
+      result.data.updateAlbumPhotoOrder.errors,
+    );
+  }
+});
+
+onUpdateAlbumPhotoOrderError((error) => {
+  console.error("GraphQL error updating album photo order:", error);
+});
 
 const sortingOrderAscendingText = computed(() => {
   return sortingType.value != "title" ? "Oldest First" : "A - Z";
