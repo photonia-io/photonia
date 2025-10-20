@@ -108,6 +108,8 @@ describe 'album Query' do
     context 'when the user is logged in' do
       before do
         sign_in(user)
+        # these fields are set by the maintenance method
+        album.maintenance
       end
 
       describe 'allPhotos field' do
@@ -118,6 +120,7 @@ describe 'album Query' do
                 id
                 allPhotos {
                   id
+                  ordering
                 }
               }
             }
@@ -131,15 +134,11 @@ describe 'album Query' do
           response_album = parsed_body['data']['album']
 
           expect(response_album['allPhotos'].size).to eq(public_photos.size + private_photos.size)
+          expect(response_album['allPhotos'][1]['ordering']).to eq(200_000)
         end
       end
 
       describe 'photosCount field' do
-        before do
-          # the photos_count field is set by the maintenance callback
-          album.maintenance
-        end
-
         let(:query) do
           <<~GQL
             query {
