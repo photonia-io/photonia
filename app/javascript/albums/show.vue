@@ -135,6 +135,7 @@ import AlbumManagement from "./album-management.vue";
 import SelectionOptions from "./selection-options.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
+import { cache } from "happy-dom/lib/PropertySymbol";
 
 // route
 const route = useRoute();
@@ -304,6 +305,12 @@ onUpdateDescriptionError((error) => {
 onDeleteAlbumDone(({ data }) => {
   toaster("The album has been deleted");
   applicationStore.stopManagingAlbum();
+  apolloClient.cache.evict({
+    id: apolloClient.cache.identify({ __typename: "Album", id: id.value }),
+  });
+  apolloClient.cache.evict({ fieldName: "albums" });
+  apolloClient.cache.evict({ fieldName: "allAlbums" });
+  apolloClient.cache.gc();
   router.push({ name: "albums-index" });
 });
 

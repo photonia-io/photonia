@@ -6,6 +6,7 @@ module Types
     description 'The mutation root of this schema'
 
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
+    field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
     field :update_album_description, mutation: Mutations::UpdateAlbumDescription, description: 'Update album description'
     field :update_album_photo_order, mutation: Mutations::UpdateAlbumPhotoOrder, description: 'Update the order of photos in an album'
@@ -35,11 +36,6 @@ module Types
       description 'Create album with photos'
       argument :photo_ids, [String], 'Photo Ids', required: true
       argument :title, String, 'Album title', required: true
-    end
-
-    field :delete_album, AlbumType, null: false do
-      description 'Delete album'
-      argument :id, String, 'Album Id', required: true
     end
 
     field :delete_photo, PhotoType, null: false do
@@ -108,14 +104,6 @@ module Types
         album.photos << photo
       end
       album.maintenance
-    end
-
-    def delete_album(id:)
-      album = Album.includes(:photos).friendly.find(id)
-      context[:authorize].call(album, :destroy?)
-      # Todo
-      # album.destroy
-      album
     end
 
     def delete_photo(id:)
