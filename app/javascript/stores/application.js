@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
+  // we are editing either photo details or album details, details = title or description
   const editing = ref(false);
   const managingAlbum = ref(false);
   const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
@@ -79,6 +80,25 @@ export const useApplicationStore = defineStore("application", () => {
     exitSelectionMode();
   }
 
+  // Global navigation confirmation modal state
+  const navModalActive = ref(false);
+  const navModalMessage = ref("");
+  const navNavigateTo = ref(null);
+  const navAction = ref(null); // "stopEditing" | "clearAlbumSelection"
+
+  function openNavigationModal(to, message, action) {
+    navNavigateTo.value = to;
+    navModalMessage.value = message;
+    navAction.value = action;
+    navModalActive.value = true;
+    disableNavigationShortcuts();
+  }
+
+  function closeNavigationModal() {
+    navModalActive.value = false;
+    enableNavigationShortcuts();
+  }
+
   return {
     navigationShortcutsEnabled,
     enableNavigationShortcuts,
@@ -97,5 +117,13 @@ export const useApplicationStore = defineStore("application", () => {
     toggleSelectionMode,
     showLabelsOnHero,
     signOut,
+
+    // navigation confirmation modal
+    navModalActive,
+    navModalMessage,
+    navNavigateTo,
+    navAction,
+    openNavigationModal,
+    closeNavigationModal,
   };
 });

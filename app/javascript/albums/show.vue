@@ -31,7 +31,7 @@
               v-else
               @click="applicationStore.stopManagingAlbum()"
             >
-              Stop Editing
+              Stop Managing
             </button>
           </div>
         </div>
