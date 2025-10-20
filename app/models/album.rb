@@ -91,16 +91,17 @@ class Album < ApplicationRecord
     self
   end
 
-  def all_photos(refetch: false, unordered: false)
+  def all_photos(refetch: false, unordered: false, select: true)
     return @all_photos if @all_photos && !refetch
 
     @all_photos = Photo
                   .unscoped
                   .joins(:albums)
                   .where(albums: { id: })
-                  .select('photos.id, photos.privacy')
 
     @all_photos = unordered ? @all_photos : @all_photos.order('albums_photos.ordering')
+
+    @all_photos = select ? @all_photos.select('photos.id, photos.privacy') : @all_photos
   end
 
   def cover_photo_ids
@@ -177,6 +178,17 @@ class Album < ApplicationRecord
     return @ordered_photos = all_photos.order('albums_photos.ordering ASC') if sorting_type == 'manual'
 
     @ordered_photos = all_photos.order(sorting_type.to_sym => sorting_order.to_sym)
+  end
+
+  def graphql_sorting_type
+    case sorting_type
+    when 'taken_at' then 'takenAt'
+    when 'posted_at' then 'postedAt'
+    when 'title' then 'title'
+    when 'manual' then 'manual'
+    else
+      'unknown'
+    end
   end
 
   private

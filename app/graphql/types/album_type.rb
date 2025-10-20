@@ -20,7 +20,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
-    field :photos_count, Integer, 'Total number of photos in the album', null: false
+    field :photos_count, Integer, 'Total number of photos in the album (public and private)', null: false
     field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
     field :public_photos_count, Integer, 'Number of public photos in the album', null: false
     field :sorting_order, String, 'Sorting order of the album', null: false
@@ -37,7 +37,7 @@ module Types
     def all_photos
       context[:authorize].call(@object, :update?)
       context[:album] = @object
-      @object.photos.includes(:albums_photos).order('albums_photos.ordering ASC')
+      @object.all_photos(select: false).includes(:albums_photos)
     end
 
     def photos(page: nil)
@@ -72,22 +72,10 @@ module Types
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
     end
+    # rubocop:enable Naming/PredicateMethod
 
     def sorting_type
-      translate_sorting_type(@object.sorting_type)
-    end
-
-    private
-
-    def translate_sorting_type(sorting_type)
-      case sorting_type
-      when 'taken_at' then 'takenAt'
-      when 'posted_at' then 'postedAt'
-      when 'title' then 'title'
-      when 'manual' then 'manual'
-      else
-        'unknown'
-      end
+      @object.graphql_sorting_type
     end
   end
 end
