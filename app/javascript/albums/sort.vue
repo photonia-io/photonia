@@ -1,7 +1,23 @@
 <template>
   <section class="section-pt-pb-0">
     <div class="container">
-      <h1 class="title mt-5 mb-0">Sort photos in: {{ album.title }}</h1>
+      <div class="level mb-0 mt-5">
+        <div class="level-left">
+          <div class="level-item">
+            <h1 class="title">Sort photos in: {{ album.title }}</h1>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <router-link
+              class="button is-small"
+              :to="{ name: 'albums-show', params: { id } }"
+            >
+              Back to album
+            </router-link>
+          </div>
+        </div>
+      </div>
       <hr class="mt-2 mb-4" />
       <div class="message is-warning is-smallish">
         <div class="message-body">
