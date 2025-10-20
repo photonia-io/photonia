@@ -37,7 +37,7 @@ module Types
     def all_photos
       context[:authorize].call(@object, :update?)
       context[:album] = @object
-      @object.all_photos(select: false).includes(:albums_photos)
+      @object.all_photos(select: false, refetch: true).includes(:albums_photos)
     end
 
     def photos(page: nil)
