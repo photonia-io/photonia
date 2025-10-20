@@ -127,8 +127,8 @@ const ALBUM_FIELDS = `
   }
 `;
 
-const ALL_PHOTOS_QUERY = gql`
-  query AllPhotos($id: ID!) {
+const ALL_ALBUM_PHOTOS_QUERY = gql`
+  query AllAlbumPhotos($id: ID!) {
     album(id: $id) {
       ${ALBUM_FIELDS}
     }
@@ -158,9 +158,10 @@ const UPDATE_ALBUM_PHOTO_ORDER_MUTATION = gql`
 
 const { result, loading } = useQuery(
   gql`
-    ${ALL_PHOTOS_QUERY}
+    ${ALL_ALBUM_PHOTOS_QUERY}
   `,
   { id: id },
+  { fetchPolicy: "cache-and-network" },
 );
 
 const album = computed(() => result.value?.album ?? emptyAlbum);
