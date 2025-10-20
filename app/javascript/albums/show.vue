@@ -26,11 +26,7 @@
             >
               Manage
             </button>
-            <button
-              class="button is-small"
-              v-else
-              @click="applicationStore.stopManagingAlbum()"
-            >
+            <button class="button is-small" v-else @click="stopManaging">
               Stop Managing
             </button>
           </div>
@@ -89,16 +85,45 @@
       />
     </div>
   </section>
+
+  <!-- Stop Managing confirmation modal -->
+  <teleport to="#modal-root">
+    <div :class="['modal', stopManagingModalActive ? 'is-active' : null]">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title has-text-centered">Stop Managing Album</p>
+        </header>
+        <div class="modal-card-body">
+          <p>
+            You have selected photos in this album. Stopping album management
+            will clear the selection. Continue?
+          </p>
+        </div>
+        <footer class="modal-card-foot is-justify-content-center">
+          <div class="buttons">
+            <button class="button is-danger" @click="confirmStopManaging">
+              Yes, clear selection
+            </button>
+            <button class="button is-info" @click="cancelStopManaging">
+              Cancel
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
-import { computed, inject } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "../stores/user";
+import { useSelectionStore } from "../stores/selection";
 import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
 import { descriptionHtmlHelper } from "../mixins/description-helper";
@@ -122,9 +147,35 @@ const emptyAlbum = {
 
 const applicationStore = useApplicationStore();
 const userStore = useUserStore();
+const selectionStore = useSelectionStore();
 
 const id = computed(() => route.params.id);
 const page = computed(() => parseInt(route.query.page) || 1);
+
+const stopManagingModalActive = ref(false);
+
+const stopManaging = () => {
+  const hasSelection = (selectionStore.selectedAlbumPhotos || []).length > 0;
+
+  if (hasSelection) {
+    stopManagingModalActive.value = true;
+    applicationStore.disableNavigationShortcuts();
+  } else {
+    applicationStore.stopManagingAlbum();
+  }
+};
+
+const confirmStopManaging = () => {
+  selectionStore.clearSelectedAlbumPhotos();
+  applicationStore.stopManagingAlbum();
+  stopManagingModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+const cancelStopManaging = () => {
+  stopManagingModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
 
 const apolloClient = inject("apolloClient");
 
