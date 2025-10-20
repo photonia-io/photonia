@@ -147,7 +147,7 @@ const sortingOrderDescendingText = computed(() => {
 });
 
 const manageSorting = () => {
-  applicationStore.stopEditingAlbum();
+  applicationStore.stopManagingAlbum();
   router.push({
     name: "albums-sort",
     params: { id: props.album.id },

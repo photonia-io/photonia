@@ -21,15 +21,15 @@
           <div class="level-item">
             <button
               class="button is-small"
-              v-if="!applicationStore.editingAlbum"
-              @click="applicationStore.startEditingAlbum()"
+              v-if="!applicationStore.managingAlbum"
+              @click="applicationStore.startManagingAlbum()"
             >
               Manage
             </button>
             <button
               class="button is-small"
               v-else
-              @click="applicationStore.stopEditingAlbum()"
+              @click="applicationStore.stopManagingAlbum()"
             >
               Stop Editing
             </button>
@@ -55,7 +55,7 @@
           !loading &&
           userStore.signedIn &&
           album.canEdit &&
-          applicationStore.editingAlbum
+          applicationStore.managingAlbum
         "
         :album="album"
         @delete-album="deleteAlbum"
@@ -67,7 +67,7 @@
           !loading &&
           userStore.signedIn &&
           album.canEdit &&
-          applicationStore.editingAlbum
+          applicationStore.managingAlbum
         "
         :photos="album.photos.collection"
       />
@@ -252,7 +252,7 @@ onUpdateDescriptionError((error) => {
 
 onDeleteAlbumDone(({ data }) => {
   toaster("The album has been deleted");
-  applicationStore.stopEditingAlbum();
+  applicationStore.stopManagingAlbum();
   router.push({ name: "albums-index" });
 });
 

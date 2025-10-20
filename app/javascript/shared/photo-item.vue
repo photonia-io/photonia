@@ -1,6 +1,8 @@
 <template>
   <div class="column is-one-quarter is-relative">
-    <div v-if="applicationStore.selectionMode || applicationStore.editingAlbum">
+    <div
+      v-if="applicationStore.selectionMode || applicationStore.managingAlbum"
+    >
       <div class="selectable-item is-clickable" @click="toggleSelection()">
         <ItemImage :photo="photo" />
         <ItemCheckbox

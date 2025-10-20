@@ -4,7 +4,7 @@ import { computed, ref, watch } from "vue";
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
   const editing = ref(false);
-  const editingAlbum = ref(false);
+  const managingAlbum = ref(false);
   const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
 
   const systemColorScheme =
@@ -39,12 +39,12 @@ export const useApplicationStore = defineStore("application", () => {
     enableNavigationShortcuts();
   }
 
-  function startEditingAlbum() {
-    editingAlbum.value = true;
+  function startManagingAlbum() {
+    managingAlbum.value = true;
   }
 
-  function stopEditingAlbum() {
-    editingAlbum.value = false;
+  function stopManagingAlbum() {
+    managingAlbum.value = false;
   }
 
   watch(selectionMode, (newValue) => {
@@ -86,9 +86,9 @@ export const useApplicationStore = defineStore("application", () => {
     editing,
     startEditing,
     stopEditing,
-    editingAlbum,
-    startEditingAlbum,
-    stopEditingAlbum,
+    managingAlbum,
+    startManagingAlbum,
+    stopManagingAlbum,
     selectionMode,
     colorScheme,
     setUserColorScheme,
