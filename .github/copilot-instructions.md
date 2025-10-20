@@ -155,53 +155,6 @@ npx prettier --write .
 - **entrypoints/** - Vite entry points
 - **photos/**, **albums/**, **users/** - Domain-specific components
 
-## Architecture Overview
-
-### Albums
-
-- Albums are the primary organizational unit for grouping photos
-- The cover photo for an album is determined by the `public_cover_photo_id` or `user_cover_photo_id` attribute on the `Album` model
-  - `public_cover_photo_id` - The cover photo visible to public viewers
-  - `user_cover_photo_id` - The cover photo visible to the album owner
-  - These fields are automatically set by the `Album#maintenance` method when an album is created or updated
-  - If no cover photo is explicitly set, the first photo in the album (by ordering) is used as the default cover
-- Photos are associated with albums through a many-to-many join table `albums_photos` represented by the `AlbumsPhoto` model
-  - The join model enables photos to belong to multiple albums simultaneously
-  - Each `AlbumsPhoto` record tracks the relationship and ordering position
-- Photos are ordered within albums by the `ordering` attribute (integer) in the `albums_photos` table
-- When a new photo is added to an album (an `albums_photos` record is created), the `ordering` attribute is automatically set by the `AlbumsPhoto#set_ordering` method
-  - New photos are typically appended to the end of the current ordering sequence
-- Albums support both automatic and manual sorting:
-  - Automatic sorting is controlled by the `sorting_type` and `sorting_order` attributes on the `Album` model
-  - Sorting types can be: `created_at` (when the photo was uploaded), `taken_at` (when the photo was taken - possibly retrieved from EXIF data), `title`, or `manual`
-  - Sorting order can be: `asc` (ascending) or `desc` (descending)
-  - Automatic sorting is handled by `Album#apply_automatic_photo_ordering!` which is called from the `Album#maintenance` method
-  - The maintenance method is triggered after album updates to keep ordering synchronized
-- When `sorting_type` is set to `manual`:
-  - Automatic sorting is disabled
-  - Users can drag-and-drop photos to custom positions in the UI
-  - The `ordering` attribute is updated via `Album#execute_bulk_ordering_update` method
-  - Bulk updates accept an array of photo IDs in the desired order
-- Albums track metadata including:
-  - `title` and `description` for display and SEO
-  - `slug` for SEO-friendly URLs (managed by `friendly_id`)
-  - Photo counts cached for performance
-  - Timestamps for creation and updates
-- The `Album#maintenance` method is a critical hook that:
-  - Updates cover photo selections
-  - Applies automatic photo ordering based on sorting preferences
-  - Recalculates cached counters
-  - Should be called after any significant album changes
-- Albums support GraphQL mutations for:
-  - Creation, update, and deletion
-  - Adding/removing photos
-  - Reordering photos (bulk update)
-  - Changing visibility settings
-- Performance considerations:
-  - Counter caches reduce database queries for photo counts
-  - Ordering updates use bulk SQL operations for efficiency
-  - Cover photo selection queries are optimized with proper indexing
-
 ## Coding Conventions
 
 ### Ruby/Rails
@@ -395,3 +348,7 @@ This project is licensed under the Apache License 2.0. When contributing:
 - **AWS Rekognition Documentation**: https://docs.aws.amazon.com/rekognition/
 
 Remember to always test changes locally before deploying and ensure both Ruby and JavaScript test suites pass.
+
+## Model Overview
+
+See the detailed data model documentation in `.kilocode/rules/data-models.md` for comprehensive information on the core models, their relationships, and behaviors within Photonia.
