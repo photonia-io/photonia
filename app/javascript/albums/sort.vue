@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, inject } from "vue";
 import { useRoute } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
@@ -75,6 +75,8 @@ import PhotoItemSortable from "./photo-item-sortable.vue";
 const route = useRoute();
 
 const id = computed(() => route.params.id);
+
+const apolloClient = inject("apolloClient");
 
 const emptyAlbum = {
   title: "",
@@ -167,6 +169,24 @@ const {
 } = useMutation(gql`
   ${UPDATE_ALBUM_PHOTO_ORDER_MUTATION}
 `);
+
+onUpdateAlbumPhotoOrderDone((result) => {
+  const errors = result?.data?.updateAlbumPhotoOrder?.errors || [];
+  if (errors.length > 0) {
+    console.error("Error updating album photo order:", errors);
+    return;
+  }
+  // Clear Apollo cache for current album's photos to force refetch
+  apolloClient.cache.evict({
+    id: apolloClient.cache.identify({ __typename: "Album", id: id.value }),
+    fieldName: "photos",
+  });
+  apolloClient.cache.gc();
+});
+
+onUpdateAlbumPhotoOrderError((error) => {
+  console.error("GraphQL error updating album photo order:", error);
+});
 
 const manualSort = () => {
   sortingType.value = "manual";
