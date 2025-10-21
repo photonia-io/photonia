@@ -135,7 +135,6 @@ import AlbumManagement from "./album-management.vue";
 import SelectionOptions from "./selection-options.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
-import { cache } from "happy-dom/lib/PropertySymbol";
 
 // route
 const route = useRoute();
