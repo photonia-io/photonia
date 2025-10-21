@@ -160,14 +160,10 @@ class Album < ApplicationRecord
   end
 
   def execute_bulk_ordering_update(ids_and_orderings)
-    ids = ids_and_orderings.pluck(:id)
-    case_sql = ids_and_orderings.map { |iao| "WHEN #{iao[:id]} THEN #{iao[:ordering]}" }.join(' ')
+    return if ids_and_orderings.blank?
 
-    # We should skip validations and callbacks to avoid infinite loops
-    # Also this is a bulk update, and the data is already validated
-    # rubocop:disable Rails/SkipsModelValidations
-    AlbumsPhoto.where(id: ids).update_all("ordering = CASE id #{case_sql} END")
-    # rubocop:enable Rails/SkipsModelValidations
+    validate_ids_and_orderings!(ids_and_orderings)
+    perform_bulk_update(ids_and_orderings)
   end
 
   def photos_ordered_by_sorting_fields
@@ -223,5 +219,33 @@ class Album < ApplicationRecord
       photo_index = photos_ordered_by_sorting_fields.index { |p| p.id == ap.photo_id }
       { id: ap.id, ordering: (photo_index + 1) * 100_000 }
     end
+  end
+
+  def validate_ids_and_orderings!(ids_and_orderings)
+    valid = ids_and_orderings.all? do |iao|
+      numeric_string?(iao[:id]) && numeric_string?(iao[:ordering])
+    end
+
+    raise ArgumentError, 'Invalid ids/orderings' unless valid
+  end
+
+  def numeric_string?(value)
+    value.to_i.to_s == value.to_s
+  end
+
+  def perform_bulk_update(ids_and_orderings)
+    ids = ids_and_orderings.map { |iao| iao[:id].to_i }
+    case_sql = build_case_sql(ids_and_orderings)
+
+    # We should skip validations and callbacks to avoid infinite loops
+    # rubocop:disable Rails/SkipsModelValidations
+    AlbumsPhoto.where(id: ids).update_all(Arel.sql("ordering = CASE id #{case_sql} END"))
+    # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  def build_case_sql(ids_and_orderings)
+    ids_and_orderings.map do |iao|
+      "WHEN #{iao[:id].to_i} THEN #{iao[:ordering].to_i}"
+    end.join(' ')
   end
 end
