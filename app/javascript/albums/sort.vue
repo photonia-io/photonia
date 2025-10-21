@@ -157,9 +157,7 @@ const UPDATE_ALBUM_PHOTO_ORDER_MUTATION = gql`
 `;
 
 const { result, loading } = useQuery(
-  gql`
-    ${ALL_ALBUM_PHOTOS_QUERY}
-  `,
+  ALL_ALBUM_PHOTOS_QUERY,
   { id: id },
   { fetchPolicy: "cache-and-network" },
 );
@@ -183,9 +181,7 @@ const {
   mutate: updateAlbumPhotoOrder,
   onDone: onUpdateAlbumPhotoOrderDone,
   onError: onUpdateAlbumPhotoOrderError,
-} = useMutation(gql`
-  ${UPDATE_ALBUM_PHOTO_ORDER_MUTATION}
-`);
+} = useMutation(UPDATE_ALBUM_PHOTO_ORDER_MUTATION);
 
 onUpdateAlbumPhotoOrderDone((result) => {
   const errors = result?.data?.updateAlbumPhotoOrder?.errors || [];
