@@ -18,8 +18,8 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 
 ### Backend
 
-- **Ruby on Rails 7.0** - Main web framework
-- **Ruby 3.4.3** - Programming language
+- **Ruby on Rails 7** - Main web framework
+- **Ruby 3** - Programming language
 - **PostgreSQL** - Primary database
 - **Redis** - Caching and session storage
 - **Sidekiq** - Background job processing
