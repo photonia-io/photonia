@@ -7,7 +7,6 @@
 # Table name: albums_photos
 #
 #  id         :bigint           not null, primary key
-#  cover      :boolean          default(FALSE)
 #  ordering   :integer
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
