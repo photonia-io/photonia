@@ -76,7 +76,7 @@ class Album < ApplicationRecord
   def maintenance
     apply_automatic_photo_ordering! if automatic_ordering?
 
-    @public_photos = all_photos(refetch: true).select(&:public?)
+    @public_photos = all_photos(refetch: true).where(privacy: 'public').to_a
     public_photos_count = @public_photos.size
 
     @photos_count = all_photos.size

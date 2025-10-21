@@ -78,7 +78,11 @@ module Mutations
 
     def process_photo_orders(album, orders)
       errors = []
-      photo_slugs = orders.pluck(:photo_id)
+
+      # We need to disable the RuboCop rule here because this might be an array
+      # rubocop:disable Rails/Pluck
+      photo_slugs = orders.map { |o| o[:photo_id] }
+      # rubocop:enable Rails/Pluck
 
       # Build hash maps for O(1) lookups
       photos_by_slug = Photo.unscoped.where(slug: photo_slugs).index_by(&:slug)
