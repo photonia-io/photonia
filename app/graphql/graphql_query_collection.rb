@@ -69,6 +69,7 @@ class GraphqlQueryCollection
           sortingType
           sortingOrder
           canEdit
+          privacy
         }
       }
     GQL

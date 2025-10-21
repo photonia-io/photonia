@@ -9,7 +9,9 @@ module Queries
     argument :id, ID, 'ID of the album', required: true
 
     def resolve(id:)
-      album = Album.friendly.find(id)
+      base = Pundit.policy_scope(current_user, Album.unscoped)
+      album = base.friendly.find(id)
+      authorize(album, :show?)
       record_impression(album)
       album
     end

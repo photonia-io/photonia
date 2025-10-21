@@ -56,6 +56,7 @@
         :album="album"
         @delete-album="deleteAlbum"
         @update-sorting="updateAlbumSorting"
+        @set-album-privacy="handleSetAlbumPrivacy"
       />
 
       <SelectionOptions
@@ -75,7 +76,7 @@
           :in-album="true"
           :key="photo.id"
           :can-edit-album="canEditAlbum"
-          @set-cover-photo="setAlbumCoverPhotoOnItem"
+          @set-cover-photo="handleSetAlbumCoverPhoto"
         />
       </div>
       <hr class="mt-1 mb-4" />
@@ -334,6 +335,38 @@ onDeleteAlbumError((error) => {
   );
 });
 
+/* Set album privacy mutation */
+const {
+  mutate: setAlbumPrivacyMutation,
+  onDone: onSetAlbumPrivacyDone,
+  onError: onSetAlbumPrivacyError,
+} = useMutation(gql`
+  mutation ($id: String!, $privacy: String!) {
+    setAlbumPrivacy(id: $id, privacy: $privacy) {
+      id
+      privacy
+    }
+  }
+`);
+
+const handleSetAlbumPrivacy = ({ id, privacy }) => {
+  setAlbumPrivacyMutation({ id, privacy });
+};
+
+onSetAlbumPrivacyDone(({ data }) => {
+  toaster("Album privacy has been updated");
+  // Evict albums list to refresh visibility if necessary
+  apolloClient.cache.evict({ fieldName: "albums" });
+  apolloClient.cache.gc();
+});
+
+onSetAlbumPrivacyError((error) => {
+  toaster(
+    "An error occurred while updating album privacy: " + error.message,
+    "is-danger",
+  );
+});
+
 const updateAlbumSorting = (sortingData) => {
   const variables = {
     albumId: sortingData.id,
@@ -370,7 +403,7 @@ onUpdateAlbumPhotoOrderError((error) => {
 });
 /* Cover photo mutation */
 const {
-  mutate: setAlbumCoverPhoto,
+  mutate: setAlbumCoverPhotoMutation,
   onDone: onSetAlbumCoverPhotoDone,
   onError: onSetAlbumCoverPhotoError,
 } = useMutation(gql`
@@ -405,13 +438,13 @@ const {
   }
 `);
 
-const setAlbumCoverPhotoOnItem = (photo) => {
+const handleSetAlbumCoverPhoto = (photo) => {
   const variables = {
     albumId: id.value,
     photoId: photo.id,
     page: page.value,
   };
-  setAlbumCoverPhoto(variables);
+  setAlbumCoverPhotoMutation(variables);
 };
 
 onSetAlbumCoverPhotoDone((result) => {

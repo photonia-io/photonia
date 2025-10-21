@@ -34,6 +34,12 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Album < ApplicationRecord
+  enum :privacy, {
+    public: 'public',
+    private: 'private',
+    friends_and_family: 'friend & family'
+  }, suffix: true
+
   enum :sorting_type, {
     taken_at: 'taken_at',
     posted_at: 'posted_at',
@@ -96,8 +102,8 @@ class Album < ApplicationRecord
 
     @all_photos = Photo
                   .unscoped
-                  .joins(:albums)
-                  .where(albums: { id: })
+                  .joins(:albums_photos)
+                  .where(albums_photos: { album_id: id })
 
     @all_photos = unordered ? @all_photos : @all_photos.order('albums_photos.ordering')
 
@@ -215,8 +221,15 @@ class Album < ApplicationRecord
   end
 
   def build_ordering_mapping(albums_photos)
-    albums_photos.map do |ap|
-      photo_index = photos_ordered_by_sorting_fields.index { |p| p.id == ap.photo_id }
+    # Build ordering map based on the current photo ordering in the album.
+    # Be defensive in case an AlbumsPhoto references a photo that isn't present
+    # in the ordered photo list (e.g., due to unexpected joins/filters).
+    photos = photos_ordered_by_sorting_fields.to_a
+
+    albums_photos.filter_map do |ap|
+      photo_index = photos.index { |p| p.id == ap.photo_id }
+      next unless photo_index
+
       { id: ap.id, ordering: (photo_index + 1) * 100_000 }
     end
   end

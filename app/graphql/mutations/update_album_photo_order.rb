@@ -53,7 +53,8 @@ module Mutations
     private
 
     def load_album(album_id, include_associations)
-      query = include_associations ? Album.includes(:albums_photos) : Album
+      base = Pundit.policy_scope(context[:current_user], Album.unscoped)
+      query = include_associations ? base.includes(:albums_photos) : base
       query.friendly.find(album_id)
     rescue ActiveRecord::RecordNotFound
       nil
