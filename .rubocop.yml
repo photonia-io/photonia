@@ -23,3 +23,12 @@ RSpec/MultipleMemoizedHelpers:
   Enabled: false
 RSpec/ImplicitExpect:
   EnforcedStyle: should
+
+# Custom Exclusions
+
+Naming/PredicateName:
+  Exclude:
+    - "app/graphql/types/**/*"
+Naming/PredicateMethod:
+  Exclude:
+    - "app/graphql/types/**/*"
