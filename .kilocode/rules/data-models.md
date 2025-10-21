@@ -15,13 +15,13 @@
 - When a new photo is added to an album (an `albums_photos` record is created), the `ordering` attribute is automatically set by the `AlbumsPhoto#set_ordering` method
   - New photos are typically appended to the end of the current ordering sequence
 - Albums support both automatic and manual sorting
-  - When the `album.sorting_type` attribute is different than `manual` we have automatic sorting:
+  - When the `album.sorting_type` attribute is different from `manual`, automatic sorting is active:
     - Automatic sorting is controlled by the `sorting_type` and `sorting_order` attributes on the `Album` model
-    - Sorting types can be: `created_at` (when the photo was uploaded), `taken_at` (when the photo was taken - possibly retrieved from EXIF data), `title`, or `manual`
+    - Sorting types can be: `posted_at` (when the photo was uploaded), `taken_at` (when the photo was taken - possibly from EXIF), `title`, or `manual`
     - Sorting order can be: `asc` (ascending) or `desc` (descending)
     - Automatic sorting is handled by `Album#apply_automatic_photo_ordering!` which is called from the `Album#maintenance` method
     - The maintenance method is triggered after album updates to keep ordering synchronized
-  - When `albums.sorting_type` is set to `manual` we have manual sorting:
+  - When `album.sorting_type` is `manual`, manual sorting is active:
     - Automatic sorting is disabled
     - Users can drag-and-drop photos to custom positions in the UI
     - The `ordering` attribute is updated via `Album#execute_bulk_ordering_update` method
