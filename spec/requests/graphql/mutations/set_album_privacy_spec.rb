@@ -90,5 +90,25 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
         expect(errors['message']).to eq('Invalid privacy value')
       end
     end
+
+    context 'when the album is private' do
+      let(:new_privacy) { 'public' }
+
+      before do
+        album.update(privacy: 'private')
+      end
+
+      it 'allows changing privacy to public' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data).to include(
+          'id' => album.slug,
+          'privacy' => 'public'
+        )
+        expect(album.reload.privacy).to eq('public')
+      end
+    end
   end
 end
