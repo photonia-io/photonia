@@ -132,6 +132,9 @@ const toggleSelection = () => {
 </script>
 
 <style>
+.selectable-item {
+  position: relative;
+}
 .selectable-item:hover .item-checkbox {
   border-color: #00d1b2;
 }
@@ -169,7 +172,7 @@ const toggleSelection = () => {
 .cover-photo-tag {
   position: absolute;
   right: 0.75em;
-  bottom: 2.25em;
+  bottom: 0.75em;
   pointer-events: none; /* do not trigger selection toggle */
 }
 </style>
