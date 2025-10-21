@@ -165,13 +165,6 @@ const { result, loading } = useQuery(
 const album = computed(() => result.value?.album ?? emptyAlbum);
 
 watch(album, (newAlbum) => {
-  console.log("Album changed, updating photos");
-  // log the first photo's title to the console
-  if (newAlbum.allPhotos.length > 0) {
-    console.log("First photo title:", newAlbum.allPhotos[0].title);
-  } else {
-    console.log("No photos in the album");
-  }
   photos.value = newAlbum.allPhotos;
   sortingType.value = newAlbum.sortingType;
   sortingOrder.value = newAlbum.sortingOrder;
