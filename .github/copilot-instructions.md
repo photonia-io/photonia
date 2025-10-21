@@ -161,7 +161,6 @@ npx prettier --write .
 
 - Follow RuboCop configuration in `.rubocop.yml`
 - Use frozen string literals
-- Prefer explicit returns
 - Use service objects for complex business logic
 - Follow Rails naming conventions
 
