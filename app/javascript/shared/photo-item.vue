@@ -1,13 +1,8 @@
 <template>
   <div class="column is-one-quarter is-relative">
-    <router-link
-      v-if="!applicationStore.selectionMode"
-      :to="{ name: 'photos-show', params: { id: photo.id } }"
+    <div
+      v-if="applicationStore.selectionMode || applicationStore.managingAlbum"
     >
-      <ItemImage :photo="photo" />
-      {{ photo.title }}
-    </router-link>
-    <div v-else>
       <div class="selectable-item is-clickable" @click="toggleSelection()">
         <ItemImage :photo="photo" />
         <ItemCheckbox
@@ -19,10 +14,37 @@
         {{ photo.title }}
       </router-link>
     </div>
+    <router-link v-else :to="{ name: 'photos-show', params: { id: photo.id } }">
+      <ItemImage :photo="photo" />
+      {{ photo.title }}
+    </router-link>
   </div>
 </template>
 
 <script setup>
+/**
+ * PhotoItem Component
+ * -------------------
+ * This component represents a single photo item in a grid.
+ *
+ * Features:
+ * - Displays a photo with its title.
+ * - Supports selection mode for batch operations.
+ * - Includes a clickable checkbox for selecting photos (if the user has permissions).
+ *
+ * Props:
+ * - `photo` (Object, required): The photo object to display.
+ * - `inAlbum` (Boolean, optional): Indicates if the photo is displayed in an album. If true, selection is managed via an album-specific selection store.
+ *
+ * Dependencies:
+ * - Uses `ItemImage` to display the photo.
+ * - Uses `ItemCheckbox` for selection functionality.
+ *
+ * Usage:
+ * - Used in photo grids or album views.
+ * - Example: `<PhotoItem :photo="photo" :inAlbum="true" />`
+ */
+
 import { computed } from "vue";
 
 import { useUserStore } from "@/stores/user";
@@ -41,19 +63,34 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  inAlbum: {
+    type: Boolean,
+    default: false,
+    required: false,
+  },
 });
 
 const selected = computed(() => {
-  return selectionStore.selectedPhotos.some(
-    (photo) => photo.id === props.photo.id,
-  );
+  if (props.inAlbum) {
+    return selectionStore.selectedAlbumPhotos.some(
+      (photo) => photo.id === props.photo.id,
+    );
+  } else {
+    return selectionStore.selectedPhotos.some(
+      (photo) => photo.id === props.photo.id,
+    );
+  }
 });
 
 const toggleSelection = () => {
   if (selected.value) {
-    selectionStore.removePhoto(props.photo);
+    props.inAlbum
+      ? selectionStore.removeAlbumPhoto(props.photo)
+      : selectionStore.removePhoto(props.photo);
   } else {
-    selectionStore.addPhoto(props.photo);
+    props.inAlbum
+      ? selectionStore.addAlbumPhoto(props.photo)
+      : selectionStore.addPhoto(props.photo);
   }
 };
 </script>

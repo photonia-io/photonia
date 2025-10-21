@@ -3,7 +3,9 @@ import { computed, ref, watch } from "vue";
 
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
+  // we are editing either photo details or album details, details = title or description
   const editing = ref(false);
+  const managingAlbum = ref(false);
   const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
 
   const systemColorScheme =
@@ -38,6 +40,14 @@ export const useApplicationStore = defineStore("application", () => {
     enableNavigationShortcuts();
   }
 
+  function startManagingAlbum() {
+    managingAlbum.value = true;
+  }
+
+  function stopManagingAlbum() {
+    managingAlbum.value = false;
+  }
+
   watch(selectionMode, (newValue) => {
     localStorage.setItem("selectionMode", newValue);
   });
@@ -70,6 +80,25 @@ export const useApplicationStore = defineStore("application", () => {
     exitSelectionMode();
   }
 
+  // Global navigation confirmation modal state
+  const navModalActive = ref(false);
+  const navModalMessage = ref("");
+  const navNavigateTo = ref(null);
+  const navAction = ref(null); // "stopEditing" | "clearAlbumSelection"
+
+  function openNavigationModal(to, message, action) {
+    navNavigateTo.value = to;
+    navModalMessage.value = message;
+    navAction.value = action;
+    navModalActive.value = true;
+    disableNavigationShortcuts();
+  }
+
+  function closeNavigationModal() {
+    navModalActive.value = false;
+    enableNavigationShortcuts();
+  }
+
   return {
     navigationShortcutsEnabled,
     enableNavigationShortcuts,
@@ -77,6 +106,9 @@ export const useApplicationStore = defineStore("application", () => {
     editing,
     startEditing,
     stopEditing,
+    managingAlbum,
+    startManagingAlbum,
+    stopManagingAlbum,
     selectionMode,
     colorScheme,
     setUserColorScheme,
@@ -85,5 +117,13 @@ export const useApplicationStore = defineStore("application", () => {
     toggleSelectionMode,
     showLabelsOnHero,
     signOut,
+
+    // navigation confirmation modal
+    navModalActive,
+    navModalMessage,
+    navNavigateTo,
+    navAction,
+    openNavigationModal,
+    closeNavigationModal,
   };
 });

@@ -5,6 +5,7 @@
 Photonia is a self-hosted photo sharing web application that allows users to store, organize, and share their photos. The application leverages AI-powered photo recognition to automatically create labels and tags, making photo discovery and organization seamless.
 
 ### Key Features
+
 - Photo storage on Amazon S3
 - AI-powered photo labeling using Amazon Rekognition
 - Smart thumbnail generation based on photo content
@@ -16,8 +17,9 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 ## Architecture & Technology Stack
 
 ### Backend
-- **Ruby on Rails 7.0** - Main web framework
-- **Ruby 3.4.3** - Programming language
+
+- **Ruby on Rails 7** - Main web framework
+- **Ruby 3** - Programming language
 - **PostgreSQL** - Primary database
 - **Redis** - Caching and session storage
 - **Sidekiq** - Background job processing
@@ -26,6 +28,7 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 - **Devise + JWT** - Authentication system
 
 ### Frontend
+
 - **Vue.js 3** - JavaScript framework
 - **Vite** - Build tool and development server
 - **JavaScript ES6+** - Modern JavaScript with ES modules
@@ -35,11 +38,13 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 - **Chart.js** - Data visualization
 
 ### External Services
+
 - **Amazon S3** - Photo storage
 - **Amazon Rekognition** - AI-powered image analysis
 - **Sentry** - Error monitoring
 
 ### Development Tools
+
 - **RuboCop** - Ruby code linting
 - **RSpec** - Ruby testing framework
 - **Vitest** - JavaScript testing framework
@@ -70,6 +75,7 @@ Photonia is a self-hosted photo sharing web application that allows users to sto
 ## Development Workflow
 
 ### Setup Requirements
+
 ```bash
 # System dependencies
 sudo apt install libpq-dev libexif-dev imagemagick
@@ -82,6 +88,7 @@ yarn install
 ```
 
 ### Running the Application
+
 ```bash
 # Option 1: Separate terminals
 bin/rails s              # Rails server (port 3000)
@@ -93,6 +100,7 @@ overmind s -N -f Procfile.dev
 ```
 
 ### Testing
+
 ```bash
 # Ruby tests
 bundle exec rspec
@@ -105,6 +113,7 @@ npm run test:run
 ```
 
 ### Code Quality
+
 ```bash
 # Ruby linting
 bundle exec rubocop
@@ -116,6 +125,7 @@ npx prettier --write .
 ## Key Models and Components
 
 ### Core Models
+
 - **User** - User accounts with Devise authentication
 - **Photo** - Main photo model with metadata and processing
 - **Album** - Photo collections
@@ -124,11 +134,13 @@ npx prettier --write .
 - **Tag** - User-defined photo tags
 
 ### Important Services
+
 - **PhotoProcessingService** - Handles photo upload and processing
 - **RekognitionService** - Interfaces with AWS Rekognition
 - **FlickrImportService** - Imports photos from Flickr
 
 ### Background Jobs
+
 - **RekognitionJob** - Processes photos with AI labeling
 - **PromoteJob** - Handles photo upload promotion
 - **AddIntelligentDerivativesJob** - Generates thumbnails and derivatives
@@ -137,6 +149,7 @@ npx prettier --write .
 - **FlickrPeopleGetInfoJob** - Fetches Flickr user information
 
 ### Frontend Structure
+
 - **app.vue** - Main application component
 - **stores/** - Pinia state management
 - **entrypoints/** - Vite entry points
@@ -145,19 +158,21 @@ npx prettier --write .
 ## Coding Conventions
 
 ### Ruby/Rails
+
 - Follow RuboCop configuration in `.rubocop.yml`
 - Use frozen string literals
-- Prefer explicit returns
 - Use service objects for complex business logic
 - Follow Rails naming conventions
 
 ### JavaScript/Vue.js
+
 - Use modern JavaScript ES6+ features
 - Follow Vue.js 3 Composition API patterns
 - Use Pinia for state management
 - Follow ESLint and Prettier configurations
 
 ### GraphQL
+
 - Define types in `app/graphql/types/`
 - Implement resolvers in `app/graphql/resolvers/`
 - Mutations in `app/graphql/mutations/`
@@ -168,6 +183,7 @@ npx prettier --write .
 ## Testing Guidelines
 
 ### Ruby Tests (RSpec)
+
 - Unit tests for models in `spec/models/`
 - Controller tests focus on authentication and authorization
 - Service tests in `spec/services/` for business logic
@@ -178,6 +194,7 @@ npx prettier --write .
 - System tests are currently disabled (see `.rspec`)
 
 ### JavaScript Tests (Vitest)
+
 - Component tests in `app/javascript/test/`
 - Use Vue Test Utils for component testing
 - Test configuration in `vite.config.js`
@@ -210,6 +227,7 @@ npx prettier --write .
 - Runs as non-root user for security (rails:rails, UID 1000)
 
 ### Docker Setup
+
 ```bash
 # Build production image
 docker build -t photonia .
@@ -223,6 +241,7 @@ docker run -d -p 3000:3000 \
 ```
 
 ### Kamal Deployment
+
 - Configuration in `.kamal/deploy.yml`
 - Hooks in `.kamal/hooks/` for deployment lifecycle
 - Supports zero-downtime deployments
@@ -250,35 +269,41 @@ docker run -d -p 3000:3000 \
 ## Environment Variables
 
 ### Required for Production
+
 - `RAILS_MASTER_KEY` - Rails encrypted credentials key
 - `DATABASE_URL` - PostgreSQL connection string
 - `REDIS_URL` - Redis connection string
 - `PHOTONIA_BE_SENTRY_DSN` - Sentry error reporting DSN
 
 ### AWS Configuration
+
 - `AWS_ACCESS_KEY_ID` - AWS access key
 - `AWS_SECRET_ACCESS_KEY` - AWS secret key
 - `AWS_REGION` - AWS region for S3 and Rekognition
 - `AWS_S3_BUCKET` - S3 bucket name for photo storage
 
 ### Optional Configuration
+
 - `PHOTONIA_BE_SENTRY_SAMPLE_RATE` - Sentry sampling rate (default: 0.1)
 - `DOCKER_BUILD` - Set to 'true' during Docker build process
 
 ## External API Integration
 
 ### AWS Services
+
 - S3 for photo storage with proper IAM permissions
 - Rekognition for automated photo analysis and labeling
 - Proper error handling for service unavailability
 
 ### Monitoring
+
 - Sentry integration for error tracking
 - Custom metrics for photo processing performance
 
 ## Common Development Tasks
 
 ### Adding New Photo Features
+
 1. Update Photo model if needed
 2. Add GraphQL mutations/queries
 3. Implement background jobs for processing
@@ -286,6 +311,7 @@ docker run -d -p 3000:3000 \
 5. Add appropriate tests
 
 ### Adding New UI Components
+
 1. Create Vue component in appropriate directory
 2. Add to router if it's a page
 3. Update state management if needed
@@ -293,6 +319,7 @@ docker run -d -p 3000:3000 \
 5. Write component tests
 
 ### Database Changes
+
 1. Generate Rails migration
 2. Update model associations
 3. Add appropriate indexes
@@ -320,3 +347,7 @@ This project is licensed under the Apache License 2.0. When contributing:
 - **AWS Rekognition Documentation**: https://docs.aws.amazon.com/rekognition/
 
 Remember to always test changes locally before deploying and ensure both Ruby and JavaScript test suites pass.
+
+## Model Overview
+
+See the detailed data model documentation in `../.kilocode/rules/data-models.md` for comprehensive information on the core models, their relationships, and behaviors within Photonia.
