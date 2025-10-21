@@ -231,7 +231,10 @@ const {
 } = useMutation(gql`
   mutation ($id: String!) {
     deleteAlbum(id: $id) {
-      id
+      errors
+      album {
+        id
+      }
     }
   }
 `);
@@ -303,6 +306,16 @@ onUpdateDescriptionError((error) => {
 });
 
 onDeleteAlbumDone(({ data }) => {
+  const payload = data?.deleteAlbum;
+
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster("An error occurred while deleting the album: " + msg, "is-danger");
+    return;
+  }
+
   toaster("The album has been deleted");
   applicationStore.stopManagingAlbum();
   apolloClient.cache.evict({

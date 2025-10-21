@@ -13,8 +13,11 @@ RSpec.describe 'deleteAlbum Mutation', type: :request do
     <<~GQL
       mutation {
         deleteAlbum(id: "#{album.slug}") {
-          id
-          title
+          album {
+            id
+            title
+          }
+          errors
         }
       }
     GQL
@@ -23,33 +26,40 @@ RSpec.describe 'deleteAlbum Mutation', type: :request do
   context 'when the album is not found' do
     before { album.destroy }
 
-    it 'returns an error' do
+    it 'returns payload with errors and no album' do
       post_mutation
-      expect(first_error_message(response)).to eq('Album not found')
+      expect(data_dig(response, 'deleteAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'deleteAlbum', 'errors')).to include('Album not found')
     end
   end
 
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns error payload' do
+      post_mutation
+      expect(data_dig(response, 'deleteAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'deleteAlbum', 'errors')).to include('Not authorized to delete this album')
     end
   end
 
   context 'when the user is logged in but is not the owner' do
     before { sign_in(create(:user)) }
 
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns error payload' do
+      post_mutation
+      expect(data_dig(response, 'deleteAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'deleteAlbum', 'errors')).to include('Not authorized to delete this album')
     end
   end
 
   context 'when the user is logged in and is the owner' do
     before { sign_in(album.user) }
 
-    it 'deletes the album and returns it' do
+    it 'deletes the album and returns it in payload' do
       expect { post_mutation }.to change { Album.count }.by(-1)
-      data = data_dig(response, 'deleteAlbum')
-      expect(data).to include(
+      payload = data_dig(response, 'deleteAlbum')
+      expect(payload['errors']).to eq([])
+      album_data = payload['album']
+      expect(album_data).to include(
         'id' => album.slug,
         'title' => album.title
       )
