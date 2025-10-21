@@ -1,6 +1,26 @@
 # frozen_string_literal: true
 
 class AlbumPolicy < ApplicationPolicy
+  class Scope
+    attr_reader :user, :scope
+
+    def initialize(user, scope)
+      @user = user
+      @scope = scope
+    end
+
+    def resolve
+      # Admins can see all albums (works with unscoped relations)
+      return scope.all if user&.admin?
+
+      # Visitors see only public albums
+      return scope.where(privacy: 'public') unless user
+
+      # Logged-in users see public albums + their own albums (any privacy)
+      scope.where(privacy: 'public').or(scope.where(user_id: user.id))
+    end
+  end
+
   def index?
     true
   end
