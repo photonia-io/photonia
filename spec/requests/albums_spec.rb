@@ -67,7 +67,7 @@ RSpec.describe 'Albums' do
       end
     end
 
-    describe 'GET /album/{slug}' do
+    describe 'GET /albums/{slug}' do
       it 'returns http success' do
         get "/albums/#{private_album.slug}"
         expect(response).to have_http_status(:success)
