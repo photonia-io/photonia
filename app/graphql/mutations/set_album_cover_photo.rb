@@ -40,13 +40,8 @@ module Mutations
       # does the photo belong to the album? (unscoped-safe via join)
       return error_response('Photo not found in album') unless AlbumsPhoto.exists?(album_id: album.id, photo_id: photo.id)
 
-      # Only set user_cover_photo_id, maintenance takes care of public_cover_photo_id
-      # Skip validations/callbacks as maintenance will handle consistency
-      # rubocop:disable Rails/SkipsModelValidations
-      album.update_columns(user_cover_photo_id: photo.id)
-      # rubocop:enable Rails/SkipsModelValidations
-
-      album.maintenance
+      # Only set user_cover_photo_id; callbacks will trigger Album#maintenance
+      album.update!(user_cover_photo_id: photo.id)
 
       { album: album, errors: [] }
     rescue StandardError => e
