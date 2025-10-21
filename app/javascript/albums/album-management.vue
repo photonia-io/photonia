@@ -11,8 +11,9 @@
 
       <label for="album-privacy" class="label mt-4">Album Privacy:</label>
       <div class="select">
-        <select id="album-privacy">
+        <select id="album-privacy" v-model="privacy" @change="setPrivacy">
           <option value="public">Public</option>
+          <option value="friends_and_family">Friends & Family</option>
           <option value="private">Private</option>
         </select>
       </div>
@@ -99,7 +100,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deleteAlbum", "updateSorting"]);
+const emit = defineEmits(["deleteAlbum", "updateSorting", "setAlbumPrivacy"]);
 const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
@@ -116,6 +117,7 @@ const closeConfirmationModal = () => {
 
 const sortingType = ref("takenAt");
 const sortingOrder = ref("asc");
+const privacy = ref("public");
 
 // Initialize sorting values from album prop
 watch(
@@ -124,6 +126,8 @@ watch(
     if (newAlbum) {
       sortingType.value = newAlbum.sortingType || "takenAt";
       sortingOrder.value = newAlbum.sortingOrder || "asc";
+      const p = newAlbum.privacy || "public";
+      privacy.value = p === "friend & family" ? "friends_and_family" : p;
     }
   },
   { immediate: true },
@@ -134,6 +138,13 @@ const updateSorting = () => {
     id: props.album.id,
     sortingType: sortingType.value,
     sortingOrder: sortingOrder.value,
+  });
+};
+
+const setPrivacy = () => {
+  emit("setAlbumPrivacy", {
+    id: props.album.id,
+    privacy: privacy.value,
   });
 };
 

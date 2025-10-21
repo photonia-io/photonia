@@ -102,8 +102,8 @@ class Album < ApplicationRecord
 
     @all_photos = Photo
                   .unscoped
-                  .joins(:albums)
-                  .where(albums: { id: })
+                  .joins(:albums_photos)
+                  .where(albums_photos: { album_id: id })
 
     @all_photos = unordered ? @all_photos : @all_photos.order('albums_photos.ordering')
 

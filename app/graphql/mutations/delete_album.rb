@@ -26,7 +26,8 @@ module Mutations
     private
 
     def find_album(id)
-      Album.friendly.find(id)
+      base = Pundit.policy_scope(context[:current_user], Album.unscoped)
+      base.friendly.find(id)
     rescue ActiveRecord::RecordNotFound
       nil
     end
