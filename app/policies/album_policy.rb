@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+# Album policy
 class AlbumPolicy < ApplicationPolicy
+  # Policy scope for albums
   class Scope
     attr_reader :user, :scope
 
