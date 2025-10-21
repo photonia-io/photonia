@@ -350,4 +350,4 @@ Remember to always test changes locally before deploying and ensure both Ruby an
 
 ## Model Overview
 
-See the detailed data model documentation in `.kilocode/rules/data-models.md` for comprehensive information on the core models, their relationships, and behaviors within Photonia.
+See the detailed data model documentation in `../.kilocode/rules/data-models.md` for comprehensive information on the core models, their relationships, and behaviors within Photonia.
