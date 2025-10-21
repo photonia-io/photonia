@@ -74,6 +74,7 @@
           :photo="photo"
           :in-album="true"
           :key="photo.id"
+          :can-edit-album="canEditAlbum"
           @set-cover-photo="setAlbumCoverPhotoOnItem"
         />
       </div>

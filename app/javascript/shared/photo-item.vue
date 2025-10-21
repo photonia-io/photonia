@@ -30,7 +30,7 @@
         />
 
         <!-- Cover Photo tag -->
-        <div v-if="photo.isCoverPhoto" class="cover-photo-tag" @click.stop>
+        <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
           <span class="tag is-info is-light is-small">Cover Photo</span>
         </div>
       </div>
@@ -39,7 +39,12 @@
       </router-link>
     </div>
     <router-link v-else :to="{ name: 'photos-show', params: { id: photo.id } }">
-      <ItemImage :photo="photo" />
+      <div class="image-wrapper">
+        <ItemImage :photo="photo" />
+        <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
+          <span class="tag is-info is-light is-small">Cover Photo</span>
+        </div>
+      </div>
       {{ photo.title }}
     </router-link>
   </div>
@@ -94,12 +99,28 @@ const canSetCover = computed(() => {
   );
 });
 
+const showCoverTag = computed(() => {
+  // Show the tag when photo is cover AND either:
+  // - managing the album, or
+  // - user is signed in and can edit the album (even if not managing)
+  return (
+    !!props.photo.isCoverPhoto &&
+    (applicationStore.managingAlbum ||
+      (userStore.signedIn && props.canEditAlbum))
+  );
+});
+
 const props = defineProps({
   photo: {
     type: Object,
     required: true,
   },
   inAlbum: {
+    type: Boolean,
+    default: false,
+    required: false,
+  },
+  canEditAlbum: {
     type: Boolean,
     default: false,
     required: false,
@@ -137,6 +158,10 @@ const toggleSelection = () => {
 }
 .selectable-item:hover .item-checkbox {
   border-color: #00d1b2;
+}
+
+.image-wrapper {
+  position: relative;
 }
 
 .cover-photo-icon-container {
