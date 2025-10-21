@@ -46,6 +46,7 @@ module Types
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.limit }
       @photos.define_singleton_method(:total_count) { pagy.count }
+      context[:album] = @object
       @photos
     end
 
@@ -68,11 +69,9 @@ module Types
       Photo.friendly.find(photo_id).next_in_album(@object)
     end
 
-    # rubocop:disable Naming/PredicateMethod
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
     end
-    # rubocop:enable Naming/PredicateMethod
 
     def sorting_type
       @object.graphql_sorting_type

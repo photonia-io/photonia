@@ -96,7 +96,11 @@ RSpec.describe Album do
     end
 
     describe '#maintenance' do
-      let(:album) { create(:album) }
+      # Force manual sorting to avoid automatic reordering in Album#maintenance when sorting_type != 'manual'.
+      # Automatic ordering uses taken_at/posted_at/title and with nil/random timestamps from factories,
+      # the "first public photo" can be nondeterministic, causing flakes. See Album#apply_automatic_photo_ordering!
+      # and Album#photos_ordered_by_sorting_fields for details.
+      let(:album) { create(:album, sorting_type: 'manual') }
 
       context '5 total photos, 4 belong to the album of which 3 are public' do
         let(:public_photo) { create(:photo, privacy: 'public') }

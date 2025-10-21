@@ -31,6 +31,7 @@ describe 'album Query' do
                 id
                 title
                 intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+                isCoverPhoto
               }
               metadata {
                 totalPages
@@ -49,6 +50,10 @@ describe 'album Query' do
       GQL
     end
 
+    before do
+      album.maintenance
+    end
+
     it 'returns the correct album' do
       post_query
 
@@ -58,6 +63,7 @@ describe 'album Query' do
       expect(response_album['id']).to eq(album.slug)
       expect(response_album['title']).to eq(album.title)
       expect(response_album['photos']['collection'].size).to eq(public_photos.size)
+      expect(response_album['photos']['collection'][0]['isCoverPhoto']).to be_truthy
       expect(response_album['sortingType']).to eq(album.graphql_sorting_type)
       expect(response_album['sortingOrder']).to eq(album.sorting_order)
       expect(response_album['canEdit']).to be_falsey

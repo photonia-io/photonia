@@ -74,6 +74,8 @@
           :photo="photo"
           :in-album="true"
           :key="photo.id"
+          :can-edit-album="canEditAlbum"
+          @set-cover-photo="setAlbumCoverPhotoOnItem"
         />
       </div>
       <hr class="mt-1 mb-4" />
@@ -321,7 +323,6 @@ onDeleteAlbumDone(({ data }) => {
     id: apolloClient.cache.identify({ __typename: "Album", id: id.value }),
   });
   apolloClient.cache.evict({ fieldName: "albums" });
-  apolloClient.cache.evict({ fieldName: "allAlbums" });
   apolloClient.cache.gc();
   router.push({ name: "albums-index" });
 });
@@ -364,6 +365,81 @@ onUpdateAlbumPhotoOrderDone((result) => {
 onUpdateAlbumPhotoOrderError((error) => {
   toaster(
     "An error occurred while updating album sorting: " + error.message,
+    "is-danger",
+  );
+});
+/* Cover photo mutation */
+const {
+  mutate: setAlbumCoverPhoto,
+  onDone: onSetAlbumCoverPhotoDone,
+  onError: onSetAlbumCoverPhotoError,
+} = useMutation(gql`
+  mutation SetAlbumCoverPhoto(
+    $albumId: String!
+    $photoId: String!
+    $page: Int
+  ) {
+    setAlbumCoverPhoto(albumId: $albumId, photoId: $photoId) {
+      errors
+      album {
+        id
+        photos(page: $page) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(
+              type: "intelligent_or_square_medium"
+            )
+            canEdit
+            isCoverPhoto
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
+        }
+      }
+    }
+  }
+`);
+
+const setAlbumCoverPhotoOnItem = (photo) => {
+  const variables = {
+    albumId: id.value,
+    photoId: photo.id,
+    page: page.value,
+  };
+  setAlbumCoverPhoto(variables);
+};
+
+onSetAlbumCoverPhotoDone((result) => {
+  const payload = result?.data?.setAlbumCoverPhoto;
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster("Error setting cover photo: " + msg, "is-danger");
+  } else {
+    toaster("Cover photo updated");
+    const albumCacheId = apolloClient.cache.identify({
+      __typename: "Album",
+      id: id.value,
+    });
+    // Evict album's publicCoverPhoto so album indices refetch the cover image
+    apolloClient.cache.evict({
+      id: albumCacheId,
+      fieldName: "publicCoverPhoto",
+    });
+
+    apolloClient.cache.gc();
+  }
+});
+
+onSetAlbumCoverPhotoError((error) => {
+  toaster(
+    "An error occurred while setting the cover photo: " + error.message,
     "is-danger",
   );
 });

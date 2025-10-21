@@ -104,7 +104,6 @@ CREATE TABLE public.albums_photos (
     id bigint NOT NULL,
     album_id bigint NOT NULL,
     photo_id bigint NOT NULL,
-    cover boolean DEFAULT false,
     ordering integer,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
@@ -1273,6 +1272,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251021101306'),
 ('20250919125004'),
 ('20250822171155'),
 ('20241223145106'),
