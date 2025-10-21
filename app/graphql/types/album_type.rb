@@ -21,6 +21,7 @@ module Types
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
     field :photos_count, Integer, 'Total number of photos in the album (public and private)', null: false
+    field :privacy, String, 'Privacy level of the album', null: false
     field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
     field :public_photos_count, Integer, 'Number of public photos in the album', null: false
     field :sorting_order, String, 'Sorting order of the album', null: false
