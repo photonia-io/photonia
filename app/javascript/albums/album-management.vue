@@ -4,12 +4,12 @@
       <p>Album Management</p>
     </div>
     <div class="message-body">
-      <p class="mb-3">
+      <p>
         To edit the album's title or description click / tap on the texts
         themselves.
       </p>
-      <label for="album-privacy" class="label">Album Privacy:</label>
 
+      <label for="album-privacy" class="label mt-4">Album Privacy:</label>
       <div class="select">
         <select id="album-privacy">
           <option value="public">Public</option>
@@ -17,8 +17,7 @@
         </select>
       </div>
 
-      <label for="album-sorting-type" class="label">Photo Sorting:</label>
-
+      <label for="album-sorting-type" class="label mt-4">Photo Sorting:</label>
       <div class="select is-small">
         <select
           id="album-sorting-type"
@@ -50,7 +49,7 @@
         Manage Sorting
       </button>
 
-      <div class="buttons mt-4">
+      <div class="buttons mt-5">
         <button class="button is-danger" @click="showConfirmationModal">
           Delete Album
         </button>
