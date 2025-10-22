@@ -2,11 +2,11 @@
 
 Rails.application.routes.draw do
   # Health check for load balancers and uptime monitors
-  get "up" => "rails/health#show", as: :rails_health_check
+  get 'up' => 'rails/health#show', as: :rails_health_check
 
   # Root route
   root 'homepage#index'
-  
+
   # GraphQL API endpoint
   post 'graphql', to: 'graphql#execute'
 
