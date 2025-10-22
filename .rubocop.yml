@@ -26,9 +26,15 @@ RSpec/ImplicitExpect:
 
 # Custom Exclusions
 
-Naming/PredicateName:
-  Exclude:
+Naming/PredicatePrefix:
+  Exclude: &graphql_type_exclusions
     - "app/graphql/types/**/*"
+
 Naming/PredicateMethod:
+  Exclude: *graphql_type_exclusions
+
+Metrics/BlockLength:
   Exclude:
-    - "app/graphql/types/**/*"
+    - "config/routes.rb"
+    - "config/environments/*.rb"
+    - "spec/**/*"

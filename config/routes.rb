@@ -1,40 +1,54 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Health check for load balancers and uptime monitors
   get 'up' => 'rails/health#show', as: :rails_health_check
 
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
-  get '/users/sign_in', to: 'users#sign_in'
-  get '/users/sign_out', to: 'users#sign_out'
-  get '/users/settings', to: 'users#settings'
-  get '/users/admin-settings', to: 'users#admin_settings'
+  # Root route
+  root 'homepage#index'
 
-  get '/stats', to: 'stats#index'
+  # GraphQL API endpoint
+  post 'graphql', to: 'graphql#execute'
 
+  # Devise authentication (skipping all default routes)
   devise_for :users, skip: :all
 
-  resources :photos, except: %i[new] do
-    get :upload, on: :collection
-    get :organizer, on: :collection
-    get :deselected, on: :collection
-    get :feed, on: :collection, format: :xml
+  # User-related routes
+  scope 'users', controller: 'users' do
+    get 'sign_in', action: :sign_in, as: :users_sign_in
+    get 'sign_out', action: :sign_out, as: :users_sign_out
+    get 'settings', action: :settings, as: :users_settings
+    get 'admin-settings', action: :admin_settings, as: :users_admin_settings
   end
-  resources :tags, only: %i[index show]
+
+  # Main resource routes
+  resources :photos, except: %i[new] do
+    collection do
+      get :upload
+      get :organizer
+      get :deselected
+      get :feed, defaults: { format: :xml }
+    end
+  end
+
   resources :albums, only: %i[index show] do
-    get :feed, on: :collection, format: :xml
+    collection do
+      get :feed, defaults: { format: :xml }
+    end
     get :sort
   end
 
-  post '/graphql', to: 'graphql#execute'
+  resources :tags, only: %i[index show]
 
-  root 'homepage#index'
+  # Statistics
+  get 'stats', to: 'stats#index'
 
-  %w[about terms-of-service privacy-policy].each do |page|
-    get "/#{page}", to: 'pages#handler'
-  end
+  # Static pages
+  get 'about', to: 'pages#handler'
+  get 'terms-of-service', to: 'pages#handler'
+  get 'privacy-policy', to: 'pages#handler'
 
-  # sidekiq
+  # Administrative interfaces - Sidekiq web UI
   require 'sidekiq/web'
   require 'sidekiq-scheduler/web'
 
