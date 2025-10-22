@@ -13,7 +13,7 @@ RSpec.shared_examples 'it has trackable title and description' do |model:|
 
     context 'when the title has been set to an empty string' do
       it 'returns false' do
-        skip 'This test is not applicable for the Album model' if model == :album
+        next if model == :album
 
         trackable.update(title: '')
         expect(trackable.title_edited?).to be true
