@@ -7,7 +7,7 @@
           <option selected></option>
           <option
             v-if="result && result.currentUser.albums"
-            v-for="album in result.currentUser.albums"
+            v-for="album in albumsFiltered"
             :key="album.id"
             :value="album.id"
           >
@@ -22,8 +22,8 @@
   </div>
   <p v-else>
     You have entered a name for a new album below. If you wish to select an
-    existing album, please delete the name from the below and select an album
-    from the dropdown that appears here.
+    existing album, please delete the name from the text box below and select an
+    album from the dropdown that appears here.
   </p>
   <div class="divider">Or create new</div>
   <div class="field" v-if="selectedAlbumId === ''">
@@ -35,10 +35,7 @@
   <p v-else>
     You have selected
     <strong v-if="result && result.currentUser.albums">
-      {{
-        result.currentUser.albums.find((album) => album.id === selectedAlbumId)
-          .title
-      }}
+      {{ albumsFiltered.find((album) => album.id === selectedAlbumId)?.title }}
     </strong>
     above. If you wish to create a new album, please select the first (empty)
     option above then enter a title in the field that appears here.
@@ -46,9 +43,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import gql from "graphql-tag";
 import { useQuery } from "@vue/apollo-composable";
+
+const props = defineProps({
+  hideAlbumId: {
+    type: String,
+    required: false,
+    default: "",
+  },
+});
 
 const selectedAlbumId = ref("");
 const newAlbumTitle = ref("");
@@ -71,4 +76,11 @@ const { result } = useQuery(gql`
     }
   }
 `);
+
+// Exclude the current album (when provided) from the dropdown
+const albumsFiltered = computed(() => {
+  const albums = result.value?.currentUser?.albums || [];
+  if (!props.hideAlbumId) return albums;
+  return albums.filter((a) => a.id !== props.hideAlbumId);
+});
 </script>

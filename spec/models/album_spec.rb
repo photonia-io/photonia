@@ -14,6 +14,8 @@
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
 #  slug                     :string
+#  sorting_order            :string           default("asc"), not null
+#  sorting_type             :string           default("taken_at"), not null
 #  title                    :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -65,8 +67,40 @@ RSpec.describe Album do
       end
     end
 
+    describe '#graphql_sorting_type' do
+      it 'returns takenAt for sorting_type=taken_at' do
+        album = create(:album, sorting_type: 'taken_at')
+        expect(album.graphql_sorting_type).to eq('takenAt')
+      end
+
+      it 'returns postedAt for sorting_type=posted_at' do
+        album = create(:album, sorting_type: 'posted_at')
+        expect(album.graphql_sorting_type).to eq('postedAt')
+      end
+
+      it 'returns title for sorting_type=title' do
+        album = create(:album, sorting_type: 'title')
+        expect(album.graphql_sorting_type).to eq('title')
+      end
+
+      it 'returns manual for sorting_type=manual' do
+        album = create(:album, sorting_type: 'manual')
+        expect(album.graphql_sorting_type).to eq('manual')
+      end
+
+      it 'returns unknown for an unknown sorting type' do
+        album = create(:album)
+        allow(album).to receive(:sorting_type).and_return('invalid_type')
+        expect(album.graphql_sorting_type).to eq('unknown')
+      end
+    end
+
     describe '#maintenance' do
-      let(:album) { create(:album) }
+      # Force manual sorting to avoid automatic reordering in Album#maintenance when sorting_type != 'manual'.
+      # Automatic ordering uses taken_at/posted_at/title and with nil/random timestamps from factories,
+      # the "first public photo" can be nondeterministic, causing flakes. See Album#apply_automatic_photo_ordering!
+      # and Album#photos_ordered_by_sorting_fields for details.
+      let(:album) { create(:album, sorting_type: 'manual') }
 
       context '5 total photos, 4 belong to the album of which 3 are public' do
         let(:public_photo) { create(:photo, privacy: 'public') }

@@ -20,12 +20,14 @@ module Types
     field :id, String, 'ID of the photo', null: false
     field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
+    field :is_cover_photo, Boolean, 'Whether the photo is a cover photo', null: true
     field :is_taken_at_from_exif, Boolean, 'Whether the date taken is from EXIF', null: true
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
     field :next_photo, PhotoType, 'Next photo', null: true
-    field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was imported', null: true
+    field :ordering, Integer, 'Ordering of the photo in the album', null: true
+    field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was posted', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
@@ -105,6 +107,25 @@ module Types
 
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
+    end
+
+    def ordering
+      # Only resolve if album and albums_photos are present
+      album = context[:album]
+      return nil unless album
+
+      albums_photos = object.try(:albums_photos)
+      return nil unless albums_photos
+
+      albums_photos.detect { |ap| ap.album_id == album.id }&.ordering
+    end
+
+    def is_cover_photo
+      # Only resolve if the photo is queried in the context of an album
+      album = context[:album]
+      return nil unless album
+
+      album.public_cover_photo_id == @object.id
     end
   end
 end

@@ -6,6 +6,9 @@ Rails.application.routes.draw do
 
   # Root route
   root 'homepage#index'
+  
+  # GraphQL API endpoint
+  post 'graphql', to: 'graphql#execute'
 
   # Devise authentication (skipping all default routes)
   devise_for :users, skip: :all
@@ -32,15 +35,13 @@ Rails.application.routes.draw do
     collection do
       get :feed, defaults: { format: :xml }
     end
+    get :sort
   end
 
   resources :tags, only: %i[index show]
 
   # Statistics
   get 'stats', to: 'stats#index'
-
-  # GraphQL API endpoint
-  post 'graphql', to: 'graphql#execute'
 
   # Static pages
   get 'about', to: 'pages#handler'

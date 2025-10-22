@@ -11,7 +11,7 @@
       <div class="container">
         <div class="level mb-4">
           <!-- Photo title and navigation -->
-          <div class="level-left is-flex-grow-1" id="photo-title-container">
+          <div class="level-left is-flex-grow-1">
             <PhotoTitleEditable
               v-if="!loading && canEditPhoto"
               :photo="photo"

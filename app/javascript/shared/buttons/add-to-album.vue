@@ -17,13 +17,18 @@
           <p class="modal-card-title has-text-centered">Add To Album</p>
         </header>
         <div class="modal-card-body">
-          <SelectOrCreateAlbum ref="selectOrCreateAlbum" />
+          <SelectOrCreateAlbum
+            ref="selectOrCreateAlbum"
+            :hide-album-id="props.hideAlbumId"
+          />
         </div>
         <footer class="modal-card-foot is-justify-content-center">
-          <button class="button is-primary" @click="addToAlbum()">Add</button>
-          <button class="button is-info" @click="modalActive = false">
-            Cancel
-          </button>
+          <div class="buttons">
+            <button class="button is-primary" @click="addToAlbum()">Add</button>
+            <button class="button is-info" @click="modalActive = false">
+              Cancel
+            </button>
+          </div>
         </footer>
       </div>
     </div>
@@ -38,6 +43,11 @@ const props = defineProps({
   photos: {
     type: Array,
     required: true,
+  },
+  hideAlbumId: {
+    type: String,
+    required: false,
+    default: "",
   },
 });
 

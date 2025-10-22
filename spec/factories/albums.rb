@@ -14,6 +14,8 @@
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
 #  slug                     :string
+#  sorting_order            :string           default("asc"), not null
+#  sorting_type             :string           default("taken_at"), not null
 #  title                    :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null

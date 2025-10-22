@@ -2,7 +2,8 @@
   <div class="message is-warning">
     <div class="message-body content">
       <p v-if="selectionCount > 0">
-        You have selected <strong>{{ selectionCount }}</strong> photos.
+        You have selected <strong>{{ selectionCount }}</strong>
+        {{ selectionCount == 1 ? "photo" : "photos" }}.
       </p>
       <p v-else>You have not selected any photos.</p>
       <div class="level">

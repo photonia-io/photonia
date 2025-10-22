@@ -56,6 +56,8 @@ class GraphqlQueryCollection
               id
               title
               intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+              isCoverPhoto
+              canEdit
             }
             metadata {
               totalPages
@@ -64,7 +66,10 @@ class GraphqlQueryCollection
               limitValue
             }
           }
+          sortingType
+          sortingOrder
           canEdit
+          privacy
         }
       }
     GQL

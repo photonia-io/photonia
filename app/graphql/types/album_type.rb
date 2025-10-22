@@ -20,14 +20,25 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
-    field :photos_count, Integer, 'Total number of photos in the album', null: false
+    field :photos_count, Integer, 'Total number of photos in the album (public and private)', null: false
+    field :privacy, String, 'Privacy level of the album', null: false
     field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
     field :public_photos_count, Integer, 'Number of public photos in the album', null: false
+    field :sorting_order, String, 'Sorting order of the album', null: false
+    field :sorting_type, String, 'Sorting type of the album', null: false
     field :title, String, 'Title of the album', null: false
+
+    field :all_photos, [PhotoType], 'All photos in the album', null: false
 
     field :photos, Types::PaginatedPhotoType, null: false do
       argument :page, Integer, 'Page number', required: false
       description 'Photos in the album'
+    end
+
+    def all_photos
+      context[:authorize].call(@object, :update?)
+      context[:album] = @object
+      @object.all_photos(select: false, refetch: true).includes(:albums_photos)
     end
 
     def photos(page: nil)
@@ -36,6 +47,7 @@ module Types
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.limit }
       @photos.define_singleton_method(:total_count) { pagy.count }
+      context[:album] = @object
       @photos
     end
 
@@ -48,9 +60,7 @@ module Types
       @object.photos_count
     end
 
-    def public_cover_photo
-      @object.public_cover_photo
-    end
+    delegate :public_cover_photo, to: :@object
 
     def previous_photo_in_album(photo_id:)
       Photo.friendly.find(photo_id).prev_in_album(@object)
@@ -62,6 +72,10 @@ module Types
 
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
+    end
+
+    def sorting_type
+      @object.graphql_sorting_type
     end
   end
 end

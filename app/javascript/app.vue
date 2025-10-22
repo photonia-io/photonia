@@ -5,16 +5,16 @@
     <Footer></Footer>
   </div>
   <teleport to="#modal-root">
-    <div :class="['modal', modalActive ? 'is-active' : null]">
+    <div
+      :class="['modal', applicationStore.navModalActive ? 'is-active' : null]"
+    >
       <div class="modal-background"></div>
       <div class="modal-card">
         <header class="modal-card-head">
           <p class="modal-card-title has-text-centered">Navigate</p>
         </header>
         <div class="modal-card-body">
-          <p>
-            You are modifying something. Are you sure you want to navigate away?
-          </p>
+          <p>{{ applicationStore.navModalMessage }}</p>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
           <div class="buttons">
@@ -34,7 +34,8 @@ import Navigation from "./navigation.vue";
 import Footer from "./footer.vue";
 
 import { useApplicationStore } from "@/stores/application";
-import { ref, watch } from "vue";
+import { useSelectionStore } from "@/stores/selection";
+import { watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
@@ -42,9 +43,7 @@ const router = useRouter();
 
 const applicationStore = useApplicationStore();
 const { colorScheme } = storeToRefs(applicationStore);
-
-const modalActive = ref(false);
-const navigateTo = ref(null);
+const selectionStore = useSelectionStore();
 
 function setColorScheme(cs) {
   document.documentElement.setAttribute("data-theme", cs);
@@ -56,21 +55,23 @@ watch(colorScheme, (cs) => {
 
 setColorScheme(colorScheme.value);
 
-router.beforeEach((to) => {
-  if (applicationStore.editing) {
-    navigateTo.value = to;
-    modalActive.value = true;
-    return false;
-  }
-});
-
 const closeConfirmationModal = () => {
-  modalActive.value = false;
+  applicationStore.closeNavigationModal();
 };
 
 const navigateAway = () => {
-  applicationStore.editing = false;
-  modalActive.value = false;
-  router.push(navigateTo.value);
+  if (applicationStore.navAction === "stopEditing") {
+    // we arrived here while editing a photo or album's details
+    applicationStore.stopEditing();
+  } else if (applicationStore.navAction === "clearAlbumSelection") {
+    // we arrived here while managing an album and having selected photos
+    selectionStore.clearSelectedAlbumPhotos();
+    applicationStore.stopManagingAlbum && applicationStore.stopManagingAlbum();
+  }
+  const target = applicationStore.navNavigateTo;
+  applicationStore.closeNavigationModal();
+  if (target) {
+    router.push(target);
+  }
 };
 </script>
