@@ -15,10 +15,10 @@ Rails.application.routes.draw do
 
   # User-related routes
   scope 'users', controller: 'users' do
-    get 'sign_in', action: :sign_in, as: :user_sign_in
-    get 'sign_out', action: :sign_out, as: :user_sign_out
-    get 'settings', action: :settings, as: :user_settings
-    get 'admin-settings', action: :admin_settings, as: :user_admin_settings
+    get 'sign_in', action: :sign_in, as: :users_sign_in
+    get 'sign_out', action: :sign_out, as: :users_sign_out
+    get 'settings', action: :settings, as: :users_settings
+    get 'admin-settings', action: :admin_settings, as: :users_admin_settings
   end
 
   # Main resource routes
