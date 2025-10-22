@@ -64,15 +64,13 @@ const {
   mutate: deletePhotos,
   onDone: onDeletePhotosDone,
   onError: onDeletePhotosError,
-} = useMutation(
-  gql`
-    mutation ($ids: [String!]!) {
-      deletePhotos(ids: $ids) {
-        id
-      }
+} = useMutation(gql`
+  mutation ($ids: [String!]!) {
+    deletePhotos(ids: $ids) {
+      id
     }
-  `
-);
+  }
+`);
 
 onDeletePhotosDone(({ data }) => {
   selectionStore.showRemoveNotification = false;
@@ -91,23 +89,42 @@ const {
   mutate: addPhotosToAlbum,
   onDone: onAddPhotosToAlbumDone,
   onError: onAddPhotosToAlbumError,
-} = useMutation(
-  gql`
-    mutation ($albumId: String!, $photoIds: [String!]!) {
-      addPhotosToAlbum(albumId: $albumId, photoIds: $photoIds) {
+} = useMutation(gql`
+  mutation ($albumId: String!, $photoIds: [String!]!) {
+    addPhotosToAlbum(albumId: $albumId, photoIds: $photoIds) {
+      errors
+      album {
         id
+        title
       }
     }
-  `
-);
+  }
+`);
 
 onAddPhotosToAlbumDone(({ data }) => {
+  const payload = data?.addPhotosToAlbum;
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster(
+      "An error occurred while adding photos to the album: " + msg,
+      "is-danger",
+    );
+    return;
+  }
   apolloClient.cache.reset();
-  toaster("The photos were added to the album", "is-success");
+  toaster(
+    "The photos were added to the album '" + (payload.album?.title || "") + "'",
+    "is-success",
+  );
 });
 
 onAddPhotosToAlbumError((error) => {
-  // todo console.log(error)
+  toaster(
+    "An error occurred while adding photos to the album: " + error.message,
+    "is-danger",
+  );
 });
 
 // create album
@@ -116,15 +133,13 @@ const {
   mutate: createAlbumWithPhotos,
   onDone: onCreateAlbumWithPhotosDone,
   onError: onCreateAlbumWithPhotosError,
-} = useMutation(
-  gql`
-    mutation ($title: String!, $photoIds: [String!]!) {
-      createAlbumWithPhotos(title: $title, photoIds: $photoIds) {
-        id
-      }
+} = useMutation(gql`
+  mutation ($title: String!, $photoIds: [String!]!) {
+    createAlbumWithPhotos(title: $title, photoIds: $photoIds) {
+      id
     }
-  `
-);
+  }
+`);
 
 onCreateAlbumWithPhotosDone(({ data }) => {
   apolloClient.cache.reset();
@@ -140,28 +155,45 @@ const {
   mutate: removePhotosFromAlbum,
   onDone: onRemovePhotosFromAlbumDone,
   onError: onRemovePhotosFromAlbumError,
-} = useMutation(
-  gql`
-    mutation ($albumId: String!, $photoIds: [String!]!) {
-      removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
+} = useMutation(gql`
+  mutation ($albumId: String!, $photoIds: [String!]!) {
+    removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
+      errors
+      album {
         id
         title
       }
     }
-  `
-);
+  }
+`);
 
 onRemovePhotosFromAlbumDone(({ data }) => {
+  const payload = data?.removePhotosFromAlbum;
+
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster(
+      "An error occurred while removing photos from the album: " + msg,
+      "is-danger",
+    );
+    return;
+  }
+
   apolloClient.cache.reset();
   toaster(
     "The photos were removed from the album '" +
-      data.removePhotosFromAlbum.title +
+      (payload.album?.title || "") +
       "'",
-    "is-success"
+    "is-success",
   );
 });
 
 onRemovePhotosFromAlbumError((error) => {
-  // todo console.log(error)
+  toaster(
+    "An error occurred while removing photos from the album: " + error.message,
+    "is-danger",
+  );
 });
 </script>

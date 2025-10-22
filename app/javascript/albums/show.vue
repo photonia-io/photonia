@@ -449,22 +449,25 @@ const {
     $page: Int
   ) {
     removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
-      id
-      title
-      photos(page: $page) {
-        collection {
-          id
-          title
-          intelligentOrSquareMediumImageUrl: imageUrl(
-            type: "intelligent_or_square_medium"
-          )
-          canEdit
-        }
-        metadata {
-          totalPages
-          totalCount
-          currentPage
-          limitValue
+      errors
+      album {
+        id
+        title
+        photos(page: $page) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(
+              type: "intelligent_or_square_medium"
+            )
+            canEdit
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
         }
       }
     }
@@ -498,10 +501,22 @@ const cancelRemoveFromAlbum = () => {
 onRemovePhotosFromAlbumDone(({ data }) => {
   const payload = data?.removePhotosFromAlbum;
 
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster("Error removing photos from album: " + msg, "is-danger");
+    removeFromAlbumModalActive.value = false;
+    applicationStore.enableNavigationShortcuts();
+    return;
+  }
+
   selectionStore.clearSelectedAlbumPhotos();
 
   toaster(
-    "The photos were removed from the album '" + (payload?.title || "") + "'",
+    "The photos were removed from the album '" +
+      (payload.album?.title || "") +
+      "'",
     "is-success",
   );
 

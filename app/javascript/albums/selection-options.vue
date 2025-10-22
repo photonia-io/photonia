@@ -97,14 +97,32 @@ const {
 } = useMutation(gql`
   mutation ($albumId: String!, $photoIds: [String!]!) {
     addPhotosToAlbum(albumId: $albumId, photoIds: $photoIds) {
-      id
+      errors
+      album {
+        id
+        title
+      }
     }
   }
 `);
 
-onAddPhotosToAlbumDone(() => {
+onAddPhotosToAlbumDone(({ data }) => {
+  const payload = data?.addPhotosToAlbum;
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster(
+      "An error occurred while adding photos to the album: " + msg,
+      "is-danger",
+    );
+    return;
+  }
   apolloClient.cache.reset();
-  toaster("The photos were added to the album", "is-success");
+  toaster(
+    "The photos were added to the album '" + (payload.album?.title || "") + "'",
+    "is-success",
+  );
 });
 
 onAddPhotosToAlbumError((error) => {

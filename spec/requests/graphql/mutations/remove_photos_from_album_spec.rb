@@ -34,21 +34,36 @@ RSpec.describe 'removePhotosFromAlbum Mutation', type: :request do
     <<~GQL
       mutation RemovePhotosFromAlbum($albumId: String!, $photoIds: [String!]!) {
         removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
-          id
-          title
-          photos {
-            collection {
-              id
+          album {
+            id
+            title
+            photos {
+              collection {
+                id
+              }
             }
           }
+          errors
         }
       }
     GQL
   end
 
+  context 'when the album is not found' do
+    before { album.destroy }
+
+    it 'returns payload with errors and no album' do
+      post_mutation
+      expect(data_dig(response, 'removePhotosFromAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'removePhotosFromAlbum', 'errors')).to include('Album not found')
+    end
+  end
+
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns error payload (authorization fails)' do
+      post_mutation
+      expect(data_dig(response, 'removePhotosFromAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'removePhotosFromAlbum', 'errors')).to include('Not authorized to update this album')
     end
   end
 
@@ -65,7 +80,56 @@ RSpec.describe 'removePhotosFromAlbum Mutation', type: :request do
       expect(album.photos).not_to include(second_photo)
 
       payload = data_dig(response, 'removePhotosFromAlbum')
-      expect(payload['id']).to eq(album.slug)
+      expect(payload['errors']).to eq([])
+
+      album_data = payload['album']
+      expect(album_data['id']).to eq(album.slug)
+    end
+
+    context 'when one or more photos are not found' do
+      let(:variables) do
+        {
+          albumId: album.slug,
+          photoIds: [first_photo.slug, 'nonexistent-slug']
+        }
+      end
+
+      it 'returns an error and does not modify the album' do
+        expect do
+          post_mutation
+        end.not_to(change { album.reload.photos.count })
+
+        expect(data_dig(response, 'removePhotosFromAlbum', 'album')).to be_nil
+        expect(data_dig(response, 'removePhotosFromAlbum', 'errors')).to include('One or more photos not found')
+      end
+    end
+
+    context 'when trying to remove a photo not authorized for update' do
+      let(:stranger) { create(:user) }
+      let(:stranger_photo) { create(:photo, user: stranger) }
+
+      let(:variables) do
+        {
+          albumId: album.slug,
+          photoIds: [first_photo.slug, stranger_photo.slug]
+        }
+      end
+
+      before do
+        # Ensure the stranger photo is in the album to attempt removal
+        album.photos << stranger_photo
+      end
+
+      it 'returns an authorization error and does not modify the album' do
+        initial_count = album.photos.count
+
+        expect do
+          post_mutation
+        end.not_to change { album.reload.photos.count }.from(initial_count)
+
+        expect(data_dig(response, 'removePhotosFromAlbum', 'album')).to be_nil
+        expect(data_dig(response, 'removePhotosFromAlbum', 'errors')).to include('Not authorized to update this photo')
+      end
     end
   end
 end

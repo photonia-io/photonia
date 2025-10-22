@@ -29,21 +29,36 @@ RSpec.describe 'addPhotosToAlbum Mutation', type: :request do
     <<~GQL
       mutation AddPhotosToAlbum($albumId: String!, $photoIds: [String!]!) {
         addPhotosToAlbum(albumId: $albumId, photoIds: $photoIds) {
-          id
-          title
-          photos {
-            collection {
-              id
+          album {
+            id
+            title
+            photos {
+              collection {
+                id
+              }
             }
           }
+          errors
         }
       }
     GQL
   end
 
+  context 'when the album is not found' do
+    before { album.destroy }
+
+    it 'returns payload with errors and no album' do
+      post_mutation
+      expect(data_dig(response, 'addPhotosToAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'addPhotosToAlbum', 'errors')).to include('Album not found')
+    end
+  end
+
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns error payload (authorization fails)' do
+      post_mutation
+      expect(data_dig(response, 'addPhotosToAlbum', 'album')).to be_nil
+      expect(data_dig(response, 'addPhotosToAlbum', 'errors')).to include('Not authorized to update this album')
     end
   end
 
@@ -60,9 +75,12 @@ RSpec.describe 'addPhotosToAlbum Mutation', type: :request do
       expect(album.photos).to include(second_photo)
 
       payload = data_dig(response, 'addPhotosToAlbum')
-      expect(payload['id']).to eq(album.slug)
+      expect(payload['errors']).to eq([])
 
-      collection_ids = data_dig(response, 'addPhotosToAlbum', 'photos', 'collection').pluck('id')
+      album_data = payload['album']
+      expect(album_data['id']).to eq(album.slug)
+
+      collection_ids = data_dig(response, 'addPhotosToAlbum', 'album', 'photos', 'collection').pluck('id')
       expect(collection_ids).to include(first_photo.slug, second_photo.slug)
     end
 
@@ -74,6 +92,45 @@ RSpec.describe 'addPhotosToAlbum Mutation', type: :request do
       slugs = album.photos.pluck(:slug)
       expect(slugs.count(first_photo.slug)).to eq(1)
       expect(slugs.count(second_photo.slug)).to eq(1)
+    end
+
+    context 'when one or more photos are not found' do
+      let(:variables) do
+        {
+          albumId: album.slug,
+          photoIds: [first_photo.slug, 'nonexistent-slug']
+        }
+      end
+
+      it 'returns an error and does not modify the album' do
+        expect do
+          post_mutation
+        end.not_to(change { album.photos.count })
+
+        expect(data_dig(response, 'addPhotosToAlbum', 'album')).to be_nil
+        expect(data_dig(response, 'addPhotosToAlbum', 'errors')).to include('One or more photos not found')
+      end
+    end
+
+    context 'when trying to add a photo not authorized for update' do
+      let(:stranger) { create(:user) }
+      let(:stranger_photo) { create(:photo, user: stranger) }
+
+      let(:variables) do
+        {
+          albumId: album.slug,
+          photoIds: [first_photo.slug, stranger_photo.slug]
+        }
+      end
+
+      it 'returns an authorization error and does not modify the album' do
+        expect do
+          post_mutation
+        end.not_to(change { album.photos.count })
+
+        expect(data_dig(response, 'addPhotosToAlbum', 'album')).to be_nil
+        expect(data_dig(response, 'addPhotosToAlbum', 'errors')).to include('Not authorized to update this photo')
+      end
     end
   end
 end
