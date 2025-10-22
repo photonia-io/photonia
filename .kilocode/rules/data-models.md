@@ -1,8 +1,15 @@
 # Model Overview
 
+## Photos
+
+- Actual photo ids (database record id) should NEVER be exposed to the user
+- What the user sees as a photo id is actually the `slug` field
+
 ## Albums
 
 - Albums are the primary organizational unit for grouping photos
+- Actual album ids (database record id) should NEVER be exposed to the user
+- What the user sees as an album id is actually the `slug` field
 - The cover photo for an album is determined by the `public_cover_photo_id` or `user_cover_photo_id` attribute on the `Album` model
   - `user_cover_photo_id` - The cover photo picked by the album owner
   - `public_cover_photo_id` - The cover photo visible to public viewers. The user can't and mutations should not write this field. It is handled by `Album#maintenance`
