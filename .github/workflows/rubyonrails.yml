@@ -29,8 +29,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       # Add or replace dependency steps here
-      - name: Install OS packages
-        run: sudo apt update && sudo apt install -y libpq-dev libexif-dev imagemagick
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libpq-dev libexif-dev imagemagick
+          version: 1.0
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@v1
         with:
