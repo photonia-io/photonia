@@ -348,6 +348,6 @@ This project is licensed under the Apache License 2.0. When contributing:
 
 Remember to always test changes locally before deploying and ensure both Ruby and JavaScript test suites pass.
 
-## Model Overview
+## Detailed Rules and Guidelines
 
-See the detailed data model documentation in `../.kilocode/rules/data-models.md` for comprehensive information on the core models, their relationships, and behaviors within Photonia.
+See markdown files in the `@/.kilocode/rules/` directory.

@@ -16,11 +16,7 @@ module Types
     field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
     field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
-    field :add_photos_to_album, AlbumType, null: false do
-      description 'Add photos to album'
-      argument :album_id, String, 'Album Id', required: true
-      argument :photo_ids, [String], 'Photo Ids', required: true
-    end
+    field :add_photos_to_album, mutation: Mutations::AddPhotosToAlbum, description: 'Add photos to album'
 
     field :continue_with_facebook, UserType, null: true do
       description 'Sign up or sign in with Facebook'
@@ -56,11 +52,7 @@ module Types
       argument :password, String, 'User password', required: true
     end
 
-    field :remove_photos_from_album, AlbumType, null: false do
-      description 'Remove photos from album'
-      argument :album_id, String, 'Album Id', required: true
-      argument :photo_ids, [String], 'Photo Ids', required: true
-    end
+    field :remove_photos_from_album, mutation: Mutations::RemovePhotosFromAlbum, description: 'Remove photos from album'
 
     field :sign_out, UserType, null: true do
       description 'Sign out'
@@ -82,18 +74,6 @@ module Types
       argument :site_description, String, 'Site description', required: true
       argument :site_name, String, 'Site name', required: true
       argument :site_tracking_code, String, 'Site tracking code', required: true
-    end
-
-    def add_photos_to_album(album_id:, photo_ids:)
-      album = Album.includes(:photos).friendly.find(album_id)
-      context[:authorize].call(album, :update?)
-      photo_ids.each do |photo_id|
-        photo = Photo.friendly.find(photo_id)
-        context[:authorize].call(photo, :update?)
-        # only add photo if it's not already in the album
-        album.photos << photo unless album.photos.include?(photo)
-      end
-      album.maintenance
     end
 
     def create_album_with_photos(title:, photo_ids:)
@@ -129,18 +109,6 @@ module Types
       end
       Album.where(id: album_ids).each(&:maintenance)
       deleted_photos
-    end
-
-    def remove_photos_from_album(album_id:, photo_ids:)
-      album = Album.includes(:photos).friendly.find(album_id)
-      context[:authorize].call(album, :update?)
-      photo_ids.each do |photo_id|
-        photo = Photo.friendly.find(photo_id)
-        context[:authorize].call(photo, :update?)
-        # only remove photo if it's in the album
-        album.photos.delete(photo) if album.photos.include?(photo)
-      end
-      album.maintenance
     end
 
     def sign_in(email:, password:)

@@ -31,6 +31,11 @@ class AlbumsPhoto < ApplicationRecord
 
   before_validation :set_ordering
 
+  # These would be great to have but they come at a high cost when bulk adding / removing photos
+  # We'll stick with triggering Album#maintenance manually in those cases
+  # after_create :album_maintenance
+  # after_destroy :album_maintenance
+
   private
 
   def set_ordering
@@ -39,4 +44,8 @@ class AlbumsPhoto < ApplicationRecord
     maximum_ordering = AlbumsPhoto.where(album_id: album_id).maximum(:ordering)
     self.ordering = maximum_ordering.nil? ? 100_000 : maximum_ordering + 100_000
   end
+
+  # def album_maintenance
+  #   album.maintenance
+  # end
 end

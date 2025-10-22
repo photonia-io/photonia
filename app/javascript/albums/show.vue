@@ -67,6 +67,8 @@
           applicationStore.managingAlbum
         "
         :photos="album.photos.collection"
+        :album-id="id"
+        @request-remove-from-album="openRemoveFromAlbumModal"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
@@ -116,6 +118,39 @@
       </div>
     </div>
   </teleport>
+  <!-- Remove From Album confirmation modal -->
+  <teleport to="#modal-root">
+    <div :class="['modal', removeFromAlbumModalActive ? 'is-active' : null]">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title has-text-centered">Remove From Album</p>
+        </header>
+        <div class="modal-card-body">
+          <p>
+            You are about to remove
+            <strong>{{ selectionStore.selectedAlbumPhotos.length }}</strong>
+            {{
+              selectionStore.selectedAlbumPhotos.length === 1
+                ? "photo"
+                : "photos"
+            }}
+            from this album. Continue?
+          </p>
+        </div>
+        <footer class="modal-card-foot is-justify-content-center">
+          <div class="buttons">
+            <button class="button is-danger" @click="confirmRemoveFromAlbum">
+              Yes, remove
+            </button>
+            <button class="button is-info" @click="cancelRemoveFromAlbum">
+              Cancel
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -156,6 +191,7 @@ const id = computed(() => route.params.id);
 const page = computed(() => parseInt(route.query.page) || 1);
 
 const stopManagingModalActive = ref(false);
+const removeFromAlbumModalActive = ref(false);
 
 const stopManaging = () => {
   const hasSelection = (selectionStore.selectedAlbumPhotos || []).length > 0;
@@ -401,6 +437,111 @@ onUpdateAlbumPhotoOrderError((error) => {
     "is-danger",
   );
 });
+/* Remove photos from album mutation */
+const {
+  mutate: removePhotosFromAlbum,
+  onDone: onRemovePhotosFromAlbumDone,
+  onError: onRemovePhotosFromAlbumError,
+} = useMutation(gql`
+  mutation RemovePhotosFromAlbum(
+    $albumId: String!
+    $photoIds: [String!]!
+    $page: Int
+  ) {
+    removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
+      errors
+      album {
+        id
+        title
+        photos(page: $page) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(
+              type: "intelligent_or_square_medium"
+            )
+            canEdit
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
+        }
+      }
+    }
+  }
+`);
+
+const openRemoveFromAlbumModal = () => {
+  const hasSelection = (selectionStore.selectedAlbumPhotos || []).length > 0;
+  if (hasSelection) {
+    removeFromAlbumModalActive.value = true;
+    applicationStore.disableNavigationShortcuts();
+  }
+};
+
+const confirmRemoveFromAlbum = () => {
+  const photoIds = (selectionStore.selectedAlbumPhotos || []).map((p) => p.id);
+  if (photoIds.length === 0) return;
+
+  removePhotosFromAlbum({
+    albumId: id.value,
+    photoIds,
+    page: page.value,
+  });
+};
+
+const cancelRemoveFromAlbum = () => {
+  removeFromAlbumModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+onRemovePhotosFromAlbumDone(({ data }) => {
+  const payload = data?.removePhotosFromAlbum;
+
+  if (!payload || (payload.errors && payload.errors.length > 0)) {
+    const msg =
+      (payload && payload.errors && payload.errors.join(", ")) ||
+      "Unknown error";
+    toaster("Error removing photos from album: " + msg, "is-danger");
+    removeFromAlbumModalActive.value = false;
+    applicationStore.enableNavigationShortcuts();
+    return;
+  }
+
+  selectionStore.clearSelectedAlbumPhotos();
+
+  toaster(
+    "The photos were removed from the album '" +
+      (payload.album?.title || "") +
+      "'",
+    "is-success",
+  );
+
+  const albumCacheId = apolloClient.cache.identify({
+    __typename: "Album",
+    id: id.value,
+  });
+
+  // Evict album photos so the list reloads with updated content
+  apolloClient.cache.evict({ id: albumCacheId, fieldName: "photos" });
+  apolloClient.cache.gc();
+
+  removeFromAlbumModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+});
+
+onRemovePhotosFromAlbumError((error) => {
+  toaster(
+    "An error occurred while removing photos from the album: " + error.message,
+    "is-danger",
+  );
+  removeFromAlbumModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+});
+
 /* Cover photo mutation */
 const {
   mutate: setAlbumCoverPhotoMutation,
