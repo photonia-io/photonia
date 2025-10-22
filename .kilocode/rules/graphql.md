@@ -1,6 +1,6 @@
 # GraphQL
 
-These are the guidelines you should follow when working with GraphQL mutations.
+These are the guidelines you should follow when working with GraphQL.
 
 ## Guidelines
 
