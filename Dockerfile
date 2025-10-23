@@ -33,9 +33,8 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libyaml-dev nodejs && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Install yarn
-ARG YARN_VERSION=1.22.21
-RUN npm install --global yarn@${YARN_VERSION}
+# Enable Corepack and Yarn 4 (uses version from package.json/.yarnrc.yml)
+RUN corepack enable && corepack prepare yarn@4.10.3 --activate
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -43,8 +42,11 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile && \
+# Copy Yarn Berry config and local release so "yarn" works in the build stage
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn/ ./.yarn/
+# Install dependencies immutably (will fail if yarn.lock needs changes)
+RUN yarn --version && yarn install --immutable && \
     yarn cache clean
 
 # Copy application code
