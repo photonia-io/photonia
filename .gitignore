@@ -31,9 +31,7 @@
 /public/packs
 /public/packs-test
 /node_modules
-/yarn-error.log
-yarn-debug.log*
-.yarn-integrity
+/.yarn/install-state.gz
 
 # Ignore flickr directory with private data and photos
 /flickr/*

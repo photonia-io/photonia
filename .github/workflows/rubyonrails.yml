@@ -39,13 +39,15 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-      - name: Restore yarn cache
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "yarn"
       - name: Install Node packages
-        run: yarn install
+        run: yarn install --immutable
       # Add or replace database setup steps here
       - name: Set up database schema
         run: bin/rails db:schema:load
