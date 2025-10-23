@@ -33,7 +33,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.0.8",
-    "prettier": "3.5.2",
+    "prettier": "3.6.2",
     "vite": "^7.1.12",
     "vite-plugin-ruby": "^5.1.1",
     "vitest": "^3.2.4"
