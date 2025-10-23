@@ -54,6 +54,22 @@ describe 'photos Query' do
 
     let(:photo_count) { 3 }
 
+    # Set a lower MAX_LIMIT for tests to avoid creating many records
+    around do |example|
+      original_limit = ENV['PHOTOS_QUERY_MAX_LIMIT']
+      ENV['PHOTOS_QUERY_MAX_LIMIT'] = '5'
+      # Force constant reload
+      Queries::PhotosQuery.send(:remove_const, :MAX_LIMIT)
+      Queries::PhotosQuery.const_set(:MAX_LIMIT, ENV.fetch('PHOTOS_QUERY_MAX_LIMIT', 100).to_i)
+      
+      example.run
+      
+      # Restore original value
+      ENV['PHOTOS_QUERY_MAX_LIMIT'] = original_limit
+      Queries::PhotosQuery.send(:remove_const, :MAX_LIMIT)
+      Queries::PhotosQuery.const_set(:MAX_LIMIT, ENV.fetch('PHOTOS_QUERY_MAX_LIMIT', 100).to_i)
+    end
+
     before do
       create_list(:photo, 3)
     end
@@ -131,14 +147,14 @@ describe 'photos Query' do
         GQL
       end
 
-      it 'enforces the maximum limit of 100' do
-        # Create more than 100 photos to test the limit enforcement
-        create_list(:photo, 105)
+      it 'enforces the maximum limit of 5 (configured for tests)' do
+        # Create 6 photos to test the limit enforcement (MAX_LIMIT is 5 in tests)
+        create_list(:photo, 6)
 
         post '/graphql', params: { query: }
 
-        # Should return exactly 100 photos even though 150 was requested
-        expect(response.parsed_body['data']['photos']['collection'].length).to eq(100)
+        # Should return exactly 5 photos even though 150 was requested
+        expect(response.parsed_body['data']['photos']['collection'].length).to eq(5)
       end
     end
 
@@ -155,14 +171,14 @@ describe 'photos Query' do
         GQL
       end
 
-      it 'applies the default maximum limit of 100' do
-        # Create more than 100 photos to test the default limit
-        create_list(:photo, 105)
+      it 'applies the default maximum limit of 5 (configured for tests)' do
+        # Create 6 photos to test the default limit (MAX_LIMIT is 5 in tests)
+        create_list(:photo, 6)
 
         post '/graphql', params: { query: }
 
-        # Should return exactly 100 photos by default
-        expect(response.parsed_body['data']['photos']['collection'].length).to eq(100)
+        # Should return exactly 5 photos by default
+        expect(response.parsed_body['data']['photos']['collection'].length).to eq(5)
       end
     end
   end
