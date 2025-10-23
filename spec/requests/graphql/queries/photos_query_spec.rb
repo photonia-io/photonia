@@ -100,6 +100,26 @@ describe 'photos Query' do
       end
     end
 
+    context 'when limit is within bounds' do
+      let(:query) do
+        <<~GQL
+          query {
+            photos(mode: "simple", limit: 3) {
+              collection {
+                id
+              }
+            }
+          }
+        GQL
+      end
+
+      it 'returns the requested number of photos' do
+        post_query
+
+        expect(response.parsed_body['data']['photos']['collection'].length).to eq(3)
+      end
+    end
+
     context 'when fetchType is random' do
       let(:query) do
         <<~GQL
