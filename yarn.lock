@@ -1041,7 +1041,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/apollo-composable@npm:^4.0.0-beta.11":
+"@vue/apollo-composable@npm:^4.2.2":
   version: 4.2.2
   resolution: "@vue/apollo-composable@npm:4.2.2"
   dependencies:
@@ -1060,7 +1060,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/apollo-option@npm:^4.0.0-beta.9":
+"@vue/apollo-option@npm:^4.2.2":
   version: 4.2.2
   resolution: "@vue/apollo-option@npm:4.2.2"
   dependencies:
@@ -1925,7 +1925,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.12.5, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -2507,8 +2507,8 @@ __metadata:
     "@apollo/client": "npm:^3.14.0"
     "@sentry/vue": "npm:^10.21.0"
     "@vitejs/plugin-vue": "npm:^6.0.1"
-    "@vue/apollo-composable": "npm:^4.0.0-beta.11"
-    "@vue/apollo-option": "npm:^4.0.0-beta.9"
+    "@vue/apollo-composable": "npm:^4.2.2"
+    "@vue/apollo-option": "npm:^4.2.2"
     "@vue/test-utils": "npm:^2.4.6"
     animate.css: "npm:^4.1.1"
     bulma: "npm:^1.0.4"
@@ -2516,7 +2516,7 @@ __metadata:
     bulma-toast: "npm:^2.4.4"
     chart.js: "npm:^4.5.1"
     graphql: "npm:^16.11.0"
-    graphql-tag: "npm:^2.12.5"
+    graphql-tag: "npm:^2.12.6"
     happy-dom: "npm:^20.0.8"
     marked: "npm:^15.0.12"
     pinia: "npm:^3.0.3"
