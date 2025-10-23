@@ -18,8 +18,7 @@ module Queries
     argument :limit, Integer, 'Number of photos to return. Applies to the simple mode of operation. Maximum of 100 photos.', required: false
 
     # Maximum limit for simple mode queries. Defaults to 100 in production.
-    # Can be overridden for testing via TEST_PHOTOS_QUERY_MAX_LIMIT environment variable (not required to be set).
-    MAX_LIMIT = ENV.fetch('TEST_PHOTOS_QUERY_MAX_LIMIT', 100).to_i
+    SIMPLE_MODE_MAX_LIMIT = 100
 
     def resolve(mode: nil, fetch_type: nil, limit: nil, page: nil, query: nil)
       if mode == 'paginated'
@@ -55,7 +54,7 @@ module Queries
     end
 
     def determine_effective_limit(limit)
-      [limit || MAX_LIMIT, MAX_LIMIT].min
+      [limit || SIMPLE_MODE_MAX_LIMIT, SIMPLE_MODE_MAX_LIMIT].min
     end
   end
 end
