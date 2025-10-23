@@ -34,7 +34,7 @@
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.0.2",
     "prettier": "3.5.2",
-    "vite": "^6.4.1",
+    "vite": "^7.1.11",
     "vite-plugin-ruby": "^5.1.1",
     "vitest": "^3.2.4"
   },
