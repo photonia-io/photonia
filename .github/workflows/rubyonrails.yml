@@ -34,7 +34,7 @@ jobs:
           packages: libpq-dev libexif-dev imagemagick
           version: 1.0
       - name: "Symlink imagemagick's identify command"
-        run: rm /usr/bin/identify && ln -s /usr/bin/identify /usr/bin/identify-im6.q16
+        run: sudo rm /usr/bin/identify && sudo ln -s /usr/bin/identify /usr/bin/identify-im6.q16
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@v1
         with:
