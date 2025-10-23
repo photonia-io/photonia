@@ -17,7 +17,9 @@ module Queries
     argument :fetch_type, String, 'How to fetch photos ("latest" or "random"). Applies to the simple mode of operation.', required: false, default_value: 'latest'
     argument :limit, Integer, 'Number of photos to return. Applies to the simple mode of operation. Maximum of 100 photos.', required: false
 
-    MAX_LIMIT = ENV.fetch('PHOTOS_QUERY_MAX_LIMIT', 100).to_i
+    # Maximum limit for simple mode queries. Defaults to 100 in production.
+    # Can be overridden for testing via TEST_PHOTOS_QUERY_MAX_LIMIT environment variable (not required to be set).
+    MAX_LIMIT = ENV.fetch('TEST_PHOTOS_QUERY_MAX_LIMIT', 100).to_i
 
     def resolve(mode: nil, fetch_type: nil, limit: nil, page: nil, query: nil)
       if mode == 'paginated'

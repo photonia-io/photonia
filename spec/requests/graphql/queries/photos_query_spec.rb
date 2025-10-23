@@ -55,22 +55,8 @@ describe 'photos Query' do
     let(:photo_count) { 3 }
 
     # Set a lower MAX_LIMIT for tests to avoid creating many records
-    around do |example|
-      original_limit = ENV['PHOTOS_QUERY_MAX_LIMIT']
-      ENV['PHOTOS_QUERY_MAX_LIMIT'] = '5'
-      # Force constant reload
-      Queries::PhotosQuery.send(:remove_const, :MAX_LIMIT)
-      Queries::PhotosQuery.const_set(:MAX_LIMIT, ENV.fetch('PHOTOS_QUERY_MAX_LIMIT', 100).to_i)
-      
-      example.run
-      
-      # Restore original value
-      ENV['PHOTOS_QUERY_MAX_LIMIT'] = original_limit
-      Queries::PhotosQuery.send(:remove_const, :MAX_LIMIT)
-      Queries::PhotosQuery.const_set(:MAX_LIMIT, ENV.fetch('PHOTOS_QUERY_MAX_LIMIT', 100).to_i)
-    end
-
     before do
+      stub_const('Queries::PhotosQuery::MAX_LIMIT', 5)
       create_list(:photo, 3)
     end
 
