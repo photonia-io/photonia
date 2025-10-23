@@ -52,7 +52,7 @@ module Queries
 
     # Determine the effective limit (apply MAX_LIMIT when not specified or when exceeding maximum)
     def effective_limit(limit)
-      [limit || SIMPLE_MODE_MAX_LIMIT, SIMPLE_MODE_MAX_LIMIT].min
+      (limit || SIMPLE_MODE_MAX_LIMIT).clamp(0, SIMPLE_MODE_MAX_LIMIT)
     end
   end
 end
