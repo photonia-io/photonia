@@ -54,9 +54,9 @@ describe 'photos Query' do
 
     let(:photo_count) { 3 }
 
-    # Set a lower MAX_LIMIT for tests to avoid creating many records
+    # Set a lower SIMPLE_MODE_MAX_LIMIT for tests to avoid creating many records
     before do
-      stub_const('Queries::PhotosQuery::MAX_LIMIT', 5)
+      stub_const('Queries::PhotosQuery::SIMPLE_MODE_MAX_LIMIT', 5)
       create_list(:photo, 3)
     end
 
@@ -121,8 +121,8 @@ describe 'photos Query' do
     end
 
     context 'when limit exceeds maximum allowed limit' do
-      # We're requesting 6 photos because for tests the MAX_LIMIT is set 5
-      # Normally MAX_LIMIT is 100
+      # We're requesting 6 photos because for tests the SIMPLE_MODE_MAX_LIMIT is set 5
+      # Normally SIMPLE_MODE_MAX_LIMIT is 100
       let(:query) do
         <<~GQL
           query {
@@ -136,7 +136,7 @@ describe 'photos Query' do
       end
 
       it 'enforces the maximum limit of 5 (configured for tests)' do
-        # Create 6 photos to test the limit enforcement (MAX_LIMIT is 5 in tests)
+        # Create 6 photos to test the limit enforcement (SIMPLE_MODE_MAX_LIMIT is 5 in tests)
         create_list(:photo, 6)
 
         post '/graphql', params: { query: }
@@ -160,7 +160,7 @@ describe 'photos Query' do
       end
 
       it 'applies the default maximum limit of 5 (configured for tests)' do
-        # Create 6 photos to test the default limit (MAX_LIMIT is 5 in tests)
+        # Create 6 photos to test the default limit (SIMPLE_MODE_MAX_LIMIT is 5 in tests)
         create_list(:photo, 6)
 
         post '/graphql', params: { query: }
