@@ -4,29 +4,17 @@
       <div class="column is-5-tablet is-5-desktop is-5-widescreen">
         <div class="box">
           <h2 class="title is-4">Sign in or sign up</h2>
-          <div v-if="settings.continue_with_google_enabled">
-            <div
-              id="g_id_onload"
-              :data-client_id="settings.google_client_id"
-              data-context="signin"
-              data-ux_mode="popup"
-              data-callback="continueWithGoogle"
-              data-auto_prompt="false"
-            ></div>
-
-            <div
-              class="g_id_signin"
-              data-type="standard"
-              data-shape="rectangular"
-              data-theme="outline"
-              data-text="continue_with"
-              data-size="large"
-              data-logo_alignment="left"
-            ></div>
+          <div
+            v-if="settings.continue_with_google_enabled"
+            id="google-signin"
+            class="mb-3"
+          >
+            <div ref="googleButtonMount" class="google-button-center"></div>
           </div>
 
           <div
             v-if="settings.continue_with_facebook_enabled"
+            id="facebook-signin"
             class="fb-login-button"
             data-width=""
             data-size="large"
@@ -83,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import gql from "graphql-tag";
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "../stores/user";
@@ -95,6 +83,62 @@ const settings = ref(window.settings);
 const email = ref("");
 const password = ref("");
 const router = useRouter();
+
+const googleButtonMount = ref(null);
+let googleResizeObserver = null;
+let lastRenderedWidth = null;
+let resizeTimeout = null;
+let windowResizeHandler = null;
+
+const renderGoogleButton = () => {
+  const mountEl = googleButtonMount.value;
+  if (
+    !mountEl ||
+    !window.google ||
+    !window.google.accounts ||
+    !window.google.accounts.id
+  )
+    return;
+
+  const parentEl = mountEl.parentElement;
+  const parentWidth = parentEl ? parentEl.clientWidth : 0;
+
+  // If parent is 400px or smaller, fill it exactly; otherwise cap at 400
+  const desiredWidth =
+    parentWidth <= 400 ? Math.max(120, Math.floor(parentWidth)) : 400;
+
+  // Only re-render if width actually changed
+  if (lastRenderedWidth === desiredWidth) return;
+
+  // Update last width before rendering to avoid loops with ResizeObserver
+  lastRenderedWidth = desiredWidth;
+
+  // Clear previous render to avoid duplicates
+  mountEl.innerHTML = "";
+
+  window.google.accounts.id.renderButton(mountEl, {
+    type: "standard",
+    shape: "rectangular",
+    theme: "outline",
+    text: "continue_with",
+    size: "large",
+    logo_alignment: "center",
+    width: desiredWidth,
+  });
+};
+
+const initGoogleButton = () => {
+  if (!window.google || !window.google.accounts || !window.google.accounts.id)
+    return;
+
+  window.google.accounts.id.initialize({
+    client_id: settings.value.google_client_id,
+    callback: continueWithGoogle,
+    ux_mode: "popup",
+  });
+
+  renderGoogleButton();
+};
 
 const {
   mutate: submit,
@@ -133,9 +177,33 @@ onMounted(() => {
     const googleScript = document.createElement("script");
     googleScript.src = "https://accounts.google.com/gsi/client";
     googleScript.async = true;
-    document.body.appendChild(googleScript);
+    googleScript.defer = true;
+    googleScript.onload = () => {
+      // Keep for compatibility if referenced elsewhere
+      window.continueWithGoogle = continueWithGoogle;
 
-    window.continueWithGoogle = continueWithGoogle;
+      initGoogleButton();
+
+      const parentEl = googleButtonMount.value?.parentElement;
+      if (parentEl && "ResizeObserver" in window) {
+        googleResizeObserver = new ResizeObserver(() => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            renderGoogleButton();
+          }, 150);
+        });
+        googleResizeObserver.observe(parentEl);
+      } else {
+        windowResizeHandler = () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            renderGoogleButton();
+          }, 150);
+        };
+        window.addEventListener("resize", windowResizeHandler);
+      }
+    };
+    document.body.appendChild(googleScript);
   }
 
   if (window.settings.continue_with_facebook_enabled) {
@@ -149,6 +217,21 @@ onMounted(() => {
     document.body.appendChild(facebookScript);
 
     window.continueWithFacebook = continueWithFacebook;
+  }
+});
+
+onBeforeUnmount(() => {
+  if (googleResizeObserver) {
+    googleResizeObserver.disconnect();
+    googleResizeObserver = null;
+  }
+  if (windowResizeHandler) {
+    window.removeEventListener("resize", windowResizeHandler);
+    windowResizeHandler = null;
+  }
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = null;
   }
 });
 
@@ -227,4 +310,9 @@ const signInAndRedirect = (user) => {
 };
 </script>
 
-<style></style>
+<style>
+.google-button-center {
+  display: flex;
+  justify-content: center;
+}
+</style>
