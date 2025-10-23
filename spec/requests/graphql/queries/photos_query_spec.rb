@@ -80,7 +80,7 @@ describe 'photos Query' do
       end
     end
 
-    context 'when there is a limit parameter' do
+    context 'when there is a limit parameter (and is below the maximum allowed limit)' do
       let(:query) do
         <<~GQL
           query {
@@ -97,26 +97,6 @@ describe 'photos Query' do
         post_query
 
         expect(response.parsed_body['data']['photos']['collection'].length).to eq(2)
-      end
-    end
-
-    context 'when limit is within bounds' do
-      let(:query) do
-        <<~GQL
-          query {
-            photos(mode: "simple", limit: 3) {
-              collection {
-                id
-              }
-            }
-          }
-        GQL
-      end
-
-      it 'returns the requested number of photos' do
-        post_query
-
-        expect(response.parsed_body['data']['photos']['collection'].length).to eq(3)
       end
     end
 
@@ -141,10 +121,12 @@ describe 'photos Query' do
     end
 
     context 'when limit exceeds maximum allowed limit' do
+      # We're requesting 6 photos because for tests the MAX_LIMIT is set 5
+      # Normally MAX_LIMIT is 100
       let(:query) do
         <<~GQL
           query {
-            photos(mode: "simple", limit: 150) {
+            photos(mode: "simple", limit: 6) {
               collection {
                 id
               }
@@ -159,7 +141,7 @@ describe 'photos Query' do
 
         post '/graphql', params: { query: }
 
-        # Should return exactly 5 photos even though 150 was requested
+        # Should return exactly 5 photos even though 6 was requested
         expect(response.parsed_body['data']['photos']['collection'].length).to eq(5)
       end
     end
