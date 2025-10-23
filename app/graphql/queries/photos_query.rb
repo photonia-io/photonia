@@ -40,20 +40,18 @@ module Queries
     end
 
     def simple_photos(fetch_type, limit)
-      # Determine the effective limit (apply MAX_LIMIT when not specified or when exceeding maximum)
-      effective_limit = determine_effective_limit(limit)
-
       photos = if fetch_type == 'random'
                  Photo.order('RANDOM()')
                else
                  Photo.order(posted_at: :desc)
                end
-      photos = photos.limit(effective_limit)
+      photos = photos.limit(effective_limit(limit))
       add_dummy_pagination_methods(photos)
       photos
     end
 
-    def determine_effective_limit(limit)
+    # Determine the effective limit (apply MAX_LIMIT when not specified or when exceeding maximum)
+    def effective_limit(limit)
       [limit || SIMPLE_MODE_MAX_LIMIT, SIMPLE_MODE_MAX_LIMIT].min
     end
   end
