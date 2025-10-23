@@ -30,7 +30,7 @@
   },
   "version": "0.1.0",
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.0.2",
     "prettier": "3.5.2",
