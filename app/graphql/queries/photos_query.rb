@@ -15,7 +15,9 @@ module Queries
 
     # Simple mode arguments
     argument :fetch_type, String, 'How to fetch photos ("latest" or "random"). Applies to the simple mode of operation.', required: false, default_value: 'latest'
-    argument :limit, Integer, 'Number of photos to return. Applies to the simple mode of operation.', required: false
+    argument :limit, Integer, 'Number of photos to return. Applies to the simple mode of operation. Maximum of 100 photos.', required: false
+
+    MAX_LIMIT = 100
 
     def resolve(mode: nil, fetch_type: nil, limit: nil, page: nil, query: nil)
       if mode == 'paginated'
@@ -37,14 +39,23 @@ module Queries
     end
 
     def simple_photos(fetch_type, limit)
+      # Determine the effective limit (apply MAX_LIMIT when not specified or when exceeding maximum)
+      effective_limit = determine_effective_limit(limit)
+
       photos = if fetch_type == 'random'
                  Photo.order('RANDOM()')
                else
                  Photo.order(posted_at: :desc)
                end
-      photos = photos.limit(limit) if limit.present?
+      photos = photos.limit(effective_limit)
       add_dummy_pagination_methods(photos)
       photos
+    end
+
+    def determine_effective_limit(limit)
+      return MAX_LIMIT if limit.nil? || limit > MAX_LIMIT
+
+      limit
     end
   end
 end
