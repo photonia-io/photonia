@@ -53,9 +53,7 @@ module Queries
     end
 
     def determine_effective_limit(limit)
-      return MAX_LIMIT if limit.nil? || limit > MAX_LIMIT
-
-      limit
+      [limit || MAX_LIMIT, MAX_LIMIT].min
     end
   end
 end
