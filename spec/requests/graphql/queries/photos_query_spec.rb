@@ -131,17 +131,14 @@ describe 'photos Query' do
         GQL
       end
 
-      it 'enforces the maximum limit of 100 by applying .limit(100) to the relation' do
-        relation = double('relation')
-        # Return a small stubbed list so the test stays cheap
-        fake_photos = build_stubbed_list(:photo, 3)
-
-        allow(Photo).to receive(:order).and_return(relation)
-        expect(relation).to receive(:limit).with(100).and_return(fake_photos)
+      it 'enforces the maximum limit of 100' do
+        # Create more than 100 photos to test the limit enforcement
+        create_list(:photo, 105)
 
         post '/graphql', params: { query: }
 
-        expect(response.parsed_body['data']['photos']['collection'].length).to eq(fake_photos.length)
+        # Should return exactly 100 photos even though 150 was requested
+        expect(response.parsed_body['data']['photos']['collection'].length).to eq(100)
       end
     end
 
@@ -158,17 +155,14 @@ describe 'photos Query' do
         GQL
       end
 
-      it 'applies the default maximum limit of 100 by calling .limit(100) on the relation' do
-        relation = double('relation')
-        # Return a small stubbed list so the test stays cheap
-        fake_photos = build_stubbed_list(:photo, 3)
-
-        allow(Photo).to receive(:order).and_return(relation)
-        expect(relation).to receive(:limit).with(100).and_return(fake_photos)
+      it 'applies the default maximum limit of 100' do
+        # Create more than 100 photos to test the default limit
+        create_list(:photo, 105)
 
         post '/graphql', params: { query: }
 
-        expect(response.parsed_body['data']['photos']['collection'].length).to eq(fake_photos.length)
+        # Should return exactly 100 photos by default
+        expect(response.parsed_body['data']['photos']['collection'].length).to eq(100)
       end
     end
   end
