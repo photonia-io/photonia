@@ -37,8 +37,8 @@ const renderButton = () => {
   btn.className = "fb-login-button";
   btn.setAttribute("data-width", String(desiredWidth));
   btn.setAttribute("data-size", "large");
-  btn.setAttribute("data-button-type", "");
-  btn.setAttribute("data-layout", "");
+  btn.setAttribute("data-button-type", "continue_with");
+  btn.setAttribute("data-layout", "default");
   btn.setAttribute("data-onlogin", "continueWithFacebook");
   btn.setAttribute("data-auto-logout-link", "false");
   btn.setAttribute("data-use-continue-as", "false");
