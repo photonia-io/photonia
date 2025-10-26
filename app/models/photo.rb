@@ -42,6 +42,12 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Photo < ApplicationRecord
+  enum :privacy, {
+    public: 'public',
+    private: 'private',
+    friends_and_family: 'friend & family'
+  }, suffix: true
+
   is_impressionable counter_cache: true, unique: :session_hash
 
   extend FriendlyId

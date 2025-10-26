@@ -1,12 +1,33 @@
 # frozen_string_literal: true
 
 class PhotoPolicy < ApplicationPolicy
+  # Policy scope for photos
+  class Scope
+    attr_reader :user, :scope
+
+    def initialize(user, scope)
+      @user = user
+      @scope = scope
+    end
+
+    def resolve
+      # Admins can see all photos (works with unscoped relations)
+      return scope.all if user&.admin?
+
+      # Visitors see only public photos
+      return scope.where(privacy: 'public') unless user
+
+      # Logged-in users see public photos + their own photos (any privacy)
+      scope.where(privacy: 'public').or(scope.where(user_id: user.id))
+    end
+  end
+
   def index?
     true
   end
 
   def show?
-    # TODO implement private photos
+    # TODO: implement private photos
     true
   end
 

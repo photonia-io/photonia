@@ -31,8 +31,21 @@ module Queries
     private
 
     def paginated_photos(query, page)
+      # Use Pundit policy scope to decide visibility:
+      # - visitor: only public photos
+      # - logged in: public photos + own photos (any privacy)
+      # - admin: all photos
+      base = Pundit.policy_scope(current_user, Photo.unscoped)
+
+      relation =
+        if query.present?
+          base.search(query)
+        else
+          base.order(posted_at: :desc)
+        end
+
       pagy, photos = context[:pagy].call(
-        query.present? ? Photo.search(query) : Photo.order(posted_at: :desc),
+        relation,
         page:
       )
       add_pagination_methods(photos, pagy)
@@ -40,11 +53,16 @@ module Queries
     end
 
     def simple_photos(fetch_type, limit)
-      photos = if fetch_type == 'random'
-                 Photo.order('RANDOM()')
-               else
-                 Photo.order(posted_at: :desc)
-               end
+      # Use Pundit policy scope for simple mode too
+      base = Pundit.policy_scope(current_user, Photo.unscoped)
+
+      photos =
+        if fetch_type == 'random'
+          base.order('RANDOM()')
+        else
+          base.order(posted_at: :desc)
+        end
+
       photos = photos.limit(effective_limit(limit))
       add_dummy_pagination_methods(photos)
       photos
