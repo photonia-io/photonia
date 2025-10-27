@@ -135,11 +135,15 @@ class Photo < ApplicationRecord
   before_validation :set_fields, prepend: true
 
   def next
-    Photo.where('posted_at > ?', posted_at).order(:posted_at).first
+    Photo.where('posted_at > ? OR (posted_at = ? AND id > ?)', posted_at, posted_at, id)
+         .order(:posted_at, :id)
+         .first
   end
 
   def prev
-    Photo.where('posted_at < ?', posted_at).order(posted_at: :desc).first
+    Photo.where('posted_at < ? OR (posted_at = ? AND id < ?)', posted_at, posted_at, id)
+         .order(posted_at: :desc, id: :desc)
+         .first
   end
 
   def next_in_album(album)
