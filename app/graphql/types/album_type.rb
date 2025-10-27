@@ -42,14 +42,10 @@ module Types
     end
 
     def photos(page: nil)
-      photo_scope = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-
-      scoped_photos = photo_scope
-                      .joins(:albums_photos)
-                      .where(albums_photos: { album_id: @object.id })
-                      .order('albums_photos.ordering ASC')
-
-      pagy, @photos = context[:pagy].call(scoped_photos, page:)
+      pagy, @photos = context[:pagy].call(
+        scoped_album_photos.order(:ordering),
+        page:
+      )
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.limit }
@@ -70,13 +66,19 @@ module Types
     delegate :public_cover_photo, to: :@object
 
     def previous_photo_in_album(photo_id:)
-      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-      base.friendly.find(photo_id).prev_in_album(@object)
+      scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      scoped_previous_photo = scoped_previous_photo(scoped_photo_ordering)
+      return nil if scoped_previous_photo.nil?
+
+      context[:authorize].call(scoped_previous_photo, :show?)
     end
 
     def next_photo_in_album(photo_id:)
-      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-      base.friendly.find(photo_id).next_in_album(@object)
+      scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      scoped_next_photo = scoped_next_photo(scoped_photo_ordering)
+      return nil if scoped_next_photo.nil?
+
+      context[:authorize].call(scoped_next_photo, :show?)
     end
 
     def can_edit
@@ -85,6 +87,31 @@ module Types
 
     def sorting_type
       @object.graphql_sorting_type
+    end
+
+    private
+
+    def scoped_photo_ordering(photo_id)
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id).ordering
+    end
+
+    def scoped_album_photos
+      Pundit.policy_scope(context[:current_user], @object.photos.unscope(where: :privacy))
+    end
+
+    def scoped_next_photo(current_ordering)
+      scoped_album_photos.joins(:albums_photos)
+                         .where('albums_photos.ordering > ?', current_ordering)
+                         .order('albums_photos.ordering ASC')
+                         .first
+    end
+
+    def scoped_previous_photo(current_ordering)
+      scoped_album_photos.joins(:albums_photos)
+                         .where(albums_photos: { ordering: ...current_ordering })
+                         .order('albums_photos.ordering DESC')
+                         .first
     end
   end
 end

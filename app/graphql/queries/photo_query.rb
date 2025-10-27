@@ -19,7 +19,6 @@ module Queries
       base = Pundit.policy_scope(current_user, Photo.unscoped)
 
       photo_query = base
-      photo_query = photo_query.includes(:albums, :albums_photos) if lookahead.selects?(:albums)
       photo_query = photo_query.includes(comments: %i[flickr_user versions]) if lookahead.selects?(:comments)
 
       photo =
