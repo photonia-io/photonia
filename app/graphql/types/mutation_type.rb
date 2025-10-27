@@ -129,8 +129,6 @@ module Types
     def continue_with_google(credential:)
       raise 'Continue with Google is disabled' if Setting.continue_with_google_enabled == false
 
-      puts "client_id = #{Setting.google_client_id}"
-
       payload = Google::Auth::IDTokens.verify_oidc(
         credential,
         aud: Setting.google_client_id
