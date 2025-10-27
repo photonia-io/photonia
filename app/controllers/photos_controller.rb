@@ -22,6 +22,10 @@ class PhotosController < ApplicationController
     @photo = Photo.includes(comments: :flickr_user).friendly.find(params[:id])
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
+  rescue ActiveRecord::RecordNotFound
+    # Show shell page even if photo is not found (e.g., private photo)
+    # Vue + GraphQL will hydrate it with real data (after proper auth)
+    render :show_shell
   end
 
   def upload

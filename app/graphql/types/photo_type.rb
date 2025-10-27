@@ -62,11 +62,17 @@ module Types
     end
 
     def previous_photo
-      @object.prev
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.where('posted_at > ? OR (posted_at = ? AND id > ?)', @object.posted_at, @object.posted_at, @object.id)
+          .order(:posted_at, :id)
+          .first
     end
 
     def next_photo
-      @object.next
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.where('posted_at < ? OR (posted_at = ? AND id < ?)', @object.posted_at, @object.posted_at, @object.id)
+          .order(posted_at: :desc, id: :desc)
+          .first
     end
 
     def image_url(type:)
@@ -126,6 +132,10 @@ module Types
       return nil unless album
 
       album.public_cover_photo_id == @object.id
+    end
+
+    def albums
+      Pundit.policy_scope(context[:current_user], @object.albums.unscope(where: :privacy))
     end
   end
 end
