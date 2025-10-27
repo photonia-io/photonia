@@ -47,9 +47,12 @@ const renderButton = () => {
   });
 };
 
+let globalCallbackName = null;
+
 const init = () => {
   if (!window.google || !window.google.accounts || !window.google.accounts.id)
     return;
+  globalCallbackName = "continueWithGoogle";
   window.continueWithGoogle = props.onContinue;
   window.google.accounts.id.initialize({
     client_id: props.clientId,
@@ -85,6 +88,10 @@ onBeforeUnmount(() => {
   if (teardownResize) {
     teardownResize();
     teardownResize = null;
+  }
+  if (globalCallbackName && window[globalCallbackName]) {
+    delete window[globalCallbackName];
+    globalCallbackName = null;
   }
 });
 </script>

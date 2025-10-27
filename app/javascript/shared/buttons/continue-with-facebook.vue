@@ -48,7 +48,10 @@ const renderButton = () => {
   window.FB.XFBML.parse(el);
 };
 
+let globalCallbackName = null;
+
 const setGlobalOnLogin = () => {
+  globalCallbackName = "continueWithFacebook";
   // Ensure the XFBML onlogin handler calls the provided callback with a response
   window.continueWithFacebook = () => {
     try {
@@ -106,6 +109,10 @@ onBeforeUnmount(() => {
   if (teardownResize) {
     teardownResize();
     teardownResize = null;
+  }
+  if (globalCallbackName && window[globalCallbackName]) {
+    delete window[globalCallbackName];
+    globalCallbackName = null;
   }
 });
 </script>
