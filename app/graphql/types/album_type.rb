@@ -42,7 +42,14 @@ module Types
     end
 
     def photos(page: nil)
-      pagy, @photos = context[:pagy].call(@object.photos.order(:ordering), page:)
+      photo_scope = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+
+      scoped_photos = photo_scope
+                      .joins(:albums_photos)
+                      .where(albums_photos: { album_id: @object.id })
+                      .order('albums_photos.ordering ASC')
+
+      pagy, @photos = context[:pagy].call(scoped_photos, page:)
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.limit }
@@ -63,11 +70,13 @@ module Types
     delegate :public_cover_photo, to: :@object
 
     def previous_photo_in_album(photo_id:)
-      Photo.friendly.find(photo_id).prev_in_album(@object)
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.friendly.find(photo_id).prev_in_album(@object)
     end
 
     def next_photo_in_album(photo_id:)
-      Photo.friendly.find(photo_id).next_in_album(@object)
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.friendly.find(photo_id).next_in_album(@object)
     end
 
     def can_edit
