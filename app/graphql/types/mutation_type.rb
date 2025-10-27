@@ -5,6 +5,7 @@ module Types
   class MutationType < GraphQL::Schema::Object
     description 'The mutation root of this schema'
 
+    field :add_photos_to_album, mutation: Mutations::AddPhotosToAlbum, description: 'Add photos to album'
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
     field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
@@ -16,18 +17,8 @@ module Types
     field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
     field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
-    field :add_photos_to_album, mutation: Mutations::AddPhotosToAlbum, description: 'Add photos to album'
-
-    field :continue_with_facebook, UserType, null: true do
-      description 'Sign up or sign in with Facebook'
-      argument :access_token, String, 'Facebook access token', required: true
-      argument :signed_request, String, 'Facebook signed request', required: true
-    end
-
-    field :continue_with_google, UserType, null: true do
-      description 'Sign up or sign in with Google'
-      argument :credential, String, 'Google credential JWT', required: true
-    end
+    field :continue_with_facebook, mutation: Mutations::ContinueWithFacebook, description: 'Sign up or sign in with Facebook'
+    field :continue_with_google, mutation: Mutations::ContinueWithGoogle, description: 'Sign up or sign in with Google'
 
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
@@ -126,40 +117,6 @@ module Types
       }
     end
 
-    def continue_with_google(credential:)
-      raise 'Continue with Google is disabled' if Setting.continue_with_google_enabled == false
-
-      payload = Google::Auth::IDTokens.verify_oidc(
-        credential,
-        aud: Setting.google_client_id
-      )
-
-      return unless payload && payload['email_verified']
-
-      user, created = User.find_or_create_from_provider(
-        email: payload['email'],
-        provider: 'google',
-        first_name: payload['given_name'],
-        last_name: payload['family_name'],
-        display_name: payload['name']
-      )
-      notify_admins_of_new_user(user) if created
-      context[:sign_in].call(:user, user)
-      user
-    end
-
-    def continue_with_facebook(access_token:, signed_request:)
-      raise 'Continue with Facebook is disabled' if Setting.continue_with_facebook_enabled == false
-
-      cwfs = ContinueWithFacebookService.new(access_token, signed_request)
-      facebook_user_info = cwfs.facebook_user_info
-
-      user, created = find_or_create_facebook_user(facebook_user_info)
-      notify_admins_of_new_user(user) if created
-      context[:sign_in].call(:user, user)
-      user
-    end
-
     def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
       user = context[:current_user]
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
@@ -183,28 +140,6 @@ module Types
       Setting.continue_with_google_enabled = continue_with_google_enabled
       Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
       Setting
-    end
-
-    private
-
-    def notify_admins_of_new_user(user)
-      AdminMailer.with(
-        provider: user.signup_provider.capitalize,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        admin_emails: User.admins.pluck(:email)
-      ).new_provider_user.deliver_later
-    end
-
-    def find_or_create_facebook_user(facebook_user_info)
-      User.find_or_create_from_provider(
-        email: facebook_user_info['email'],
-        provider: 'facebook',
-        first_name: facebook_user_info['first_name'],
-        last_name: facebook_user_info['last_name'],
-        display_name: facebook_user_info['name']
-      )
     end
   end
 end
