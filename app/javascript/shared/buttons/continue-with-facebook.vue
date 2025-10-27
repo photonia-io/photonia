@@ -80,7 +80,7 @@ onMounted(() => {
         appId: props.appId,
         cookie: true,
         xfbml: false,
-        version: "v21.0",
+        version: "v24.0",
       });
       initAndRender();
     };
