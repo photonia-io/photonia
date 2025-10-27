@@ -4,39 +4,20 @@
       <div class="column is-5-tablet is-5-desktop is-5-widescreen">
         <div class="box">
           <h2 class="title is-4">Sign in or sign up</h2>
-          <div v-if="settings.continue_with_google_enabled">
-            <div
-              id="g_id_onload"
-              :data-client_id="settings.google_client_id"
-              data-context="signin"
-              data-ux_mode="popup"
-              data-callback="continueWithGoogle"
-              data-auto_prompt="false"
-            ></div>
+          <div>
+            <ContinueWithGoogle
+              v-if="settings.continue_with_google_enabled"
+              class="mb-3"
+              :client-id="settings.google_client_id"
+              :on-continue="continueWithGoogle"
+            />
 
-            <div
-              class="g_id_signin"
-              data-type="standard"
-              data-shape="rectangular"
-              data-theme="outline"
-              data-text="continue_with"
-              data-size="large"
-              data-logo_alignment="left"
-            ></div>
+            <ContinueWithFacebook
+              v-if="settings.continue_with_facebook_enabled"
+              :app-id="settings.facebook_app_id"
+              :on-continue="continueWithFacebook"
+            />
           </div>
-
-          <div
-            v-if="settings.continue_with_facebook_enabled"
-            class="fb-login-button"
-            data-width=""
-            data-size="large"
-            data-button-type=""
-            data-layout=""
-            data-onlogin="continueWithFacebook"
-            data-auto-logout-link="false"
-            data-use-continue-as="false"
-            data-scope="public_profile,email"
-          ></div>
         </div>
 
         <form @submit.prevent="submit" class="box">
@@ -83,12 +64,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import gql from "graphql-tag";
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "../stores/user";
 import { useRouter } from "vue-router";
 import toaster from "../mixins/toaster";
+
+import ContinueWithGoogle from "@/shared/buttons/continue-with-google.vue";
+import ContinueWithFacebook from "@/shared/buttons/continue-with-facebook.vue";
 
 const settings = ref(window.settings);
 
@@ -122,47 +106,40 @@ onSignInDone(({ data }) => {
   signInAndRedirect(data.signIn);
 });
 
-onSignInError((error) => {
+onSignInError((_error) => {
   const userStore = useUserStore();
   userStore.signOut();
   toaster("There was an error signing you in. Please try again.", "is-danger");
 });
 
-onMounted(() => {
-  if (window.settings.continue_with_google_enabled) {
-    const googleScript = document.createElement("script");
-    googleScript.src = "https://accounts.google.com/gsi/client";
-    googleScript.async = true;
-    document.body.appendChild(googleScript);
-
-    window.continueWithGoogle = continueWithGoogle;
-  }
-
-  if (window.settings.continue_with_facebook_enabled) {
-    const facebookScript = document.createElement("script");
-    facebookScript.src =
-      "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v21.0&appId=" +
-      window.settings.facebook_app_id;
-    facebookScript.async = true;
-    facebookScript.defer = true;
-    facebookScript.crossOrigin = "anonymous";
-    document.body.appendChild(facebookScript);
-
-    window.continueWithFacebook = continueWithFacebook;
-  }
-});
-
+// Google callback from component
 const continueWithGoogle = (response) => {
+  const credential = response?.credential;
+  if (!credential) {
+    toaster("Google login was not successful. Please try again.", "is-danger");
+    return;
+  }
   continueWithGoogleMutation({
-    credential: response.credential,
-    clientId: response.client_id,
+    credential,
   });
 };
 
+// Facebook callback from component
 const continueWithFacebook = (response) => {
+  const accessToken = response?.authResponse?.accessToken;
+  const signedRequest = response?.authResponse?.signedRequest;
+
+  if (!accessToken || !signedRequest) {
+    toaster(
+      "Facebook login was not successful. Please try again.",
+      "is-danger",
+    );
+    return;
+  }
+
   continueWithFacebookMutation({
-    accessToken: response.authResponse.accessToken,
-    signedRequest: response.authResponse.signedRequest,
+    accessToken,
+    signedRequest,
   });
 };
 
@@ -171,10 +148,11 @@ const {
   onDone: onContiueWithGoogleDone,
   onError: onContiueWithGoogleError,
 } = useMutation(gql`
-  mutation ($credential: String!, $clientId: String!) {
-    continueWithGoogle(credential: $credential, clientId: $clientId) {
+  mutation ($credential: String!) {
+    continueWithGoogle(credential: $credential) {
       email
       admin
+      uploader
     }
   }
 `);
@@ -183,7 +161,7 @@ onContiueWithGoogleDone(({ data }) => {
   signInAndRedirect(data.continueWithGoogle);
 });
 
-onContiueWithGoogleError((error) => {
+onContiueWithGoogleError((_error) => {
   toaster(
     "There was an error signing you in with Google. Please try again.",
     "is-danger",
@@ -202,6 +180,7 @@ const {
     ) {
       email
       admin
+      uploader
     }
   }
 `);
@@ -210,7 +189,7 @@ onContiueWithFacebookDone(({ data }) => {
   signInAndRedirect(data.continueWithFacebook);
 });
 
-onContiueWithFacebookError((error) => {
+onContiueWithFacebookError((_error) => {
   toaster(
     "There was an error signing you in with Facebook. Please try again.",
     "is-danger",
