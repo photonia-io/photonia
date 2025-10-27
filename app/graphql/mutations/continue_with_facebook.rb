@@ -24,8 +24,11 @@ module Mutations
     private
 
     def find_or_create_facebook_user(facebook_user_info)
+      email = facebook_user_info['email']
+      raise GraphQL::ExecutionError, 'Facebook account is missing email. Please grant the email permission.' if email.blank?
+
       User.find_or_create_from_provider(
-        email: facebook_user_info['email'],
+        email: email,
         provider: 'facebook',
         first_name: facebook_user_info['first_name'],
         last_name: facebook_user_info['last_name'],

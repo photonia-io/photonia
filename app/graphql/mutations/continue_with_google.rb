@@ -16,7 +16,7 @@ module Mutations
         aud: Setting.google_client_id
       )
 
-      return unless payload && payload['email_verified']
+      return unless payload && payload['email_verified'] && payload['email'].present?
 
       user, created = User.find_or_create_from_provider(
         email: payload['email'],
