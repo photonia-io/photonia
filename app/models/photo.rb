@@ -134,18 +134,21 @@ class Photo < ApplicationRecord
 
   before_validation :set_fields, prepend: true
 
+  # doesn't work with privacy scopes
   def next
     Photo.where('posted_at > ? OR (posted_at = ? AND id > ?)', posted_at, posted_at, id)
          .order(:posted_at, :id)
          .first
   end
 
+  # doesn't work with privacy scopes
   def prev
     Photo.where('posted_at < ? OR (posted_at = ? AND id < ?)', posted_at, posted_at, id)
          .order(posted_at: :desc, id: :desc)
          .first
   end
 
+  # doesn't work with privacy scopes
   def next_in_album(album)
     AlbumsPhoto.order(:ordering).find_by(
       'ordering > ? AND album_id = ?',
@@ -154,6 +157,7 @@ class Photo < ApplicationRecord
     )&.photo
   end
 
+  # doesn't work with privacy scopes
   def prev_in_album(album)
     AlbumsPhoto.order(ordering: :desc).find_by(
       'ordering < ? AND album_id = ?',
