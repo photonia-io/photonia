@@ -114,9 +114,13 @@ onSignInError((_error) => {
 
 // Google callback from component
 const continueWithGoogle = (response) => {
+  const credential = response?.credential;
+  if (!credential) {
+    toaster("Google login was not successful. Please try again.", "is-danger");
+    return;
+  }
   continueWithGoogleMutation({
-    credential: response.credential,
-    clientId: response.client_id,
+    credential,
   });
 };
 
@@ -144,8 +148,8 @@ const {
   onDone: onContiueWithGoogleDone,
   onError: onContiueWithGoogleError,
 } = useMutation(gql`
-  mutation ($credential: String!, $clientId: String!) {
-    continueWithGoogle(credential: $credential, clientId: $clientId) {
+  mutation ($credential: String!) {
+    continueWithGoogle(credential: $credential) {
       email
       admin
       uploader

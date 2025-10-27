@@ -26,7 +26,6 @@ module Types
 
     field :continue_with_google, UserType, null: true do
       description 'Sign up or sign in with Google'
-      argument :client_id, String, 'Google client ID', required: true
       argument :credential, String, 'Google credential JWT', required: true
     end
 
@@ -127,13 +126,16 @@ module Types
       }
     end
 
-    def continue_with_google(credential:, client_id:)
+    def continue_with_google(credential:)
       raise 'Continue with Google is disabled' if Setting.continue_with_google_enabled == false
+
+      puts "client_id = #{Setting.google_client_id}"
 
       payload = Google::Auth::IDTokens.verify_oidc(
         credential,
-        aud: client_id
+        aud: Setting.google_client_id
       )
+
       return unless payload && payload['email_verified']
 
       user, created = User.find_or_create_from_provider(
