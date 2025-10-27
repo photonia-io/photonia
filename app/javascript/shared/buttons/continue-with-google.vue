@@ -29,6 +29,7 @@ const renderButton = () => {
     return;
 
   const desiredWidth = computeResponsiveWidth(el);
+  if (desiredWidth <= 0) return;
 
   if (lastRenderedWidth === desiredWidth) return;
   lastRenderedWidth = desiredWidth;
