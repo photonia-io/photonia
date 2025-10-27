@@ -3,10 +3,12 @@
 require 'rails_helper'
 
 describe 'continueWithGoogle Mutation', type: :request do
-  let (:email) { 'test@test.com' }
-  let (:first_name) { 'Test' }
-  let (:last_name) { 'User' }
-  let (:display_name) { 'Test User' }
+  subject(:post_mutation) { post '/graphql', params: { query: query } }
+
+  let(:email) { 'test@test.com' }
+  let(:first_name) { 'Test' }
+  let(:last_name) { 'User' }
+  let(:display_name) { 'Test User' }
 
   before do
     allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(
@@ -23,7 +25,6 @@ describe 'continueWithGoogle Mutation', type: :request do
       mutation {
         continueWithGoogle(
           credential: "google_credential_jwt"
-          clientId: "google_client_id"
         ) {
           email
           admin
@@ -31,8 +32,6 @@ describe 'continueWithGoogle Mutation', type: :request do
       }
     GQL
   end
-
-  subject(:post_mutation) { post '/graphql', params: { query: query } }
 
   context 'when continue with google is enabled' do
     before do
@@ -48,7 +47,7 @@ describe 'continueWithGoogle Mutation', type: :request do
       it 'creates a new user and sends an email to the admin' do
         Sidekiq::Testing.inline! do
           expect { post_mutation }.to change(User, :count).by(1)
-            .and change(ActionMailer::Base.deliveries, :count).by(1)
+                                                          .and change(ActionMailer::Base.deliveries, :count).by(1)
         end
       end
 
