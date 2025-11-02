@@ -601,10 +601,10 @@ onSetAlbumCoverPhotoDone((result) => {
       __typename: "Album",
       id: id.value,
     });
-    // Evict album's publicCoverPhoto so album indices refetch the cover image
+    // Evict album's coverPhoto so album indices refetch the cover image
     apolloClient.cache.evict({
       id: albumCacheId,
-      fieldName: "publicCoverPhoto",
+      fieldName: "coverPhoto",
     });
 
     apolloClient.cache.gc();

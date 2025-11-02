@@ -131,7 +131,11 @@ module Types
       album = context[:album]
       return nil unless album
 
-      album.public_cover_photo_id == @object.id
+      if album.public_cover_photo_id == @object.id
+        true
+      elsif Pundit.policy(context[:current_user], album)&.update?
+        album.user_cover_photo_id == @object.id
+      end
     end
 
     def albums
