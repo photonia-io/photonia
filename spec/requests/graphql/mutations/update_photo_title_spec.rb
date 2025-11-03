@@ -5,6 +5,8 @@ require 'rails_helper'
 describe 'updatePhotoTitle Mutation', type: :request do
   include Devise::Test::IntegrationHelpers
 
+  subject(:post_mutation) { post '/graphql', params: { query: query } }
+
   let(:title) { 'Test title' }
   let(:description) { 'Test description' }
   let(:photo) { create(:photo, title: title, description: description) }
@@ -26,11 +28,16 @@ describe 'updatePhotoTitle Mutation', type: :request do
     GQL
   end
 
-  subject(:post_mutation) { post '/graphql', params: { query: query } }
-
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns NOT_FOUND error and nulls updatePhotoTitle' do
+      post_mutation
+      json = response.parsed_body
+      err = json['errors']&.first
+
+      expect(err).to be_present
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(err['path']).to eq(['updatePhotoTitle'])
+      expect(json.dig('data', 'updatePhotoTitle')).to be_nil
     end
   end
 

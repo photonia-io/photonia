@@ -23,8 +23,15 @@ describe 'impressionCountsByDate Query' do
   let(:impressionable_type) { 'Photo' }
 
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns NOT_FOUND error and nulls impressionCountsByDate' do
+      post_query
+      json = response.parsed_body
+      err = json['errors']&.first
+
+      expect(err).to be_present
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(err['path']).to eq(['impressionCountsByDate'])
+      expect(json.dig('data', 'impressionCountsByDate')).to be_nil
     end
   end
 
@@ -37,8 +44,15 @@ describe 'impressionCountsByDate Query' do
     context 'when the user is not an admin' do
       let(:user) { create(:user) }
 
-      it 'raises Pundit::NotAuthorizedError' do
-        expect { sign_in_and_post_query }.to raise_error(Pundit::NotAuthorizedError)
+      it 'returns NOT_FOUND error and nulls impressionCountsByDate' do
+        sign_in_and_post_query
+        json = response.parsed_body
+        err = json['errors']&.first
+
+        expect(err).to be_present
+        expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+        expect(err['path']).to eq(['impressionCountsByDate'])
+        expect(json.dig('data', 'impressionCountsByDate')).to be_nil
       end
     end
 

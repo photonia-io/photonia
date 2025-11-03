@@ -5,6 +5,8 @@ require 'rails_helper'
 describe 'adminSettings Query' do
   include Devise::Test::IntegrationHelpers
 
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
   let(:site_name) { 'Photonia' }
   let(:site_description) { 'A photo gallery' }
   let(:site_tracking_code) { '<script>some_javascript_code</script>' }
@@ -34,11 +36,16 @@ describe 'adminSettings Query' do
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
   end
 
-  subject(:post_query) { post '/graphql', params: { query: query } }
-
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns NOT_FOUND error and nulls adminSettings' do
+      post_query
+      json = response.parsed_body
+      err = json['errors']&.first
+
+      expect(err).to be_present
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(err['path']).to eq(['adminSettings'])
+      expect(json.dig('data', 'adminSettings')).to be_nil
     end
   end
 
@@ -50,8 +57,15 @@ describe 'adminSettings Query' do
     context 'when the user is not an admin' do
       let(:user) { create(:user, admin: false) }
 
-      it 'raises Pundit::NotAuthorizedError' do
-        expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
+      it 'returns NOT_FOUND error and nulls adminSettings' do
+        post_query
+        json = response.parsed_body
+        err = json['errors']&.first
+
+        expect(err).to be_present
+        expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+        expect(err['path']).to eq(['adminSettings'])
+        expect(json.dig('data', 'adminSettings')).to be_nil
       end
     end
 
@@ -65,12 +79,12 @@ describe 'adminSettings Query' do
         data = json['data']['adminSettings']
 
         expect(data).to include(
-          "id" => "admin-settings",
-          "siteName" => site_name,
-          "siteDescription" => site_description,
-          "siteTrackingCode" => site_tracking_code,
-          "continueWithGoogleEnabled" => continue_with_google_enabled,
-          "continueWithFacebookEnabled" => continue_with_facebook_enabled
+          'id' => 'admin-settings',
+          'siteName' => site_name,
+          'siteDescription' => site_description,
+          'siteTrackingCode' => site_tracking_code,
+          'continueWithGoogleEnabled' => continue_with_google_enabled,
+          'continueWithFacebookEnabled' => continue_with_facebook_enabled
         )
       end
     end

@@ -5,6 +5,8 @@ require 'rails_helper'
 describe 'updateUserSettings Mutation', type: :request do
   include Devise::Test::IntegrationHelpers
 
+  subject(:post_mutation) { post '/graphql', params: { query: query } }
+
   let(:email) { 'test@test.com' }
   let(:first_name) { 'Test' }
   let(:last_name) { 'User' }
@@ -42,11 +44,16 @@ describe 'updateUserSettings Mutation', type: :request do
     GQL
   end
 
-  subject(:post_mutation) { post '/graphql', params: { query: query } }
-
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError, 'User not signed in')
+    it 'returns NOT_FOUND error and nulls updateUserSettings' do
+      post_mutation
+      json = response.parsed_body
+      err = json['errors']&.first
+
+      expect(err).to be_present
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(err['path']).to eq(['updateUserSettings'])
+      expect(json.dig('data', 'updateUserSettings')).to be_nil
     end
   end
 
