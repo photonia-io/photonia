@@ -27,8 +27,10 @@ class PhotoPolicy < ApplicationPolicy
   end
 
   def show?
-    # TODO: implement private photos
-    true
+    return true if user&.admin?
+    return record.privacy_public? unless user
+
+    record.privacy_public? || record.user_id == user.id
   end
 
   def create?
