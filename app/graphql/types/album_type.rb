@@ -69,14 +69,17 @@ module Types
     end
 
     def cover_photo
-      if @object.public_cover_photo
-        @object.public_cover_photo
-      elsif context[:authorize].call(@object, :update?)
+      # For editors (owner/admin), prefer the user-set cover if present,
+      if Pundit.policy(context[:current_user], @object)&.update?
         # we can't unscope belongs_to associations, so we need to do it manually
         association_scope = @object.association(:user_cover_photo).scope
         unscoped_association = association_scope.unscope(where: :privacy)
-        Pundit.policy_scope(context[:current_user], unscoped_association).first
+        user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
+        return user_cover if user_cover
       end
+
+      # Fallback to the public cover (what visitors/non-owners see)
+      @object.public_cover_photo
     end
 
     def previous_photo_in_album(photo_id:)
