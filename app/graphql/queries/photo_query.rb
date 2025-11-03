@@ -28,6 +28,7 @@ module Queries
           photo_query.friendly.find(id)
         end
 
+      raise GraphQL::ExecutionError, 'Photo not found' unless photo
       authorize(photo, :show?)
       record_impression(photo)
       photo
