@@ -597,7 +597,7 @@ CREATE TABLE public.users (
     signup_provider character varying DEFAULT 'local'::character varying NOT NULL,
     facebook_user_id character varying,
     created_from_facebook boolean DEFAULT false NOT NULL,
-    facebook_confirmation_code character varying,
+    facebook_data_deletion_code character varying,
     disabled boolean DEFAULT false NOT NULL
 );
 
@@ -1129,10 +1129,10 @@ CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 
 
 --
--- Name: index_users_on_facebook_confirmation_code; Type: INDEX; Schema: public; Owner: -
+-- Name: index_users_on_facebook_data_deletion_code; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_users_on_facebook_confirmation_code ON public.users USING btree (facebook_confirmation_code);
+CREATE UNIQUE INDEX index_users_on_facebook_data_deletion_code ON public.users USING btree (facebook_data_deletion_code);
 
 
 --
