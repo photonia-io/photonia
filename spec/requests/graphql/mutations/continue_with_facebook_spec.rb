@@ -102,6 +102,12 @@ describe 'continueWithFacebook Mutation', type: :request do
         expect { post_mutation }.not_to change(User, :count)
       end
 
+      it 'updates the facebook_user_id for existing user' do
+        post_mutation
+        user = User.find_by(email: email)
+        expect(user.facebook_user_id).to eq(facebook_user_id.to_s)
+      end
+
       it 'returns the user' do
         post_mutation
         json = response.parsed_body
