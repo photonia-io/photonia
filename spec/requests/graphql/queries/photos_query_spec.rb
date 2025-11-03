@@ -171,3 +171,95 @@ describe 'photos Query' do
     end
   end
 end
+
+# Visibility via policy scope for photos (list)
+describe 'photos visibility via policy scope' do
+  include Devise::Test::IntegrationHelpers
+
+  subject(:post_query) { post '/graphql', params: { query: } }
+
+  let(:query) do
+    <<~GQL
+      query {
+        photos(page: 1) {
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
+          collection {
+            id
+          }
+        }
+      }
+    GQL
+  end
+
+  let!(:owner)    { create(:user) }
+  let!(:stranger) { create(:user) }
+  let!(:admin)    { create(:user, admin: true) }
+
+  let!(:public_photo)  { create(:photo, user: owner) }
+  let!(:private_photo) { create(:photo, user: owner, privacy: :private) }
+
+  context 'as a visitor' do
+    it 'lists only public photos' do
+      post_query
+
+      meta = response.parsed_body['data']['photos']['metadata']
+      collection = response.parsed_body['data']['photos']['collection']
+      ids = collection.map { |p| p['id'] }
+
+      expect(meta['totalCount']).to eq(1)
+      expect(ids).to include(public_photo.slug)
+      expect(ids).not_to include(private_photo.slug)
+    end
+  end
+
+  context 'as a logged-in non-owner' do
+    before { sign_in(stranger) }
+
+    it 'lists only public photos' do
+      post_query
+
+      meta = response.parsed_body['data']['photos']['metadata']
+      collection = response.parsed_body['data']['photos']['collection']
+      ids = collection.map { |p| p['id'] }
+
+      expect(meta['totalCount']).to eq(1)
+      expect(ids).to include(public_photo.slug)
+      expect(ids).not_to include(private_photo.slug)
+    end
+  end
+
+  context 'as the owner' do
+    before { sign_in(owner) }
+
+    it 'lists both public and private photos' do
+      post_query
+
+      meta = response.parsed_body['data']['photos']['metadata']
+      collection = response.parsed_body['data']['photos']['collection']
+      ids = collection.map { |p| p['id'] }
+
+      expect(meta['totalCount']).to eq(2)
+      expect(ids).to include(public_photo.slug, private_photo.slug)
+    end
+  end
+
+  context 'as an admin' do
+    before { sign_in(admin) }
+
+    it 'lists both public and private photos' do
+      post_query
+
+      meta = response.parsed_body['data']['photos']['metadata']
+      collection = response.parsed_body['data']['photos']['collection']
+      ids = collection.map { |p| p['id'] }
+
+      expect(meta['totalCount']).to eq(2)
+      expect(ids).to include(public_photo.slug, private_photo.slug)
+    end
+  end
+end
