@@ -594,7 +594,8 @@ CREATE TABLE public.users (
     display_name character varying,
     serial_number bigint,
     slug character varying,
-    signup_provider character varying DEFAULT 'local'::character varying NOT NULL
+    signup_provider character varying DEFAULT 'local'::character varying NOT NULL,
+    facebook_user_id character varying
 );
 
 
@@ -1125,6 +1126,13 @@ CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 
 
 --
+-- Name: index_users_on_facebook_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_users_on_facebook_user_id ON public.users USING btree (facebook_user_id);
+
+
+--
 -- Name: index_users_on_jti; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1272,6 +1280,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251103135206'),
 ('20251021101306'),
 ('20250919125004'),
 ('20250822171155'),

@@ -19,11 +19,13 @@
 #  timezone            :string           default("UTC"), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
+#  facebook_user_id    :string
 #
 # Indexes
 #
-#  index_users_on_email  (email) UNIQUE
-#  index_users_on_jti    (jti) UNIQUE
+#  index_users_on_email             (email) UNIQUE
+#  index_users_on_facebook_user_id  (facebook_user_id) UNIQUE
+#  index_users_on_jti               (jti) UNIQUE
 #
 require 'rails_helper'
 
