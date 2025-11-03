@@ -92,25 +92,6 @@ describe 'album Query' do
           expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
         end
       end
-
-      describe 'photosCount field' do
-        let(:query) do
-          <<~GQL
-            query {
-              album(id: "#{album.slug}") {
-                id
-                photosCount
-              }
-            }
-          GQL
-        end
-
-        it 'raises Pundit::NotAuthorizedError' do
-          # expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
-          # let's skip this test for now
-          skip 'Skipping test for Pundit::NotAuthorizedError'
-        end
-      end
     end
 
     context 'when the user is logged in' do
