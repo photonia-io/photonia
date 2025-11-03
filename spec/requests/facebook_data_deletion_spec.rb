@@ -21,7 +21,7 @@ RSpec.describe 'FacebookDataDeletion' do
     context 'with valid signed request' do
       it 'returns success with confirmation URL and code' do
         post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
-        
+
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
         expect(json['url']).to include('/facebook_data_deletion/status?id=')
@@ -33,9 +33,9 @@ RSpec.describe 'FacebookDataDeletion' do
 
         it 'disables the user and clears facebook_user_id' do
           allow(Rails.logger).to receive(:info)
-          
+
           post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
-          
+
           expect(response).to have_http_status(:ok)
           user.reload
           expect(user.facebook_user_id).to be_nil
@@ -45,9 +45,9 @@ RSpec.describe 'FacebookDataDeletion' do
 
         it 'logs the deletion request' do
           allow(Rails.logger).to receive(:info)
-          
+
           post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
-          
+
           expect(Rails.logger).to have_received(:info).with("Facebook data deletion request received for user_id: #{user_id}")
           expect(Rails.logger).to have_received(:info).with("Found user with email: #{user.email}")
           expect(Rails.logger).to have_received(:info).with("User #{user.email} has been disabled and unlinked from Facebook")
@@ -59,9 +59,9 @@ RSpec.describe 'FacebookDataDeletion' do
 
         it 'unlinks from Facebook but does not disable the user' do
           allow(Rails.logger).to receive(:info)
-          
+
           post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
-          
+
           expect(response).to have_http_status(:ok)
           user.reload
           expect(user.facebook_user_id).to be_nil
@@ -71,9 +71,9 @@ RSpec.describe 'FacebookDataDeletion' do
 
         it 'logs the unlink action' do
           allow(Rails.logger).to receive(:info)
-          
+
           post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
-          
+
           expect(Rails.logger).to have_received(:info).with("Facebook data deletion request received for user_id: #{user_id}")
           expect(Rails.logger).to have_received(:info).with("Found user with email: #{user.email}")
           expect(Rails.logger).to have_received(:info).with("User #{user.email} has been unlinked from Facebook")
@@ -83,9 +83,9 @@ RSpec.describe 'FacebookDataDeletion' do
       context 'when user does not exist' do
         it 'logs that no user was found' do
           allow(Rails.logger).to receive(:info)
-          
+
           post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
-          
+
           expect(response).to have_http_status(:ok)
           expect(Rails.logger).to have_received(:info).with("No user found with facebook_user_id: #{user_id}")
         end
@@ -97,7 +97,7 @@ RSpec.describe 'FacebookDataDeletion' do
 
       it 'returns unauthorized' do
         post '/facebook_data_deletion/callback', params: { signed_request: invalid_signed_request }
-        
+
         expect(response).to have_http_status(:unauthorized)
         json = response.parsed_body
         expect(json['error']).to eq('Invalid signature')
@@ -107,7 +107,7 @@ RSpec.describe 'FacebookDataDeletion' do
     context 'with missing signed_request parameter' do
       it 'returns bad request' do
         post '/facebook_data_deletion/callback'
-        
+
         expect(response).to have_http_status(:bad_request)
         json = response.parsed_body
         expect(json['error']).to eq('Missing signed_request parameter')
@@ -119,7 +119,7 @@ RSpec.describe 'FacebookDataDeletion' do
 
       it 'returns unauthorized' do
         post '/facebook_data_deletion/callback', params: { signed_request: malformed_signed_request }
-        
+
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -134,9 +134,9 @@ RSpec.describe 'FacebookDataDeletion' do
 
       it 'returns internal server error' do
         allow(Rails.logger).to receive(:error)
-        
+
         post '/facebook_data_deletion/callback', params: { signed_request: signed_request_with_invalid_json }
-        
+
         expect(response).to have_http_status(:internal_server_error)
         json = response.parsed_body
         expect(json['error']).to eq('Internal server error')
@@ -151,10 +151,10 @@ RSpec.describe 'FacebookDataDeletion' do
     context 'when no user has the confirmation code' do
       it 'returns generic confirmation message' do
         get '/facebook_data_deletion/status', params: { id: confirmation_code }
-        
-        expect(response).to have_http_status(:ok)
+
+        expect(response).to have_http_status(:not_found)
         json = response.parsed_body
-        expect(json['message']).to eq('Data deletion request received')
+        expect(json['message']).to eq('Confirmation code not found.')
         expect(json['confirmation_code']).to eq(confirmation_code)
       end
     end
@@ -164,7 +164,7 @@ RSpec.describe 'FacebookDataDeletion' do
 
       it 'returns disabled user message' do
         get '/facebook_data_deletion/status', params: { id: confirmation_code }
-        
+
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
         expect(json['status']).to eq('completed')
@@ -177,7 +177,7 @@ RSpec.describe 'FacebookDataDeletion' do
 
       it 'returns unlinked message' do
         get '/facebook_data_deletion/status', params: { id: confirmation_code }
-        
+
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
         expect(json['status']).to eq('completed')

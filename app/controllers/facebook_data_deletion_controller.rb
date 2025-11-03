@@ -33,17 +33,17 @@ class FacebookDataDeletionController < ActionController::Base
 
   def status
     confirmation_code = params[:id]
-    
+
     user = User.find_by(facebook_confirmation_code: confirmation_code)
-    
+
     if user.nil?
       render json: {
-        message: 'Data deletion request received',
+        message: 'Confirmation code not found.',
         confirmation_code: confirmation_code
-      }, status: :ok
+      }, status: :not_found
       return
     end
-    
+
     if user.created_from_facebook
       render json: {
         status: 'completed',
@@ -65,15 +65,15 @@ class FacebookDataDeletionController < ActionController::Base
     Rails.logger.info("Facebook data deletion request received for user_id: #{user_id}")
 
     user = User.find_by(facebook_user_id: user_id)
-    
+
     if user.nil?
       Rails.logger.info("No user found with facebook_user_id: #{user_id}")
       return generate_confirmation_code(user_id)
     end
-    
+
     Rails.logger.info("Found user with email: #{user.email}")
     confirmation_code = generate_confirmation_code(user_id)
-    
+
     if user.created_from_facebook
       # User was created via Facebook - disable the user
       user.update!(
@@ -90,7 +90,7 @@ class FacebookDataDeletionController < ActionController::Base
       )
       Rails.logger.info("User #{user.email} has been unlinked from Facebook")
     end
-    
+
     confirmation_code
   end
 
