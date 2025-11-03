@@ -27,10 +27,15 @@ class PhotoPolicy < ApplicationPolicy
   end
 
   def show?
+    # visitor
+    return record.public_privacy? if user.nil?
+    # owner
+    return true if record.user_id == user.id
+    # admin
     return true if user&.admin?
-    return record.privacy_public? unless user
 
-    record.privacy_public? || record.user_id == user.id
+    # fallback
+    record.public_privacy?
   end
 
   def create?
