@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Photos' do
-  context 'when photo exists' do
+  context 'when the photo exists' do
     let!(:photo) { create(:photo, :with_taken_at, image_data: TestData.image_data) }
 
     describe 'GET /photos' do
@@ -48,6 +48,27 @@ RSpec.describe 'Photos' do
       it 'returns http success' do
         get "/photos/#{photo.slug}"
         expect(response).to have_http_status(:success)
+      end
+    end
+  end
+
+  context 'when the photo is private' do
+    let!(:private_photo) { create(:photo, :private) }
+
+    describe 'GET /photos/{slug}' do
+      it 'returns http success' do
+        get "/photos/#{private_photo.slug}"
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'does not contain the photo' do
+        get "/photos/#{private_photo.slug}"
+        expect(response.body).not_to include(private_photo.title)
+      end
+
+      it 'has a generic <title>' do
+        get "/photos/#{private_photo.slug}"
+        expect(response.body).to include('<title>Photo - Photonia</title>')
       end
     end
   end
