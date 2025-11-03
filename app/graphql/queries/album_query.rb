@@ -3,7 +3,7 @@
 module Queries
   # Get an album by ID
   class AlbumQuery < BaseQuery
-    type Types::AlbumType, null: false
+    type Types::AlbumType, null: true
     description 'Find an album by ID'
 
     argument :id, ID, 'ID of the album', required: true

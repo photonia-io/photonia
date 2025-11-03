@@ -29,7 +29,7 @@ module Types
     field :sorting_type, String, 'Sorting type of the album', null: false
     field :title, String, 'Title of the album', null: false
 
-    field :all_photos, [PhotoType], 'All photos in the album', null: false
+    field :all_photos, [PhotoType], 'All photos in the album', null: true
 
     field :photos, Types::PaginatedPhotoType, null: false do
       argument :page, Integer, 'Page number', required: false
@@ -37,7 +37,13 @@ module Types
     end
 
     def all_photos
-      context[:authorize].call(@object, :update?)
+      begin
+        context[:authorize].call(@object, :update?)
+      rescue Pundit::NotAuthorizedError
+        # Field-level secure-not-found: do not null the parent album, only this field
+        raise GraphQL::ExecutionError.new('Not found', extensions: { code: 'NOT_FOUND' })
+      end
+
       context[:album] = @object
       @object.all_photos(select: false, refetch: true).includes(:albums_photos)
     end
