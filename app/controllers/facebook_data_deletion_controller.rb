@@ -34,7 +34,7 @@ class FacebookDataDeletionController < ActionController::Base
   def status
     confirmation_code = params[:id]
 
-    user = User.find_by(facebook_confirmation_code: confirmation_code)
+    user = User.find_by(facebook_data_deletion_code: confirmation_code)
 
     if user.nil?
       render json: {
@@ -79,14 +79,14 @@ class FacebookDataDeletionController < ActionController::Base
       user.update!(
         facebook_user_id: nil,
         disabled: true,
-        facebook_confirmation_code: confirmation_code
+        facebook_data_deletion_code: confirmation_code
       )
       Rails.logger.info("User #{user.email} has been disabled and unlinked from Facebook")
     else
       # User existed before Facebook login - just unlink from Facebook
       user.update!(
         facebook_user_id: nil,
-        facebook_confirmation_code: confirmation_code
+        facebook_data_deletion_code: confirmation_code
       )
       Rails.logger.info("User #{user.email} has been unlinked from Facebook")
     end

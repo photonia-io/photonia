@@ -40,7 +40,7 @@ RSpec.describe 'FacebookDataDeletion' do
           user.reload
           expect(user.facebook_user_id).to be_nil
           expect(user.disabled).to be(true)
-          expect(user.facebook_confirmation_code).to be_present
+          expect(user.facebook_data_deletion_code).to be_present
         end
 
         it 'logs the deletion request' do
@@ -66,7 +66,7 @@ RSpec.describe 'FacebookDataDeletion' do
           user.reload
           expect(user.facebook_user_id).to be_nil
           expect(user.disabled).to be(false)
-          expect(user.facebook_confirmation_code).to be_present
+          expect(user.facebook_data_deletion_code).to be_present
         end
 
         it 'logs the unlink action' do
@@ -160,7 +160,7 @@ RSpec.describe 'FacebookDataDeletion' do
     end
 
     context 'when user was created from Facebook' do
-      let!(:user) { create(:user, facebook_confirmation_code: confirmation_code, created_from_facebook: true, disabled: true) }
+      let!(:user) { create(:user, facebook_data_deletion_code: confirmation_code, created_from_facebook: true, disabled: true) }
 
       it 'returns disabled user message' do
         get '/facebook_data_deletion/status', params: { id: confirmation_code }
@@ -173,7 +173,7 @@ RSpec.describe 'FacebookDataDeletion' do
     end
 
     context 'when user was not created from Facebook' do
-      let!(:user) { create(:user, facebook_confirmation_code: confirmation_code, created_from_facebook: false, disabled: false) }
+      let!(:user) { create(:user, facebook_data_deletion_code: confirmation_code, created_from_facebook: false, disabled: false) }
 
       it 'returns unlinked message' do
         get '/facebook_data_deletion/status', params: { id: confirmation_code }
