@@ -47,6 +47,46 @@ describe 'photos Query' do
         expect(response.parsed_body['data']['photos']['collection'].length).to eq(photo_count)
       end
     end
+
+    describe 'search' do
+      subject(:post_query) { post '/graphql', params: { query: } }
+
+      let!(:match_photo)      { create(:photo, title: 'Sunset over Lake') }
+      let!(:non_match_photo)  { create(:photo, title: 'Forest Trail') }
+
+      let(:query) do
+        <<~GQL
+          query {
+            photos(page: 1, query: "Lake") {
+              metadata {
+                totalPages
+                totalCount
+                currentPage
+                limitValue
+              }
+              collection {
+                id
+              }
+            }
+          }
+        GQL
+      end
+
+      it 'filters photos using the search query' do
+        post_query
+
+        data = response.parsed_body['data']['photos']
+        expect(data['metadata']).to include(
+          'totalPages' => 1,
+          'totalCount' => 1,
+          'currentPage' => 1,
+          'limitValue' => 20
+        )
+
+        ids = data['collection'].map { |p| p['id'] }
+        expect(ids).to eq([match_photo.slug])
+      end
+    end
   end
 
   context 'when using the simple mode' do
