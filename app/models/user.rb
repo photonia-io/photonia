@@ -54,7 +54,7 @@ class User < ApplicationRecord
 
   after_create :assign_default_role
 
-  def self.find_or_create_from_provider(email:, provider:, first_name: nil, last_name: nil, display_name: nil)
+  def self.find_or_create_from_provider(email:, provider:, first_name: nil, last_name: nil, display_name: nil, facebook_user_id: nil)
     created = false
     user = find_or_create_by(email: email) do |user|
       user.signup_provider = provider
@@ -62,6 +62,7 @@ class User < ApplicationRecord
       user.first_name = first_name
       user.last_name = last_name
       user.display_name = display_name
+      user.facebook_user_id = facebook_user_id if provider == 'facebook'
       created = true
     end
     [user, created]

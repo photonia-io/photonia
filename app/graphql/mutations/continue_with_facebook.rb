@@ -32,7 +32,8 @@ module Mutations
         provider: 'facebook',
         first_name: facebook_user_info['first_name'],
         last_name: facebook_user_info['last_name'],
-        display_name: facebook_user_info['name']
+        display_name: facebook_user_info['name'],
+        facebook_user_id: facebook_user_info['id']
       )
     end
 

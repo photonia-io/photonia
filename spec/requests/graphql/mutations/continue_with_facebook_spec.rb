@@ -77,6 +77,12 @@ describe 'continueWithFacebook Mutation', type: :request do
         expect(user.signup_provider).to eq('facebook')
       end
 
+      it "stores the user's facebook_user_id" do
+        post_mutation
+        user = User.last
+        expect(user.facebook_user_id).to eq(facebook_user_id.to_s)
+      end
+
       it 'returns the user' do
         post_mutation
         json = response.parsed_body
