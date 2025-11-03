@@ -64,7 +64,10 @@ class User < ApplicationRecord
       user.first_name = first_name
       user.last_name = last_name
       user.display_name = display_name
-      user.facebook_user_id = facebook_user_id if provider == 'facebook'
+      if provider == 'facebook'
+        user.facebook_user_id = facebook_user_id
+        user.created_from_facebook = true
+      end
       created = true
     end
     

@@ -28,17 +28,55 @@ RSpec.describe 'FacebookDataDeletion' do
         expect(json['confirmation_code']).to be_present
       end
 
-      context 'when user exists with facebook_user_id' do
-        let!(:user) { create(:user, facebook_user_id: user_id, email: 'test@facebook.com') }
+      context 'when user exists with facebook_user_id and created_from_facebook is true' do
+        let!(:user) { create(:user, facebook_user_id: user_id, email: 'test@facebook.com', created_from_facebook: true) }
 
-        it 'finds the user and logs the deletion request' do
+        it 'disables the user and clears facebook_user_id' do
           allow(Rails.logger).to receive(:info)
           
           post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
           
           expect(response).to have_http_status(:ok)
+          user.reload
+          expect(user.facebook_user_id).to be_nil
+          expect(user.disabled).to be(true)
+          expect(user.facebook_confirmation_code).to be_present
+        end
+
+        it 'logs the deletion request' do
+          allow(Rails.logger).to receive(:info)
+          
+          post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
+          
           expect(Rails.logger).to have_received(:info).with("Facebook data deletion request received for user_id: #{user_id}")
           expect(Rails.logger).to have_received(:info).with("Found user with email: #{user.email}")
+          expect(Rails.logger).to have_received(:info).with("User #{user.email} has been disabled and unlinked from Facebook")
+        end
+      end
+
+      context 'when user exists with facebook_user_id and created_from_facebook is false' do
+        let!(:user) { create(:user, facebook_user_id: user_id, email: 'existing@user.com', created_from_facebook: false) }
+
+        it 'unlinks from Facebook but does not disable the user' do
+          allow(Rails.logger).to receive(:info)
+          
+          post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
+          
+          expect(response).to have_http_status(:ok)
+          user.reload
+          expect(user.facebook_user_id).to be_nil
+          expect(user.disabled).to be(false)
+          expect(user.facebook_confirmation_code).to be_present
+        end
+
+        it 'logs the unlink action' do
+          allow(Rails.logger).to receive(:info)
+          
+          post '/facebook_data_deletion/callback', params: { signed_request: signed_request }
+          
+          expect(Rails.logger).to have_received(:info).with("Facebook data deletion request received for user_id: #{user_id}")
+          expect(Rails.logger).to have_received(:info).with("Found user with email: #{user.email}")
+          expect(Rails.logger).to have_received(:info).with("User #{user.email} has been unlinked from Facebook")
         end
       end
 
@@ -110,13 +148,41 @@ RSpec.describe 'FacebookDataDeletion' do
   describe 'GET /facebook_data_deletion/status' do
     let(:confirmation_code) { 'abc123' }
 
-    it 'returns success with confirmation message' do
-      get '/facebook_data_deletion/status', params: { id: confirmation_code }
-      
-      expect(response).to have_http_status(:ok)
-      json = response.parsed_body
-      expect(json['message']).to eq('Data deletion request received')
-      expect(json['confirmation_code']).to eq(confirmation_code)
+    context 'when no user has the confirmation code' do
+      it 'returns generic confirmation message' do
+        get '/facebook_data_deletion/status', params: { id: confirmation_code }
+        
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body
+        expect(json['message']).to eq('Data deletion request received')
+        expect(json['confirmation_code']).to eq(confirmation_code)
+      end
+    end
+
+    context 'when user was created from Facebook' do
+      let!(:user) { create(:user, facebook_confirmation_code: confirmation_code, created_from_facebook: true, disabled: true) }
+
+      it 'returns disabled user message' do
+        get '/facebook_data_deletion/status', params: { id: confirmation_code }
+        
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body
+        expect(json['status']).to eq('completed')
+        expect(json['message']).to eq('Your data deletion request was completed. The user has been disabled.')
+      end
+    end
+
+    context 'when user was not created from Facebook' do
+      let!(:user) { create(:user, facebook_confirmation_code: confirmation_code, created_from_facebook: false, disabled: false) }
+
+      it 'returns unlinked message' do
+        get '/facebook_data_deletion/status', params: { id: confirmation_code }
+        
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body
+        expect(json['status']).to eq('completed')
+        expect(json['message']).to eq("Your data deletion request was completed. The user's link with Facebook was removed.")
+      end
     end
   end
 end

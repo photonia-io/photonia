@@ -16,8 +16,7 @@ class FacebookDataDeletionController < ActionController::Base
 
     begin
       user_id = verify_and_extract_user_id(signed_request)
-      log_deletion_request(user_id)
-      confirmation_code = generate_confirmation_code(user_id)
+      confirmation_code = process_deletion_request(user_id)
 
       render json: {
         url: "#{request.base_url}/facebook_data_deletion/status?id=#{confirmation_code}",
@@ -34,29 +33,65 @@ class FacebookDataDeletionController < ActionController::Base
 
   def status
     confirmation_code = params[:id]
-    render json: {
-      message: 'Data deletion request received',
-      confirmation_code: confirmation_code
-    }, status: :ok
+    
+    user = User.find_by(facebook_confirmation_code: confirmation_code)
+    
+    if user.nil?
+      render json: {
+        message: 'Data deletion request received',
+        confirmation_code: confirmation_code
+      }, status: :ok
+      return
+    end
+    
+    if user.created_from_facebook
+      render json: {
+        status: 'completed',
+        message: 'Your data deletion request was completed. The user has been disabled.'
+      }, status: :ok
+    else
+      render json: {
+        status: 'completed',
+        message: "Your data deletion request was completed. The user's link with Facebook was removed."
+      }, status: :ok
+    end
   end
 
   private
 
   class InvalidSignatureError < StandardError; end
 
-  def log_deletion_request(user_id)
+  def process_deletion_request(user_id)
     Rails.logger.info("Facebook data deletion request received for user_id: #{user_id}")
 
     user = User.find_by(facebook_user_id: user_id)
-    if user
-      # In a real implementation, you might want to:
-      # - Queue a job to delete user data
-      # - Anonymize the user data
-      # - Mark the user for deletion
-      Rails.logger.info("Found user with email: #{user.email}")
-    else
+    
+    if user.nil?
       Rails.logger.info("No user found with facebook_user_id: #{user_id}")
+      return generate_confirmation_code(user_id)
     end
+    
+    Rails.logger.info("Found user with email: #{user.email}")
+    confirmation_code = generate_confirmation_code(user_id)
+    
+    if user.created_from_facebook
+      # User was created via Facebook - disable the user
+      user.update!(
+        facebook_user_id: nil,
+        disabled: true,
+        facebook_confirmation_code: confirmation_code
+      )
+      Rails.logger.info("User #{user.email} has been disabled and unlinked from Facebook")
+    else
+      # User existed before Facebook login - just unlink from Facebook
+      user.update!(
+        facebook_user_id: nil,
+        facebook_confirmation_code: confirmation_code
+      )
+      Rails.logger.info("User #{user.email} has been unlinked from Facebook")
+    end
+    
+    confirmation_code
   end
 
   def verify_and_extract_user_id(signed_request)
