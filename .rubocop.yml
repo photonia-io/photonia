@@ -17,12 +17,14 @@ Layout/LineLength:
 
 # rubocop-rails
 
-RSpec/MultipleExpectations:
-  Max: 2
-RSpec/MultipleMemoizedHelpers:
+RSpec/ExampleLength:
   Enabled: false
 RSpec/ImplicitExpect:
   EnforcedStyle: should
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
 
 # Custom Exclusions
 
