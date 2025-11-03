@@ -85,6 +85,26 @@ RSpec.describe 'FacebookDataDeletion' do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    context 'when JSON parsing fails' do
+      let(:invalid_json_payload) { Base64.urlsafe_encode64('not valid json') }
+      let(:signature_for_invalid_json) do
+        digested = OpenSSL::HMAC.digest('sha256', app_secret, invalid_json_payload)
+        Base64.urlsafe_encode64(digested).gsub('=', '')
+      end
+      let(:signed_request_with_invalid_json) { "#{signature_for_invalid_json}.#{invalid_json_payload}" }
+
+      it 'returns internal server error' do
+        allow(Rails.logger).to receive(:error)
+        
+        post '/facebook_data_deletion/callback', params: { signed_request: signed_request_with_invalid_json }
+        
+        expect(response).to have_http_status(:internal_server_error)
+        json = response.parsed_body
+        expect(json['error']).to eq('Internal server error')
+        expect(Rails.logger).to have_received(:error).with(/Error processing Facebook data deletion request/)
+      end
+    end
   end
 
   describe 'GET /facebook_data_deletion/status' do
