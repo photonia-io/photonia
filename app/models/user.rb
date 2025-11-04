@@ -4,26 +4,32 @@
 #
 # Table name: users
 #
-#  id                  :bigint           not null, primary key
-#  admin               :boolean          default(FALSE)
-#  display_name        :string
-#  email               :string           default(""), not null
-#  encrypted_password  :string           default(""), not null
-#  first_name          :string
-#  jti                 :string
-#  last_name           :string
-#  remember_created_at :datetime
-#  serial_number       :bigint
-#  signup_provider     :string           default("local"), not null
-#  slug                :string
-#  timezone            :string           default("UTC"), not null
-#  created_at          :datetime         not null
-#  updated_at          :datetime         not null
+#  id                          :bigint           not null, primary key
+#  admin                       :boolean          default(FALSE)
+#  created_from_facebook       :boolean          default(FALSE), not null
+#  disabled                    :boolean          default(FALSE), not null
+#  display_name                :string
+#  email                       :string           default(""), not null
+#  encrypted_password          :string           default(""), not null
+#  facebook_data_deletion_code :string
+#  first_name                  :string
+#  jti                         :string
+#  last_name                   :string
+#  remember_created_at         :datetime
+#  serial_number               :bigint
+#  signup_provider             :string           default("local"), not null
+#  slug                        :string
+#  timezone                    :string           default("UTC"), not null
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  facebook_user_id            :string
 #
 # Indexes
 #
-#  index_users_on_email  (email) UNIQUE
-#  index_users_on_jti    (jti) UNIQUE
+#  index_users_on_email                        (email) UNIQUE
+#  index_users_on_facebook_data_deletion_code  (facebook_data_deletion_code) UNIQUE
+#  index_users_on_facebook_user_id             (facebook_user_id) UNIQUE
+#  index_users_on_jti                          (jti) UNIQUE
 #
 class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
@@ -54,7 +60,7 @@ class User < ApplicationRecord
 
   after_create :assign_default_role
 
-  def self.find_or_create_from_provider(email:, provider:, first_name: nil, last_name: nil, display_name: nil)
+  def self.find_or_create_from_provider(email:, provider:, first_name: nil, last_name: nil, display_name: nil, facebook_user_id: nil)
     created = false
     user = find_or_create_by(email: email) do |user|
       user.signup_provider = provider
@@ -62,8 +68,18 @@ class User < ApplicationRecord
       user.first_name = first_name
       user.last_name = last_name
       user.display_name = display_name
+      if provider == 'facebook'
+        user.facebook_user_id = facebook_user_id
+        user.created_from_facebook = true
+      end
       created = true
     end
+    
+    # Update facebook_user_id for existing users who sign in with Facebook
+    if !created && provider == 'facebook' && facebook_user_id.present? && user.facebook_user_id != facebook_user_id
+      user.update!(facebook_user_id: facebook_user_id)
+    end
+    
     [user, created]
   end
 

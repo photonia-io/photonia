@@ -13,6 +13,10 @@ Rails.application.routes.draw do
   # Devise authentication (skipping all default routes)
   devise_for :users, skip: :all
 
+  # Facebook Data Deletion Request Callback
+  post 'facebook_data_deletion/callback', to: 'facebook_data_deletion#callback'
+  get 'facebook_data_deletion/status', to: 'facebook_data_deletion#status'
+
   # User-related routes
   scope 'users', controller: 'users' do
     get 'sign_in', action: :sign_in, as: :users_sign_in

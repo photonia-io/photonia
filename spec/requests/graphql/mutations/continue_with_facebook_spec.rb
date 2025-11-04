@@ -77,6 +77,18 @@ describe 'continueWithFacebook Mutation', type: :request do
         expect(user.signup_provider).to eq('facebook')
       end
 
+      it "stores the user's facebook_user_id" do
+        post_mutation
+        user = User.last
+        expect(user.facebook_user_id).to eq(facebook_user_id.to_s)
+      end
+
+      it "sets created_from_facebook to true" do
+        post_mutation
+        user = User.last
+        expect(user.created_from_facebook).to be(true)
+      end
+
       it 'returns the user' do
         post_mutation
         json = response.parsed_body
@@ -94,6 +106,18 @@ describe 'continueWithFacebook Mutation', type: :request do
 
       it 'does not create a new user' do
         expect { post_mutation }.not_to change(User, :count)
+      end
+
+      it 'updates the facebook_user_id for existing user' do
+        post_mutation
+        user = User.find_by(email: email)
+        expect(user.facebook_user_id).to eq(facebook_user_id.to_s)
+      end
+
+      it 'does not change created_from_facebook for existing user' do
+        post_mutation
+        user = User.find_by(email: email)
+        expect(user.created_from_facebook).to be(false)
       end
 
       it 'returns the user' do
