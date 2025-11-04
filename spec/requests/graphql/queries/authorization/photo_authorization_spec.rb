@@ -9,7 +9,7 @@ describe 'photo access control by role (detail)', :authorization do
   def query_for(id)
     <<~GQL
       query {
-        photo(id: #{id}) {
+        photo(id: "#{id}") {
           id
         }
       }
