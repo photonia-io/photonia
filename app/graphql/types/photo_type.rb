@@ -63,15 +63,15 @@ module Types
 
     def previous_photo
       base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-      base.where('posted_at > ? OR (posted_at = ? AND id > ?)', @object.posted_at, @object.posted_at, @object.id)
-          .order(:posted_at, :id)
+      base.where('posted_at < ? OR (posted_at = ? AND id < ?)', @object.posted_at, @object.posted_at, @object.id)
+          .order(posted_at: :desc, id: :desc)
           .first
     end
 
     def next_photo
       base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-      base.where('posted_at < ? OR (posted_at = ? AND id < ?)', @object.posted_at, @object.posted_at, @object.id)
-          .order(posted_at: :desc, id: :desc)
+      base.where('posted_at > ? OR (posted_at = ? AND id > ?)', @object.posted_at, @object.posted_at, @object.id)
+          .order(:posted_at, :id)
           .first
     end
 
