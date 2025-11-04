@@ -16,12 +16,12 @@ describe 'photo access control by role (detail)', :authorization do
     GQL
   end
 
-  include_context 'auth actors'
+  include_context 'with auth actors'
 
-  let!(:public_photo)  { create(:photo, user: owner) }
-  let!(:private_photo) { create(:photo, user: owner, privacy: :private) }
+  let(:public_photo)  { create(:photo, user: owner) }
+  let(:private_photo) { create(:photo, user: owner, privacy: :private) }
 
-  context 'as a visitor' do
+  context 'when visitor is not logged in' do
     it 'can fetch the public photo' do
       post '/graphql', params: { query: query_for(public_photo.slug) }
       data = response.parsed_body['data']['photo']
@@ -40,7 +40,7 @@ describe 'photo access control by role (detail)', :authorization do
     end
   end
 
-  context 'as a logged-in non-owner' do
+  context 'when logged in as a non-owner' do
     before { sign_in(stranger) }
 
     it 'can fetch the public photo' do
@@ -61,7 +61,7 @@ describe 'photo access control by role (detail)', :authorization do
     end
   end
 
-  context 'as the owner' do
+  context 'when logged in as the owner' do
     before { sign_in(owner) }
 
     it 'can fetch the public photo' do
@@ -77,7 +77,7 @@ describe 'photo access control by role (detail)', :authorization do
     end
   end
 
-  context 'as an admin' do
+  context 'when logged in as an admin' do
     before { sign_in(admin) }
 
     it 'can fetch the public photo' do

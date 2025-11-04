@@ -11,6 +11,12 @@
 #   include_examples 'lists both public and private photos'
 
 RSpec.shared_examples 'lists only public photos' do
+  # Ensure records exist before issuing the GraphQL query
+  before do
+    public_photo
+    private_photo
+  end
+
   it 'lists only public photos' do
     post_query
 
@@ -25,6 +31,12 @@ RSpec.shared_examples 'lists only public photos' do
 end
 
 RSpec.shared_examples 'lists both public and private photos' do
+  # Ensure records exist before issuing the GraphQL query
+  before do
+    public_photo
+    private_photo
+  end
+
   it 'lists both public and private photos' do
     post_query
 

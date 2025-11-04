@@ -26,30 +26,30 @@ describe 'photos visibility via policy scope', :authorization do
     GQL
   end
 
-  include_context 'auth actors'
+  let(:public_photo)  { create(:photo, user: owner) }
+  let(:private_photo) { create(:photo, user: owner, privacy: :private) }
 
-  let!(:public_photo)  { create(:photo, user: owner) }
-  let!(:private_photo) { create(:photo, user: owner, privacy: :private) }
+  include_context 'with auth actors'
 
-  context 'as a visitor' do
-    include_examples 'lists only public photos'
+  context 'when visitor is not logged in' do
+    it_behaves_like 'lists only public photos'
   end
 
-  context 'as a logged-in non-owner' do
+  context 'when logged in as a non-owner' do
     before { sign_in(stranger) }
 
-    include_examples 'lists only public photos'
+    it_behaves_like 'lists only public photos'
   end
 
-  context 'as the owner' do
+  context 'when logged in as the owner' do
     before { sign_in(owner) }
 
-    include_examples 'lists both public and private photos'
+    it_behaves_like 'lists both public and private photos'
   end
 
-  context 'as an admin' do
+  context 'when logged in as an admin' do
     before { sign_in(admin) }
 
-    include_examples 'lists both public and private photos'
+    it_behaves_like 'lists both public and private photos'
   end
 end

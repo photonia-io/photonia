@@ -30,13 +30,11 @@ describe 'cover photo and photo counts by role', :authorization do
     GQL
   end
 
-  include_context 'auth actors'
-
   # Albums:
-  let!(:album1) { create(:album, user: owner, privacy: :private, sorting_type: :manual) }
-  let!(:album2) { create(:album, user: owner, privacy: :public,  sorting_type: :manual) }
-  let!(:album3) { create(:album, user: owner, privacy: :public,  sorting_type: :manual) }
-  let!(:album4) { create(:album, user: owner, privacy: :public,  sorting_type: :manual) }
+  let(:private_album_only_private_photos) { create(:album, user: owner, privacy: :private, sorting_type: :manual) }
+  let(:public_album_only_private_photos)  { create(:album, user: owner, privacy: :public,  sorting_type: :manual) }
+  let(:public_album_only_public_photos)   { create(:album, user: owner, privacy: :public,  sorting_type: :manual) }
+  let(:public_album_mixed_photos)         { create(:album, user: owner, privacy: :public,  sorting_type: :manual) }
 
   # Photos for album1 (private album, only private photos; cover = one private photo)
   let!(:a1p1_private) { create(:photo, user: owner, privacy: :private) }
@@ -55,26 +53,28 @@ describe 'cover photo and photo counts by role', :authorization do
   let!(:a4p2_private) { create(:photo, user: owner, privacy: :private) }
   let!(:a4p3_public)  { create(:photo, user: owner) }
 
+  include_context 'with auth actors'
+
   before do
     # Album 1 setup
-    album1.photos << [a1p1_private, a1p2_private]
-    album1.update!(user_cover_photo_id: a1p1_private.id)
-    album1.maintenance
+    private_album_only_private_photos.photos << [a1p1_private, a1p2_private]
+    private_album_only_private_photos.update!(user_cover_photo_id: a1p1_private.id)
+    private_album_only_private_photos.maintenance
 
     # Album 2 setup
-    album2.photos << [a2p1_private, a2p2_private]
-    album2.update!(user_cover_photo_id: a2p1_private.id)
-    album2.maintenance
+    public_album_only_private_photos.photos << [a2p1_private, a2p2_private]
+    public_album_only_private_photos.update!(user_cover_photo_id: a2p1_private.id)
+    public_album_only_private_photos.maintenance
 
     # Album 3 setup (user cover is public => also becomes public cover)
-    album3.photos << [a3p1_public, a3p2_public]
-    album3.update!(user_cover_photo_id: a3p2_public.id)
-    album3.maintenance
+    public_album_only_public_photos.photos << [a3p1_public, a3p2_public]
+    public_album_only_public_photos.update!(user_cover_photo_id: a3p2_public.id)
+    public_album_only_public_photos.maintenance
 
     # Album 4 setup (first public photo should be a4p1_public for visitors)
-    album4.photos << [a4p1_public, a4p2_private, a4p3_public]
-    album4.update!(user_cover_photo_id: a4p2_private.id)
-    album4.maintenance
+    public_album_mixed_photos.photos << [a4p1_public, a4p2_private, a4p3_public]
+    public_album_mixed_photos.update!(user_cover_photo_id: a4p2_private.id)
+    public_album_mixed_photos.maintenance
   end
 
   def albums_payload
@@ -85,93 +85,103 @@ describe 'cover photo and photo counts by role', :authorization do
     albums_payload['collection'].index_by { |a| a['id'] }
   end
 
-  context 'as a visitor (not logged in)' do
+  context 'when visitor is not logged in' do
     it 'includes only albums 3 and 4 with correct coverPhoto and photosCount' do
       post_query
 
       meta = albums_payload['metadata']
-      ids  = albums_payload['collection'].map { |a| a['id'] }
+      ids  = albums_payload['collection'].pluck('id')
       map  = collection_map
 
       expect(meta['totalCount']).to eq(2)
-      expect(ids).to contain_exactly(album3.slug, album4.slug)
+      expect(ids).to contain_exactly(public_album_only_public_photos.slug, public_album_mixed_photos.slug)
 
       # Album 3: cover is the user-set public photo
-      expect(map[album3.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
-      expect(map[album3.slug]['photosCount']).to eq(2)
+      expect(map[public_album_only_public_photos.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
+      expect(map[public_album_only_public_photos.slug]['photosCount']).to eq(2)
 
       # Album 4: cover is the first public photo in the album
-      expect(map[album4.slug]['coverPhoto']['id']).to eq(a4p1_public.slug)
-      expect(map[album4.slug]['photosCount']).to eq(2)
+      expect(map[public_album_mixed_photos.slug]['coverPhoto']['id']).to eq(a4p1_public.slug)
+      expect(map[public_album_mixed_photos.slug]['photosCount']).to eq(2)
     end
   end
 
-  context 'as a logged-in non-owner' do
+  context 'when logged in as a non-owner' do
     before { sign_in(stranger) }
 
     it 'behaves the same as a visitor' do
       post_query
 
       meta = albums_payload['metadata']
-      ids  = albums_payload['collection'].map { |a| a['id'] }
+      ids  = albums_payload['collection'].pluck('id')
       map  = collection_map
 
       expect(meta['totalCount']).to eq(2)
-      expect(ids).to contain_exactly(album3.slug, album4.slug)
-      expect(map[album3.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
-      expect(map[album3.slug]['photosCount']).to eq(2)
-      expect(map[album4.slug]['coverPhoto']['id']).to eq(a4p1_public.slug)
-      expect(map[album4.slug]['photosCount']).to eq(2)
+      expect(ids).to contain_exactly(public_album_only_public_photos.slug, public_album_mixed_photos.slug)
+      expect(map[public_album_only_public_photos.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
+      expect(map[public_album_only_public_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_mixed_photos.slug]['coverPhoto']['id']).to eq(a4p1_public.slug)
+      expect(map[public_album_mixed_photos.slug]['photosCount']).to eq(2)
     end
   end
 
-  context 'as the owner' do
+  context 'when logged in as the owner' do
     before { sign_in(owner) }
 
     it 'includes all albums with user-set covers and total photo counts' do
       post_query
 
       meta = albums_payload['metadata']
-      ids  = albums_payload['collection'].map { |a| a['id'] }
+      ids  = albums_payload['collection'].pluck('id')
       map  = collection_map
 
       expect(meta['totalCount']).to eq(4)
-      expect(ids).to contain_exactly(album1.slug, album2.slug, album3.slug, album4.slug)
+      expect(ids).to contain_exactly(
+        private_album_only_private_photos.slug,
+        public_album_only_private_photos.slug,
+        public_album_only_public_photos.slug,
+        public_album_mixed_photos.slug
+      )
 
-      expect(map[album1.slug]['coverPhoto']['id']).to eq(a1p1_private.slug)
-      expect(map[album2.slug]['coverPhoto']['id']).to eq(a2p1_private.slug)
-      expect(map[album3.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
-      expect(map[album4.slug]['coverPhoto']['id']).to eq(a4p2_private.slug)
+      expect(map[private_album_only_private_photos.slug]['coverPhoto']['id']).to eq(a1p1_private.slug)
+      expect(map[public_album_only_private_photos.slug]['coverPhoto']['id']).to eq(a2p1_private.slug)
+      expect(map[public_album_only_public_photos.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
+      expect(map[public_album_mixed_photos.slug]['coverPhoto']['id']).to eq(a4p2_private.slug)
 
-      expect(map[album1.slug]['photosCount']).to eq(2)
-      expect(map[album2.slug]['photosCount']).to eq(2)
-      expect(map[album3.slug]['photosCount']).to eq(2)
-      expect(map[album4.slug]['photosCount']).to eq(3)
+      expect(map[private_album_only_private_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_only_private_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_only_public_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_mixed_photos.slug]['photosCount']).to eq(3)
     end
   end
 
-  context 'as an admin' do
+  context 'when logged in as an admin' do
     before { sign_in(admin) }
 
     it 'behaves the same as the owner' do
       post_query
 
       meta = albums_payload['metadata']
-      ids  = albums_payload['collection'].map { |a| a['id'] }
+      ids  = albums_payload['collection'].pluck('id')
       map  = collection_map
 
       expect(meta['totalCount']).to eq(4)
-      expect(ids).to contain_exactly(album1.slug, album2.slug, album3.slug, album4.slug)
+      expect(ids).to contain_exactly(
+        private_album_only_private_photos.slug,
+        public_album_only_private_photos.slug,
+        public_album_only_public_photos.slug,
+        public_album_mixed_photos.slug
+      )
 
-      expect(map[album1.slug]['coverPhoto']['id']).to eq(a1p1_private.slug)
-      expect(map[album2.slug]['coverPhoto']['id']).to eq(a2p1_private.slug)
-      expect(map[album3.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
-      expect(map[album4.slug]['coverPhoto']['id']).to eq(a4p2_private.slug)
+      expect(map[private_album_only_private_photos.slug]['coverPhoto']['id']).to eq(a1p1_private.slug)
+      expect(map[public_album_only_private_photos.slug]['coverPhoto']['id']).to eq(a2p1_private.slug)
+      expect(map[public_album_only_public_photos.slug]['coverPhoto']['id']).to eq(a3p2_public.slug)
+      expect(map[public_album_mixed_photos.slug]['coverPhoto']['id']).to eq(a4p2_private.slug)
 
-      expect(map[album1.slug]['photosCount']).to eq(2)
-      expect(map[album2.slug]['photosCount']).to eq(2)
-      expect(map[album3.slug]['photosCount']).to eq(2)
-      expect(map[album4.slug]['photosCount']).to eq(3)
+      expect(map[private_album_only_private_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_only_private_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_only_public_photos.slug]['photosCount']).to eq(2)
+      expect(map[public_album_mixed_photos.slug]['photosCount']).to eq(3)
     end
   end
 end
