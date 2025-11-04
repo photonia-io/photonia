@@ -43,8 +43,15 @@ describe 'updateAlbumDescription Mutation', type: :request do
   end
 
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns NOT_FOUND error and nulls updateAlbumDescription' do
+      post_mutation
+      json = response.parsed_body
+      err = json['errors']&.first
+
+      expect(err).to be_present
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(err['path']).to eq(['updateAlbumDescription'])
+      expect(json.dig('data', 'updateAlbumDescription')).to be_nil
     end
   end
 

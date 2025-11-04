@@ -42,6 +42,12 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Photo < ApplicationRecord
+  enum :privacy, {
+    public: 'public',
+    private: 'private',
+    friends_and_family: 'friend & family'
+  }, suffix: true
+
   is_impressionable counter_cache: true, unique: :session_hash
 
   extend FriendlyId
@@ -128,14 +134,21 @@ class Photo < ApplicationRecord
 
   before_validation :set_fields, prepend: true
 
+  # doesn't work with privacy scopes
   def next
-    Photo.where('posted_at > ?', posted_at).order(:posted_at).first
+    Photo.where('posted_at > ? OR (posted_at = ? AND id > ?)', posted_at, posted_at, id)
+         .order(:posted_at, :id)
+         .first
   end
 
+  # doesn't work with privacy scopes
   def prev
-    Photo.where('posted_at < ?', posted_at).order(posted_at: :desc).first
+    Photo.where('posted_at < ? OR (posted_at = ? AND id < ?)', posted_at, posted_at, id)
+         .order(posted_at: :desc, id: :desc)
+         .first
   end
 
+  # doesn't work with privacy scopes
   def next_in_album(album)
     AlbumsPhoto.order(:ordering).find_by(
       'ordering > ? AND album_id = ?',
@@ -144,6 +157,7 @@ class Photo < ApplicationRecord
     )&.photo
   end
 
+  # doesn't work with privacy scopes
   def prev_in_album(album)
     AlbumsPhoto.order(ordering: :desc).find_by(
       'ordering < ? AND album_id = ?',

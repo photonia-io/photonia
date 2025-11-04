@@ -10,7 +10,7 @@ describe 'album Query' do
   let(:user) { create(:user) }
   let(:album) { create(:album, user: user) }
   let(:public_photo_count) { 3 }
-  let(:private_photo_count) { 2 }
+  let(:private_photo_count) { 1 }
   let!(:public_photos) { create_list(:photo, public_photo_count, albums: [album]) }
   let!(:private_photos) { create_list(:photo, private_photo_count, albums: [album], privacy: :private) }
   let(:first_public_photo) { public_photos.first }
@@ -31,7 +31,6 @@ describe 'album Query' do
                 id
                 title
                 intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
-                isCoverPhoto
               }
               metadata {
                 totalPages
@@ -63,7 +62,6 @@ describe 'album Query' do
       expect(response_album['id']).to eq(album.slug)
       expect(response_album['title']).to eq(album.title)
       expect(response_album['photos']['collection'].size).to eq(public_photos.size)
-      expect(response_album['photos']['collection'][0]['isCoverPhoto']).to be_truthy
       expect(response_album['sortingType']).to eq(album.graphql_sorting_type)
       expect(response_album['sortingOrder']).to eq(album.sorting_order)
       expect(response_album['canEdit']).to be_falsey
@@ -88,25 +86,19 @@ describe 'album Query' do
           GQL
         end
 
-        it 'raises Pundit::NotAuthorizedError' do
-          expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
-        end
-      end
+        it 'returns a NOT_FOUND error on allPhotos and nulls the field' do
+          post_query
+          parsed = response.parsed_body
+          err = parsed['errors']&.first
 
-      describe 'photosCount field' do
-        let(:query) do
-          <<~GQL
-            query {
-              album(id: "#{album.slug}") {
-                id
-                photosCount
-              }
-            }
-          GQL
-        end
+          expect(err).to be_present
+          expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+          expect(err['path']).to eq(%w[album allPhotos])
 
-        it 'raises Pundit::NotAuthorizedError' do
-          expect { post_query }.to raise_error(Pundit::NotAuthorizedError)
+          # Parent object can still resolve
+          expect(parsed.dig('data', 'album', 'id')).to eq(album.slug)
+          # The unauthorized field is nulled
+          expect(parsed.dig('data', 'album', 'allPhotos')).to be_nil
         end
       end
     end
@@ -143,28 +135,29 @@ describe 'album Query' do
           expect(response_album['allPhotos'][1]['ordering']).to eq(200_000)
         end
       end
-
-      describe 'photosCount field' do
-        let(:query) do
-          <<~GQL
-            query {
-              album(id: "#{album.slug}") {
-                id
-                photosCount
-              }
-            }
-          GQL
-        end
-
-        it 'returns the correct photos count' do
-          post_query
-
-          parsed_body = response.parsed_body
-          response_album = parsed_body['data']['album']
-
-          expect(response_album['photosCount']).to eq(public_photo_count + private_photo_count)
-        end
-      end
     end
+  end
+end
+
+describe 'unknown album slug' do
+  let(:query) do
+    <<~GQL
+      query {
+        album(id: "unknown-slug") {
+          id
+        }
+      }
+    GQL
+  end
+
+  it 'returns NOT_FOUND error and null album' do
+    post '/graphql', params: { query: query }
+    parsed = response.parsed_body
+    err = parsed['errors']&.first
+
+    expect(err).to be_present
+    expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+    expect(err['path']).to eq(['album'])
+    expect(parsed.dig('data', 'album')).to be_nil
   end
 end

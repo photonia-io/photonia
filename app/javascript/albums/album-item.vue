@@ -3,17 +3,15 @@
     <router-link :to="{ name: 'albums-show', params: { id: album.id } }">
       <img
         v-if="
-          album.publicCoverPhoto &&
-          album.publicCoverPhoto.intelligentOrSquareMediumImageUrl
+          album.coverPhoto && album.coverPhoto.intelligentOrSquareMediumImageUrl
         "
-        :src="album.publicCoverPhoto.intelligentOrSquareMediumImageUrl"
+        :src="album.coverPhoto.intelligentOrSquareMediumImageUrl"
         class="image is-fullwidth album-item"
       />
       <ImagePlaceholder v-else />
       {{ album.title }}
     </router-link>
-    ({{ album.publicPhotosCount }}
-    {{ album.publicPhotosCount == 1 ? "photo" : "photos" }})
+    ({{ album.photosCount }} {{ album.photosCount == 1 ? "photo" : "photos" }})
   </div>
 </template>
 

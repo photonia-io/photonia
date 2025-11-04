@@ -4,6 +4,15 @@ class PhotoniaSchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
+  # Global error handling (secure-not-found)
+  rescue_from ActiveRecord::RecordNotFound do |_err, _obj, _args, _ctx, _field|
+    raise GraphQL::ExecutionError.new('Not found', extensions: { code: 'NOT_FOUND' })
+  end
+
+  rescue_from Pundit::NotAuthorizedError do |_err, _obj, _args, _ctx, _field|
+    raise GraphQL::ExecutionError.new('Not found', extensions: { code: 'NOT_FOUND' })
+  end
+
   # Union and Interface Resolution
   def self.resolve_type(_abstract_type, _obj, _ctx)
     # TODO: Implement this function

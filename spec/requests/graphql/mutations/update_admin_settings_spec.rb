@@ -5,6 +5,8 @@ require 'rails_helper'
 describe 'updateAdminSettings Mutation', type: :request do
   include Devise::Test::IntegrationHelpers
 
+  subject(:post_mutation) { post '/graphql', params: { query: query } }
+
   let(:site_name) { 'Photonia' }
   let(:site_description) { 'A photo gallery' }
   let(:site_tracking_code) { '<script>some_javascript_code</script>' }
@@ -46,11 +48,16 @@ describe 'updateAdminSettings Mutation', type: :request do
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
   end
 
-  subject(:post_mutation) { post '/graphql', params: { query: query } }
-
   context 'when the user is not logged in' do
-    it 'raises Pundit::NotAuthorizedError' do
-      expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+    it 'returns NOT_FOUND error and nulls updateAdminSettings' do
+      post_mutation
+      json = response.parsed_body
+      err = json['errors']&.first
+
+      expect(err).to be_present
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(err['path']).to eq(['updateAdminSettings'])
+      expect(json.dig('data', 'updateAdminSettings')).to be_nil
     end
   end
 
@@ -62,8 +69,15 @@ describe 'updateAdminSettings Mutation', type: :request do
     context 'when the user is not an admin' do
       let(:user) { create(:user, admin: false) }
 
-      it 'raises Pundit::NotAuthorizedError' do
-        expect { post_mutation }.to raise_error(Pundit::NotAuthorizedError)
+      it 'returns NOT_FOUND error and nulls updateAdminSettings' do
+        post_mutation
+        json = response.parsed_body
+        err = json['errors']&.first
+
+        expect(err).to be_present
+        expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+        expect(err['path']).to eq(['updateAdminSettings'])
+        expect(json.dig('data', 'updateAdminSettings')).to be_nil
       end
     end
 

@@ -17,18 +17,19 @@ module Types
 
     field :can_edit, Boolean, 'Whether the current user can edit the album', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
+    field :cover_photo, PhotoType, 'Cover photo of the album', null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
-    field :photos_count, Integer, 'Total number of photos in the album (public and private)', null: false
+    field :photos_count, Integer, 'Number of photos in the album', null: false
+
     field :privacy, String, 'Privacy level of the album', null: false
-    field :public_cover_photo, PhotoType, 'Public cover photo of the album', null: true
-    field :public_photos_count, Integer, 'Number of public photos in the album', null: false
+
     field :sorting_order, String, 'Sorting order of the album', null: false
     field :sorting_type, String, 'Sorting type of the album', null: false
     field :title, String, 'Title of the album', null: false
 
-    field :all_photos, [PhotoType], 'All photos in the album', null: false
+    field :all_photos, [PhotoType], 'All photos in the album', null: true
 
     field :photos, Types::PaginatedPhotoType, null: false do
       argument :page, Integer, 'Page number', required: false
@@ -36,13 +37,22 @@ module Types
     end
 
     def all_photos
-      context[:authorize].call(@object, :update?)
+      begin
+        context[:authorize].call(@object, :update?)
+      rescue Pundit::NotAuthorizedError
+        # Field-level secure-not-found: do not null the parent album, only this field
+        raise GraphQL::ExecutionError.new('Not found', extensions: { code: 'NOT_FOUND' })
+      end
+
       context[:album] = @object
       @object.all_photos(select: false, refetch: true).includes(:albums_photos)
     end
 
     def photos(page: nil)
-      pagy, @photos = context[:pagy].call(@object.photos.order(:ordering), page:)
+      pagy, @photos = context[:pagy].call(
+        scoped_album_photos.order(:ordering),
+        page:
+      )
       @photos.define_singleton_method(:total_pages) { pagy.pages }
       @photos.define_singleton_method(:current_page) { pagy.page }
       @photos.define_singleton_method(:limit_value) { pagy.limit }
@@ -56,18 +66,42 @@ module Types
     end
 
     def photos_count
-      context[:authorize].call(@object, :update?)
-      @object.photos_count
+      # owners and admins can see the real count
+      if Pundit.policy(context[:current_user], @object)&.update?
+        @object.photos_count
+      else
+        @object.public_photos_count
+      end
     end
 
-    delegate :public_cover_photo, to: :@object
+    def cover_photo
+      # For editors (owner/admin), prefer the user-set cover if present,
+      if Pundit.policy(context[:current_user], @object)&.update?
+        # we can't unscope belongs_to associations, so we need to do it manually
+        association_scope = @object.association(:user_cover_photo).scope
+        unscoped_association = association_scope.unscope(where: :privacy)
+        user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
+        return user_cover if user_cover
+      end
+
+      # Fallback to the public cover (what visitors/non-owners see)
+      @object.public_cover_photo
+    end
 
     def previous_photo_in_album(photo_id:)
-      Photo.friendly.find(photo_id).prev_in_album(@object)
+      scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      scoped_previous_photo = scoped_previous_photo(scoped_photo_ordering)
+      return nil if scoped_previous_photo.nil?
+
+      context[:authorize].call(scoped_previous_photo, :show?)
     end
 
     def next_photo_in_album(photo_id:)
-      Photo.friendly.find(photo_id).next_in_album(@object)
+      scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      scoped_next_photo = scoped_next_photo(scoped_photo_ordering)
+      return nil if scoped_next_photo.nil?
+
+      context[:authorize].call(scoped_next_photo, :show?)
     end
 
     def can_edit
@@ -76,6 +110,31 @@ module Types
 
     def sorting_type
       @object.graphql_sorting_type
+    end
+
+    private
+
+    def scoped_photo_ordering(photo_id)
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id).ordering
+    end
+
+    def scoped_album_photos
+      Pundit.policy_scope(context[:current_user], @object.photos.unscope(where: :privacy))
+    end
+
+    def scoped_next_photo(current_ordering)
+      scoped_album_photos.joins(:albums_photos)
+                         .where('albums_photos.ordering > ?', current_ordering)
+                         .order('albums_photos.ordering ASC')
+                         .first
+    end
+
+    def scoped_previous_photo(current_ordering)
+      scoped_album_photos.joins(:albums_photos)
+                         .where(albums_photos: { ordering: ...current_ordering })
+                         .order('albums_photos.ordering DESC')
+                         .first
     end
   end
 end
