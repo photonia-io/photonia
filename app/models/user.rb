@@ -77,7 +77,7 @@ class User < ApplicationRecord
     
     # Update facebook_user_id for existing users who sign in with Facebook
     if !created && provider == 'facebook' && facebook_user_id.present? && user.facebook_user_id != facebook_user_id
-      user.update(facebook_user_id: facebook_user_id)
+      user.update!(facebook_user_id: facebook_user_id)
     end
     
     [user, created]
