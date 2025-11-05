@@ -8,13 +8,13 @@
 
 <p>
   <ul>
-    <li><strong>Photonia User:</strong> <%= @user.email %> (#<%= @user.serial_number %>)</li>
-    <li><strong>Flickr Username:</strong> <%= @flickr_user.username %></li>
-    <li><strong>Flickr NSID:</strong> <%= @flickr_user.nsid %></li>
-    <li><strong>Flickr Profile:</strong> <a href="<%= @flickr_user.profileurl %>"><%= @flickr_user.profileurl %></a></li>
+    <li><strong>Photonia User:</strong> <%= h @user.email %> (#<%= h @user.serial_number %>)</li>
+    <li><strong>Flickr Username:</strong> <%= h @flickr_user.username %></li>
+    <li><strong>Flickr NSID:</strong> <%= h @flickr_user.nsid %></li>
+    <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
     <li><strong>Claim Type:</strong> Manual</li>
     <% if @reason.present? %>
-    <li><strong>Reason:</strong> <%= @reason %></li>
+    <li><strong>Reason:</strong> <%= h @reason %></li>
     <% end %>
   </ul>
 </p>
