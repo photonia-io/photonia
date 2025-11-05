@@ -232,9 +232,22 @@ RSpec.describe FlickrUserClaimService do
       end
     end
 
+    context 'with tampered token' do
+      it 'returns error for signature mismatch' do
+        # Create a token for a different claim
+        other_claim = create(:flickr_user_claim)
+        tampered_token = described_class.generate_token(other_claim)
+        
+        result = described_class.approve_claim_by_token(claim.id, tampered_token)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('Invalid token')
+      end
+    end
+
     context 'with non-existent claim' do
       it 'returns error' do
-        non_existent_id = FlickrUserClaim.maximum(:id).to_i + 1
+        non_existent_id = (FlickrUserClaim.maximum(:id) || 0) + 1
         result = described_class.approve_claim_by_token(non_existent_id, token)
 
         expect(result[:success]).to be(false)
@@ -268,6 +281,19 @@ RSpec.describe FlickrUserClaimService do
         expect(result[:error]).to eq('Invalid token')
       end
     end
+
+    context 'with tampered token' do
+      it 'returns error for signature mismatch' do
+        # Create a token for a different claim
+        other_claim = create(:flickr_user_claim)
+        tampered_token = described_class.generate_token(other_claim)
+        
+        result = described_class.deny_claim_by_token(claim.id, tampered_token)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('Invalid token')
+      end
+    end
   end
 
   describe '.generate_token' do
@@ -280,10 +306,19 @@ RSpec.describe FlickrUserClaimService do
       expect(token1).to eq(token2)
     end
 
-    it 'generates a 32-character hex string' do
+    it 'generates a signed token string' do
       token = described_class.generate_token(claim)
 
-      expect(token).to match(/^[a-f0-9]{32}$/)
+      expect(token).to be_a(String)
+      expect(token.length).to be > 20
+    end
+
+    it 'generates different tokens for different claims' do
+      claim2 = create(:flickr_user_claim)
+      token1 = described_class.generate_token(claim)
+      token2 = described_class.generate_token(claim2)
+
+      expect(token1).not_to eq(token2)
     end
   end
 end
