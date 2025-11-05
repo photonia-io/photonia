@@ -234,7 +234,8 @@ RSpec.describe FlickrUserClaimService do
 
     context 'with non-existent claim' do
       it 'returns error' do
-        result = described_class.approve_claim_by_token(99999, token)
+        non_existent_id = FlickrUserClaim.maximum(:id).to_i + 1
+        result = described_class.approve_claim_by_token(non_existent_id, token)
 
         expect(result[:success]).to be(false)
         expect(result[:error]).to eq('Claim not found')

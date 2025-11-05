@@ -9,19 +9,11 @@ class FlickrAPIService
   end
 
   def people_get_info(user_id)
-    params = @default_params.merge(method: 'flickr.people.getInfo', user_id: user_id)
-    @base_uri.query = URI.encode_www_form(params)
-
-    response = Net::HTTP.get_response(@base_uri)
-    JSON.parse(response.body)
+    call_api('flickr.people.getInfo', user_id: user_id)
   end
 
   def profile_get_profile(user_id)
-    params = @default_params.merge(method: 'flickr.profile.getProfile', user_id: user_id)
-    @base_uri.query = URI.encode_www_form(params)
-
-    response = Net::HTTP.get_response(@base_uri)
-    JSON.parse(response.body)
+    call_api('flickr.profile.getProfile', user_id: user_id)
   end
 
   # static methods
@@ -58,5 +50,15 @@ class FlickrAPIService
     if response['stat'] == 'ok'
       response.dig('profile', 'profile_description', '_content')
     end
+  end
+
+  private
+
+  def call_api(method, params = {})
+    api_params = @default_params.merge(method: method).merge(params)
+    @base_uri.query = URI.encode_www_form(api_params)
+
+    response = Net::HTTP.get_response(@base_uri)
+    JSON.parse(response.body)
   end
 end
