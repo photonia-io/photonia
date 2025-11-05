@@ -16,6 +16,14 @@ class FlickrAPIService
     JSON.parse(response.body)
   end
 
+  def profile_get_profile(user_id)
+    params = @default_params.merge(method: 'flickr.profile.getProfile', user_id: user_id)
+    @base_uri.query = URI.encode_www_form(params)
+
+    response = Net::HTTP.get_response(@base_uri)
+    JSON.parse(response.body)
+  end
+
   # static methods
 
   def self.people_get_info_hash(user_id)
@@ -42,6 +50,13 @@ class FlickrAPIService
       {
         is_deleted: true
       }
+    end
+  end
+
+  def self.profile_get_profile_description(user_id)
+    response = new.profile_get_profile(user_id)
+    if response['stat'] == 'ok'
+      response.dig('profile', 'profile_description', '_content')
     end
   end
 end

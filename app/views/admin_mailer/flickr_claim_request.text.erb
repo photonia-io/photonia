@@ -1,0 +1,21 @@
+New Flickr User Claim Request
+
+A user has requested to claim a Flickr user account.
+
+Details:
+--------
+Photonia User: <%= @user.email %> (#<%= @user.serial_number %>)
+Flickr Username: <%= @flickr_user.username %>
+Flickr NSID: <%= @flickr_user.nsid %>
+Flickr Profile: <%= @flickr_user.profileurl %>
+Claim Type: Manual
+<% if @reason.present? %>Reason: <%= @reason %><% end %>
+
+Actions:
+--------
+Approve: <%= @approve_url %>
+Deny: <%= @deny_url %>
+
+Or manage claims in Admin Settings: <%= users_admin_settings_url %>
+
+Your friendly Photonia bot.

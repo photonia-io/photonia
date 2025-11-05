@@ -50,6 +50,8 @@ class User < ApplicationRecord
          :jwt_authenticatable, jwt_revocation_strategy: self
 
   has_many :photos, dependent: :destroy
+  has_many :flickr_user_claims, dependent: :destroy
+  has_many :claimed_flickr_users, class_name: 'FlickrUser', foreign_key: 'claimed_by_user_id', dependent: :nullify, inverse_of: :claimed_by_user
   has_and_belongs_to_many :roles
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
