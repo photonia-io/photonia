@@ -2,10 +2,12 @@
 
 # Usage examples:
 # Default values: min_support=2, min_confidence=0.3
+# Syntax: rake related_tags:precompute[min_support,min_confidence]
 #   rake related_tags:precompute
-#   rake related_tags:precompute[min_support=3,min_confidence=0.4]
+#   rake related_tags:precompute[3,0.4]
+# Syntax: rake related_tags:compute_now[min_support,min_confidence]
 #   rake related_tags:compute_now
-#   rake related_tags:compute_now[min_support=5,min_confidence=0.5
+#   rake related_tags:compute_now[5,0.5]
 namespace :related_tags do
   desc 'Enqueue precomputation job (optional args: min_support=2, min_confidence=0.3)'
   task :precompute, %i[min_support min_confidence] => :environment do |_t, args|
