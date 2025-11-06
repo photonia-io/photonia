@@ -63,9 +63,7 @@ const reset = () => {
   newAlbumTitle.value = "";
 };
 
-defineExpose({ selectedAlbumId, newAlbumTitle, reset });
-
-const { result } = useQuery(gql`
+const { result, refetch } = useQuery(gql`
   query CurrentUserAlbumsQuery {
     currentUser {
       albums {
@@ -76,6 +74,8 @@ const { result } = useQuery(gql`
     }
   }
 `);
+
+defineExpose({ selectedAlbumId, newAlbumTitle, reset, refetch });
 
 // Exclude the current album (when provided) from the dropdown
 const albumsFiltered = computed(() => {
