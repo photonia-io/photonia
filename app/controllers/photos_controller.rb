@@ -54,7 +54,7 @@ class PhotosController < ApplicationController
     ActiveRecord::Base.transaction do
       # 1. Save photo first (fail-fast)
       unless @photo.save
-        render json: { errors: @photo.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @photo.errors.full_messages }, status: :unprocessable_content
         return
       end
 
@@ -88,7 +88,7 @@ class PhotosController < ApplicationController
       applied_album_ids: applied_album_ids
     }, status: :created
   rescue ActiveRecord::RecordInvalid, Pundit::NotAuthorizedError => e
-    render json: { errors: [e.message] }, status: :unprocessable_entity
+    render json: { errors: [e.message] }, status: :unprocessable_content
   end
 
   def update
