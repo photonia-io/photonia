@@ -102,6 +102,10 @@ class GraphqlQueryCollection
         tag(id: $id) {
           id
           name
+          relatedTags(limit: 5) {
+            id
+            name
+          }
           photos(page: $page) {
             collection {
               id
