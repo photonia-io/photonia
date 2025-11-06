@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Migration to create the related_tags table for storing tag association metrics.
 class CreateRelatedTags < ActiveRecord::Migration[7.2]
   ##
   # Creates the `related_tags` table to store association statistics between tags,

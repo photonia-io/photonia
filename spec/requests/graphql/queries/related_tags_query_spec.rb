@@ -31,19 +31,19 @@ RSpec.describe 'relatedTags Query', type: :request do
 
   before do
     # Build co-occurrence:
-    # P1: romania + maramures
+    # photo_1: romania + maramures
     photo_1 = create(:photo)
     tag_user(photo_1, %w[romania maramures])
 
-    # P2: romania + maramures (Flickr source)
+    # photo_2: romania + maramures (Flickr source)
     photo_2 = create(:photo)
     tag_flickr(photo_2, %w[romania maramures])
 
-    # P3: romania + maramures + baia mare
+    # photo_3: romania + maramures + baia mare
     photo_3 = create(:photo)
     tag_user(photo_3, ['romania', 'maramures', 'baia mare'])
 
-    # P4: baia mare + maramures
+    # photo_4: baia mare + maramures
     photo_4 = create(:photo)
     tag_user(photo_4, ['baia mare', 'maramures'])
 
@@ -75,8 +75,6 @@ RSpec.describe 'relatedTags Query', type: :request do
     it 'suggests romania for maramures' do
       post_query
       expect(response).to have_http_status(:ok)
-      # Debug: print response when field is missing
-      puts "GraphQL response body (single-tag): #{response.body}" if data_dig(response, 'relatedTags').nil?
       names = data_dig(response, 'relatedTags').pluck('name')
       expect(names).to include('romania')
     end
@@ -99,8 +97,6 @@ RSpec.describe 'relatedTags Query', type: :request do
     it 'suggests romania for {baia mare, maramures}' do
       post_query
       expect(response).to have_http_status(:ok)
-      # Debug: print response when field is missing
-      puts "GraphQL response body (multi-tag): #{response.body}" if data_dig(response, 'relatedTags').nil?
       names = data_dig(response, 'relatedTags').pluck('name')
       expect(names).to include('romania')
     end

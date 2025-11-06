@@ -39,19 +39,19 @@ RSpec.describe PrecomputeRelatedTagsJob do
   end
 
   before do
-    # P1: romania + maramures
+    # photo_1: romania + maramures
     photo_1 = create(:photo)
     tag_user(photo_1, %w[romania maramures])
 
-    # P2: romania + maramures (Flickr)
+    # photo_2: romania + maramures (Flickr)
     photo_2 = create(:photo)
     tag_flickr(photo_2, %w[romania maramures])
 
-    # P3: romania + maramures + baia mare
+    # photo_3: romania + maramures + baia mare
     photo_3 = create(:photo)
     tag_user(photo_3, ['romania', 'maramures', 'baia mare'])
 
-    # P4: baia mare + maramures
+    # photo_4: baia mare + maramures
     photo_4 = create(:photo)
     tag_user(photo_4, ['baia mare', 'maramures'])
 
