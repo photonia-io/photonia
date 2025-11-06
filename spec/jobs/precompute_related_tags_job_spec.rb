@@ -10,16 +10,29 @@ RSpec.describe PrecomputeRelatedTagsJob do
   let!(:flickr_source)      { TaggingSource.find_or_create_by!(name: 'Flickr') }
   let!(:rekognition_source) { TaggingSource.find_or_create_by!(name: 'Rekognition') }
 
+  ##
+  # Adds the given tag names to the photo's tag list and persists the photo.
+  # @param [Photo] photo - The photo to modify.
+  # @param [String, Array<String>] names - A tag name or an array of tag names to add.
   def tag_user(photo, names)
     photo.tag_list.add(names)
     photo.save!
   end
 
+  ##
+  # Tags the given photo using the Flickr tagging source and saves the photo.
+  # @param [Photo] photo - The photo to tag; it will be persisted.
+  # @param [String, Array<String>] names - A tag name or an array of tag names; multiple names are joined with commas.
   def tag_flickr(photo, names)
     flickr_source.tag(photo, with: Array(names).join(','), on: :tags)
     photo.save!
   end
 
+  ##
+  # Add tags to a photo using the Rekognition tagging source and persist the change.
+  # @param [Photo] photo - The photo to be tagged.
+  # @param [String, Array<String>] names - A tag name or list of tag names; multiple names will be joined with commas.
+  # @raise [ActiveRecord::RecordInvalid] If saving the photo fails validation.
   def tag_rekognition(photo, names)
     rekognition_source.tag(photo, with: Array(names).join(','), on: :tags)
     photo.save!

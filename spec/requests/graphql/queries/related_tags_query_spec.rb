@@ -10,11 +10,20 @@ RSpec.describe 'relatedTags Query', type: :request do
 
   let!(:flickr_source) { TaggingSource.find_or_create_by!(name: 'Flickr') }
 
+  ##
+  # Adds the given tag names to the photo's user tag list and persists the photo.
+  # @param [Photo] photo - The photo to modify.
+  # @param [String, Array<String>] names - Tag name or list of tag names to add.
+  # @return [Boolean] `true` if the photo was saved.
   def tag_user(photo, names)
     photo.tag_list.add(names)
     photo.save!
   end
 
+  ##
+  # Attach tags to a photo using the Flickr tagging source and persist the change.
+  # @param [Photo] photo - The photo to tag.
+  # @param [String, Array<String>] names - A tag name or an array of tag names to apply.
   def tag_flickr(photo, names)
     flickr_source.tag(photo, with: Array(names).join(','), on: :tags)
     photo.save!
