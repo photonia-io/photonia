@@ -11,7 +11,16 @@ class PrecomputeRelatedTagsJob < ApplicationJob
   # This job fully refreshes the related_tags table in a transaction.
   #
   # Example:
-  #   PrecomputeRelatedTagsJob.perform_now(min_support: 2, min_confidence: 0.3)
+  ##
+  # Recomputes directed related-tag metrics for public photos and replaces the related_tags table.
+  #
+  # Performs a full recomputation inside a database transaction: clears existing related_tags rows,
+  # computes co-occurrence and association metrics (support, confidence, lift, jaccard) from distinct
+  # (photo, tag) pairs of public photos, excludes taggings from the TaggingSource named "Rekognition"
+  # if present, generates two directed relations for each tag pair (A→B and B→A), and inserts the
+  # directional rows that meet the provided thresholds.
+  # @param [Integer] min_support - Minimum co-occurrence count required for a relation (defaults to 2).
+  # @param [Float] min_confidence - Minimum confidence required for a relation (0.0..1.0, defaults to 0.3).
   def perform(min_support: 2, min_confidence: 0.3)
     min_support = min_support.to_i
     min_confidence = min_confidence.to_f

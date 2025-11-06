@@ -19,6 +19,17 @@ module Queries
     argument :min_confidence, Float, 'Minimum confidence threshold for directed relation A -> B', required: false, default_value: 0.3
     argument :min_support, Integer, 'Minimum co-occurrence count between tag pairs', required: false, default_value: 2
 
+    ##
+    # Suggests related tags that co-occur with all given tag slugs.
+    #
+    # The query applies minimum support and confidence thresholds, excludes the input tags
+    # from results, and orders candidates by aggregated confidence, then confidence minimum,
+    # then aggregated support.
+    # @param [Array<ID>] ids - Tag slugs to base suggestions on; blank values are ignored.
+    # @param [Integer] limit - Maximum number of suggestions to return (default: 10).
+    # @param [Integer] min_support - Minimum co-occurrence count required between tag pairs (default: 2).
+    # @param [Float] min_confidence - Minimum directed relation confidence A → B (default: 0.3).
+    # @return [Array<ActsAsTaggableOn::Tag>] Matching Tag records ordered by relevance; returns an empty array if no suggestions are found.
     def resolve(ids:, limit:, min_support:, min_confidence:)
       slugs = Array(ids).map(&:to_s).reject(&:blank?)
       return [] if slugs.empty?
