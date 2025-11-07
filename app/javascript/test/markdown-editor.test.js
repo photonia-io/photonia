@@ -33,7 +33,7 @@ describe("MarkdownEditor", () => {
 
     it("displays placeholder text", () => {
       expect(wrapper.find("textarea").attributes("placeholder")).toBe(
-        "Enter text..."
+        "Enter text...",
       );
     });
 
@@ -130,7 +130,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "****"
+        "****",
       );
     });
 
@@ -144,7 +144,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "**Test**"
+        "**Test**",
       );
     });
 
@@ -160,7 +160,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "bold text"
+        "bold text",
       );
     });
 
@@ -175,7 +175,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "bold text"
+        "bold text",
       );
     });
   });
@@ -208,7 +208,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "**"
+        "**",
       );
     });
 
@@ -222,7 +222,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "*Test*"
+        "*Test*",
       );
     });
 
@@ -237,7 +237,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "italic text"
+        "italic text",
       );
     });
 
@@ -252,7 +252,7 @@ describe("MarkdownEditor", () => {
       expect(document.execCommand).toHaveBeenCalledWith(
         "insertText",
         false,
-        "italic text"
+        "italic text",
       );
     });
   });
