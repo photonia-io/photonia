@@ -15,6 +15,7 @@ module Types
     field :update_album_photo_order, mutation: Mutations::UpdateAlbumPhotoOrder, description: 'Update the order of photos in an album'
     field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
     field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
+    field :update_photo_license, mutation: Mutations::UpdatePhotoLicense, description: 'Update photo license'
     field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
     field :continue_with_facebook, mutation: Mutations::ContinueWithFacebook, description: 'Sign up or sign in with Facebook'
@@ -50,6 +51,7 @@ module Types
 
     field :update_user_settings, UserType, null: false do
       description 'Update user settings'
+      argument :default_license, String, 'User default license', required: false
       argument :display_name, String, 'User display name', required: true
       argument :email, String, 'User email', required: true
       argument :first_name, String, 'User first name', required: true
@@ -117,7 +119,7 @@ module Types
       }
     end
 
-    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
+    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:, default_license: nil)
       user = context[:current_user]
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
 
@@ -129,6 +131,7 @@ module Types
       user.update(last_name: last_name)
       user.update(display_name: display_name)
       user.update(timezone: timezone)
+      user.update(default_license: default_license)
       user
     end
 

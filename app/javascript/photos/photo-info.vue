@@ -28,6 +28,11 @@
         momentFormat(photo.postedAt)
       }}</span>
     </div>
+    <div v-if="!loading && photo.license" class="icon-text">
+      <span class="icon"><i class="fas fa-certificate"></i></span>
+      <span class="has-text-weight-semibold">License:</span>
+      <span class="ml-1">{{ photo.license }}</span>
+    </div>
     <div
       v-if="!loading && photo.rekognitionLabelModelVersion !== ''"
       class="icon-text"
