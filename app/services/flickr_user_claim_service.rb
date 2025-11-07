@@ -99,6 +99,22 @@ class FlickrUserClaimService
     { success: false, error: e.message }
   end
 
+  def undo_claim(claim)
+    return { success: false, error: 'Claim not found' } unless claim
+
+    # If the claim was approved, remove the claimed_by_user association
+    if claim.approved?
+      @flickr_user.update!(claimed_by_user: nil)
+    end
+
+    # Delete the claim record
+    claim.destroy!
+
+    { success: true }
+  rescue StandardError => e
+    { success: false, error: e.message }
+  end
+
   class << self
     def approve_claim_by_token(claim_id, token)
       claim = FlickrUserClaim.find_by(id: claim_id)
