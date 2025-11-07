@@ -4,18 +4,18 @@
 #
 # Table name: flickr_user_claims
 #
-#  id                 :bigint           not null, primary key
-#  claim_type         :string           not null
-#  reason             :text
-#  status             :string           default("pending"), not null
-#  verification_code  :string
-#  approved_at        :datetime
-#  denied_at          :datetime
-#  verified_at        :datetime
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
-#  flickr_user_id     :bigint           not null
-#  user_id            :bigint           not null
+#  id                :bigint           not null, primary key
+#  approved_at       :datetime
+#  claim_type        :string           not null
+#  denied_at         :datetime
+#  reason            :text
+#  status            :string           default("pending"), not null
+#  verification_code :string
+#  verified_at       :datetime
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  flickr_user_id    :bigint           not null
+#  user_id           :bigint           not null
 #
 # Indexes
 #

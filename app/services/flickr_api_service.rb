@@ -2,7 +2,7 @@ class FlickrAPIService
   def initialize
     @base_uri = URI('https://api.flickr.com/services/rest')
     @default_params = {
-      api_key: ENV['PHOTONIA_FLICKR_API_KEY'],
+      api_key: ENV.fetch('PHOTONIA_FLICKR_API_KEY', nil),
       format: 'json',
       nojsoncallback: '1'
     }
@@ -47,9 +47,9 @@ class FlickrAPIService
 
   def self.profile_get_profile_description(user_id)
     response = new.profile_get_profile(user_id)
-    if response['stat'] == 'ok'
-      response.dig('profile', 'profile_description', '_content')
-    end
+    return unless response['stat'] == 'ok'
+
+    response.dig('profile', 'profile_description')
   end
 
   private

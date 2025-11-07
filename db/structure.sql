@@ -180,6 +180,45 @@ ALTER SEQUENCE public.comments_id_seq OWNED BY public.comments.id;
 
 
 --
+-- Name: flickr_user_claims; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.flickr_user_claims (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    flickr_user_id bigint NOT NULL,
+    claim_type character varying NOT NULL,
+    status character varying DEFAULT 'pending'::character varying NOT NULL,
+    verification_code character varying,
+    reason text,
+    verified_at timestamp(6) without time zone,
+    approved_at timestamp(6) without time zone,
+    denied_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: flickr_user_claims_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.flickr_user_claims_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: flickr_user_claims_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.flickr_user_claims_id_seq OWNED BY public.flickr_user_claims.id;
+
+
+--
 -- Name: flickr_users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -202,7 +241,8 @@ CREATE TABLE public.flickr_users (
     photos_firstdate integer,
     photos_count integer,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    claimed_by_user_id bigint
 );
 
 
@@ -387,6 +427,44 @@ CREATE SEQUENCE public.photos_id_seq
 --
 
 ALTER SEQUENCE public.photos_id_seq OWNED BY public.photos.id;
+
+
+--
+-- Name: related_tags; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.related_tags (
+    id bigint NOT NULL,
+    tag_id_from bigint NOT NULL,
+    tag_id_to bigint NOT NULL,
+    support integer NOT NULL,
+    support_from integer NOT NULL,
+    support_to integer NOT NULL,
+    confidence double precision NOT NULL,
+    lift double precision NOT NULL,
+    jaccard double precision NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: related_tags_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.related_tags_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: related_tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.related_tags_id_seq OWNED BY public.related_tags.id;
 
 
 --
@@ -598,7 +676,8 @@ CREATE TABLE public.users (
     facebook_user_id character varying,
     created_from_facebook boolean DEFAULT false NOT NULL,
     facebook_data_deletion_code character varying,
-    disabled boolean DEFAULT false NOT NULL
+    disabled boolean DEFAULT false NOT NULL,
+    default_license character varying
 );
 
 
@@ -678,6 +757,13 @@ ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.com
 
 
 --
+-- Name: flickr_user_claims id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_user_claims ALTER COLUMN id SET DEFAULT nextval('public.flickr_user_claims_id_seq'::regclass);
+
+
+--
 -- Name: flickr_users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -710,6 +796,13 @@ ALTER TABLE ONLY public.labels ALTER COLUMN id SET DEFAULT nextval('public.label
 --
 
 ALTER TABLE ONLY public.photos ALTER COLUMN id SET DEFAULT nextval('public.photos_id_seq'::regclass);
+
+
+--
+-- Name: related_tags id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags ALTER COLUMN id SET DEFAULT nextval('public.related_tags_id_seq'::regclass);
 
 
 --
@@ -794,6 +887,14 @@ ALTER TABLE ONLY public.comments
 
 
 --
+-- Name: flickr_user_claims flickr_user_claims_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_user_claims
+    ADD CONSTRAINT flickr_user_claims_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: flickr_users flickr_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -831,6 +932,14 @@ ALTER TABLE ONLY public.labels
 
 ALTER TABLE ONLY public.photos
     ADD CONSTRAINT photos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: related_tags related_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags
+    ADD CONSTRAINT related_tags_pkey PRIMARY KEY (id);
 
 
 --
@@ -982,6 +1091,41 @@ CREATE INDEX index_comments_on_user_id ON public.comments USING btree (user_id);
 
 
 --
+-- Name: index_flickr_user_claims_on_flickr_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flickr_user_claims_on_flickr_user_id ON public.flickr_user_claims USING btree (flickr_user_id);
+
+
+--
+-- Name: index_flickr_user_claims_on_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flickr_user_claims_on_status ON public.flickr_user_claims USING btree (status);
+
+
+--
+-- Name: index_flickr_user_claims_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flickr_user_claims_on_user_id ON public.flickr_user_claims USING btree (user_id);
+
+
+--
+-- Name: index_flickr_user_claims_on_user_id_and_flickr_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_flickr_user_claims_on_user_id_and_flickr_user_id ON public.flickr_user_claims USING btree (user_id, flickr_user_id);
+
+
+--
+-- Name: index_flickr_users_on_claimed_by_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flickr_users_on_claimed_by_user_id ON public.flickr_users USING btree (claimed_by_user_id);
+
+
+--
 -- Name: index_friendly_id_slugs_on_slug_and_sluggable_type; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1042,6 +1186,20 @@ CREATE UNIQUE INDEX index_photos_on_slug ON public.photos USING btree (slug);
 --
 
 CREATE INDEX index_photos_on_user_id ON public.photos USING btree (user_id);
+
+
+--
+-- Name: index_related_tags_on_tag_id_from_and_tag_id_to; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_related_tags_on_tag_id_from_and_tag_id_to ON public.related_tags USING btree (tag_id_from, tag_id_to);
+
+
+--
+-- Name: index_related_tags_on_tag_id_to; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_related_tags_on_tag_id_to ON public.related_tags USING btree (tag_id_to);
 
 
 --
@@ -1228,11 +1386,35 @@ ALTER TABLE ONLY public.comments
 
 
 --
+-- Name: flickr_users fk_rails_06c7d2d8a1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_users
+    ADD CONSTRAINT fk_rails_06c7d2d8a1 FOREIGN KEY (claimed_by_user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: comments fk_rails_2d3346c513; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.comments
     ADD CONSTRAINT fk_rails_2d3346c513 FOREIGN KEY (flickr_user_id) REFERENCES public.flickr_users(id);
+
+
+--
+-- Name: flickr_user_claims fk_rails_2d65221cc2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_user_claims
+    ADD CONSTRAINT fk_rails_2d65221cc2 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: related_tags fk_rails_3e066e44b2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags
+    ADD CONSTRAINT fk_rails_3e066e44b2 FOREIGN KEY (tag_id_to) REFERENCES public.tags(id);
 
 
 --
@@ -1257,6 +1439,22 @@ ALTER TABLE ONLY public.albums
 
 ALTER TABLE ONLY public.taggings
     ADD CONSTRAINT fk_rails_9fcd2e236b FOREIGN KEY (tag_id) REFERENCES public.tags(id);
+
+
+--
+-- Name: flickr_user_claims fk_rails_b1f948be98; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flickr_user_claims
+    ADD CONSTRAINT fk_rails_b1f948be98 FOREIGN KEY (flickr_user_id) REFERENCES public.flickr_users(id);
+
+
+--
+-- Name: related_tags fk_rails_b9624a660e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags
+    ADD CONSTRAINT fk_rails_b9624a660e FOREIGN KEY (tag_id_from) REFERENCES public.tags(id);
 
 
 --
@@ -1290,6 +1488,10 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251107000001'),
+('20251106121510'),
+('20251105154000'),
+('20251105153946'),
 ('20251103153701'),
 ('20251103135206'),
 ('20251021101306'),

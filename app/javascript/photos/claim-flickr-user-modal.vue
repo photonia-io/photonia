@@ -18,7 +18,7 @@
               <p class="mb-4">
                 <strong>Claim {{ flickrUsername }}</strong>
               </p>
-              
+
               <div v-if="!claim">
                 <p>
                   To claim this Flickr user automatically, we'll generate a
@@ -44,11 +44,13 @@
               </div>
 
               <div v-else>
-                <div class="box has-background-info-light mb-4">
+                <div class="box has-background mb-4">
                   <p class="mb-3">
                     <strong>Your verification code:</strong>
                   </p>
-                  <p class="is-family-monospace is-size-4 has-text-weight-bold mb-3">
+                  <p
+                    class="is-family-monospace is-size-4 has-text-weight-bold mb-3"
+                  >
                     {{ claim.verificationCode }}
                   </p>
                   <button
@@ -56,7 +58,7 @@
                     @click="copyToClipboard"
                   >
                     <span class="icon"><i class="fas fa-copy"></i></span>
-                    <span>{{ copied ? 'Copied!' : 'Copy Code' }}</span>
+                    <span>{{ copied ? "Copied!" : "Copy Code" }}</span>
                   </button>
                 </div>
 
@@ -66,19 +68,19 @@
                     <li>
                       Open your
                       <a
-                        :href="flickrProfileEditUrl"
+                        :href="flickrProfileUrl"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Flickr profile settings
+                        Flickr profile
                         <span class="icon is-small">
                           <i class="fas fa-external-link-alt"></i>
                         </span>
                       </a>
                     </li>
                     <li>
-                      Add the verification code above to the first field
-                      ("Describe yourself") on that page
+                      Add the verification code above to the first field ("Wite
+                      a little about yourself") on that page
                     </li>
                     <li>Save your Flickr profile changes</li>
                     <li>Come back here and click the "Verify" button below</li>
@@ -220,8 +222,8 @@ const flickrUsername = computed(() => {
   );
 });
 
-const flickrProfileEditUrl = computed(() => {
-  return `https://www.flickr.com/profile_edit.gne`;
+const flickrProfileUrl = computed(() => {
+  return `https://www.flickr.com/people/${props.flickrUser.nsid}/`;
 });
 
 // Reset state when modal is closed/opened
@@ -244,7 +246,7 @@ watch(
         manualSuccess.value = false;
       }, 300);
     }
-  }
+  },
 );
 
 const {
@@ -286,10 +288,7 @@ const {
   onError: onRequestManualClaimError,
 } = useMutation(gql`
   mutation ($flickrUserNsid: String!, $reason: String) {
-    requestManualFlickrClaim(
-      flickrUserNsid: $flickrUserNsid
-      reason: $reason
-    ) {
+    requestManualFlickrClaim(flickrUserNsid: $flickrUserNsid, reason: $reason) {
       claim {
         id
         status
@@ -363,8 +362,7 @@ function requestManualClaim() {
 onRequestManualClaimDone((result) => {
   requestingManual.value = false;
   if (result.data.requestManualFlickrClaim.errors.length > 0) {
-    manualError.value =
-      result.data.requestManualFlickrClaim.errors.join(", ");
+    manualError.value = result.data.requestManualFlickrClaim.errors.join(", ");
   } else {
     manualSuccess.value = true;
     setTimeout(() => {
@@ -375,7 +373,8 @@ onRequestManualClaimDone((result) => {
 
 onRequestManualClaimError((error) => {
   requestingManual.value = false;
-  manualError.value = "Failed to submit manual claim request. Please try again.";
+  manualError.value =
+    "Failed to submit manual claim request. Please try again.";
   console.error(error);
 });
 
