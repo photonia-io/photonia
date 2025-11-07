@@ -15,8 +15,11 @@
               license means:
             </p>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY 4.0' }">
-              <h3 class="title is-5">CC BY 4.0 - Attribution</h3>
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC BY 4.0' }"
+            >
+              <h3 class="license-title">CC BY 4.0 - Attribution</h3>
               <p>
                 Others can copy, distribute, remix, and build upon your work,
                 even commercially, as long as they credit you for the original
@@ -24,8 +27,13 @@
               </p>
             </div>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-SA 4.0' }">
-              <h3 class="title is-5">CC BY-SA 4.0 - Attribution-ShareAlike</h3>
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC BY-SA 4.0' }"
+            >
+              <h3 class="license-title">
+                CC BY-SA 4.0 - Attribution-ShareAlike
+              </h3>
               <p>
                 Others can remix, adapt, and build upon your work even for
                 commercial purposes, as long as they credit you and license
@@ -33,8 +41,11 @@
               </p>
             </div>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-ND 4.0' }">
-              <h3 class="title is-5">
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC BY-ND 4.0' }"
+            >
+              <h3 class="license-title">
                 CC BY-ND 4.0 - Attribution-NoDerivatives
               </h3>
               <p>
@@ -44,8 +55,11 @@
               </p>
             </div>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-NC 4.0' }">
-              <h3 class="title is-5">
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC BY-NC 4.0' }"
+            >
+              <h3 class="license-title">
                 CC BY-NC 4.0 - Attribution-NonCommercial
               </h3>
               <p>
@@ -56,8 +70,11 @@
               </p>
             </div>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-NC-SA 4.0' }">
-              <h3 class="title is-5">
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC BY-NC-SA 4.0' }"
+            >
+              <h3 class="license-title">
                 CC BY-NC-SA 4.0 - Attribution-NonCommercial-ShareAlike
               </h3>
               <p>
@@ -67,8 +84,11 @@
               </p>
             </div>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-NC-ND 4.0' }">
-              <h3 class="title is-5">
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC BY-NC-ND 4.0' }"
+            >
+              <h3 class="license-title">
                 CC BY-NC-ND 4.0 - Attribution-NonCommercial-NoDerivatives
               </h3>
               <p>
@@ -79,8 +99,11 @@
               </p>
             </div>
 
-            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC0 1.0' }">
-              <h3 class="title is-5">CC0 1.0 - Public Domain Dedication</h3>
+            <div
+              class="license-info mb-4"
+              :class="{ 'is-current': currentLicense === 'CC0 1.0' }"
+            >
+              <h3 class="license-title">CC0 1.0 - Public Domain Dedication</h3>
               <p>
                 You waive all your rights to the work worldwide under copyright
                 law, including all related and neighboring rights, to the extent
@@ -139,9 +162,14 @@ const close = () => {
 .license-info {
   padding-left: 1rem;
   padding-top: 1rem;
-  margin-bottom: 1rem;
+  padding-bottom: 1rem;
   border-left: 3px solid #f5f5f5;
   transition: all 0.2s ease;
+}
+
+.license-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .license-info.is-current {
@@ -152,7 +180,7 @@ const close = () => {
   box-shadow: 0 2px 4px rgba(50, 115, 220, 0.1);
 }
 
-.license-info.is-current .title {
+.license-info.is-current .license-title {
   color: #3273dc;
 }
 
