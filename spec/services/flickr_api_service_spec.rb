@@ -15,7 +15,7 @@ RSpec.describe FlickrAPIService do
   end
 
   before do
-    allow(ENV).to receive(:[]).with('PHOTONIA_FLICKR_API_KEY').and_return(api_key)
+    allow(ENV).to receive(:fetch).with('PHOTONIA_FLICKR_API_KEY', nil).and_return(api_key)
   end
 
   describe '#people_get_info' do
@@ -166,7 +166,7 @@ RSpec.describe FlickrAPIService do
 
     it 'returns the profile description' do
       result = described_class.profile_get_profile_description(user_id)
-      expect(result).to eq(profile_description)
+      expect(result).to eq({ '_content' => profile_description })
     end
 
     context 'when the response is not ok' do
