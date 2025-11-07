@@ -134,9 +134,15 @@ const applyFormatting = (type) => {
   const markers = type === "bold" ? "**" : "*";
   const markerLength = markers.length;
 
-  // Check if the selection is surrounded by markers (not just contains them)
+  // Check if the selection is surrounded by markers
   const isSurrounded =
     beforeText.endsWith(markers) && afterText.startsWith(markers);
+
+  // Check if the selection includes the markers
+  const includesMarkers =
+    selectedText.startsWith(markers) &&
+    selectedText.endsWith(markers) &&
+    selectedText.length > markerLength * 2;
 
   let newText = "";
   let newSelectionStart = start;
@@ -151,6 +157,11 @@ const applyFormatting = (type) => {
     rangeEnd = end + markerLength;
     newSelectionStart = rangeStart;
     newSelectionEnd = rangeStart + selectedText.length;
+  } else if (includesMarkers) {
+    // Remove the markers from within the selection (toggle off)
+    newText = selectedText.substring(markerLength, selectedText.length - markerLength);
+    newSelectionStart = start;
+    newSelectionEnd = start + newText.length;
   } else if (selectedText) {
     // Add markers around the selection (toggle on)
     newText = `${markers}${selectedText}${markers}`;
