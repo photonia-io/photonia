@@ -32,7 +32,11 @@
       <span class="icon"><i class="fas fa-certificate"></i></span>
       <span class="has-text-weight-semibold">License:</span>
       <span class="ml-1">{{ photo.license }}</span>
-      <a @click.prevent="showLicenseInfoModal" class="ml-1 is-size-7 has-text-link" style="cursor: pointer;">
+      <a
+        @click.prevent="showLicenseInfoModal"
+        class="ml-1 has-text-link"
+        style="cursor: pointer"
+      >
         What's this?
       </a>
     </div>
