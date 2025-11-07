@@ -129,37 +129,49 @@ const applyFormatting = (type) => {
   const beforeText = textareaElement.value.substring(0, start);
   const afterText = textareaElement.value.substring(end);
 
-  let formattedText = "";
-  let cursorOffset = 0;
+  const markers = type === "bold" ? "**" : "*";
+  const markerLength = markers.length;
 
-  if (type === "bold") {
-    if (selectedText) {
-      formattedText = `**${selectedText}**`;
-      cursorOffset = 2; // Position cursor after the first **
+  let newText = "";
+  let newSelectionStart = start;
+  let newSelectionEnd = end;
+
+  // Check if the selected text is already wrapped with the markers
+  const isWrapped =
+    selectedText.startsWith(markers) &&
+    selectedText.endsWith(markers) &&
+    selectedText.length > markerLength * 2;
+
+  if (selectedText) {
+    if (isWrapped) {
+      // Remove the markers (toggle off)
+      newText = selectedText.substring(markerLength, selectedText.length - markerLength);
+      newSelectionStart = start;
+      newSelectionEnd = start + newText.length;
     } else {
-      formattedText = "****";
-      cursorOffset = 2; // Position cursor between the asterisks
+      // Add the markers (toggle on)
+      newText = `${markers}${selectedText}${markers}`;
+      newSelectionStart = start + markerLength;
+      newSelectionEnd = end + markerLength;
     }
-  } else if (type === "italic") {
-    if (selectedText) {
-      formattedText = `*${selectedText}*`;
-      cursorOffset = 1; // Position cursor after the first *
-    } else {
-      formattedText = "**";
-      cursorOffset = 1; // Position cursor between the asterisks
-    }
+  } else {
+    // No text selected, insert markers and position cursor between them
+    newText = `${markers}${markers}`;
+    newSelectionStart = start + markerLength;
+    newSelectionEnd = start + markerLength;
   }
 
-  const newValue = beforeText + formattedText + afterText;
-  emit("update:modelValue", newValue);
+  const newValue = beforeText + newText + afterText;
 
-  nextTick(() => {
-    const newCursorPosition = selectedText
-      ? end + cursorOffset + (type === "bold" ? 2 : 1)
-      : start + cursorOffset;
-    textareaElement.focus();
-    textareaElement.setSelectionRange(newCursorPosition, newCursorPosition);
-  });
+  // Directly manipulate textarea value to preserve undo stack
+  textareaElement.value = newValue;
+
+  // Dispatch input event to notify Vue of the change
+  textareaElement.dispatchEvent(new Event("input", { bubbles: true }));
+
+  // Restore selection to keep text selected
+  textareaElement.focus();
+  textareaElement.setSelectionRange(newSelectionStart, newSelectionEnd);
 };
 
 defineExpose({
