@@ -3,6 +3,17 @@
     <div class="container">
       <h1 class="title mt-5 mb-0">Tag: {{ tag.name }}</h1>
       <hr class="mt-2 mb-4" />
+      <div class="tags mb-4 is-size-6" v-if="tag.relatedTags.length > 0">
+        Related Tags:
+        <router-link
+          v-for="relatedTag in tag.relatedTags"
+          :key="relatedTag.id"
+          :to="{ name: 'tags-show', params: { id: relatedTag.id } }"
+          class="tag is-info is-light"
+        >
+          {{ relatedTag.name }}
+        </router-link>
+      </div>
       <div class="columns is-1 is-multiline">
         <PhotoItem
           v-for="photo in tag.photos.collection"
@@ -39,6 +50,7 @@ const route = useRoute();
 const emptyTag = {
   name: "",
   photos: [],
+  relatedTags: [],
 };
 
 const id = computed(() => route.params.id);

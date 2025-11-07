@@ -390,6 +390,44 @@ ALTER SEQUENCE public.photos_id_seq OWNED BY public.photos.id;
 
 
 --
+-- Name: related_tags; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.related_tags (
+    id bigint NOT NULL,
+    tag_id_from bigint NOT NULL,
+    tag_id_to bigint NOT NULL,
+    support integer NOT NULL,
+    support_from integer NOT NULL,
+    support_to integer NOT NULL,
+    confidence double precision NOT NULL,
+    lift double precision NOT NULL,
+    jaccard double precision NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: related_tags_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.related_tags_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: related_tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.related_tags_id_seq OWNED BY public.related_tags.id;
+
+
+--
 -- Name: roles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -713,6 +751,13 @@ ALTER TABLE ONLY public.photos ALTER COLUMN id SET DEFAULT nextval('public.photo
 
 
 --
+-- Name: related_tags id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags ALTER COLUMN id SET DEFAULT nextval('public.related_tags_id_seq'::regclass);
+
+
+--
 -- Name: roles id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -831,6 +876,14 @@ ALTER TABLE ONLY public.labels
 
 ALTER TABLE ONLY public.photos
     ADD CONSTRAINT photos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: related_tags related_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags
+    ADD CONSTRAINT related_tags_pkey PRIMARY KEY (id);
 
 
 --
@@ -1045,6 +1098,20 @@ CREATE INDEX index_photos_on_user_id ON public.photos USING btree (user_id);
 
 
 --
+-- Name: index_related_tags_on_tag_id_from_and_tag_id_to; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_related_tags_on_tag_id_from_and_tag_id_to ON public.related_tags USING btree (tag_id_from, tag_id_to);
+
+
+--
+-- Name: index_related_tags_on_tag_id_to; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_related_tags_on_tag_id_to ON public.related_tags USING btree (tag_id_to);
+
+
+--
 -- Name: index_roles_users_on_role_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1236,6 +1303,14 @@ ALTER TABLE ONLY public.comments
 
 
 --
+-- Name: related_tags fk_rails_3e066e44b2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags
+    ADD CONSTRAINT fk_rails_3e066e44b2 FOREIGN KEY (tag_id_to) REFERENCES public.tags(id);
+
+
+--
 -- Name: labels fk_rails_6e98447d68; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1257,6 +1332,14 @@ ALTER TABLE ONLY public.albums
 
 ALTER TABLE ONLY public.taggings
     ADD CONSTRAINT fk_rails_9fcd2e236b FOREIGN KEY (tag_id) REFERENCES public.tags(id);
+
+
+--
+-- Name: related_tags fk_rails_b9624a660e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.related_tags
+    ADD CONSTRAINT fk_rails_b9624a660e FOREIGN KEY (tag_id_from) REFERENCES public.tags(id);
 
 
 --
@@ -1290,6 +1373,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251106121510'),
 ('20251103153701'),
 ('20251103135206'),
 ('20251021101306'),
