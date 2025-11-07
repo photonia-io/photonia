@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Claude Code SessionStart Hook for Photonia
+# This hook runs when a new session starts to ensure the environment is ready
+
+echo "🚀 Setting up Photonia development environment..."
+echo ""
+
+# Check Ruby version
+if command -v ruby &> /dev/null; then
+    RUBY_VERSION=$(ruby -v)
+    echo "✓ Ruby found: $RUBY_VERSION"
+
+    # Check Gemfile for required version (non-fatal)
+    if [ -f "Gemfile" ]; then
+        REQUIRED_VERSION=$(grep "^ruby" Gemfile | sed "s/ruby ['\"]//g" | sed "s/['\"]//g" || echo "")
+        if [ -n "$REQUIRED_VERSION" ]; then
+            CURRENT_VERSION=$(ruby -e "puts RUBY_VERSION")
+            if [ "$CURRENT_VERSION" != "$REQUIRED_VERSION" ]; then
+                echo "  ⚠️  Gemfile specifies Ruby $REQUIRED_VERSION, but you have $CURRENT_VERSION"
+                echo "      This may cause issues. Consider using rbenv or rvm to switch versions."
+            fi
+        fi
+    fi
+else
+    echo "❌ Ruby not found. Please install Ruby 3.x"
+    echo ""
+    echo "Environment check failed - Ruby is required"
+    exit 1
+fi
+
+# Check if Bundler is installed
+if command -v bundle &> /dev/null; then
+    echo "✓ Bundler found"
+else
+    echo "⚠️  Bundler not found. You may need to install it with: gem install bundler"
+fi
+
+# Check if Node/Yarn is installed
+if command -v node &> /dev/null; then
+    NODE_VERSION=$(node -v)
+    echo "✓ Node.js found: $NODE_VERSION"
+else
+    echo "⚠️  Node.js not found. Please install Node.js"
+fi
+
+if command -v yarn &> /dev/null; then
+    YARN_VERSION=$(yarn -v)
+    echo "✓ Yarn found: $YARN_VERSION"
+else
+    echo "⚠️  Yarn not found. You may need to install it with: npm install -g yarn"
+fi
+
+echo ""
+
+# Check if dependencies are installed (without installing them)
+if [ -d "vendor/bundle" ] || [ -d "node_modules/.bin" ]; then
+    echo "📦 Dependencies:"
+
+    if command -v bundle &> /dev/null; then
+        if bundle check &> /dev/null; then
+            echo "  ✓ Ruby dependencies installed"
+        else
+            echo "  ⚠️  Ruby dependencies need installation. Run: bundle install"
+        fi
+    fi
+
+    if [ -d "node_modules" ]; then
+        echo "  ✓ JavaScript dependencies installed"
+    else
+        echo "  ⚠️  JavaScript dependencies need installation. Run: yarn install"
+    fi
+else
+    echo "⚠️  Dependencies not installed"
+    echo "   Run: bundle install && yarn install"
+fi
+
+echo ""
+
+# Check PostgreSQL connection
+if [ -f "config/database.yml" ]; then
+    echo "🗄️  Database: PostgreSQL configuration found"
+else
+    echo "⚠️  Database configuration not found"
+fi
+
+# Check Redis connection
+if [ -n "$REDIS_URL" ]; then
+    echo "✓ Redis URL configured"
+elif command -v redis-cli &> /dev/null; then
+    echo "ℹ️  Redis CLI available locally"
+else
+    echo "ℹ️  Redis not configured (optional for development)"
+fi
+
+echo ""
+echo "✅ Environment setup complete!"
+echo ""
+echo "📚 Quick Start:"
+echo "  • Run tests: bundle exec rspec"
+echo "  • Run linter: bundle exec rubocop"
+echo "  • Start dev server: overmind s -N -f Procfile.dev"
+echo "    (or use /start command)"
+echo "  • Manual start:"
+echo "    - Rails: bundle exec rails s"
+echo "    - Vite: bin/vite dev"
+echo "    - Sidekiq: bundle exec sidekiq"
+echo ""
+echo "💡 Use /test, /lint, or /start slash commands for common tasks"
+echo ""
