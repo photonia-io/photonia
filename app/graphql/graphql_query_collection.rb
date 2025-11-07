@@ -178,6 +178,7 @@ class GraphqlQueryCollection
               profileurl
               iconfarm
               iconserver
+              isClaimed
             }
             createdAt
           }

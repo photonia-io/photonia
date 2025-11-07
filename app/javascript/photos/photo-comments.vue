@@ -13,26 +13,39 @@
           </figure>
         </div>
         <div class="media-content">
-          <a
-            :href="comment.flickrUser.profileurl"
-            target="_blank"
-            class="flickr-link"
-          >
-            <img
-              src="@/assets/flickr-icon-64x64.png"
-              alt="Flickr User"
-              class="flickr-icon mr-2"
-            />
-            <strong>{{ displayName(comment) }}</strong>
-          </a>
-          <small class="ml-2">{{ momentFormat(comment.createdAt) }}</small>
-          <small
-            class="ml-2"
-            v-if="comment.bodyEdited"
-            title="This comment has been edited"
-          >
-            <em>Edited on {{ momentFormat(comment.bodyLastEditedAt) }}</em>
-          </small>
+          <div class="is-flex is-align-items-center is-flex-wrap-wrap">
+            <a
+              :href="comment.flickrUser.profileurl"
+              target="_blank"
+              class="flickr-link"
+            >
+              <img
+                src="@/assets/flickr-icon-64x64.png"
+                alt="Flickr User"
+                class="flickr-icon mr-2"
+              />
+              <strong>{{ displayName(comment) }}</strong>
+            </a>
+            <small class="ml-2">{{ momentFormat(comment.createdAt) }}</small>
+            <small
+              class="ml-2"
+              v-if="comment.bodyEdited"
+              title="This comment has been edited"
+            >
+              <em>Edited on {{ momentFormat(comment.bodyLastEditedAt) }}</em>
+            </small>
+            <button
+              v-if="!comment.flickrUser.isClaimed && userStore.signedIn"
+              class="button is-small is-info ml-2"
+              @click="openClaimModal(comment.flickrUser)"
+              title="Claim this Flickr user"
+            >
+              <span class="icon is-small">
+                <i class="fas fa-user-check"></i>
+              </span>
+              <span>Claim</span>
+            </button>
+          </div>
           <div v-html="marked.parse(comment.body)"></div>
         </div>
       </div>
@@ -44,14 +57,27 @@
       >
     </div>
   </PhotoInfobox>
+
+  <ClaimFlickrUserModal
+    v-if="selectedFlickrUser"
+    :flickr-user="selectedFlickrUser"
+    :is-active="claimModalActive"
+    @close="closeClaimModal"
+    @claimed="handleClaimed"
+  />
 </template>
 
 <script setup>
+import { ref } from "vue";
 import { marked } from "marked";
 import moment from "moment/min/moment-with-locales";
+import { useUserStore } from "@/stores/user";
 
 // components
 import PhotoInfobox from "./photo-infobox.vue";
+import ClaimFlickrUserModal from "./claim-flickr-user-modal.vue";
+
+const userStore = useUserStore();
 
 const props = defineProps({
   photo: {
@@ -63,6 +89,11 @@ const props = defineProps({
     required: true,
   },
 });
+
+const emit = defineEmits(["refresh"]);
+
+const claimModalActive = ref(false);
+const selectedFlickrUser = ref(null);
 
 function displayName(comment) {
   return (
@@ -83,6 +114,20 @@ function buddyIconUrl(comment) {
 const format = "dddd, MMMM Do YYYY, H:mm";
 function momentFormat(date) {
   return moment(date).format(format);
+}
+
+function openClaimModal(flickrUser) {
+  selectedFlickrUser.value = flickrUser;
+  claimModalActive.value = true;
+}
+
+function closeClaimModal() {
+  claimModalActive.value = false;
+}
+
+function handleClaimed() {
+  // Refresh the photo data to update the claimed status
+  emit("refresh");
 }
 </script>
 
