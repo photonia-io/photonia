@@ -123,8 +123,10 @@ const applyFormatting = (type) => {
   const textareaElement = textarea.value;
   if (!textareaElement) return;
 
-  const start = textareaElement.selectionStart;
-  const end = textareaElement.selectionEnd;
+  textareaElement.focus();
+
+  let start = textareaElement.selectionStart;
+  let end = textareaElement.selectionEnd;
   const selectedText = textareaElement.value.substring(start, end);
   const beforeText = textareaElement.value.substring(0, start);
   const afterText = textareaElement.value.substring(end);
@@ -132,28 +134,28 @@ const applyFormatting = (type) => {
   const markers = type === "bold" ? "**" : "*";
   const markerLength = markers.length;
 
+  // Check if the selection is surrounded by markers (not just contains them)
+  const isSurrounded =
+    beforeText.endsWith(markers) && afterText.startsWith(markers);
+
   let newText = "";
   let newSelectionStart = start;
   let newSelectionEnd = end;
+  let rangeStart = start;
+  let rangeEnd = end;
 
-  // Check if the selected text is already wrapped with the markers
-  const isWrapped =
-    selectedText.startsWith(markers) &&
-    selectedText.endsWith(markers) &&
-    selectedText.length > markerLength * 2;
-
-  if (selectedText) {
-    if (isWrapped) {
-      // Remove the markers (toggle off)
-      newText = selectedText.substring(markerLength, selectedText.length - markerLength);
-      newSelectionStart = start;
-      newSelectionEnd = start + newText.length;
-    } else {
-      // Add the markers (toggle on)
-      newText = `${markers}${selectedText}${markers}`;
-      newSelectionStart = start + markerLength;
-      newSelectionEnd = end + markerLength;
-    }
+  if (isSurrounded) {
+    // Remove the surrounding markers (toggle off)
+    newText = selectedText;
+    rangeStart = start - markerLength;
+    rangeEnd = end + markerLength;
+    newSelectionStart = rangeStart;
+    newSelectionEnd = rangeStart + selectedText.length;
+  } else if (selectedText) {
+    // Add markers around the selection (toggle on)
+    newText = `${markers}${selectedText}${markers}`;
+    newSelectionStart = start + markerLength;
+    newSelectionEnd = end + markerLength;
   } else {
     // No text selected, insert markers and position cursor between them
     newText = `${markers}${markers}`;
@@ -161,16 +163,13 @@ const applyFormatting = (type) => {
     newSelectionEnd = start + markerLength;
   }
 
-  const newValue = beforeText + newText + afterText;
+  // Select the range to be replaced (including markers if removing)
+  textareaElement.setSelectionRange(rangeStart, rangeEnd);
 
-  // Directly manipulate textarea value to preserve undo stack
-  textareaElement.value = newValue;
-
-  // Dispatch input event to notify Vue of the change
-  textareaElement.dispatchEvent(new Event("input", { bubbles: true }));
+  // Use execCommand for proper undo/redo support
+  document.execCommand('insertText', false, newText);
 
   // Restore selection to keep text selected
-  textareaElement.focus();
   textareaElement.setSelectionRange(newSelectionStart, newSelectionEnd);
 };
 
