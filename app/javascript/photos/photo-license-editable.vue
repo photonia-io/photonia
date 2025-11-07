@@ -16,7 +16,6 @@
               <option value="CC BY-NC-SA 4.0">CC BY-NC-SA 4.0 - Attribution-NonCommercial-ShareAlike</option>
               <option value="CC BY-NC-ND 4.0">CC BY-NC-ND 4.0 - Attribution-NonCommercial-NoDerivatives</option>
               <option value="CC0 1.0">CC0 1.0 - Public Domain Dedication</option>
-              <option value="Public Domain">Public Domain</option>
             </select>
           </div>
         </div>

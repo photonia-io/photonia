@@ -15,7 +15,7 @@
               license means:
             </p>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY 4.0' }">
               <h3 class="title is-5">CC BY 4.0 - Attribution</h3>
               <p>
                 Others can copy, distribute, remix, and build upon your work,
@@ -24,7 +24,7 @@
               </p>
             </div>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-SA 4.0' }">
               <h3 class="title is-5">CC BY-SA 4.0 - Attribution-ShareAlike</h3>
               <p>
                 Others can remix, adapt, and build upon your work even for
@@ -33,7 +33,7 @@
               </p>
             </div>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-ND 4.0' }">
               <h3 class="title is-5">
                 CC BY-ND 4.0 - Attribution-NoDerivatives
               </h3>
@@ -44,7 +44,7 @@
               </p>
             </div>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-NC 4.0' }">
               <h3 class="title is-5">
                 CC BY-NC 4.0 - Attribution-NonCommercial
               </h3>
@@ -56,7 +56,7 @@
               </p>
             </div>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-NC-SA 4.0' }">
               <h3 class="title is-5">
                 CC BY-NC-SA 4.0 - Attribution-NonCommercial-ShareAlike
               </h3>
@@ -67,7 +67,7 @@
               </p>
             </div>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC BY-NC-ND 4.0' }">
               <h3 class="title is-5">
                 CC BY-NC-ND 4.0 - Attribution-NonCommercial-NoDerivatives
               </h3>
@@ -79,7 +79,7 @@
               </p>
             </div>
 
-            <div class="license-info mb-4">
+            <div class="license-info mb-4" :class="{ 'is-current': currentLicense === 'CC0 1.0' }">
               <h3 class="title is-5">CC0 1.0 - Public Domain Dedication</h3>
               <p>
                 You waive all your rights to the work worldwide under copyright
@@ -87,14 +87,6 @@
                 allowed by law. Others can copy, modify, distribute and perform
                 the work, even for commercial purposes, all without asking
                 permission.
-              </p>
-            </div>
-
-            <div class="license-info mb-4">
-              <h3 class="title is-5">Public Domain</h3>
-              <p>
-                The work is not protected by copyright and may be freely used by
-                anyone for any purpose without restriction.
               </p>
             </div>
 
@@ -128,6 +120,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  currentLicense: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -145,6 +141,19 @@ const close = () => {
   padding-top: 1rem;
   margin-bottom: 1rem;
   border-left: 3px solid #f5f5f5;
+  transition: all 0.2s ease;
+}
+
+.license-info.is-current {
+  background-color: #eff5fb;
+  border-left-color: #3273dc;
+  border-radius: 4px;
+  padding-right: 1rem;
+  box-shadow: 0 2px 4px rgba(50, 115, 220, 0.1);
+}
+
+.license-info.is-current .title {
+  color: #3273dc;
 }
 
 .modal-card {

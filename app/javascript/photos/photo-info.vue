@@ -51,7 +51,7 @@
       <span class="ml-1">{{ photo.rekognitionLabelModelVersion }}</span>
     </div>
   </PhotoInfobox>
-  <LicenseInfoModal v-model="licenseInfoModalActive" />
+  <LicenseInfoModal v-model="licenseInfoModalActive" :current-license="photo.license" />
 </template>
 
 <script setup>
