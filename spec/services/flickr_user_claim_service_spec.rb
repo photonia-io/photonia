@@ -237,7 +237,7 @@ RSpec.describe FlickrUserClaimService do
         # Create a token for a different claim
         other_claim = create(:flickr_user_claim)
         tampered_token = described_class.generate_token(other_claim)
-        
+
         result = described_class.approve_claim_by_token(claim.id, tampered_token)
 
         expect(result[:success]).to be(false)
@@ -287,7 +287,7 @@ RSpec.describe FlickrUserClaimService do
         # Create a token for a different claim
         other_claim = create(:flickr_user_claim)
         tampered_token = described_class.generate_token(other_claim)
-        
+
         result = described_class.deny_claim_by_token(claim.id, tampered_token)
 
         expect(result[:success]).to be(false)

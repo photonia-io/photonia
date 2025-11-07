@@ -10,15 +10,13 @@ class FlickrUserClaimService
     # Generate a random 10-character verification code
     verification_code = SecureRandom.alphanumeric(10)
 
-    claim = FlickrUserClaim.create!(
+    FlickrUserClaim.create!(
       user: @user,
       flickr_user: @flickr_user,
       claim_type: 'automatic',
       status: 'pending',
       verification_code: verification_code
     )
-
-    claim
   end
 
   def verify_automatic_claim(claim)
@@ -103,9 +101,7 @@ class FlickrUserClaimService
     return { success: false, error: 'Claim not found' } unless claim
 
     # If the claim was approved, remove the claimed_by_user association
-    if claim.approved?
-      @flickr_user.update!(claimed_by_user: nil)
-    end
+    @flickr_user.update!(claimed_by_user: nil) if claim.approved?
 
     # Delete the claim record
     claim.destroy!
@@ -124,8 +120,8 @@ class FlickrUserClaimService
       verifier = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base)
       begin
         data = verifier.verify(token)
-        return { success: false, error: 'Invalid token' } unless data[:claim_id] == claim.id
-      rescue ActiveSupport::MessageVerifier::InvalidSignature
+        return { success: false, error: 'Invalid token' } unless data['claim_id'] == claim.id
+      rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError
         return { success: false, error: 'Invalid token' }
       end
 
@@ -141,8 +137,8 @@ class FlickrUserClaimService
       verifier = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base)
       begin
         data = verifier.verify(token)
-        return { success: false, error: 'Invalid token' } unless data[:claim_id] == claim.id
-      rescue ActiveSupport::MessageVerifier::InvalidSignature
+        return { success: false, error: 'Invalid token' } unless data['claim_id'] == claim.id
+      rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError
         return { success: false, error: 'Invalid token' }
       end
 
