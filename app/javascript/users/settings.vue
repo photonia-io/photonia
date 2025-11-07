@@ -149,6 +149,9 @@
                   <p class="help">
                     Select the default license for photos you upload. This will
                     be automatically applied to new uploads.
+                    <a @click.prevent="showLicenseInfoModal" class="has-text-link" style="cursor: pointer;">
+                      Learn more about licenses
+                    </a>
                   </p>
                 </div>
               </div>
@@ -175,6 +178,7 @@
       </div>
     </div>
   </section>
+  <LicenseInfoModal v-model="licenseInfoModalActive" />
 </template>
 
 <script setup>
@@ -184,6 +188,7 @@ import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import { useUserStore } from "@/stores/user";
 import toaster from "../mixins/toaster";
+import LicenseInfoModal from "../shared/license-info-modal.vue";
 
 const CURRENT_USER_QUERY = gql`
   query CurrentUserQuery {
@@ -213,8 +218,13 @@ const newFirstName = ref(null);
 const newLastName = ref(null);
 const newDisplayName = ref(null);
 const newDefaultLicense = ref(null);
+const licenseInfoModalActive = ref(false);
 
 const { result } = useQuery(CURRENT_USER_QUERY);
+
+const showLicenseInfoModal = () => {
+  licenseInfoModalActive.value = true;
+};
 
 const email = computed(() => result.value?.currentUser.email);
 const firstName = computed({
