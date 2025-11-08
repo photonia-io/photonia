@@ -257,13 +257,8 @@ class Photo < ApplicationRecord
   end
 
   def add_derivatives
-    # Log Derivatives Attempt
-
     thumbnail = thumbnail_source
-    unless thumbnail
-      # Log Error: No Thumbnail (Probably square or no labels)
-      return
-    end
+    return unless thumbnail
 
     image_attacher.add_derivative(
       :medium_intelligent,
