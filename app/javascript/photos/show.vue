@@ -442,12 +442,11 @@ onDeletePhotoError((error) => {
 });
 
 onUpdateThumbnailDone(({ data }) => {
-  toaster("The thumbnail has been updated", "is-success");
+  toaster(
+    "The thumbnail is being updated in the background. It will soon be available.",
+    "is-success",
+  );
   thumbnailEditMode.value = false;
-  // Reload the page to see updated derivatives (they're generated in background)
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
 });
 
 onUpdateThumbnailError((error) => {
