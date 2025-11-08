@@ -6,6 +6,6 @@ class AddIntelligentDerivativesJob < ApplicationJob
 
   def perform(photo_id)
     photo = Photo.unscoped.find(photo_id)
-    photo.add_intelligent_derivatives
+    photo.add_derivatives
   end
 end

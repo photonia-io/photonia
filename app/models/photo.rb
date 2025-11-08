@@ -244,22 +244,29 @@ class Photo < ApplicationRecord
     pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
   end
 
-  def add_intelligent_derivatives
-    # Log Intelligent Derivatives Attempt
+  def user_thumbnail?
+    user_thumbnail.present?
+  end
 
-    if labels.blank?
-      # Log Error: No Label Instances
-      return
-    end
+  def thumbnail_source
+    return user_thumbnail if user_thumbnail?
+    return intelligent_thumbnail if intelligent_thumbnail.present?
 
-    unless intelligent_thumbnail
-      # Log Error: No Thumbnail (Probably square)
+    nil
+  end
+
+  def add_derivatives
+    # Log Derivatives Attempt
+
+    thumbnail = thumbnail_source
+    unless thumbnail
+      # Log Error: No Thumbnail (Probably square or no labels)
       return
     end
 
     image_attacher.add_derivative(
       :medium_intelligent,
-      intelligent_crop.resize_to_fill!(
+      custom_crop(thumbnail).resize_to_fill!(
         ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
         ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
       )
@@ -267,13 +274,18 @@ class Photo < ApplicationRecord
 
     image_attacher.add_derivative(
       :thumbnail_intelligent,
-      intelligent_crop.resize_to_fill!(
+      custom_crop(thumbnail).resize_to_fill!(
         ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
         ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
       )
     )
 
     image_attacher.atomic_promote
+  end
+
+  # Deprecated: Use add_derivatives instead
+  def add_intelligent_derivatives
+    add_derivatives
   end
 
   def intelligent_thumbnail
@@ -314,16 +326,20 @@ class Photo < ApplicationRecord
 
   private
 
-  def intelligent_crop
+  def custom_crop(thumbnail)
     original = image_attacher.file.download
     ImageProcessing::MiniMagick
       .source(original)
       .crop(
-        intelligent_thumbnail[:x],
-        intelligent_thumbnail[:y],
-        intelligent_thumbnail[:pixel_width],
-        intelligent_thumbnail[:pixel_height]
+        thumbnail[:x],
+        thumbnail[:y],
+        thumbnail[:pixel_width],
+        thumbnail[:pixel_height]
       )
+  end
+
+  def intelligent_crop
+    custom_crop(intelligent_thumbnail)
   end
 
   def set_fields
