@@ -1,21 +1,22 @@
 <template>
   <div class="thumbnail-editor" v-if="editMode">
     <div class="editor-container">
-      <div class="image-container" ref="imageContainer">
-        <img 
-          ref="image" 
-          :src="photo.extralargeImageUrl" 
-          alt="Photo for thumbnail editing"
-          @load="onImageLoad"
-          style="display: block; max-width: 100%; height: auto;"
-        />
-        <div
-          v-if="imageLoaded"
-          class="thumbnail-box"
-          :style="thumbnailStyle"
-          @mousedown="onDragStart"
-        >
-          <div class="resize-handle" @mousedown.stop="onResizeStart"></div>
+      <div class="image-wrapper">
+        <div class="image-container" ref="imageContainer">
+          <img 
+            ref="image" 
+            :src="photo.extralargeImageUrl" 
+            alt="Photo for thumbnail editing"
+            @load="onImageLoad"
+          />
+          <div
+            v-if="imageLoaded"
+            class="thumbnail-box"
+            :style="thumbnailStyle"
+            @mousedown="onDragStart"
+          >
+            <div class="resize-handle" @mousedown.stop="onResizeStart"></div>
+          </div>
         </div>
       </div>
       <div class="editor-controls">
@@ -108,19 +109,28 @@ const onImageLoad = () => {
 
 const updateContainerDimensions = () => {
   if (image.value) {
-    containerWidth.value = image.value.clientWidth;
-    containerHeight.value = image.value.clientHeight;
+    // Use the actual rendered dimensions of the image
+    const rect = image.value.getBoundingClientRect();
+    containerWidth.value = rect.width;
+    containerHeight.value = rect.height;
   }
 };
 
 const thumbnailStyle = computed(() => {
+  // Force square by using the minimum dimension
   const size = Math.min(thumbnail.value.width, thumbnail.value.height);
+  
+  // Calculate pixel positions based on the actual image dimensions
+  const topPx = thumbnail.value.top * containerHeight.value;
+  const leftPx = thumbnail.value.left * containerWidth.value;
+  const sizePx = size * Math.min(containerWidth.value, containerHeight.value);
+  
   return {
     position: 'absolute',
-    top: `${thumbnail.value.top * 100}%`,
-    left: `${thumbnail.value.left * 100}%`,
-    width: `${size * 100}%`,
-    height: `${size * 100}%`,
+    top: `${topPx}px`,
+    left: `${leftPx}px`,
+    width: `${sizePx}px`,
+    height: `${sizePx}px`,
     border: '2px solid white',
     boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
     cursor: isDragging.value ? 'grabbing' : 'grab',
@@ -151,33 +161,46 @@ const onResizeStart = (event) => {
 const onMouseMove = (event) => {
   if (!isDragging.value && !isResizing.value) return;
   
-  const deltaX = (event.clientX - dragStartX.value) / containerWidth.value;
-  const deltaY = (event.clientY - dragStartY.value) / containerHeight.value;
+  // Calculate delta in pixels and convert to percentage
+  const deltaXPx = event.clientX - dragStartX.value;
+  const deltaYPx = event.clientY - dragStartY.value;
+  const deltaX = deltaXPx / containerWidth.value;
+  const deltaY = deltaYPx / containerHeight.value;
   
   if (isDragging.value) {
     // Move the thumbnail
     let newLeft = startThumbnail.value.left + deltaX;
     let newTop = startThumbnail.value.top + deltaY;
     
-    // Constrain to image bounds
+    // Get the current square size
     const size = Math.min(startThumbnail.value.width, startThumbnail.value.height);
+    
+    // Constrain to image bounds (keeping it within 0 to 1-size)
     newLeft = Math.max(0, Math.min(1 - size, newLeft));
     newTop = Math.max(0, Math.min(1 - size, newTop));
     
     thumbnail.value.left = newLeft;
     thumbnail.value.top = newTop;
+    // Keep width and height unchanged during drag
+    thumbnail.value.width = startThumbnail.value.width;
+    thumbnail.value.height = startThumbnail.value.height;
   } else if (isResizing.value) {
     // Resize the thumbnail (keeping it square)
-    const delta = Math.max(deltaX, deltaY);
-    let newSize = Math.min(startThumbnail.value.width, startThumbnail.value.height) + delta;
+    // Use the larger delta to make resizing more responsive
+    const deltaMax = Math.max(deltaXPx, deltaYPx);
+    const deltaSize = deltaMax / Math.min(containerWidth.value, containerHeight.value);
     
-    // Constrain size
+    const startSize = Math.min(startThumbnail.value.width, startThumbnail.value.height);
+    let newSize = startSize + deltaSize;
+    
+    // Constrain size to stay within bounds
     const maxSize = Math.min(
       1 - startThumbnail.value.left,
       1 - startThumbnail.value.top
     );
     newSize = Math.max(0.1, Math.min(maxSize, newSize));
     
+    // Update both width and height to keep it square
     thumbnail.value.width = newSize;
     thumbnail.value.height = newSize;
   }
@@ -237,22 +260,38 @@ watch(() => props.editMode, (newVal) => {
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  overflow: auto;
 }
 
 .editor-container {
-  max-width: 90vw;
-  max-height: 90vh;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  align-items: center;
+}
+
+.image-wrapper {
+  max-width: 90vw;
+  max-height: calc(90vh - 100px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-container {
   position: relative;
   display: inline-block;
-  max-width: 100%;
+  line-height: 0;
+}
+
+.image-container img {
+  display: block;
+  max-width: 90vw;
   max-height: calc(90vh - 100px);
-  overflow: hidden;
+  width: auto;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .thumbnail-box {
@@ -269,6 +308,7 @@ watch(() => props.editMode, (newVal) => {
   border: 2px solid #333;
   cursor: nwse-resize;
   border-radius: 50%;
+  z-index: 10;
 }
 
 .editor-controls {
