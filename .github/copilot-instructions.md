@@ -143,7 +143,7 @@ npx prettier --write .
 
 - **RekognitionJob** - Processes photos with AI labeling
 - **PromoteJob** - Handles photo upload promotion
-- **AddIntelligentDerivativesJob** - Generates thumbnails and derivatives
+- **AddDerivativesJob** - Generates thumbnails and derivatives
 - **SitemapRefreshJob** - Updates XML sitemap
 - **DestroyJob** - Handles resource cleanup
 - **FlickrPeopleGetInfoJob** - Fetches Flickr user information

@@ -7,6 +7,7 @@
 #  id                          :bigint           not null, primary key
 #  admin                       :boolean          default(FALSE)
 #  created_from_facebook       :boolean          default(FALSE), not null
+#  default_license             :string
 #  disabled                    :boolean          default(FALSE), not null
 #  display_name                :string
 #  email                       :string           default(""), not null

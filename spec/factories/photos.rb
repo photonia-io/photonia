@@ -26,6 +26,7 @@
 #  timezone                 :string           default("UTC"), not null
 #  title                    :string
 #  tsv                      :tsvector
+#  user_thumbnail           :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  user_id                  :bigint

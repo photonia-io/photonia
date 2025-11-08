@@ -12,10 +12,10 @@ namespace :photos do
   end
 
   desc 'Add intelligent derivatives'
-  task :add_intelligent_derivatives, [:photo_slug] => :environment do |_task, args|
+  task :add_derivatives, [:photo_slug] => :environment do |_task, args|
     def add_job(photo)
       puts "Adding job for photo #{photo.id} / #{photo.slug}"
-      AddIntelligentDerivativesJob.perform_later(photo.id)
+      AddDerivativesJob.perform_later(photo.id)
     end
 
     slug = args[:photo_slug]

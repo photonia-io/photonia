@@ -26,6 +26,7 @@
 #  timezone                 :string           default("UTC"), not null
 #  title                    :string
 #  tsv                      :tsvector
+#  user_thumbnail           :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  user_id                  :bigint
@@ -244,36 +245,46 @@ class Photo < ApplicationRecord
     pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
   end
 
-  def add_intelligent_derivatives
-    # Log Intelligent Derivatives Attempt
+  def add_derivatives
+    # Add intelligent derivatives if intelligent thumbnail exists
+    if intelligent_thumbnail.present?
+      image_attacher.add_derivative(
+        :medium_intelligent,
+        custom_crop(intelligent_thumbnail).resize_to_fill!(
+          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
+          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+        )
+      )
 
-    if labels.blank?
-      # Log Error: No Label Instances
-      return
+      image_attacher.add_derivative(
+        :thumbnail_intelligent,
+        custom_crop(intelligent_thumbnail).resize_to_fill!(
+          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
+          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+        )
+      )
     end
 
-    unless intelligent_thumbnail
-      # Log Error: No Thumbnail (Probably square)
-      return
+    # Add user derivatives if user thumbnail exists
+    if user_thumbnail.present?
+      image_attacher.add_derivative(
+        :medium_user,
+        custom_crop(user_thumbnail).resize_to_fill!(
+          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
+          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+        )
+      )
+
+      image_attacher.add_derivative(
+        :thumbnail_user,
+        custom_crop(user_thumbnail).resize_to_fill!(
+          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
+          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+        )
+      )
     end
 
-    image_attacher.add_derivative(
-      :medium_intelligent,
-      intelligent_crop.resize_to_fill!(
-        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
-        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
-      )
-    )
-
-    image_attacher.add_derivative(
-      :thumbnail_intelligent,
-      intelligent_crop.resize_to_fill!(
-        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
-        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
-      )
-    )
-
-    image_attacher.atomic_promote
+    image_attacher.atomic_promote if intelligent_thumbnail.present? || user_thumbnail.present?
   end
 
   def intelligent_thumbnail
@@ -314,16 +325,21 @@ class Photo < ApplicationRecord
 
   private
 
-  def intelligent_crop
+  def custom_crop(thumbnail)
     original = image_attacher.file.download
+    # Handle both symbol and string keys (user_thumbnail uses strings from JSONB)
+    x = thumbnail[:x] || thumbnail['x']
+    y = thumbnail[:y] || thumbnail['y']
+    width = thumbnail[:pixel_width] || thumbnail['pixel_width']
+    height = thumbnail[:pixel_height] || thumbnail['pixel_height']
+
     ImageProcessing::MiniMagick
       .source(original)
-      .crop(
-        intelligent_thumbnail[:x],
-        intelligent_thumbnail[:y],
-        intelligent_thumbnail[:pixel_width],
-        intelligent_thumbnail[:pixel_height]
-      )
+      .crop(x, y, width, height)
+  end
+
+  def intelligent_crop
+    custom_crop(intelligent_thumbnail)
   end
 
   def set_fields
