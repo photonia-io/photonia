@@ -327,15 +327,15 @@ class Photo < ApplicationRecord
 
   def custom_crop(thumbnail)
     original = image_attacher.file.download
-    puts thumbnail.inspect
+    # Handle both symbol and string keys (user_thumbnail uses strings from JSONB)
+    x = thumbnail[:x] || thumbnail['x']
+    y = thumbnail[:y] || thumbnail['y']
+    width = thumbnail[:pixel_width] || thumbnail['pixel_width']
+    height = thumbnail[:pixel_height] || thumbnail['pixel_height']
+    
     ImageProcessing::MiniMagick
       .source(original)
-      .crop(
-        thumbnail[:x],
-        thumbnail[:y],
-        thumbnail[:pixel_width],
-        thumbnail[:pixel_height]
-      )
+      .crop(x, y, width, height)
   end
 
   def intelligent_crop
