@@ -3,9 +3,9 @@
     <div class="editor-container">
       <div class="image-wrapper">
         <div class="image-container" ref="imageContainer">
-          <img 
-            ref="image" 
-            :src="photo.extralargeImageUrl" 
+          <img
+            ref="image"
+            :src="photo.extralargeImageUrl"
             alt="Photo for thumbnail editing"
             @load="onImageLoad"
           />
@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   photo: {
@@ -51,7 +51,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits(["save", "cancel"]);
 
 const imageContainer = ref(null);
 const image = ref(null);
@@ -79,7 +79,7 @@ const containerHeight = ref(0);
 const onImageLoad = () => {
   imageLoaded.value = true;
   updateContainerDimensions();
-  
+
   // Initialize with user thumbnail or intelligent thumbnail
   if (props.photo.userThumbnail) {
     thumbnail.value = {
@@ -122,38 +122,38 @@ const updateContainerDimensions = () => {
 const thumbnailStyle = computed(() => {
   // Force square by using the minimum dimension
   const size = Math.min(thumbnail.value.width, thumbnail.value.height);
-  
+
   // Calculate pixel positions based on the actual image dimensions
   const topPx = thumbnail.value.top * containerHeight.value;
   const leftPx = thumbnail.value.left * containerWidth.value;
-  
+
   // The square size should be based on percentages of each dimension
   const widthPx = size * containerWidth.value;
   const heightPx = size * containerHeight.value;
   // Use the smaller of the two to maintain square
   const sizePx = Math.min(widthPx, heightPx);
-  
+
   return {
-    position: 'absolute',
+    position: "absolute",
     top: `${topPx}px`,
     left: `${leftPx}px`,
     width: `${sizePx}px`,
     height: `${sizePx}px`,
-    border: '2px solid white',
-    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
-    cursor: isDragging.value ? 'grabbing' : 'grab',
-    boxSizing: 'border-box',
+    border: "2px solid white",
+    boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.5)",
+    cursor: isDragging.value ? "grabbing" : "grab",
+    boxSizing: "border-box",
   };
 });
 
 const onDragStart = (event) => {
   if (isResizing.value) return;
-  
+
   isDragging.value = true;
   dragStartX.value = event.clientX;
   dragStartY.value = event.clientY;
   startThumbnail.value = { ...thumbnail.value };
-  
+
   event.preventDefault();
 };
 
@@ -162,40 +162,43 @@ const onResizeStart = (event) => {
   dragStartX.value = event.clientX;
   dragStartY.value = event.clientY;
   startThumbnail.value = { ...thumbnail.value };
-  
+
   event.preventDefault();
 };
 
 const onMouseMove = (event) => {
   if (!isDragging.value && !isResizing.value) return;
-  
+
   // Calculate delta in pixels and convert to percentage
   const deltaXPx = event.clientX - dragStartX.value;
   const deltaYPx = event.clientY - dragStartY.value;
   const deltaX = deltaXPx / containerWidth.value;
   const deltaY = deltaYPx / containerHeight.value;
-  
+
   if (isDragging.value) {
     // Move the thumbnail
     let newLeft = startThumbnail.value.left + deltaX;
     let newTop = startThumbnail.value.top + deltaY;
-    
+
     // Get the current square size
-    const size = Math.min(startThumbnail.value.width, startThumbnail.value.height);
-    
+    const size = Math.min(
+      startThumbnail.value.width,
+      startThumbnail.value.height,
+    );
+
     // Calculate the actual pixel size of the square
     const widthPx = size * containerWidth.value;
     const heightPx = size * containerHeight.value;
     const squareSizePx = Math.min(widthPx, heightPx);
-    
+
     // Calculate the size as a percentage of each dimension
     const sizePercentWidth = squareSizePx / containerWidth.value;
     const sizePercentHeight = squareSizePx / containerHeight.value;
-    
+
     // Constrain to image bounds based on actual square size in each dimension
     newLeft = Math.max(0, Math.min(1 - sizePercentWidth, newLeft));
     newTop = Math.max(0, Math.min(1 - sizePercentHeight, newTop));
-    
+
     thumbnail.value.left = newLeft;
     thumbnail.value.top = newTop;
     // Keep width and height unchanged during drag
@@ -205,28 +208,33 @@ const onMouseMove = (event) => {
     // Resize the thumbnail (keeping it square)
     // Use the larger delta to make resizing more responsive
     const deltaMax = Math.max(deltaXPx, deltaYPx);
-    const deltaSize = deltaMax / Math.min(containerWidth.value, containerHeight.value);
-    
-    const startSize = Math.min(startThumbnail.value.width, startThumbnail.value.height);
+    const deltaSize =
+      deltaMax / Math.min(containerWidth.value, containerHeight.value);
+
+    const startSize = Math.min(
+      startThumbnail.value.width,
+      startThumbnail.value.height,
+    );
     let newSize = startSize + deltaSize;
-    
+
     // Calculate what the actual square size would be in pixels
     const widthPx = newSize * containerWidth.value;
     const heightPx = newSize * containerHeight.value;
     const squareSizePx = Math.min(widthPx, heightPx);
-    
+
     // Calculate maximum allowed size based on position
     const maxWidthPercent = 1 - startThumbnail.value.left;
     const maxHeightPercent = 1 - startThumbnail.value.top;
     const maxWidthPx = maxWidthPercent * containerWidth.value;
     const maxHeightPx = maxHeightPercent * containerHeight.value;
     const maxSizePx = Math.min(maxWidthPx, maxHeightPx);
-    
+
     // Convert max size back to percentage
-    const maxSize = maxSizePx / Math.min(containerWidth.value, containerHeight.value);
-    
+    const maxSize =
+      maxSizePx / Math.min(containerWidth.value, containerHeight.value);
+
     newSize = Math.max(0.1, Math.min(maxSize, newSize));
-    
+
     // Update both width and height to keep it square
     thumbnail.value.width = newSize;
     thumbnail.value.height = newSize;
@@ -247,31 +255,34 @@ const saveThumbnail = () => {
     width: size,
     height: size,
   };
-  
-  emit('save', thumbnailData);
+
+  emit("save", thumbnailData);
 };
 
 const cancelEdit = () => {
-  emit('cancel');
+  emit("cancel");
 };
 
 onMounted(() => {
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
-  window.addEventListener('resize', updateContainerDimensions);
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onMouseUp);
+  window.addEventListener("resize", updateContainerDimensions);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('mousemove', onMouseMove);
-  window.removeEventListener('mouseup', onMouseUp);
-  window.removeEventListener('resize', updateContainerDimensions);
+  window.removeEventListener("mousemove", onMouseMove);
+  window.removeEventListener("mouseup", onMouseUp);
+  window.removeEventListener("resize", updateContainerDimensions);
 });
 
-watch(() => props.editMode, (newVal) => {
-  if (newVal && image.value && image.value.complete) {
-    onImageLoad();
-  }
-});
+watch(
+  () => props.editMode,
+  (newVal) => {
+    if (newVal && image.value && image.value.complete) {
+      onImageLoad();
+    }
+  },
+);
 </script>
 
 <style scoped>
