@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AddIntelligentDerivativesJob do
+RSpec.describe AddDerivativesJob do
   let(:photo) { build_stubbed(:photo) }
 
   before do

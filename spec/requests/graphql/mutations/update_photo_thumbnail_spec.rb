@@ -73,7 +73,7 @@ describe 'updatePhotoThumbnail Mutation', type: :request do
 
     it 'stores the thumbnail in the database' do
       expect { post_mutation }.to change { photo.reload.user_thumbnail }.from(nil)
-      
+
       expect(photo.user_thumbnail['top']).to eq(thumbnail_data[:top])
       expect(photo.user_thumbnail['left']).to eq(thumbnail_data[:left])
       expect(photo.user_thumbnail['width']).to eq(thumbnail_data[:width])
@@ -81,9 +81,9 @@ describe 'updatePhotoThumbnail Mutation', type: :request do
     end
 
     it 'enqueues a job to regenerate derivatives' do
-      expect {
+      expect do
         post_mutation
-      }.to have_enqueued_job(AddIntelligentDerivativesJob).with(photo.id)
+      end.to have_enqueued_job(AddDerivativesJob).with(photo.id)
     end
   end
 end

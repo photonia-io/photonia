@@ -332,7 +332,7 @@ class Photo < ApplicationRecord
     y = thumbnail[:y] || thumbnail['y']
     width = thumbnail[:pixel_width] || thumbnail['pixel_width']
     height = thumbnail[:pixel_height] || thumbnail['pixel_height']
-    
+
     ImageProcessing::MiniMagick
       .source(original)
       .crop(x, y, width, height)
