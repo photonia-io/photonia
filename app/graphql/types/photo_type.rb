@@ -80,10 +80,14 @@ module Types
       case type
       when 'thumbnail', 'intelligent_or_square_thumbnail'
         # Priority: user-defined > intelligent > square > empty
-        @object.image_url(:thumbnail_intelligent).presence || @object.image_url(:thumbnail_square) || ''
+        @object.image_url(:thumbnail_user).presence || 
+          @object.image_url(:thumbnail_intelligent).presence || 
+          @object.image_url(:thumbnail_square) || ''
       when 'medium', 'intelligent_or_square_medium'
         # Priority: user-defined > intelligent > square > empty
-        @object.image_url(:medium_intelligent).presence || @object.image_url(:medium_square) || ''
+        @object.image_url(:medium_user).presence || 
+          @object.image_url(:medium_intelligent).presence || 
+          @object.image_url(:medium_square) || ''
       else
         @object.image_url(type.to_sym).presence || ''
       end

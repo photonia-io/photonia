@@ -260,8 +260,12 @@ class Photo < ApplicationRecord
     thumbnail = thumbnail_source
     return unless thumbnail
 
+    # Determine derivative names based on thumbnail source
+    medium_key = user_thumbnail? ? :medium_user : :medium_intelligent
+    thumbnail_key = user_thumbnail? ? :thumbnail_user : :thumbnail_intelligent
+
     image_attacher.add_derivative(
-      :medium_intelligent,
+      medium_key,
       custom_crop(thumbnail).resize_to_fill!(
         ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
         ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
@@ -269,7 +273,7 @@ class Photo < ApplicationRecord
     )
 
     image_attacher.add_derivative(
-      :thumbnail_intelligent,
+      thumbnail_key,
       custom_crop(thumbnail).resize_to_fill!(
         ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
         ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
