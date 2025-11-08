@@ -1,5 +1,12 @@
 <template>
   <div>
+    <ThumbnailEditor
+      v-if="thumbnailEditMode"
+      :photo="photo"
+      :edit-mode="thumbnailEditMode"
+      @save="saveThumbnail"
+      @cancel="cancelThumbnailEdit"
+    />
     <DisplayHero
       :photo="photo"
       :loading="loading"
@@ -52,6 +59,7 @@
                 v-if="!loading && canEditPhoto"
                 :photo="photo"
                 @delete-photo="deletePhoto"
+                @edit-thumbnail="startThumbnailEdit"
               />
 
               <PhotoComments :photo="photo" :loading="loading" />
@@ -316,6 +324,7 @@ import Tag from "@/tags/tag.vue";
 import RemoveTag from "@/tags/remove-tag.vue";
 import Empty from "@/empty.vue";
 import PhotoTagInput from "./photo-tag-input.vue";
+import ThumbnailEditor from "./thumbnail-editor.vue";
 
 // route & router
 const route = useRoute();
@@ -382,6 +391,24 @@ const {
   }
 `);
 
+const {
+  mutate: updatePhotoThumbnail,
+  onDone: onUpdateThumbnailDone,
+  onError: onUpdateThumbnailError,
+} = useMutation(gql`
+  mutation ($id: String!, $thumbnail: UserThumbnailInput!) {
+    updatePhotoThumbnail(id: $id, thumbnail: $thumbnail) {
+      id
+      userThumbnail {
+        top
+        left
+        width
+        height
+      }
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -413,6 +440,43 @@ onDeletePhotoDone(({ data }) => {
 onDeletePhotoError((error) => {
   // todo console.log(error)
 });
+
+onUpdateThumbnailDone(({ data }) => {
+  toaster("The thumbnail has been updated", "is-success");
+  thumbnailEditMode.value = false;
+  // Reload the page to see updated derivatives (they're generated in background)
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+});
+
+onUpdateThumbnailError((error) => {
+  toaster(
+    "An error occurred while updating the thumbnail: " + error.message,
+    "is-danger",
+  );
+});
+
+const thumbnailEditMode = ref(false);
+
+const startThumbnailEdit = () => {
+  thumbnailEditMode.value = true;
+  applicationStore.disableNavigationShortcuts();
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+const cancelThumbnailEdit = () => {
+  thumbnailEditMode.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+const saveThumbnail = (thumbnailData) => {
+  updatePhotoThumbnail({
+    id: photo.value.id,
+    thumbnail: thumbnailData,
+  });
+};
 
 const highlightLabel = (label) => {
   labelHighlights.value[label.id] = true;
