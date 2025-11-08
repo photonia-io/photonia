@@ -97,20 +97,6 @@ class FlickrUserClaimService
     { success: false, error: e.message }
   end
 
-  def undo_claim(claim)
-    return { success: false, error: 'Claim not found' } unless claim
-
-    # If the claim was approved, remove the claimed_by_user association
-    @flickr_user.update!(claimed_by_user: nil) if claim.approved?
-
-    # Delete the claim record
-    claim.destroy!
-
-    { success: true }
-  rescue StandardError => e
-    { success: false, error: e.message }
-  end
-
   class << self
     def approve_claim_by_token(claim_id, token)
       claim = FlickrUserClaim.find_by(id: claim_id)
@@ -151,6 +137,21 @@ class FlickrUserClaimService
       verifier = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base)
       data = { claim_id: claim.id, created_at: claim.created_at.to_i }
       verifier.generate(data, expires_in: 30.days)
+    end
+
+    def undo_claim(claim_id)
+      claim = FlickrUserClaim.find_by(id: claim_id)
+      return { success: false, error: 'Claim not found' } unless claim
+
+      # If the claim was approved, remove the claimed_by_user association
+      claim.flickr_user.update!(claimed_by_user: nil) if claim.approved?
+
+      # Delete the claim record
+      claim.destroy!
+
+      { success: true }
+    rescue StandardError => e
+      { success: false, error: e.message }
     end
   end
 end

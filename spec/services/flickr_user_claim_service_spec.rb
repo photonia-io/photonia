@@ -322,12 +322,12 @@ RSpec.describe FlickrUserClaimService do
     end
   end
 
-  describe '#undo_claim' do
+  describe '.undo_claim' do
     let(:claim) { create(:flickr_user_claim, user: user, flickr_user: flickr_user) }
 
     context 'when claim is pending' do
       it 'deletes the claim' do
-        result = service.undo_claim(claim)
+        result = described_class.undo_claim(claim.id)
 
         expect(result[:success]).to be(true)
         expect(FlickrUserClaim.find_by(id: claim.id)).to be_nil
@@ -343,7 +343,7 @@ RSpec.describe FlickrUserClaimService do
       it 'removes the claimed_by_user association and deletes the claim' do
         expect(flickr_user.reload.claimed_by_user).to eq(user)
 
-        result = service.undo_claim(claim)
+        result = described_class.undo_claim(claim.id)
 
         expect(result[:success]).to be(true)
         expect(FlickrUserClaim.find_by(id: claim.id)).to be_nil
@@ -357,7 +357,7 @@ RSpec.describe FlickrUserClaimService do
       end
 
       it 'deletes the claim without affecting the flickr_user' do
-        result = service.undo_claim(claim)
+        result = described_class.undo_claim(claim.id)
 
         expect(result[:success]).to be(true)
         expect(FlickrUserClaim.find_by(id: claim.id)).to be_nil
@@ -365,9 +365,9 @@ RSpec.describe FlickrUserClaimService do
       end
     end
 
-    context 'when claim is nil' do
+    context 'when claim ID is invalid' do
       it 'returns an error' do
-        result = service.undo_claim(nil)
+        result = described_class.undo_claim(999999)
 
         expect(result[:success]).to be(false)
         expect(result[:error]).to eq('Claim not found')
