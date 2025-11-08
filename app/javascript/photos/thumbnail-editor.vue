@@ -123,7 +123,12 @@ const thumbnailStyle = computed(() => {
   // Calculate pixel positions based on the actual image dimensions
   const topPx = thumbnail.value.top * containerHeight.value;
   const leftPx = thumbnail.value.left * containerWidth.value;
-  const sizePx = size * Math.min(containerWidth.value, containerHeight.value);
+  
+  // The square size should be based on percentages of each dimension
+  const widthPx = size * containerWidth.value;
+  const heightPx = size * containerHeight.value;
+  // Use the smaller of the two to maintain square
+  const sizePx = Math.min(widthPx, heightPx);
   
   return {
     position: 'absolute',
@@ -175,9 +180,18 @@ const onMouseMove = (event) => {
     // Get the current square size
     const size = Math.min(startThumbnail.value.width, startThumbnail.value.height);
     
-    // Constrain to image bounds (keeping it within 0 to 1-size)
-    newLeft = Math.max(0, Math.min(1 - size, newLeft));
-    newTop = Math.max(0, Math.min(1 - size, newTop));
+    // Calculate the actual pixel size of the square
+    const widthPx = size * containerWidth.value;
+    const heightPx = size * containerHeight.value;
+    const squareSizePx = Math.min(widthPx, heightPx);
+    
+    // Calculate the size as a percentage of each dimension
+    const sizePercentWidth = squareSizePx / containerWidth.value;
+    const sizePercentHeight = squareSizePx / containerHeight.value;
+    
+    // Constrain to image bounds based on actual square size in each dimension
+    newLeft = Math.max(0, Math.min(1 - sizePercentWidth, newLeft));
+    newTop = Math.max(0, Math.min(1 - sizePercentHeight, newTop));
     
     thumbnail.value.left = newLeft;
     thumbnail.value.top = newTop;
@@ -193,11 +207,21 @@ const onMouseMove = (event) => {
     const startSize = Math.min(startThumbnail.value.width, startThumbnail.value.height);
     let newSize = startSize + deltaSize;
     
-    // Constrain size to stay within bounds
-    const maxSize = Math.min(
-      1 - startThumbnail.value.left,
-      1 - startThumbnail.value.top
-    );
+    // Calculate what the actual square size would be in pixels
+    const widthPx = newSize * containerWidth.value;
+    const heightPx = newSize * containerHeight.value;
+    const squareSizePx = Math.min(widthPx, heightPx);
+    
+    // Calculate maximum allowed size based on position
+    const maxWidthPercent = 1 - startThumbnail.value.left;
+    const maxHeightPercent = 1 - startThumbnail.value.top;
+    const maxWidthPx = maxWidthPercent * containerWidth.value;
+    const maxHeightPx = maxHeightPercent * containerHeight.value;
+    const maxSizePx = Math.min(maxWidthPx, maxHeightPx);
+    
+    // Convert max size back to percentage
+    const maxSize = maxSizePx / Math.min(containerWidth.value, containerHeight.value);
+    
     newSize = Math.max(0.1, Math.min(maxSize, newSize));
     
     // Update both width and height to keep it square
