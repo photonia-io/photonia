@@ -90,11 +90,14 @@ const onImageLoad = () => {
     };
   } else if (props.photo.intelligentThumbnail) {
     const bbox = props.photo.intelligentThumbnail.boundingBox;
+    // For intelligent thumbnail, use the larger percentage to ensure the full square is visible
+    // (intelligent thumbnail may have different width/height percentages on non-square images)
+    const size = Math.max(bbox.width, bbox.height);
     thumbnail.value = {
       top: bbox.top,
       left: bbox.left,
-      width: bbox.width,
-      height: bbox.height,
+      width: size,
+      height: size,
     };
   } else {
     // Default to center square
