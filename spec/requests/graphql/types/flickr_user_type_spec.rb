@@ -30,7 +30,7 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     it 'returns true for claimable (unclaimed flickr user)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(true)
     end
   end
@@ -43,7 +43,7 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     it 'returns true for claimable' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(true)
     end
   end
@@ -53,12 +53,15 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     let(:other_user) { create(:user) }
     let!(:approved_claim) { create(:flickr_user_claim, :approved, user: claiming_user, flickr_user: flickr_user) }
 
-    before { sign_in(other_user) }
+    before do
+      flickr_user.update!(claimed_by_user: claiming_user)
+      sign_in(other_user)
+    end
 
     it 'returns false for claimable (flickr user already claimed)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(false)
     end
   end
@@ -72,7 +75,7 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     it 'returns false for claimable (user has pending claim)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(false)
     end
   end
@@ -87,7 +90,7 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     it 'returns false for claimable (user has pending claim on ANY flickr user)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(false)
     end
   end
@@ -96,12 +99,15 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     let(:user) { create(:user) }
     let!(:approved_claim) { create(:flickr_user_claim, :approved, user: user, flickr_user: flickr_user) }
 
-    before { sign_in(user) }
+    before do
+      flickr_user.update!(claimed_by_user: user)
+      sign_in(user)
+    end
 
     it 'returns false for claimable (flickr user already claimed and user has approved claim)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(false)
     end
   end
@@ -111,12 +117,15 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     let(:other_flickr_user) { create(:flickr_user) }
     let!(:approved_claim) { create(:flickr_user_claim, :approved, user: user, flickr_user: other_flickr_user) }
 
-    before { sign_in(user) }
+    before do
+      other_flickr_user.update!(claimed_by_user: user)
+      sign_in(user)
+    end
 
     it 'returns false for claimable (user has approved claim on ANY flickr user)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(false)
     end
   end
@@ -130,7 +139,7 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     it 'returns true for claimable (denied claims do not count)' do
       post_query
       flickr_user_data = data_dig(response, 'photo', 'comments', 0, 'flickrUser')
-      
+
       expect(flickr_user_data['claimable']).to eq(true)
     end
   end
