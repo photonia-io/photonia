@@ -245,17 +245,6 @@ class Photo < ApplicationRecord
     pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
   end
 
-  def user_thumbnail?
-    user_thumbnail.present?
-  end
-
-  def thumbnail_source
-    return user_thumbnail if user_thumbnail?
-    return intelligent_thumbnail if intelligent_thumbnail.present?
-
-    nil
-  end
-
   def add_derivatives
     # Add intelligent derivatives if intelligent thumbnail exists
     if intelligent_thumbnail.present?
@@ -277,7 +266,7 @@ class Photo < ApplicationRecord
     end
 
     # Add user derivatives if user thumbnail exists
-    if user_thumbnail?
+    if user_thumbnail.present?
       image_attacher.add_derivative(
         :medium_user,
         custom_crop(user_thumbnail).resize_to_fill!(
@@ -295,12 +284,7 @@ class Photo < ApplicationRecord
       )
     end
 
-    image_attacher.atomic_promote if intelligent_thumbnail.present? || user_thumbnail?
-  end
-
-  # Deprecated: Use add_derivatives instead
-  def add_intelligent_derivatives
-    add_derivatives
+    image_attacher.atomic_promote if intelligent_thumbnail.present? || user_thumbnail.present?
   end
 
   def intelligent_thumbnail
@@ -343,6 +327,7 @@ class Photo < ApplicationRecord
 
   def custom_crop(thumbnail)
     original = image_attacher.file.download
+    puts thumbnail.inspect
     ImageProcessing::MiniMagick
       .source(original)
       .crop(
