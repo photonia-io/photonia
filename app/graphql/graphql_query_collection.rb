@@ -183,6 +183,7 @@ class GraphqlQueryCollection
               iconfarm
               iconserver
               isClaimed
+              currentUserHasClaim
             }
             createdAt
           }
