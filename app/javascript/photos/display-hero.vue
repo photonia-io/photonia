@@ -38,7 +38,7 @@
           @error="onImageError"
           :style="{ cursor: 'pointer', opacity: imageLoading ? 0 : 1 }"
         />
-        <div v-if="photo.labels" class="labels">
+        <div v-if="showLabels" class="labels">
           <DisplayLabel
             v-for="label in photo.labels"
             :label="label"
