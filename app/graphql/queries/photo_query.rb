@@ -29,6 +29,7 @@ module Queries
         end
 
       raise GraphQL::ExecutionError, 'Photo not found' unless photo
+
       authorize(photo, :show?)
       record_impression(photo)
       photo
