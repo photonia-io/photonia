@@ -34,17 +34,18 @@
             >
               <em>Edited on {{ momentFormat(comment.bodyLastEditedAt) }}</em>
             </small>
-            <button
+            <span
+              class="ml-1 claim-link"
               v-if="comment.flickrUser.claimable && userStore.signedIn"
-              class="button is-small is-info ml-2"
-              @click="openClaimModal(comment.flickrUser)"
-              title="Claim this Flickr user"
             >
-              <span class="icon is-small">
-                <i class="fas fa-user-check"></i>
-              </span>
-              <span>Claim</span>
-            </button>
+              -
+              <a
+                @click.prevent="openClaimModal(comment.flickrUser)"
+                title="Claim this Flickr user"
+              >
+                Claim User
+              </a>
+            </span>
           </div>
           <div v-html="marked.parse(comment.body)"></div>
         </div>
@@ -140,6 +141,12 @@ function handleClaimed() {
 
 .flickr-link {
   color: #3c6cce !important;
+  text-decoration: none !important;
+}
+
+.claim-link a {
+  cursor: pointer;
+  color: #3273dc !important;
   text-decoration: none !important;
 }
 </style>
