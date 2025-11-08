@@ -35,7 +35,7 @@
               <em>Edited on {{ momentFormat(comment.bodyLastEditedAt) }}</em>
             </small>
             <button
-              v-if="!comment.flickrUser.isClaimed && !comment.flickrUser.currentUserHasClaim && userStore.signedIn"
+              v-if="comment.flickrUser.claimable && userStore.signedIn"
               class="button is-small is-info ml-2"
               @click="openClaimModal(comment.flickrUser)"
               title="Claim this Flickr user"
