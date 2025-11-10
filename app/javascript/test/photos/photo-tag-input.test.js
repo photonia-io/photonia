@@ -1,35 +1,34 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { ref, nextTick } from "vue";
-import PhotoTagInput from "../../photos/photo-tag-input.vue";
+
+// Create refs for Apollo mocks at module level
+const suggestionsResultRef = ref(null);
+const mockRefetch = vi.fn();
 
 // Mock the toaster
 vi.mock("../../mixins/toaster", () => ({
   default: vi.fn(),
 }));
 
+// Mock Apollo composable
+vi.mock("@vue/apollo-composable", () => ({
+  useQuery: vi.fn(() => ({
+    result: suggestionsResultRef,
+    refetch: mockRefetch,
+  })),
+}));
+
+import PhotoTagInput from "../../photos/photo-tag-input.vue";
+
 describe("PhotoTagInput", () => {
   let wrapper;
-  let mockRefetch;
-  let suggestionsResultRef;
-  let suggestionsQueryEnabledRef;
 
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-
-    // Create refs for suggestions
-    suggestionsResultRef = ref(null);
-    suggestionsQueryEnabledRef = ref(false);
-    mockRefetch = vi.fn();
-
-    // Mock Apollo composable
-    vi.mock("@vue/apollo-composable", () => ({
-      useQuery: vi.fn(() => ({
-        result: suggestionsResultRef,
-        refetch: mockRefetch,
-      })),
-    }));
+    mockRefetch.mockClear();
+    suggestionsResultRef.value = null;
 
     wrapper = mount(PhotoTagInput, {
       props: {
