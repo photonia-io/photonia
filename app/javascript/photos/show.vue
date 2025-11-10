@@ -135,6 +135,7 @@
                     v-if="!loading"
                     :user-tags="photo.userTags || []"
                     :machine-tags="photo.machineTags || []"
+                    :is-adding-tag="isAddingTag"
                     @add-tag="handleAddTag"
                   />
                 </div>
@@ -346,6 +347,7 @@ const { result, loading } = useQuery(
   { id: id },
 );
 const labelHighlights = ref({});
+const isAddingTag = ref(false);
 
 const apolloClient = inject("apolloClient");
 
@@ -442,10 +444,12 @@ onDeletePhotoError((error) => {
 });
 
 onAddTagDone(({ data }) => {
+  isAddingTag.value = false;
   toaster(`Tag "${data.addTagToPhoto.tag.name}" added successfully`, "is-success");
 });
 
 onAddTagError((error) => {
+  isAddingTag.value = false;
   toaster(
     "An error occurred while adding the tag: " + error.message,
     "is-danger",
@@ -453,6 +457,7 @@ onAddTagError((error) => {
 });
 
 const handleAddTag = async (tagName) => {
+  isAddingTag.value = true;
   await addTagToPhoto({
     id: photo.value.id,
     tagName: tagName,

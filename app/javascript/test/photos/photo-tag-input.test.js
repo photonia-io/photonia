@@ -88,10 +88,15 @@ describe("PhotoTagInput", () => {
       expect(wrapper.props("machineTags")[0].name).toBe("machine-tag");
     });
 
+    it("accepts isAddingTag prop", () => {
+      expect(wrapper.props("isAddingTag")).toBe(false);
+    });
+
     it("uses default empty arrays when props are not provided", () => {
       const wrapperWithoutProps = mount(PhotoTagInput);
       expect(wrapperWithoutProps.props("userTags")).toEqual([]);
       expect(wrapperWithoutProps.props("machineTags")).toEqual([]);
+      expect(wrapperWithoutProps.props("isAddingTag")).toBe(false);
     });
   });
 
@@ -150,6 +155,61 @@ describe("PhotoTagInput", () => {
 
       const button = wrapper.find("button");
       await button.trigger("click");
+
+      expect(wrapper.emitted("add-tag")).toBeFalsy();
+    });
+  });
+
+  describe("Loading State", () => {
+    it("disables button when isAddingTag is true", async () => {
+      await wrapper.setProps({ isAddingTag: true });
+
+      const button = wrapper.find("button");
+      expect(button.attributes("disabled")).toBeDefined();
+    });
+
+    it("disables input when isAddingTag is true", async () => {
+      await wrapper.setProps({ isAddingTag: true });
+
+      const input = wrapper.find('input[type="text"]');
+      expect(input.attributes("disabled")).toBeDefined();
+    });
+
+    it("shows spinner icon when isAddingTag is true", async () => {
+      await wrapper.setProps({ isAddingTag: true });
+
+      const spinner = wrapper.find(".fa-spinner");
+      const plusIcon = wrapper.find(".fa-plus");
+
+      expect(spinner.exists()).toBe(true);
+      expect(plusIcon.exists()).toBe(false);
+    });
+
+    it("shows plus icon when isAddingTag is false", () => {
+      const spinner = wrapper.find(".fa-spinner");
+      const plusIcon = wrapper.find(".fa-plus");
+
+      expect(spinner.exists()).toBe(false);
+      expect(plusIcon.exists()).toBe(true);
+    });
+
+    it("does not emit add-tag when isAddingTag is true", async () => {
+      const input = wrapper.find('input[type="text"]');
+      await input.setValue("new-tag");
+      await wrapper.setProps({ isAddingTag: true });
+
+      const button = wrapper.find("button");
+      await button.trigger("click");
+
+      expect(wrapper.emitted("add-tag")).toBeFalsy();
+    });
+
+    it("does not emit add-tag on Enter when isAddingTag is true", async () => {
+      const input = wrapper.find('input[type="text"]');
+      await input.setValue("new-tag");
+      await wrapper.setProps({ isAddingTag: true });
+
+      await input.trigger("keydown.enter");
 
       expect(wrapper.emitted("add-tag")).toBeFalsy();
     });

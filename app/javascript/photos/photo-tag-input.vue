@@ -10,6 +10,7 @@
                 type="text"
                 placeholder="Add a tag..."
                 v-model="tagName"
+                :disabled="isAddingTag"
                 @input="onInput"
                 @blur="onBlur"
                 @keydown.enter.prevent="addTag"
@@ -22,9 +23,12 @@
               <button
                 class="button is-primary is-small"
                 @click.prevent="addTag"
-                :disabled="!tagName.trim()"
+                :disabled="!tagName.trim() || isAddingTag"
               >
-                <span class="icon">
+                <span class="icon" v-if="isAddingTag">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </span>
+                <span class="icon" v-else>
                   <i class="fas fa-plus"></i>
                 </span>
               </button>
@@ -64,6 +68,10 @@ const props = defineProps({
   machineTags: {
     type: Array,
     default: () => [],
+  },
+  isAddingTag: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -169,7 +177,7 @@ const selectPreviousSuggestion = () => {
 };
 
 const addTag = () => {
-  if (!tagName.value.trim()) return;
+  if (!tagName.value.trim() || props.isAddingTag) return;
 
   // If a suggestion is selected, use that
   if (selectedIndex.value >= 0 && suggestions.value[selectedIndex.value]) {
