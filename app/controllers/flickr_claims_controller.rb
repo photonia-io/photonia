@@ -13,11 +13,22 @@ class FlickrClaimsController < ApplicationController
 
     result = FlickrUserClaimService.approve_claim_by_token(claim_id, token)
 
-    if result[:success]
-      render :approve
-    else
-      @error = result[:error]
-      render :error, status: :unprocessable_entity
+    respond_to do |format|
+      format.html do
+        if result[:success]
+          render :approve
+        else
+          @error = result[:error]
+          render :error, status: :unprocessable_entity
+        end
+      end
+      format.json do
+        if result[:success]
+          render json: { success: true }, status: :ok
+        else
+          render json: { success: false, error: result[:error] }, status: :unprocessable_entity
+        end
+      end
     end
   end
 
@@ -27,11 +38,22 @@ class FlickrClaimsController < ApplicationController
 
     result = FlickrUserClaimService.deny_claim_by_token(claim_id, token)
 
-    if result[:success]
-      render :deny
-    else
-      @error = result[:error]
-      render :error, status: :unprocessable_entity
+    respond_to do |format|
+      format.html do
+        if result[:success]
+          render :deny
+        else
+          @error = result[:error]
+          render :error, status: :unprocessable_entity
+        end
+      end
+      format.json do
+        if result[:success]
+          render json: { success: true }, status: :ok
+        else
+          render json: { success: false, error: result[:error] }, status: :unprocessable_entity
+        end
+      end
     end
   end
 end

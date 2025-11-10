@@ -126,6 +126,16 @@ export function createAppRouter(pinia) {
       name: "terms-of-service",
       component: () => import("../pages/handler.vue"),
     },
+    {
+      path: settings.flickr_claim_approve_path,
+      name: "flickr-claim-approve",
+      component: () => import("../flickr_claims/approve.vue"),
+    },
+    {
+      path: settings.flickr_claim_deny_path,
+      name: "flickr-claim-deny",
+      component: () => import("../flickr_claims/deny.vue"),
+    },
   ];
 
   const router = createRouter({
