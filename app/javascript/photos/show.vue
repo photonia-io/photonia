@@ -131,7 +131,12 @@
                       </div>
                     </div>
                   </div>
-                  <PhotoTagInput v-if="!loading" :photo="photo" />
+                  <PhotoTagInput
+                    v-if="!loading"
+                    :user-tags="photo.userTags || []"
+                    :machine-tags="photo.machineTags || []"
+                    @add-tag="handleAddTag"
+                  />
                 </div>
                 <div v-else>
                   <div class="tags" v-if="photo.userTags?.length > 0">
@@ -382,6 +387,28 @@ const {
   }
 `);
 
+const {
+  mutate: addTagToPhoto,
+  onDone: onAddTagDone,
+  onError: onAddTagError,
+} = useMutation(gql`
+  mutation AddTagToPhoto($id: String!, $tagName: String!) {
+    addTagToPhoto(id: $id, tagName: $tagName) {
+      photo {
+        id
+        userTags {
+          id
+          name
+        }
+      }
+      tag {
+        id
+        name
+      }
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -413,6 +440,24 @@ onDeletePhotoDone(({ data }) => {
 onDeletePhotoError((error) => {
   // todo console.log(error)
 });
+
+onAddTagDone(({ data }) => {
+  toaster(`Tag "${data.addTagToPhoto.tag.name}" added successfully`, "is-success");
+});
+
+onAddTagError((error) => {
+  toaster(
+    "An error occurred while adding the tag: " + error.message,
+    "is-danger",
+  );
+});
+
+const handleAddTag = async (tagName) => {
+  await addTagToPhoto({
+    id: photo.value.id,
+    tagName: tagName,
+  });
+};
 
 const highlightLabel = (label) => {
   labelHighlights.value[label.id] = true;
