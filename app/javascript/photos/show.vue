@@ -131,7 +131,13 @@
                       </div>
                     </div>
                   </div>
-                  <PhotoTagInput v-if="!loading" :photo="photo" />
+                  <PhotoTagInput
+                    v-if="!loading"
+                    :user-tags="photo.userTags || []"
+                    :machine-tags="photo.machineTags || []"
+                    :is-adding-tag="isAddingTag"
+                    @add-tag="handleAddTag"
+                  />
                 </div>
                 <div v-else>
                   <div class="tags" v-if="photo.userTags?.length > 0">
@@ -341,6 +347,7 @@ const { result, loading } = useQuery(
   { id: id },
 );
 const labelHighlights = ref({});
+const isAddingTag = ref(false);
 
 const apolloClient = inject("apolloClient");
 
@@ -382,6 +389,28 @@ const {
   }
 `);
 
+const {
+  mutate: addTagToPhoto,
+  onDone: onAddTagDone,
+  onError: onAddTagError,
+} = useMutation(gql`
+  mutation AddTagToPhoto($id: String!, $tagName: String!) {
+    addTagToPhoto(id: $id, tagName: $tagName) {
+      photo {
+        id
+        userTags {
+          id
+          name
+        }
+      }
+      tag {
+        id
+        name
+      }
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -413,6 +442,27 @@ onDeletePhotoDone(({ data }) => {
 onDeletePhotoError((error) => {
   // todo console.log(error)
 });
+
+onAddTagDone(({ data }) => {
+  isAddingTag.value = false;
+  toaster(`Tag "${data.addTagToPhoto.tag.name}" added successfully`, "is-success");
+});
+
+onAddTagError((error) => {
+  isAddingTag.value = false;
+  toaster(
+    "An error occurred while adding the tag: " + error.message,
+    "is-danger",
+  );
+});
+
+const handleAddTag = async (tagName) => {
+  isAddingTag.value = true;
+  await addTagToPhoto({
+    id: photo.value.id,
+    tagName: tagName,
+  });
+};
 
 const highlightLabel = (label) => {
   labelHighlights.value[label.id] = true;
