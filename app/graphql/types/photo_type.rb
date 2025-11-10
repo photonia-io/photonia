@@ -29,6 +29,7 @@ module Types
     field :ordering, Integer, 'Ordering of the photo in the album', null: true
     field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was posted', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
+    field :privacy, String, 'Privacy level of the photo', null: false
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
     field :taken_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was taken', null: true
