@@ -636,7 +636,8 @@ CREATE TABLE public.users (
     facebook_user_id character varying,
     created_from_facebook boolean DEFAULT false NOT NULL,
     facebook_data_deletion_code character varying,
-    disabled boolean DEFAULT false NOT NULL
+    disabled boolean DEFAULT false NOT NULL,
+    default_license character varying
 );
 
 
@@ -1373,6 +1374,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251107000001'),
 ('20251106121510'),
 ('20251103153701'),
 ('20251103135206'),

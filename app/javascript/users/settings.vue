@@ -125,6 +125,36 @@
                 </div>
               </div>
             </div>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label">Default License</label>
+              </div>
+              <div class="field-body">
+                <div class="field is-expanded">
+                  <div class="control">
+                    <div class="select is-fullwidth">
+                      <select v-model="defaultLicense">
+                        <option value="">None</option>
+                        <option value="CC BY 4.0">CC BY 4.0 - Attribution</option>
+                        <option value="CC BY-SA 4.0">CC BY-SA 4.0 - Attribution-ShareAlike</option>
+                        <option value="CC BY-ND 4.0">CC BY-ND 4.0 - Attribution-NoDerivatives</option>
+                        <option value="CC BY-NC 4.0">CC BY-NC 4.0 - Attribution-NonCommercial</option>
+                        <option value="CC BY-NC-SA 4.0">CC BY-NC-SA 4.0 - Attribution-NonCommercial-ShareAlike</option>
+                        <option value="CC BY-NC-ND 4.0">CC BY-NC-ND 4.0 - Attribution-NonCommercial-NoDerivatives</option>
+                        <option value="CC0 1.0">CC0 1.0 - Public Domain Dedication</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="help">
+                    Select the default license for photos you upload. This will
+                    be automatically applied to new uploads.
+                    <a @click.prevent="showLicenseInfoModal" class="has-text-link" style="cursor: pointer;">
+                      Learn more about licenses
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
             <hr />
             <div class="field is-horizontal">
               <div class="field-label">
@@ -147,6 +177,7 @@
       </div>
     </div>
   </section>
+  <LicenseInfoModal v-model="licenseInfoModalActive" :current-license="defaultLicense" />
 </template>
 
 <script setup>
@@ -156,6 +187,7 @@ import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import { useUserStore } from "@/stores/user";
 import toaster from "../mixins/toaster";
+import LicenseInfoModal from "../shared/license-info-modal.vue";
 
 const CURRENT_USER_QUERY = gql`
   query CurrentUserQuery {
@@ -165,6 +197,7 @@ const CURRENT_USER_QUERY = gql`
       firstName
       lastName
       displayName
+      defaultLicense
       timezone {
         name
       }
@@ -183,8 +216,14 @@ const newTimezone = ref(null);
 const newFirstName = ref(null);
 const newLastName = ref(null);
 const newDisplayName = ref(null);
+const newDefaultLicense = ref(null);
+const licenseInfoModalActive = ref(false);
 
 const { result } = useQuery(CURRENT_USER_QUERY);
+
+const showLicenseInfoModal = () => {
+  licenseInfoModalActive.value = true;
+};
 
 const email = computed(() => result.value?.currentUser.email);
 const firstName = computed({
@@ -203,6 +242,10 @@ const timezone = computed({
   get: () => result.value?.currentUser.timezone.name,
   set: (value) => (newTimezone.value = value),
 });
+const defaultLicense = computed({
+  get: () => result.value?.currentUser.defaultLicense,
+  set: (value) => (newDefaultLicense.value = value),
+});
 
 const {
   mutate: submit,
@@ -216,6 +259,7 @@ const {
       $lastName: String!
       $displayName: String!
       $timezone: String!
+      $defaultLicense: String
     ) {
       updateUserSettings(
         email: $email
@@ -223,12 +267,14 @@ const {
         lastName: $lastName
         displayName: $displayName
         timezone: $timezone
+        defaultLicense: $defaultLicense
       ) {
         id
         email
         firstName
         lastName
         displayName
+        defaultLicense
         timezone {
           name
         }
@@ -242,6 +288,7 @@ const {
       lastName: newLastName.value || lastName.value,
       displayName: newDisplayName.value || displayName.value,
       timezone: newTimezone.value || timezone.value,
+      defaultLicense: newDefaultLicense.value !== null ? newDefaultLicense.value : defaultLicense.value,
     },
   }),
 );

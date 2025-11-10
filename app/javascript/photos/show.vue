@@ -52,6 +52,7 @@
                 v-if="!loading && canEditPhoto"
                 :photo="photo"
                 @delete-photo="deletePhoto"
+                @update-license="updatePhotoLicense"
               />
 
               <PhotoComments :photo="photo" :loading="loading" />
@@ -371,6 +372,19 @@ const {
 `);
 
 const {
+  mutate: updatePhotoLicense,
+  onDone: onUpdateLicenseDone,
+  onError: onUpdateLicenseError,
+} = useMutation(gql`
+  mutation ($id: String!, $license: String) {
+    updatePhotoLicense(id: $id, license: $license) {
+      id
+      license
+    }
+  }
+`);
+
+const {
   mutate: deletePhoto,
   onDone: onDeletePhotoDone,
   onError: onDeletePhotoError,
@@ -400,6 +414,17 @@ onUpdateDescriptionDone(({ data }) => {
 onUpdateDescriptionError((error) => {
   toaster(
     "An error occurred while updating the description: " + error.message,
+    "is-danger",
+  );
+});
+
+onUpdateLicenseDone(({ data }) => {
+  toaster("The license has been updated");
+});
+
+onUpdateLicenseError((error) => {
+  toaster(
+    "An error occurred while updating the license: " + error.message,
     "is-danger",
   );
 });

@@ -150,6 +150,7 @@ class GraphqlQueryCollection
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
           takenAt
+          license
           isTakenAtFromExif
           exifExists
           exifCameraFriendlyName

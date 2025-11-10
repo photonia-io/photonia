@@ -8,8 +8,9 @@
         To edit the photo's title or description click / tap on the texts
         themselves.
       </p>
+      <PhotoLicenseEditable :photo="photo" @updateLicense="handleUpdateLicense" />
       <!-- delete photo button -->
-      <button class="button is-danger" @click="showConfirmationModal">
+      <button class="button is-danger mt-3" @click="showConfirmationModal">
         Delete Photo
       </button>
     </div>
@@ -40,6 +41,7 @@
 <script setup>
 import { ref } from "vue";
 import { useApplicationStore } from "../stores/application";
+import PhotoLicenseEditable from "./photo-license-editable.vue";
 
 const props = defineProps({
   photo: {
@@ -48,8 +50,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deletePhoto"]);
+const emit = defineEmits(["deletePhoto", "updateLicense"]);
 const applicationStore = useApplicationStore();
+
+const handleUpdateLicense = (payload) => {
+  emit("updateLicense", payload);
+};
 
 const modalActive = ref(false);
 
