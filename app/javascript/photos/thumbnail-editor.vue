@@ -58,7 +58,9 @@ const imageContainer = ref(null);
 const image = ref(null);
 const imageLoaded = ref(false);
 
-// Thumbnail bounding box in percentage (0-1)
+// Thumbnail bounding box
+// top/left: percentages of container dimensions (0-1)
+// width/height: uniform size as percentage of smaller container dimension (0-1)
 const thumbnail = ref({
   top: 0.25,
   left: 0.25,
@@ -99,8 +101,8 @@ const initializeThumbnail = () => {
     };
   } else if (props.photo.intelligentThumbnail) {
     const bbox = props.photo.intelligentThumbnail.boundingBox;
-    // For intelligent thumbnail, use the larger percentage to ensure the full square is visible
-    // (intelligent thumbnail may have different width/height percentages on non-square images)
+    // For intelligent thumbnail, convert dimension-specific percentages to uniform size
+    // Calculate pixel size from both dimensions and use the smaller one to ensure it fits
     const widthPx = bbox.width * containerWidth.value;
     const heightPx = bbox.height * containerHeight.value;
     const squareSizePx = Math.min(widthPx, heightPx);
@@ -136,25 +138,26 @@ const updateContainerDimensions = () => {
   }
 };
 
-const calculateSquareSize = (widthPercent, heightPercent) => {
-  // Calculate pixel dimensions
-  const widthPx = widthPercent * containerWidth.value;
-  const heightPx = heightPercent * containerHeight.value;
-  // Return the smaller dimension to maintain square
+const calculateSquareSize = (uniformSize) => {
+  // Convert uniform size (percentage of smaller dimension) to pixels
+  // Since width and height are equal (uniform size), we can use either
+  const widthPx = uniformSize * containerWidth.value;
+  const heightPx = uniformSize * containerHeight.value;
+  // Return the smaller dimension to get actual square size in pixels
   return Math.min(widthPx, heightPx);
 };
 
-const constrainPosition = (left, top, sizePercent) => {
-  // Calculate the actual square size in pixels
-  const widthPx = sizePercent * containerWidth.value;
-  const heightPx = sizePercent * containerHeight.value;
+const constrainPosition = (left, top, uniformSize) => {
+  // Convert uniform size to actual square size in pixels
+  const widthPx = uniformSize * containerWidth.value;
+  const heightPx = uniformSize * containerHeight.value;
   const squareSizePx = Math.min(widthPx, heightPx);
 
-  // Calculate the size as a percentage of each dimension
+  // Calculate how much space the square takes as a percentage of each dimension
   const sizePercentWidth = squareSizePx / containerWidth.value;
   const sizePercentHeight = squareSizePx / containerHeight.value;
 
-  // Constrain to image bounds
+  // Ensure square stays within image bounds (0 to 1-size)
   const newLeft = Math.max(0, Math.min(1 - sizePercentWidth, left));
   const newTop = Math.max(0, Math.min(1 - sizePercentHeight, top));
 
@@ -166,11 +169,8 @@ const handleDrag = (deltaX, deltaY) => {
   let newLeft = startThumbnail.value.left + deltaX;
   let newTop = startThumbnail.value.top + deltaY;
 
-  // Get the current square size
-  const size = Math.min(
-    startThumbnail.value.width,
-    startThumbnail.value.height,
-  );
+  // Get the uniform size (width and height are equal in our representation)
+  const size = startThumbnail.value.width;
 
   // Constrain to image bounds
   const { left: constrainedLeft, top: constrainedTop } = constrainPosition(
@@ -189,13 +189,12 @@ const handleDrag = (deltaX, deltaY) => {
 const handleResize = (deltaXPx, deltaYPx) => {
   // Use the larger delta to make resizing more responsive
   const deltaMax = Math.max(deltaXPx, deltaYPx);
+  // Convert pixel delta to uniform size percentage (based on smaller dimension)
   const deltaSize =
     deltaMax / Math.min(containerWidth.value, containerHeight.value);
 
-  const startSize = Math.min(
-    startThumbnail.value.width,
-    startThumbnail.value.height,
-  );
+  // Start size is already uniform (width and height are equal)
+  const startSize = startThumbnail.value.width;
   let newSize = startSize + deltaSize;
 
   // Calculate maximum allowed size based on position
@@ -205,13 +204,14 @@ const handleResize = (deltaXPx, deltaYPx) => {
   const maxHeightPx = maxHeightPercent * containerHeight.value;
   const maxSizePx = Math.min(maxWidthPx, maxHeightPx);
 
-  // Convert max size back to percentage
+  // Convert max size back to uniform percentage (based on smaller dimension)
   const maxSize =
     maxSizePx / Math.min(containerWidth.value, containerHeight.value);
 
+  // Constrain size: minimum 10%, maximum based on position
   newSize = Math.max(0.1, Math.min(maxSize, newSize));
 
-  // Update both width and height to keep it square
+  // Update both width and height with the same uniform size
   thumbnail.value.width = newSize;
   thumbnail.value.height = newSize;
 };
@@ -223,18 +223,12 @@ const onImageLoad = () => {
 };
 
 const thumbnailStyle = computed(() => {
-  // Force square by using the minimum dimension
-  const size = Math.min(thumbnail.value.width, thumbnail.value.height);
-
-  // Calculate pixel positions based on the actual image dimensions
+  // Calculate pixel positions from percentages
   const topPx = thumbnail.value.top * containerHeight.value;
   const leftPx = thumbnail.value.left * containerWidth.value;
 
-  // Calculate the square size in pixels
-  const sizePx = calculateSquareSize(
-    thumbnail.value.width,
-    thumbnail.value.height,
-  );
+  // Calculate the square size in pixels from uniform size
+  const sizePx = calculateSquareSize(thumbnail.value.width);
 
   return {
     position: "absolute",
@@ -291,13 +285,11 @@ const onMouseUp = () => {
 };
 
 const saveThumbnail = () => {
-  // Calculate the square size in pixels
-  const squareSizePx = calculateSquareSize(
-    thumbnail.value.width,
-    thumbnail.value.height,
-  );
+  // Calculate the square size in pixels from uniform size
+  const squareSizePx = calculateSquareSize(thumbnail.value.width);
 
-  // Convert the square size back to percentages of each dimension
+  // Convert to dimension-specific percentages for storage
+  // (These will differ on non-square images to represent the same square)
   const widthPercent = squareSizePx / containerWidth.value;
   const heightPercent = squareSizePx / containerHeight.value;
 
