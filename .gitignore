@@ -32,6 +32,7 @@
 /public/packs-test
 /node_modules
 /.yarn/install-state.gz
+package-lock.json
 
 # Ignore flickr directory with private data and photos
 /flickr/*

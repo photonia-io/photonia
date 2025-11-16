@@ -4,7 +4,9 @@ import { ref, nextTick } from "vue";
 
 // Create refs for Apollo mocks at module level
 const suggestionsResultRef = ref(null);
-const mockRefetch = vi.fn();
+const relatedTagsResultRef = ref(null);
+const mockSuggestionsRefetch = vi.fn();
+const mockRelatedTagsRefetch = vi.fn();
 
 // Mock the toaster
 vi.mock("../../mixins/toaster", () => ({
@@ -13,10 +15,20 @@ vi.mock("../../mixins/toaster", () => ({
 
 // Mock Apollo composable
 vi.mock("@vue/apollo-composable", () => ({
-  useQuery: vi.fn(() => ({
-    result: suggestionsResultRef,
-    refetch: mockRefetch,
-  })),
+  useQuery: vi.fn((query) => {
+    // Check if this is the relatedTags query or suggestions query
+    const queryString = query.loc?.source?.body || "";
+    if (queryString.includes("relatedTags")) {
+      return {
+        result: relatedTagsResultRef,
+        refetch: mockRelatedTagsRefetch,
+      };
+    }
+    return {
+      result: suggestionsResultRef,
+      refetch: mockSuggestionsRefetch,
+    };
+  }),
 }));
 
 import PhotoTagInput from "../../photos/photo-tag-input.vue";
@@ -27,8 +39,10 @@ describe("PhotoTagInput", () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-    mockRefetch.mockClear();
+    mockSuggestionsRefetch.mockClear();
+    mockRelatedTagsRefetch.mockClear();
     suggestionsResultRef.value = null;
+    relatedTagsResultRef.value = null;
 
     wrapper = mount(PhotoTagInput, {
       props: {
@@ -468,6 +482,117 @@ describe("PhotoTagInput", () => {
 
       expect(wrapper.emitted("add-tag")).toBeTruthy();
       expect(wrapper.emitted("add-tag")[0]).toEqual([specialTag]);
+    });
+  });
+
+  describe("Related Tags (Suggested Tags)", () => {
+    it("does not show suggested tags initially when there are no related tags", () => {
+      expect(wrapper.text()).not.toContain("Suggested tags:");
+    });
+
+    it("shows suggested tags when relatedTags are available", async () => {
+      // Simulate related tags being returned
+      relatedTagsResultRef.value = {
+        relatedTags: [
+          { id: "r1", name: "related-tag-1" },
+          { id: "r2", name: "related-tag-2" },
+        ],
+      };
+      await nextTick();
+
+      expect(wrapper.text()).toContain("Suggested tags:");
+      expect(wrapper.text()).toContain("related-tag-1");
+      expect(wrapper.text()).toContain("related-tag-2");
+    });
+
+    it("filters out existing user tags from related tags suggestions", async () => {
+      // Set up related tags that include existing tags
+      relatedTagsResultRef.value = {
+        relatedTags: [
+          { id: "r1", name: "existing-tag" },
+          { id: "r2", name: "new-related-tag" },
+          { id: "r3", name: "machine-tag" },
+        ],
+      };
+      await nextTick();
+
+      // Only new-related-tag should be shown
+      expect(wrapper.text()).toContain("new-related-tag");
+      expect(wrapper.text()).not.toContain("existing-tag");
+      expect(wrapper.text()).not.toContain("machine-tag");
+    });
+
+    it("emits add-tag event when a suggested tag is clicked", async () => {
+      // Set up related tags
+      relatedTagsResultRef.value = {
+        relatedTags: [
+          { id: "r1", name: "suggested-tag" },
+        ],
+      };
+      await nextTick();
+
+      // Find and click the suggested tag
+      const suggestedTags = wrapper.findAll(".tag.is-link");
+      expect(suggestedTags.length).toBeGreaterThan(0);
+      await suggestedTags[0].trigger("click");
+
+      expect(wrapper.emitted("add-tag")).toBeTruthy();
+      expect(wrapper.emitted("add-tag")[0]).toEqual(["suggested-tag"]);
+    });
+
+    it("does not emit add-tag when clicking suggested tag while isAddingTag is true", async () => {
+      // Set up related tags
+      relatedTagsResultRef.value = {
+        relatedTags: [
+          { id: "r1", name: "suggested-tag" },
+        ],
+      };
+      await wrapper.setProps({ isAddingTag: true });
+      await nextTick();
+
+      // Find and click the suggested tag
+      const suggestedTags = wrapper.findAll(".tag.is-link");
+      expect(suggestedTags.length).toBeGreaterThan(0);
+      await suggestedTags[0].trigger("click");
+
+      expect(wrapper.emitted("add-tag")).toBeFalsy();
+    });
+
+    it("does not show suggested tags when userTags is empty", async () => {
+      const wrapperEmpty = mount(PhotoTagInput, {
+        props: {
+          userTags: [],
+          machineTags: [],
+        },
+      });
+
+      // Even if we set related tags, they shouldn't show when there are no user tags
+      relatedTagsResultRef.value = {
+        relatedTags: [
+          { id: "r1", name: "related-tag" },
+        ],
+      };
+      await nextTick();
+
+      expect(wrapperEmpty.text()).not.toContain("Suggested tags:");
+    });
+
+    it("hides suggested tags when userTags becomes empty", async () => {
+      // Start with some user tags and related tags
+      relatedTagsResultRef.value = {
+        relatedTags: [
+          { id: "r1", name: "related-tag" },
+        ],
+      };
+      await nextTick();
+
+      expect(wrapper.text()).toContain("Suggested tags:");
+
+      // Remove user tags
+      await wrapper.setProps({ userTags: [] });
+      await nextTick();
+
+      expect(wrapper.vm.relatedTagsSuggestions).toEqual([]);
     });
   });
 });
