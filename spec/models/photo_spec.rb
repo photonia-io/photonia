@@ -277,6 +277,218 @@ RSpec.describe Photo do
         end
       end
     end
+
+    describe '#add_derivatives' do
+      let(:photo) { build_stubbed(:photo) }
+      let(:image_attacher) { double('image_attacher') }
+      let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      let(:medium_side) { 800 }
+      let(:thumbnail_side) { 300 }
+
+      before do
+        allow(photo).to receive(:image_attacher).and_return(image_attacher)
+        allow(ENV).to receive(:fetch).with('PHOTONIA_MEDIUM_SIDE', nil).and_return(medium_side)
+        allow(ENV).to receive(:fetch).with('PHOTONIA_THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
+        allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
+      end
+
+      context 'when intelligent_thumbnail is present' do
+        let(:intelligent_thumbnail) do
+          {
+            x: 100,
+            y: 100,
+            pixel_width: 400,
+            pixel_height: 400,
+            top: 0.25,
+            left: 0.25,
+            width: 0.5,
+            height: 0.5
+          }
+        end
+
+        before do
+          allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
+          allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
+          allow(mock_image_processing).to receive(:crop).and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+        end
+
+        it 'adds medium_intelligent derivative' do
+          expect(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+          expect(mock_image_processing).to receive(:resize_to_fill!).with(medium_side, medium_side).and_return('processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:medium_intelligent, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+
+        it 'adds thumbnail_intelligent derivative' do
+          expect(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+          expect(mock_image_processing).to receive(:resize_to_fill!).with(thumbnail_side, thumbnail_side).and_return('processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:medium_intelligent, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+
+        it 'calls custom_crop with intelligent_thumbnail' do
+          expect(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(image_attacher).to receive(:add_derivative)
+          allow(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+
+        it 'calls atomic_promote' do
+          allow(photo).to receive(:custom_crop).twice.and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(image_attacher).to receive(:add_derivative)
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+      end
+
+      context 'when user_thumbnail is present' do
+        let(:user_thumbnail) do
+          {
+            'x' => 50,
+            'y' => 50,
+            'pixel_width' => 200,
+            'pixel_height' => 200,
+            'top' => 0.125,
+            'left' => 0.125,
+            'width' => 0.25,
+            'height' => 0.25
+          }
+        end
+
+        before do
+          allow(photo).to receive(:intelligent_thumbnail).and_return(nil)
+          allow(photo).to receive(:user_thumbnail).and_return(user_thumbnail)
+          allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
+          allow(mock_image_processing).to receive(:crop).and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+        end
+
+        it 'adds medium_user derivative' do
+          expect(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+          expect(mock_image_processing).to receive(:resize_to_fill!).with(medium_side, medium_side).and_return('processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:medium_user, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:thumbnail_user, 'processed_image')
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+
+        it 'adds thumbnail_user derivative' do
+          expect(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+          expect(mock_image_processing).to receive(:resize_to_fill!).with(thumbnail_side, thumbnail_side).and_return('processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:medium_user, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:thumbnail_user, 'processed_image')
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+
+        it 'calls custom_crop with user_thumbnail' do
+          expect(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(image_attacher).to receive(:add_derivative)
+          allow(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+
+        it 'calls atomic_promote' do
+          allow(photo).to receive(:custom_crop).twice.and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(image_attacher).to receive(:add_derivative)
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+      end
+
+      context 'when both intelligent_thumbnail and user_thumbnail are present' do
+        let(:intelligent_thumbnail) { { x: 100, y: 100, pixel_width: 400, pixel_height: 400 } }
+        let(:user_thumbnail) { { 'x' => 50, 'y' => 50, 'pixel_width' => 200, 'pixel_height' => 200 } }
+
+        before do
+          allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
+          allow(photo).to receive(:user_thumbnail).and_return(user_thumbnail)
+          allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
+          allow(mock_image_processing).to receive(:crop).and_return(mock_image_processing)
+          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+        end
+
+        it 'adds all four derivatives' do
+          expect(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+          expect(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+          expect(image_attacher).to receive(:add_derivative).with(:medium_intelligent, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:medium_user, 'processed_image')
+          expect(image_attacher).to receive(:add_derivative).with(:thumbnail_user, 'processed_image')
+          expect(image_attacher).to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+      end
+
+      context 'when neither intelligent_thumbnail nor user_thumbnail is present' do
+        before do
+          allow(photo).to receive(:intelligent_thumbnail).and_return(nil)
+          allow(photo).to receive(:user_thumbnail).and_return(nil)
+        end
+
+        it 'does not add any derivatives' do
+          expect(image_attacher).not_to receive(:add_derivative)
+          expect(image_attacher).not_to receive(:atomic_promote)
+          photo.add_derivatives
+        end
+      end
+    end
+
+    describe '#custom_crop' do
+      let(:photo) { build_stubbed(:photo) }
+      let(:image_attacher) { double('image_attacher') }
+      let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      let(:thumbnail) do
+        {
+          x: 100,
+          y: 100,
+          pixel_width: 400,
+          pixel_height: 400
+        }
+      end
+
+      before do
+        allow(photo).to receive(:image_attacher).and_return(image_attacher)
+        allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
+        allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
+        allow(mock_image_processing).to receive(:crop).and_return('cropped_image')
+      end
+
+      it 'calls ImageProcessing::MiniMagick.source with the downloaded image' do
+        expect(ImageProcessing::MiniMagick).to receive(:source).with('image_data')
+        photo.send(:custom_crop, thumbnail)
+      end
+
+      it 'calls crop with the correct parameters' do
+        expect(mock_image_processing).to receive(:crop).with(100, 100, 400, 400)
+        photo.send(:custom_crop, thumbnail)
+      end
+
+      it 'handles string keys from JSONB' do
+        string_key_thumbnail = {
+          'x' => 50,
+          'y' => 50,
+          'pixel_width' => 200,
+          'pixel_height' => 200
+        }
+        expect(mock_image_processing).to receive(:crop).with(50, 50, 200, 200)
+        photo.send(:custom_crop, string_key_thumbnail)
+      end
+
+      it 'returns the cropped image' do
+        result = photo.send(:custom_crop, thumbnail)
+        expect(result).to eq('cropped_image')
+      end
+    end
   end
 
   describe 'serial number setting' do
