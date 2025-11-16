@@ -487,7 +487,6 @@ describe("PhotoTagInput", () => {
 
   describe("Related Tags (Suggested Tags)", () => {
     it("does not show suggested tags initially when there are no related tags", () => {
-      const suggestedTagsSection = wrapper.find('div:has(> span.has-text-grey-light)');
       expect(wrapper.text()).not.toContain("Suggested tags:");
     });
 
@@ -553,9 +552,8 @@ describe("PhotoTagInput", () => {
 
       // Find and click the suggested tag
       const suggestedTags = wrapper.findAll(".tag.is-link");
-      if (suggestedTags.length > 0) {
-        await suggestedTags[0].trigger("click");
-      }
+      expect(suggestedTags.length).toBeGreaterThan(0);
+      await suggestedTags[0].trigger("click");
 
       expect(wrapper.emitted("add-tag")).toBeFalsy();
     });
