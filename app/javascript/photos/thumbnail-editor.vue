@@ -117,15 +117,37 @@ const initializeThumbnail = () => {
       height: uniformSize,
     };
   } else {
-    // Default to center square
-    // Use a uniform size that represents the same square on any aspect ratio
-    const defaultSize = 0.5; // 50% of the smaller dimension
-    return {
-      top: 0.25,
-      left: 0.25,
-      width: defaultSize,
-      height: defaultSize,
-    };
+    // Default: center the thumbnail with full height (landscape) or full width (portrait)
+    // Determine if landscape or portrait based on container dimensions
+    const isLandscape = containerWidth.value >= containerHeight.value;
+
+    if (isLandscape) {
+      // Landscape: use full height (uniformSize = 1.0), center horizontally
+      const uniformSize = 1.0; // 100% of the smaller dimension (height)
+      const squareSizePx = calculateSquareSize(uniformSize);
+      const widthPercent = squareSizePx / containerWidth.value;
+      const left = (1.0 - widthPercent) / 2; // Center horizontally
+
+      return {
+        top: 0.0,
+        left: left,
+        width: uniformSize,
+        height: uniformSize,
+      };
+    } else {
+      // Portrait: use full width (uniformSize = 1.0), center vertically
+      const uniformSize = 1.0; // 100% of the smaller dimension (width)
+      const squareSizePx = calculateSquareSize(uniformSize);
+      const heightPercent = squareSizePx / containerHeight.value;
+      const top = (1.0 - heightPercent) / 2; // Center vertically
+
+      return {
+        top: top,
+        left: 0.0,
+        width: uniformSize,
+        height: uniformSize,
+      };
+    }
   }
 };
 
