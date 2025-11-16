@@ -246,45 +246,47 @@ class Photo < ApplicationRecord
   end
 
   def add_derivatives
-    # Add intelligent derivatives if intelligent thumbnail exists
+    return unless intelligent_thumbnail.present? || user_thumbnail.present?
+
+    original = image_attacher.file.download
+
     if intelligent_thumbnail.present?
+      pipeline = custom_crop(intelligent_thumbnail, original)
       image_attacher.add_derivative(
         :medium_intelligent,
-        custom_crop(intelligent_thumbnail).resize_to_fill!(
+        pipeline.resize_to_fill!(
           ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
           ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
         )
       )
-
       image_attacher.add_derivative(
         :thumbnail_intelligent,
-        custom_crop(intelligent_thumbnail).resize_to_fill!(
+        pipeline.resize_to_fill!(
           ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
           ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
         )
       )
     end
 
-    # Add user derivatives if user thumbnail exists
     if user_thumbnail.present?
+      pipeline = custom_crop(user_thumbnail, original)
       image_attacher.add_derivative(
         :medium_user,
-        custom_crop(user_thumbnail).resize_to_fill!(
+        pipeline.resize_to_fill!(
           ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
           ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
         )
       )
-
       image_attacher.add_derivative(
         :thumbnail_user,
-        custom_crop(user_thumbnail).resize_to_fill!(
+        pipeline.resize_to_fill!(
           ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
           ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
         )
       )
     end
 
-    image_attacher.atomic_promote if intelligent_thumbnail.present? || user_thumbnail.present?
+    image_attacher.atomic_promote
   end
 
   def intelligent_thumbnail
@@ -325,8 +327,8 @@ class Photo < ApplicationRecord
 
   private
 
-  def custom_crop(thumbnail)
-    original = image_attacher.file.download
+  def custom_crop(thumbnail, original = nil)
+    original ||= image_attacher.file.download
 
     # Compute pixel coordinates from axis-relative percentages
     # Handle both symbol and string keys (user_thumbnail uses strings from JSONB, intelligent_thumbnail uses symbols)

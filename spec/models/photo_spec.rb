@@ -269,13 +269,13 @@ RSpec.describe Photo do
 
       it 'adds intelligent derivatives when intelligent_thumbnail is present' do
         allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
-        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail, 'image_data').and_return(mock_image_processing)
         allow(image_attacher).to receive(:add_derivative)
         allow(image_attacher).to receive(:atomic_promote)
 
         photo.add_derivatives
 
-        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail).twice
+        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail, 'image_data')
         expect(image_attacher).to have_received(:add_derivative).with(:medium_intelligent, 'processed_image')
         expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
         expect(image_attacher).to have_received(:atomic_promote)
@@ -283,13 +283,13 @@ RSpec.describe Photo do
 
       it 'adds user derivatives when user_thumbnail is present' do
         allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: user_thumbnail)
-        allow(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail, 'image_data').and_return(mock_image_processing)
         allow(image_attacher).to receive(:add_derivative)
         allow(image_attacher).to receive(:atomic_promote)
 
         photo.add_derivatives
 
-        expect(photo).to have_received(:custom_crop).with(user_thumbnail).twice
+        expect(photo).to have_received(:custom_crop).with(user_thumbnail, 'image_data')
         expect(image_attacher).to have_received(:add_derivative).with(:medium_user, 'processed_image')
         expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_user, 'processed_image')
         expect(image_attacher).to have_received(:atomic_promote)
@@ -297,15 +297,15 @@ RSpec.describe Photo do
 
       it 'adds all four derivatives when both thumbnails are present' do
         allow(photo).to receive_messages(intelligent_thumbnail: intelligent_thumbnail, user_thumbnail: user_thumbnail)
-        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
-        allow(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail, 'image_data').and_return(mock_image_processing)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail, 'image_data').and_return(mock_image_processing)
         allow(image_attacher).to receive(:add_derivative)
         allow(image_attacher).to receive(:atomic_promote)
 
         photo.add_derivatives
 
-        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail).twice
-        expect(photo).to have_received(:custom_crop).with(user_thumbnail).twice
+        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail, 'image_data')
+        expect(photo).to have_received(:custom_crop).with(user_thumbnail, 'image_data')
         expect(image_attacher).to have_received(:add_derivative).with(:medium_intelligent, 'processed_image')
         expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
         expect(image_attacher).to have_received(:add_derivative).with(:medium_user, 'processed_image')
