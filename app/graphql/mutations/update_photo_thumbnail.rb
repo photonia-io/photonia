@@ -11,6 +11,9 @@ module Mutations
       photo = Photo.friendly.find(id)
       context[:authorize].call(photo, :update?)
 
+      # Validate thumbnail percentages
+      validate_thumbnail_percentages!(thumbnail)
+
       # Convert thumbnail to hash with string keys for JSONB storage
       thumbnail_hash = {
         'top' => thumbnail[:top],
@@ -44,6 +47,25 @@ module Mutations
       else
         handle_photo_update_errors(photo)
       end
+    end
+
+    private
+
+    def validate_thumbnail_percentages!(thumbnail)
+      # Validate individual percentage values are within 0.0-1.0
+      errors = []
+
+      %i[top left width height].each do |field|
+        value = thumbnail[field]
+        errors << "#{field.to_s.capitalize} must be between 0.0 and 1.0" if value < 0.0 || value > 1.0
+      end
+
+      # Validate boundary constraints
+      errors << 'Top + height must not exceed 1.0' if thumbnail[:top] + thumbnail[:height] > 1.0
+
+      errors << 'Left + width must not exceed 1.0' if thumbnail[:left] + thumbnail[:width] > 1.0
+
+      raise GraphQL::ExecutionError, errors.join(', ') if errors.any?
     end
   end
 end

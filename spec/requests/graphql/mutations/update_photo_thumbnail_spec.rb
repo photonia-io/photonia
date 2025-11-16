@@ -89,5 +89,143 @@ describe 'updatePhotoThumbnail Mutation', type: :request do
         post_mutation
       end.to have_enqueued_job(AddDerivativesJob).with(photo.id)
     end
+
+    context 'with invalid thumbnail values' do
+      context 'when top is out of range' do
+        let(:thumbnail_data) { { top: 1.5, left: 0.25, width: 0.5, height: 0.5 } }
+
+        it 'returns an error' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Top must be between 0.0 and 1.0')
+        end
+      end
+
+      context 'when left is negative' do
+        let(:thumbnail_data) { { top: 0.25, left: -0.1, width: 0.5, height: 0.5 } }
+
+        it 'returns an error' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Left must be between 0.0 and 1.0')
+        end
+      end
+
+      context 'when width exceeds 1.0' do
+        let(:thumbnail_data) { { top: 0.25, left: 0.25, width: 1.2, height: 0.5 } }
+
+        it 'returns an error' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Width must be between 0.0 and 1.0')
+        end
+      end
+
+      context 'when height is negative' do
+        let(:thumbnail_data) { { top: 0.25, left: 0.25, width: 0.5, height: -0.1 } }
+
+        it 'returns an error' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Height must be between 0.0 and 1.0')
+        end
+      end
+
+      context 'when top + height exceeds 1.0' do
+        let(:thumbnail_data) { { top: 0.6, left: 0.25, width: 0.5, height: 0.5 } }
+
+        it 'returns an error' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Top + height must not exceed 1.0')
+        end
+      end
+
+      context 'when left + width exceeds 1.0' do
+        let(:thumbnail_data) { { top: 0.25, left: 0.7, width: 0.5, height: 0.5 } }
+
+        it 'returns an error' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Left + width must not exceed 1.0')
+        end
+      end
+
+      context 'with multiple validation errors' do
+        let(:thumbnail_data) { { top: 1.5, left: -0.1, width: 0.5, height: 0.5 } }
+
+        it 'returns all errors' do
+          post_mutation
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err).to be_present
+          expect(err['message']).to include('Top must be between 0.0 and 1.0')
+          expect(err['message']).to include('Left must be between 0.0 and 1.0')
+        end
+      end
+    end
+
+    context 'with valid edge case values' do
+      context 'when values are at minimum (0.0)' do
+        let(:thumbnail_data) { { top: 0.0, left: 0.0, width: 1.0, height: 1.0 } }
+
+        it 'successfully updates the thumbnail' do
+          post_mutation
+          json = response.parsed_body
+          data = json['data']['updatePhotoThumbnail']
+
+          expect(data).to be_present
+          expect(data['userThumbnail']['top']).to eq(0.0)
+          expect(data['userThumbnail']['left']).to eq(0.0)
+        end
+      end
+
+      context 'when values are at maximum (1.0)' do
+        let(:thumbnail_data) { { top: 0.0, left: 0.0, width: 1.0, height: 1.0 } }
+
+        it 'successfully updates the thumbnail' do
+          post_mutation
+          json = response.parsed_body
+          data = json['data']['updatePhotoThumbnail']
+
+          expect(data).to be_present
+          expect(data['userThumbnail']['width']).to eq(1.0)
+          expect(data['userThumbnail']['height']).to eq(1.0)
+        end
+      end
+
+      context 'when boundaries are exactly at limit' do
+        let(:thumbnail_data) { { top: 0.5, left: 0.5, width: 0.5, height: 0.5 } }
+
+        it 'successfully updates the thumbnail' do
+          post_mutation
+          json = response.parsed_body
+          data = json['data']['updatePhotoThumbnail']
+
+          expect(data).to be_present
+          expect(data['userThumbnail']['top']).to eq(0.5)
+          expect(data['userThumbnail']['left']).to eq(0.5)
+        end
+      end
+    end
   end
 end
