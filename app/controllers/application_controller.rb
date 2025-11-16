@@ -23,6 +23,8 @@ class ApplicationController < ActionController::Base
       privacy_policy_path:,
       terms_of_service_path:,
       graphql_path:,
+      flickr_claim_approve_path:,
+      flickr_claim_deny_path:,
       sentry_dsn: ENV.fetch('PHOTONIA_FE_SENTRY_DSN', ''),
       sentry_sample_rate: ENV.fetch('PHOTONIA_FE_SENTRY_SAMPLE_RATE', 0.1).to_f,
       site_name: Setting.site_name,

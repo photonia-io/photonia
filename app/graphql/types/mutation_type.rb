@@ -20,6 +20,13 @@ module Types
     field :continue_with_facebook, mutation: Mutations::ContinueWithFacebook, description: 'Sign up or sign in with Facebook'
     field :continue_with_google, mutation: Mutations::ContinueWithGoogle, description: 'Sign up or sign in with Google'
 
+    # Flickr claim mutations
+    field :request_automatic_flickr_claim, mutation: Mutations::RequestAutomaticFlickrClaim, description: 'Request an automatic claim for a Flickr user'
+    field :verify_automatic_flickr_claim, mutation: Mutations::VerifyAutomaticFlickrClaim, description: 'Verify an automatic Flickr user claim'
+    field :request_manual_flickr_claim, mutation: Mutations::RequestManualFlickrClaim, description: 'Request a manual claim for a Flickr user'
+    field :approve_flickr_claim, mutation: Mutations::ApproveFlickrClaim, description: 'Approve a Flickr user claim (admin only)'
+    field :deny_flickr_claim, mutation: Mutations::DenyFlickrClaim, description: 'Deny a Flickr user claim (admin only)'
+
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
       argument :photo_ids, [String], 'Photo Ids', required: true

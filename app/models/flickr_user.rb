@@ -23,9 +23,20 @@
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #  timezone_id           :string
+#  claimed_by_user_id    :bigint
+#
+# Indexes
+#
+#  index_flickr_users_on_claimed_by_user_id  (claimed_by_user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (claimed_by_user_id => users.id)
 #
 class FlickrUser < ApplicationRecord
   has_many :comments, dependent: :destroy
+  has_many :flickr_user_claims, dependent: :destroy
+  belongs_to :claimed_by_user, class_name: 'User', optional: true
 
   # has_many :photos, dependent: :destroy
 

@@ -54,7 +54,7 @@
                 @delete-photo="deletePhoto"
               />
 
-              <PhotoComments :photo="photo" :loading="loading" />
+              <PhotoComments :photo="photo" :loading="loading" @refresh="refreshPhoto" />
 
               <div class="columns equal-height-columns">
                 <div class="column is-half">
@@ -334,7 +334,7 @@ const emptyPhoto = {
 };
 
 const id = computed(() => route.params.id);
-const { result, loading } = useQuery(
+const { result, loading, refetch } = useQuery(
   gql`
     ${gql_queries.photos_show}
   `,
@@ -420,6 +420,10 @@ const highlightLabel = (label) => {
 
 const unHighlightLabel = (label) => {
   labelHighlights.value[label.id] = false;
+};
+
+const refreshPhoto = () => {
+  refetch();
 };
 
 const photo = computed(() => result.value?.photo ?? emptyPhoto);
