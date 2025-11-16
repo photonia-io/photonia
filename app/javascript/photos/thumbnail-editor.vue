@@ -80,30 +80,49 @@ const containerHeight = ref(0);
 // Helper functions
 const initializeThumbnail = () => {
   if (props.photo.userThumbnail) {
+    // When loading from saved data, width and height are percentages of actual dimensions
+    // We need to convert to a uniform size representation
+    // Calculate the pixel size from both dimensions and use the smaller one
+    const widthPx = props.photo.userThumbnail.width * containerWidth.value;
+    const heightPx = props.photo.userThumbnail.height * containerHeight.value;
+    const squareSizePx = Math.min(widthPx, heightPx);
+
+    // Convert back to a uniform percentage (based on smaller container dimension)
+    const uniformSize =
+      squareSizePx / Math.min(containerWidth.value, containerHeight.value);
+
     return {
       top: props.photo.userThumbnail.top,
       left: props.photo.userThumbnail.left,
-      width: props.photo.userThumbnail.width,
-      height: props.photo.userThumbnail.height,
+      width: uniformSize,
+      height: uniformSize,
     };
   } else if (props.photo.intelligentThumbnail) {
     const bbox = props.photo.intelligentThumbnail.boundingBox;
     // For intelligent thumbnail, use the larger percentage to ensure the full square is visible
     // (intelligent thumbnail may have different width/height percentages on non-square images)
-    const size = Math.max(bbox.width, bbox.height);
+    const widthPx = bbox.width * containerWidth.value;
+    const heightPx = bbox.height * containerHeight.value;
+    const squareSizePx = Math.min(widthPx, heightPx);
+
+    const uniformSize =
+      squareSizePx / Math.min(containerWidth.value, containerHeight.value);
+
     return {
       top: bbox.top,
       left: bbox.left,
-      width: size,
-      height: size,
+      width: uniformSize,
+      height: uniformSize,
     };
   } else {
     // Default to center square
+    // Use a uniform size that represents the same square on any aspect ratio
+    const defaultSize = 0.5; // 50% of the smaller dimension
     return {
       top: 0.25,
       left: 0.25,
-      width: 0.5,
-      height: 0.5,
+      width: defaultSize,
+      height: defaultSize,
     };
   }
 };
@@ -272,13 +291,21 @@ const onMouseUp = () => {
 };
 
 const saveThumbnail = () => {
-  // Ensure thumbnail is square
-  const size = Math.min(thumbnail.value.width, thumbnail.value.height);
+  // Calculate the square size in pixels
+  const squareSizePx = calculateSquareSize(
+    thumbnail.value.width,
+    thumbnail.value.height,
+  );
+
+  // Convert the square size back to percentages of each dimension
+  const widthPercent = squareSizePx / containerWidth.value;
+  const heightPercent = squareSizePx / containerHeight.value;
+
   const thumbnailData = {
     top: thumbnail.value.top,
     left: thumbnail.value.left,
-    width: size,
-    height: size,
+    width: widthPercent,
+    height: heightPercent,
   };
 
   emit("save", thumbnailData);
