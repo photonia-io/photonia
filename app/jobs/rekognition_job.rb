@@ -8,6 +8,6 @@ class RekognitionJob < ApplicationJob
     photo = Photo.find(photo_id)
     RekognitionTagger.new.tag(photo)
     PhotoLabeler.new(photo.reload).add_labels_from_rekognition_response
-    AddIntelligentDerivativesJob.perform_later(photo_id)
+    AddDerivativesJob.perform_later(photo_id)
   end
 end

@@ -21,6 +21,7 @@ module Types
     field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
     field :is_cover_photo, Boolean, 'Whether the photo is a cover photo', null: true
+    field :user_thumbnail, BoundingBoxType, 'User-defined thumbnail', null: true
     field :is_taken_at_from_exif, Boolean, 'Whether the date taken is from EXIF', null: true
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
@@ -77,10 +78,16 @@ module Types
 
     def image_url(type:)
       case type
-      when 'intelligent_or_square_medium'
-        @object.image_url(:medium_intelligent).presence || @object.image_url(:medium_square) || ''
-      when 'intelligent_or_square_thumbnail'
-        @object.image_url(:thumbnail_intelligent).presence || @object.image_url(:thumbnail_square) || ''
+      when 'thumbnail', 'intelligent_or_square_thumbnail'
+        # Priority: user-defined > intelligent > square > empty
+        @object.image_url(:thumbnail_user).presence || 
+          @object.image_url(:thumbnail_intelligent).presence || 
+          @object.image_url(:thumbnail_square) || ''
+      when 'medium', 'intelligent_or_square_medium'
+        # Priority: user-defined > intelligent > square > empty
+        @object.image_url(:medium_user).presence || 
+          @object.image_url(:medium_intelligent).presence || 
+          @object.image_url(:medium_square) || ''
       else
         @object.image_url(type.to_sym).presence || ''
       end
@@ -140,6 +147,17 @@ module Types
 
     def albums
       Pundit.policy_scope(context[:current_user], @object.albums.unscope(where: :privacy))
+    end
+
+    def user_thumbnail
+      return nil unless @object.user_thumbnail.present?
+
+      {
+        top: @object.user_thumbnail['top'],
+        left: @object.user_thumbnail['left'],
+        width: @object.user_thumbnail['width'],
+        height: @object.user_thumbnail['height']
+      }
     end
   end
 end
