@@ -309,8 +309,7 @@ RSpec.describe Photo do
         before do
           allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
           allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
-          allow(mock_image_processing).to receive(:crop).and_return(mock_image_processing)
-          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
         end
 
         it 'adds medium_intelligent derivative' do
@@ -363,11 +362,9 @@ RSpec.describe Photo do
         end
 
         before do
-          allow(photo).to receive(:intelligent_thumbnail).and_return(nil)
-          allow(photo).to receive(:user_thumbnail).and_return(user_thumbnail)
+          allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: user_thumbnail)
           allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
-          allow(mock_image_processing).to receive(:crop).and_return(mock_image_processing)
-          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
         end
 
         it 'adds medium_user derivative' do
@@ -410,11 +407,9 @@ RSpec.describe Photo do
         let(:user_thumbnail) { { 'x' => 50, 'y' => 50, 'pixel_width' => 200, 'pixel_height' => 200 } }
 
         before do
-          allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
-          allow(photo).to receive(:user_thumbnail).and_return(user_thumbnail)
+          allow(photo).to receive_messages(intelligent_thumbnail: intelligent_thumbnail, user_thumbnail: user_thumbnail)
           allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
-          allow(mock_image_processing).to receive(:crop).and_return(mock_image_processing)
-          allow(mock_image_processing).to receive(:resize_to_fill!).and_return('processed_image')
+          allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
         end
 
         it 'adds all four derivatives' do
@@ -431,8 +426,7 @@ RSpec.describe Photo do
 
       context 'when neither intelligent_thumbnail nor user_thumbnail is present' do
         before do
-          allow(photo).to receive(:intelligent_thumbnail).and_return(nil)
-          allow(photo).to receive(:user_thumbnail).and_return(nil)
+          allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: nil)
         end
 
         it 'does not add any derivatives' do
