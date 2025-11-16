@@ -332,17 +332,19 @@ RSpec.describe Photo do
       # rubocop:disable RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
       # rubocop:enable RSpec/VerifiedDoubles
+      let(:pixel_width) { 1600 }
+      let(:pixel_height) { 1200 }
       let(:thumbnail) do
         {
-          x: 100,
-          y: 100,
-          pixel_width: 400,
-          pixel_height: 400
+          top: 0.25,
+          left: 0.125,
+          width: 0.5,
+          height: 0.666667
         }
       end
 
       before do
-        allow(photo).to receive(:image_attacher).and_return(image_attacher)
+        allow(photo).to receive_messages(image_attacher: image_attacher, pixel_width: pixel_width, pixel_height: pixel_height)
         allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
         allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
         allow(mock_image_processing).to receive(:crop).and_return('cropped_image')
@@ -353,25 +355,40 @@ RSpec.describe Photo do
         expect(ImageProcessing::MiniMagick).to have_received(:source).with('image_data')
       end
 
-      it 'calls crop with the correct parameters' do
+      it 'computes pixel coordinates from percentages and calls crop with square size' do
         photo.send(:custom_crop, thumbnail)
-        expect(mock_image_processing).to have_received(:crop).with(100, 100, 400, 400)
+        # Expected: x=200 (1600*0.125), y=300 (1200*0.25), square_size=800 (min of 1600*0.5=800, 1200*0.666667=800)
+        expect(mock_image_processing).to have_received(:crop).with(200, 300, 800, 800)
       end
 
-      it 'handles string keys from JSONB' do
+      it 'handles string keys from JSONB (user_thumbnail)' do
         string_key_thumbnail = {
-          'x' => 50,
-          'y' => 50,
-          'pixel_width' => 200,
-          'pixel_height' => 200
+          'top' => 0.125,
+          'left' => 0.125,
+          'width' => 0.25,
+          'height' => 0.333333
         }
         photo.send(:custom_crop, string_key_thumbnail)
-        expect(mock_image_processing).to have_received(:crop).with(50, 50, 200, 200)
+        # Expected: x=200 (1600*0.125), y=150 (1200*0.125), square_size=399 (min of 1600*0.25=400, 1200*0.333333=399.9996→399)
+        expect(mock_image_processing).to have_received(:crop).with(200, 150, 399, 399)
       end
 
       it 'returns the cropped image' do
         result = photo.send(:custom_crop, thumbnail)
         expect(result).to eq('cropped_image')
+      end
+
+      it 'uses the smaller dimension to ensure square crop' do
+        # Width percentage produces smaller pixel size
+        asymmetric_thumbnail = {
+          top: 0.0,
+          left: 0.0,
+          width: 0.5,   # 1600 * 0.5 = 800px
+          height: 0.8   # 1200 * 0.8 = 960px
+        }
+        photo.send(:custom_crop, asymmetric_thumbnail)
+        # Should use 800x800 (smaller of the two)
+        expect(mock_image_processing).to have_received(:crop).with(0, 0, 800, 800)
       end
     end
   end
