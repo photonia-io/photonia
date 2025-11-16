@@ -51,5 +51,12 @@ FactoryBot.define do
     trait :with_taken_at do
       taken_at { Faker::Time.between(from: 1.year.ago, to: Time.zone.now) }
     end
+
+    trait :with_image do
+      after(:build) do |photo|
+        file_path = Rails.root.join('spec/support/images/zell-am-see-with-exif.jpg')
+        photo.image = File.open(file_path)
+      end
+    end
   end
 end

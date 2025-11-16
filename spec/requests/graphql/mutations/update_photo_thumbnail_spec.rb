@@ -55,13 +55,15 @@ describe 'updatePhotoThumbnail Mutation', type: :request do
   end
 
   context 'when the user is logged in' do
+    let(:photo) { create(:photo, :with_image) }
+
     before do
       sign_in(photo.user)
     end
 
     it 'updates the photo user thumbnail' do
       post_mutation
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       data = json['data']['updatePhotoThumbnail']
 
       expect(data['id']).to eq(photo.slug)
@@ -81,6 +83,8 @@ describe 'updatePhotoThumbnail Mutation', type: :request do
     end
 
     it 'enqueues a job to regenerate derivatives' do
+      ActiveJob::Base.queue_adapter = :test
+
       expect do
         post_mutation
       end.to have_enqueued_job(AddDerivativesJob).with(photo.id)
