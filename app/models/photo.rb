@@ -338,10 +338,6 @@ class Photo < ApplicationRecord
       .crop(x, y, width, height)
   end
 
-  def intelligent_crop
-    custom_crop(intelligent_thumbnail)
-  end
-
   def set_fields
     set_serial_number
     self.posted_at = Time.current if posted_at.nil?
