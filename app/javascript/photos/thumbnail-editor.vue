@@ -53,6 +53,7 @@ const props = defineProps({
 
 const emit = defineEmits(["save", "cancel"]);
 
+// Refs
 const imageContainer = ref(null);
 const image = ref(null);
 const imageLoaded = ref(false);
@@ -76,13 +77,10 @@ const startThumbnail = ref(null);
 const containerWidth = ref(0);
 const containerHeight = ref(0);
 
-const onImageLoad = () => {
-  imageLoaded.value = true;
-  updateContainerDimensions();
-
-  // Initialize with user thumbnail or intelligent thumbnail
+// Helper functions
+const initializeThumbnail = () => {
   if (props.photo.userThumbnail) {
-    thumbnail.value = {
+    return {
       top: props.photo.userThumbnail.top,
       left: props.photo.userThumbnail.left,
       width: props.photo.userThumbnail.width,
@@ -93,7 +91,7 @@ const onImageLoad = () => {
     // For intelligent thumbnail, use the larger percentage to ensure the full square is visible
     // (intelligent thumbnail may have different width/height percentages on non-square images)
     const size = Math.max(bbox.width, bbox.height);
-    thumbnail.value = {
+    return {
       top: bbox.top,
       left: bbox.left,
       width: size,
@@ -101,7 +99,7 @@ const onImageLoad = () => {
     };
   } else {
     // Default to center square
-    thumbnail.value = {
+    return {
       top: 0.25,
       left: 0.25,
       width: 0.5,
@@ -119,6 +117,92 @@ const updateContainerDimensions = () => {
   }
 };
 
+const calculateSquareSize = (widthPercent, heightPercent) => {
+  // Calculate pixel dimensions
+  const widthPx = widthPercent * containerWidth.value;
+  const heightPx = heightPercent * containerHeight.value;
+  // Return the smaller dimension to maintain square
+  return Math.min(widthPx, heightPx);
+};
+
+const constrainPosition = (left, top, sizePercent) => {
+  // Calculate the actual square size in pixels
+  const widthPx = sizePercent * containerWidth.value;
+  const heightPx = sizePercent * containerHeight.value;
+  const squareSizePx = Math.min(widthPx, heightPx);
+
+  // Calculate the size as a percentage of each dimension
+  const sizePercentWidth = squareSizePx / containerWidth.value;
+  const sizePercentHeight = squareSizePx / containerHeight.value;
+
+  // Constrain to image bounds
+  const newLeft = Math.max(0, Math.min(1 - sizePercentWidth, left));
+  const newTop = Math.max(0, Math.min(1 - sizePercentHeight, top));
+
+  return { left: newLeft, top: newTop };
+};
+
+const handleDrag = (deltaX, deltaY) => {
+  // Calculate new position
+  let newLeft = startThumbnail.value.left + deltaX;
+  let newTop = startThumbnail.value.top + deltaY;
+
+  // Get the current square size
+  const size = Math.min(
+    startThumbnail.value.width,
+    startThumbnail.value.height,
+  );
+
+  // Constrain to image bounds
+  const { left: constrainedLeft, top: constrainedTop } = constrainPosition(
+    newLeft,
+    newTop,
+    size,
+  );
+
+  thumbnail.value.left = constrainedLeft;
+  thumbnail.value.top = constrainedTop;
+  // Keep width and height unchanged during drag
+  thumbnail.value.width = startThumbnail.value.width;
+  thumbnail.value.height = startThumbnail.value.height;
+};
+
+const handleResize = (deltaXPx, deltaYPx) => {
+  // Use the larger delta to make resizing more responsive
+  const deltaMax = Math.max(deltaXPx, deltaYPx);
+  const deltaSize =
+    deltaMax / Math.min(containerWidth.value, containerHeight.value);
+
+  const startSize = Math.min(
+    startThumbnail.value.width,
+    startThumbnail.value.height,
+  );
+  let newSize = startSize + deltaSize;
+
+  // Calculate maximum allowed size based on position
+  const maxWidthPercent = 1 - startThumbnail.value.left;
+  const maxHeightPercent = 1 - startThumbnail.value.top;
+  const maxWidthPx = maxWidthPercent * containerWidth.value;
+  const maxHeightPx = maxHeightPercent * containerHeight.value;
+  const maxSizePx = Math.min(maxWidthPx, maxHeightPx);
+
+  // Convert max size back to percentage
+  const maxSize =
+    maxSizePx / Math.min(containerWidth.value, containerHeight.value);
+
+  newSize = Math.max(0.1, Math.min(maxSize, newSize));
+
+  // Update both width and height to keep it square
+  thumbnail.value.width = newSize;
+  thumbnail.value.height = newSize;
+};
+
+const onImageLoad = () => {
+  imageLoaded.value = true;
+  updateContainerDimensions();
+  thumbnail.value = initializeThumbnail();
+};
+
 const thumbnailStyle = computed(() => {
   // Force square by using the minimum dimension
   const size = Math.min(thumbnail.value.width, thumbnail.value.height);
@@ -127,11 +211,11 @@ const thumbnailStyle = computed(() => {
   const topPx = thumbnail.value.top * containerHeight.value;
   const leftPx = thumbnail.value.left * containerWidth.value;
 
-  // The square size should be based on percentages of each dimension
-  const widthPx = size * containerWidth.value;
-  const heightPx = size * containerHeight.value;
-  // Use the smaller of the two to maintain square
-  const sizePx = Math.min(widthPx, heightPx);
+  // Calculate the square size in pixels
+  const sizePx = calculateSquareSize(
+    thumbnail.value.width,
+    thumbnail.value.height,
+  );
 
   return {
     position: "absolute",
@@ -176,68 +260,9 @@ const onMouseMove = (event) => {
   const deltaY = deltaYPx / containerHeight.value;
 
   if (isDragging.value) {
-    // Move the thumbnail
-    let newLeft = startThumbnail.value.left + deltaX;
-    let newTop = startThumbnail.value.top + deltaY;
-
-    // Get the current square size
-    const size = Math.min(
-      startThumbnail.value.width,
-      startThumbnail.value.height,
-    );
-
-    // Calculate the actual pixel size of the square
-    const widthPx = size * containerWidth.value;
-    const heightPx = size * containerHeight.value;
-    const squareSizePx = Math.min(widthPx, heightPx);
-
-    // Calculate the size as a percentage of each dimension
-    const sizePercentWidth = squareSizePx / containerWidth.value;
-    const sizePercentHeight = squareSizePx / containerHeight.value;
-
-    // Constrain to image bounds based on actual square size in each dimension
-    newLeft = Math.max(0, Math.min(1 - sizePercentWidth, newLeft));
-    newTop = Math.max(0, Math.min(1 - sizePercentHeight, newTop));
-
-    thumbnail.value.left = newLeft;
-    thumbnail.value.top = newTop;
-    // Keep width and height unchanged during drag
-    thumbnail.value.width = startThumbnail.value.width;
-    thumbnail.value.height = startThumbnail.value.height;
+    handleDrag(deltaX, deltaY);
   } else if (isResizing.value) {
-    // Resize the thumbnail (keeping it square)
-    // Use the larger delta to make resizing more responsive
-    const deltaMax = Math.max(deltaXPx, deltaYPx);
-    const deltaSize =
-      deltaMax / Math.min(containerWidth.value, containerHeight.value);
-
-    const startSize = Math.min(
-      startThumbnail.value.width,
-      startThumbnail.value.height,
-    );
-    let newSize = startSize + deltaSize;
-
-    // Calculate what the actual square size would be in pixels
-    const widthPx = newSize * containerWidth.value;
-    const heightPx = newSize * containerHeight.value;
-    const squareSizePx = Math.min(widthPx, heightPx);
-
-    // Calculate maximum allowed size based on position
-    const maxWidthPercent = 1 - startThumbnail.value.left;
-    const maxHeightPercent = 1 - startThumbnail.value.top;
-    const maxWidthPx = maxWidthPercent * containerWidth.value;
-    const maxHeightPx = maxHeightPercent * containerHeight.value;
-    const maxSizePx = Math.min(maxWidthPx, maxHeightPx);
-
-    // Convert max size back to percentage
-    const maxSize =
-      maxSizePx / Math.min(containerWidth.value, containerHeight.value);
-
-    newSize = Math.max(0.1, Math.min(maxSize, newSize));
-
-    // Update both width and height to keep it square
-    thumbnail.value.width = newSize;
-    thumbnail.value.height = newSize;
+    handleResize(deltaXPx, deltaYPx);
   }
 };
 
