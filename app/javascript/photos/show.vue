@@ -447,6 +447,7 @@ onUpdateThumbnailDone(({ data }) => {
     "is-success",
   );
   thumbnailEditMode.value = false;
+  applicationStore.enableNavigationShortcuts();
 });
 
 onUpdateThumbnailError((error) => {
