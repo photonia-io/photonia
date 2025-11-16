@@ -10,7 +10,7 @@
                 type="text"
                 placeholder="Add a tag..."
                 v-model="tagName"
-                :disabled="addingTag"
+                :disabled="isAddingTag"
                 @input="onInput"
                 @blur="onBlur"
                 @keydown.enter.prevent="addTag"
@@ -23,9 +23,9 @@
               <button
                 class="button is-primary is-small"
                 @click.prevent="addTag"
-                :disabled="!tagName.trim() || addingTag"
+                :disabled="!tagName.trim() || isAddingTag"
               >
-                <span class="icon" v-if="addingTag">
+                <span class="icon" v-if="isAddingTag">
                   <i class="fas fa-spinner fa-spin"></i>
                 </span>
                 <span class="icon" v-else>
@@ -57,15 +57,25 @@
 <script setup>
 import { ref, watch, computed, onUnmounted } from "vue";
 import gql from "graphql-tag";
-import { useQuery, useMutation } from "@vue/apollo-composable";
+import { useQuery } from "@vue/apollo-composable";
 import toaster from "../mixins/toaster";
 
 const props = defineProps({
-  photo: {
-    type: Object,
-    required: true,
+  userTags: {
+    type: Array,
+    default: () => [],
+  },
+  machineTags: {
+    type: Array,
+    default: () => [],
+  },
+  isAddingTag: {
+    type: Boolean,
+    default: false,
   },
 });
+
+const emit = defineEmits(['add-tag']);
 
 const tagName = ref("");
 const suggestions = ref([]);
@@ -73,7 +83,6 @@ const isDropdownActive = ref(false);
 const selectedIndex = ref(-1);
 const minCharsForSuggestions = 3;
 const suggestionsQueryEnabled = ref(false);
-const addingTag = ref(false);
 let debounceTimeout = null;
 
 onUnmounted(() => {
@@ -99,30 +108,11 @@ const { result: suggestionsResult, refetch: fetchSuggestions } = useQuery(
   },
 );
 
-// Mutation to add a tag to a photo
-const { mutate: addTagToPhoto } = useMutation(gql`
-  mutation AddTagToPhoto($id: String!, $tagName: String!) {
-    addTagToPhoto(id: $id, tagName: $tagName) {
-      photo {
-        id
-        userTags {
-          id
-          name
-        }
-      }
-      tag {
-        id
-        name
-      }
-    }
-  }
-`);
-
 const existingTags = computed(
   () =>
     new Set([
-      ...(props.photo.userTags || []).map((tag) => tag.name),
-      ...(props.photo.machineTags || []).map((tag) => tag.name),
+      ...(props.userTags || []).map((tag) => tag.name),
+      ...(props.machineTags || []).map((tag) => tag.name),
     ]),
 );
 
@@ -186,31 +176,24 @@ const selectPreviousSuggestion = () => {
     suggestions.value.length;
 };
 
-const addTag = async () => {
-  if (!tagName.value.trim()) return;
-
-  addingTag.value = true;
+const addTag = () => {
+  if (!tagName.value.trim() || props.isAddingTag) return;
 
   // If a suggestion is selected, use that
   if (selectedIndex.value >= 0 && suggestions.value[selectedIndex.value]) {
     tagName.value = suggestions.value[selectedIndex.value].name;
   }
 
-  try {
-    await addTagToPhoto({
-      id: props.photo.id,
-      tagName: tagName.value.trim(),
-    });
-    toaster(`Tag "${tagName.value}" added successfully`, "is-success");
-    tagName.value = "";
-    suggestions.value = [];
-    suggestionsQueryEnabled.value = false;
-    isDropdownActive.value = false;
-    addingTag.value = false;
-  } catch (error) {
-    toaster(`Error adding tag: ${error.message}`, "is-danger");
-    addingTag.value = false;
-  }
+  const tagToAdd = tagName.value.trim();
+
+  // Emit event to parent component
+  emit('add-tag', tagToAdd);
+
+  // Clear the input
+  tagName.value = "";
+  suggestions.value = [];
+  suggestionsQueryEnabled.value = false;
+  isDropdownActive.value = false;
 };
 </script>
 
