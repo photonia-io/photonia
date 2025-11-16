@@ -100,8 +100,9 @@ RSpec.describe Photo do
   describe 'callbacks' do
     it 'calls set_fields before validation' do
       photo = build(:photo)
-      expect(photo).to receive(:set_fields)
+      allow(photo).to receive(:set_fields)
       photo.valid?
+      expect(photo).to have_received(:set_fields)
     end
   end
 
@@ -148,9 +149,10 @@ RSpec.describe Photo do
       end
 
       it 'calls #exif_from_file and #save when exif field is nil' do
-        expect(photo_with_nil_exif).to receive(:exif_from_file)
-        expect(photo_with_nil_exif).to receive(:save)
+        allow(photo_with_nil_exif).to receive(:exif_from_file)
         photo_with_nil_exif.exif
+        expect(photo_with_nil_exif).to have_received(:exif_from_file)
+        expect(photo_with_nil_exif).to have_received(:save)
       end
 
       it 'sets and returns exif data when #exif_from_file returns data' do
@@ -168,9 +170,11 @@ RSpec.describe Photo do
       end
 
       it 'does not call #exif_from_file or #save when exif field is already set' do
-        expect(photo_with_exif).not_to receive(:exif_from_file)
-        expect(photo_with_exif).not_to receive(:save)
+        allow(photo_with_exif).to receive(:exif_from_file)
+        allow(photo_with_exif).to receive(:save)
         photo_with_exif.exif
+        expect(photo_with_exif).not_to have_received(:exif_from_file)
+        expect(photo_with_exif).not_to have_received(:save)
       end
 
       it 'returns the existing exif data when already set' do
@@ -215,8 +219,18 @@ RSpec.describe Photo do
 
     describe '#add_derivatives' do
       let(:photo) { build_stubbed(:photo) }
-      let(:image_attacher) { double('image_attacher') }
+      let(:image_attacher) { instance_double(Shrine::Attacher) }
+
+      # We could do instance_double(ImageProcessing::MiniMagick::Processor) below,
+      # but since ImageProcessing has a complex chainable API it would then fail
+      # saying that resize_to_fill! is not defined on the double. That's because
+      # bang methods are defined via method_missing in ImageProcessing::Chainable
+      # https://github.com/janko/image_processing/blob/master/lib/image_processing/chainable.rb#L84
+
+      # rubocop:disable RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      # rubocop:enable RSpec/VerifiedDoubles
+
       let(:medium_side) { 800 }
       let(:thumbnail_side) { 300 }
       let(:intelligent_thumbnail) do
@@ -249,56 +263,75 @@ RSpec.describe Photo do
         allow(ENV).to receive(:fetch).with('PHOTONIA_MEDIUM_SIDE', nil).and_return(medium_side)
         allow(ENV).to receive(:fetch).with('PHOTONIA_THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
         allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
-        allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
+        allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
         allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
       end
 
       it 'adds intelligent derivatives when intelligent_thumbnail is present' do
         allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
+        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
 
-        expect(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
-        expect(image_attacher).to receive(:add_derivative).with(:medium_intelligent, 'processed_image')
-        expect(image_attacher).to receive(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
-        expect(image_attacher).to receive(:atomic_promote)
         photo.add_derivatives
+
+        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail).twice
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:atomic_promote)
       end
 
       it 'adds user derivatives when user_thumbnail is present' do
         allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: user_thumbnail)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
 
-        expect(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
-        expect(image_attacher).to receive(:add_derivative).with(:medium_user, 'processed_image')
-        expect(image_attacher).to receive(:add_derivative).with(:thumbnail_user, 'processed_image')
-        expect(image_attacher).to receive(:atomic_promote)
         photo.add_derivatives
+
+        expect(photo).to have_received(:custom_crop).with(user_thumbnail).twice
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_user, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_user, 'processed_image')
+        expect(image_attacher).to have_received(:atomic_promote)
       end
 
       it 'adds all four derivatives when both thumbnails are present' do
         allow(photo).to receive_messages(intelligent_thumbnail: intelligent_thumbnail, user_thumbnail: user_thumbnail)
+        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
 
-        expect(photo).to receive(:custom_crop).with(intelligent_thumbnail).twice.and_return(mock_image_processing)
-        expect(photo).to receive(:custom_crop).with(user_thumbnail).twice.and_return(mock_image_processing)
-        expect(image_attacher).to receive(:add_derivative).with(:medium_intelligent, 'processed_image')
-        expect(image_attacher).to receive(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
-        expect(image_attacher).to receive(:add_derivative).with(:medium_user, 'processed_image')
-        expect(image_attacher).to receive(:add_derivative).with(:thumbnail_user, 'processed_image')
-        expect(image_attacher).to receive(:atomic_promote)
         photo.add_derivatives
+
+        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail).twice
+        expect(photo).to have_received(:custom_crop).with(user_thumbnail).twice
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_user, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_user, 'processed_image')
+        expect(image_attacher).to have_received(:atomic_promote)
       end
 
       it 'does not add any derivatives when no thumbnails are present' do
         allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: nil)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
 
-        expect(image_attacher).not_to receive(:add_derivative)
-        expect(image_attacher).not_to receive(:atomic_promote)
         photo.add_derivatives
+
+        expect(image_attacher).not_to have_received(:add_derivative)
+        expect(image_attacher).not_to have_received(:atomic_promote)
       end
     end
 
     describe '#custom_crop' do
       let(:photo) { build_stubbed(:photo) }
-      let(:image_attacher) { double('image_attacher') }
+      let(:image_attacher) { instance_double(Shrine::Attacher) }
+      # See the comment in the #add_derivatives spec for why we don't use instance_double here
+      # rubocop:disable RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      # rubocop:enable RSpec/VerifiedDoubles
       let(:thumbnail) do
         {
           x: 100,
@@ -310,19 +343,19 @@ RSpec.describe Photo do
 
       before do
         allow(photo).to receive(:image_attacher).and_return(image_attacher)
-        allow(image_attacher).to receive(:file).and_return(double('file', download: 'image_data'))
+        allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
         allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
         allow(mock_image_processing).to receive(:crop).and_return('cropped_image')
       end
 
       it 'calls ImageProcessing::MiniMagick.source with the downloaded image' do
-        expect(ImageProcessing::MiniMagick).to receive(:source).with('image_data')
         photo.send(:custom_crop, thumbnail)
+        expect(ImageProcessing::MiniMagick).to have_received(:source).with('image_data')
       end
 
       it 'calls crop with the correct parameters' do
-        expect(mock_image_processing).to receive(:crop).with(100, 100, 400, 400)
         photo.send(:custom_crop, thumbnail)
+        expect(mock_image_processing).to have_received(:crop).with(100, 100, 400, 400)
       end
 
       it 'handles string keys from JSONB' do
@@ -332,8 +365,8 @@ RSpec.describe Photo do
           'pixel_width' => 200,
           'pixel_height' => 200
         }
-        expect(mock_image_processing).to receive(:crop).with(50, 50, 200, 200)
         photo.send(:custom_crop, string_key_thumbnail)
+        expect(mock_image_processing).to have_received(:crop).with(50, 50, 200, 200)
       end
 
       it 'returns the cropped image' do
