@@ -14,31 +14,14 @@ module Mutations
       # Validate thumbnail percentages
       validate_thumbnail_percentages!(thumbnail)
 
-      # Convert thumbnail to hash with string keys for JSONB storage
+      # Store only axis-relative percentages (top, left, width, height)
+      # Pixel coordinates (x, y, pixel_width, pixel_height) are computed on the fly in Photo#custom_crop
       thumbnail_hash = {
         'top' => thumbnail[:top],
         'left' => thumbnail[:left],
         'width' => thumbnail[:width],
         'height' => thumbnail[:height]
       }
-
-      # Calculate pixel coordinates for derivatives
-      pixel_width = photo.pixel_width
-      pixel_height = photo.pixel_height
-      x = (pixel_width * thumbnail[:left]).to_i
-      y = (pixel_height * thumbnail[:top]).to_i
-
-      # Calculate the square size in pixels
-      # The thumbnail dimensions are percentages that should produce a square
-      width_px = (pixel_width * thumbnail[:width]).to_i
-      height_px = (pixel_height * thumbnail[:height]).to_i
-      # Use the smaller dimension to ensure it's actually square
-      square_size = [width_px, height_px].min
-
-      thumbnail_hash['x'] = x
-      thumbnail_hash['y'] = y
-      thumbnail_hash['pixel_width'] = square_size
-      thumbnail_hash['pixel_height'] = square_size
 
       if photo.update(user_thumbnail: thumbnail_hash)
         # Regenerate derivatives with new user thumbnail

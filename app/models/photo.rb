@@ -327,15 +327,25 @@ class Photo < ApplicationRecord
 
   def custom_crop(thumbnail)
     original = image_attacher.file.download
-    # Handle both symbol and string keys (user_thumbnail uses strings from JSONB)
-    x = thumbnail[:x] || thumbnail['x']
-    y = thumbnail[:y] || thumbnail['y']
-    width = thumbnail[:pixel_width] || thumbnail['pixel_width']
-    height = thumbnail[:pixel_height] || thumbnail['pixel_height']
+
+    # Compute pixel coordinates from axis-relative percentages
+    # Handle both symbol and string keys (user_thumbnail uses strings from JSONB, intelligent_thumbnail uses symbols)
+    top = thumbnail[:top] || thumbnail['top']
+    left = thumbnail[:left] || thumbnail['left']
+    width_percent = thumbnail[:width] || thumbnail['width']
+    height_percent = thumbnail[:height] || thumbnail['height']
+
+    x = (pixel_width * left).to_i
+    y = (pixel_height * top).to_i
+    width_px = (pixel_width * width_percent).to_i
+    height_px = (pixel_height * height_percent).to_i
+
+    # Use the smaller dimension to ensure the crop is square
+    square_size = [width_px, height_px].min
 
     ImageProcessing::MiniMagick
       .source(original)
-      .crop(x, y, width, height)
+      .crop(x, y, square_size, square_size)
   end
 
   def set_fields
