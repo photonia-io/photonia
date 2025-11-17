@@ -33,6 +33,18 @@ class FlickrUserClaimService
     if profile_description.include?(claim.verification_code)
       claim.update!(verified_at: Time.current)
       claim.approve!
+      
+      # Send email to admins about successful automatic verification
+      admin_emails = User.admins.pluck(:email)
+      if admin_emails.any?
+        AdminMailer.with(
+          admin_emails: admin_emails,
+          user: @user,
+          flickr_user: @flickr_user,
+          claim: claim
+        ).flickr_claim_approved.deliver_later
+      end
+      
       { success: true, claim: claim }
     else
       { success: false, error: 'Verification code not found in Flickr profile description' }

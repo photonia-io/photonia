@@ -25,6 +25,8 @@ RSpec.describe FlickrUserClaimService do
     let(:claim) { create(:flickr_user_claim, :automatic, user: user, flickr_user: flickr_user) }
 
     context 'when claim is valid and code is found in profile' do
+      let(:admin) { create(:user, admin: true) }
+
       before do
         allow(FlickrAPIService).to receive(:profile_get_profile_description)
           .with(flickr_user.nsid)
@@ -39,6 +41,14 @@ RSpec.describe FlickrUserClaimService do
         expect(result[:claim].verified_at).to be_present
         expect(result[:claim].approved_at).to be_present
         expect(flickr_user.reload.claimed_by_user).to eq(user)
+      end
+
+      it 'sends email to admins' do
+        admin # ensure admin exists
+        expect do
+          service.verify_automatic_claim(claim)
+        end.to have_enqueued_job(ActionMailer::MailDeliveryJob)
+          .with('AdminMailer', 'flickr_claim_approved', 'deliver_now', any_args)
       end
     end
 
