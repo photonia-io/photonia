@@ -135,7 +135,7 @@ useTitle("Admin Settings");
 
 const newSiteName = ref(null);
 const newSiteDescription = ref(null);
-const newSiteTrackingCode = ref("");
+const newSiteTrackingCode = ref(null);
 const newContinueWithGoogleEnabled = ref(null);
 const newContinueWithFacebookEnabled = ref(null);
 const showReloadButton = ref(false);
@@ -217,9 +217,15 @@ const {
   `,
   () => ({
     variables: {
-      siteName: newSiteName.value || siteName.value,
-      siteDescription: newSiteDescription.value || siteDescription.value,
-      siteTrackingCode: newSiteTrackingCode.value,
+      siteName: newSiteName.value !== null ? newSiteName.value : siteName.value,
+      siteDescription:
+        newSiteDescription.value !== null
+          ? newSiteDescription.value
+          : siteDescription.value,
+      siteTrackingCode:
+        newSiteTrackingCode.value !== null
+          ? newSiteTrackingCode.value
+          : siteTrackingCode.value,
       continueWithGoogleEnabled:
         newContinueWithGoogleEnabled.value !== null
           ? newContinueWithGoogleEnabled.value
