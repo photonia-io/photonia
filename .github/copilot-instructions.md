@@ -250,7 +250,7 @@ docker run -d -p 3000:3000 \
 ## Performance Considerations
 
 - Image thumbnails generated asynchronously
-- Background jobs for heavy processing (Rekognition)
+- Background jobs for heavy processing (Rekognition, thumbnails)
 - Redis caching for frequently accessed data
 - Database indexing for search performance
 - CDN serving for static assets through S3
@@ -313,7 +313,7 @@ docker run -d -p 3000:3000 \
 ### Adding New UI Components
 
 1. Create Vue component in appropriate directory
-2. Add to router if it's a page
+2. Add to the Vue router if it's a page
 3. Update state management if needed
 4. Follow Vue.js composition API patterns
 5. Write component tests
