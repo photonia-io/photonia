@@ -157,7 +157,11 @@
           </div>
 
           <!-- Pending Flickr Claims Section -->
-          <div v-if="user.pendingFlickrClaims && user.pendingFlickrClaims.length > 0">
+          <div
+            v-if="
+              user.pendingFlickrClaims && user.pendingFlickrClaims.length > 0
+            "
+          >
             <hr />
             <h2 class="title is-4">Pending Flickr Claims</h2>
             <div
@@ -242,11 +246,10 @@ import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
-import { useToast } from "vue-toastification";
+import toaster from "@/mixins/toaster";
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 
 const approvingClaim = ref(null);
 const denyingClaim = ref(null);
@@ -267,7 +270,6 @@ const USER_QUERY = gql`
       pendingFlickrClaims {
         id
         flickrUser {
-          id
           nsid
           username
           realname
@@ -313,9 +315,8 @@ const DENY_FLICKR_CLAIM = gql`
   }
 `;
 
-const { mutate: approveFlickrClaimMutation } = useMutation(
-  APPROVE_FLICKR_CLAIM
-);
+const { mutate: approveFlickrClaimMutation } =
+  useMutation(APPROVE_FLICKR_CLAIM);
 const { mutate: denyFlickrClaimMutation } = useMutation(DENY_FLICKR_CLAIM);
 
 const approveClaim = async (claimId) => {
@@ -323,16 +324,17 @@ const approveClaim = async (claimId) => {
   try {
     const result = await approveFlickrClaimMutation({ claimId });
     if (result.data.approveFlickrClaim.success) {
-      toast.success("Flickr claim approved successfully");
+      toaster("Flickr claim approved successfully");
       await refetch();
     } else {
-      toast.error(
+      toaster(
         result.data.approveFlickrClaim.errors.join(", ") ||
-          "Failed to approve claim"
+          "Failed to approve claim",
+        "is-danger",
       );
     }
   } catch (err) {
-    toast.error("Error approving claim: " + err.message);
+    toaster("Error approving claim: " + err.message, "is-danger");
   } finally {
     approvingClaim.value = null;
   }
@@ -343,15 +345,16 @@ const denyClaim = async (claimId) => {
   try {
     const result = await denyFlickrClaimMutation({ claimId });
     if (result.data.denyFlickrClaim.success) {
-      toast.success("Flickr claim denied successfully");
+      toaster("Flickr claim denied successfully");
       await refetch();
     } else {
-      toast.error(
-        result.data.denyFlickrClaim.errors.join(", ") || "Failed to deny claim"
+      toaster(
+        result.data.denyFlickrClaim.errors.join(", ") || "Failed to deny claim",
+        "is-warning",
       );
     }
   } catch (err) {
-    toast.error("Error denying claim: " + err.message);
+    toaster("Error denying claim: " + err.message, "is-danger");
   } finally {
     denyingClaim.value = null;
   }
