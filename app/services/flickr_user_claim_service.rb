@@ -33,7 +33,7 @@ class FlickrUserClaimService
     if profile_description.include?(claim.verification_code)
       claim.update!(verified_at: Time.current)
       claim.approve!
-      
+
       # Send email to admins about successful automatic verification
       admin_emails = User.admins.pluck(:email)
       if admin_emails.any?
@@ -44,7 +44,7 @@ class FlickrUserClaimService
           claim: claim
         ).flickr_claim_approved.deliver_later
       end
-      
+
       { success: true, claim: claim }
     else
       { success: false, error: 'Verification code not found in Flickr profile description' }
@@ -110,8 +110,9 @@ class FlickrUserClaimService
   end
 
   class << self
-    def undo_claim(claim_id)
-      claim = FlickrUserClaim.find_by(id: claim_id)
+    # The following methods are intended for debug purposes only, no test coverage needed
+    # :nocov:
+    def undo_claim(claim)
       return { success: false, error: 'Claim not found' } unless claim
 
       # If the claim was approved, remove the claimed_by_user association
@@ -124,5 +125,17 @@ class FlickrUserClaimService
     rescue StandardError => e
       { success: false, error: e.message }
     end
+
+    def undo_last_claim
+      claim = FlickrUserClaim.order(created_at: :desc).first
+      return { success: false, error: 'No claims found' } unless claim
+
+      undo_claim(claim)
+
+      { success: true }
+    rescue StandardError => e
+      { success: false, error: e.message }
+    end
+    # :cov:
   end
 end

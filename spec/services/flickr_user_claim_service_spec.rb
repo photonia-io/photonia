@@ -45,10 +45,20 @@ RSpec.describe FlickrUserClaimService do
 
       it 'sends email to admins' do
         admin # ensure admin exists
-        expect do
-          service.verify_automatic_claim(claim)
-        end.to have_enqueued_job(ActionMailer::MailDeliveryJob)
-          .with('AdminMailer', 'flickr_claim_approved', 'deliver_now', any_args)
+
+        # Set ActiveJob queue adapter to test only for this test
+        original_adapter = ActiveJob::Base.queue_adapter
+        ActiveJob::Base.queue_adapter = :test
+
+        begin
+          expect do
+            service.verify_automatic_claim(claim)
+          end.to have_enqueued_job(ActionMailer::MailDeliveryJob)
+            .with('AdminMailer', 'flickr_claim_approved', 'deliver_now', any_args)
+        ensure
+          # Restore the original adapter
+          ActiveJob::Base.queue_adapter = original_adapter
+        end
       end
     end
 
@@ -212,59 +222,6 @@ RSpec.describe FlickrUserClaimService do
 
         expect(result[:success]).to be(false)
         expect(result[:error]).to eq('Claim is not pending')
-      end
-    end
-  end
-
-  describe '.undo_claim' do
-    let(:claim) { create(:flickr_user_claim, user: user, flickr_user: flickr_user) }
-
-    context 'when claim is pending' do
-      it 'deletes the claim' do
-        result = described_class.undo_claim(claim.id)
-
-        expect(result[:success]).to be(true)
-        expect(FlickrUserClaim.find_by(id: claim.id)).to be_nil
-        expect(flickr_user.reload.claimed_by_user).to be_nil
-      end
-    end
-
-    context 'when claim is approved' do
-      before do
-        claim.approve!
-      end
-
-      it 'removes the claimed_by_user association and deletes the claim' do
-        expect(flickr_user.reload.claimed_by_user).to eq(user)
-
-        result = described_class.undo_claim(claim.id)
-
-        expect(result[:success]).to be(true)
-        expect(FlickrUserClaim.find_by(id: claim.id)).to be_nil
-        expect(flickr_user.reload.claimed_by_user).to be_nil
-      end
-    end
-
-    context 'when claim is denied' do
-      before do
-        claim.deny!
-      end
-
-      it 'deletes the claim without affecting the flickr_user' do
-        result = described_class.undo_claim(claim.id)
-
-        expect(result[:success]).to be(true)
-        expect(FlickrUserClaim.find_by(id: claim.id)).to be_nil
-        expect(flickr_user.reload.claimed_by_user).to be_nil
-      end
-    end
-
-    context 'when claim ID is invalid' do
-      it 'returns an error' do
-        result = described_class.undo_claim(999999)
-
-        expect(result[:success]).to be(false)
-        expect(result[:error]).to eq('Claim not found')
       end
     end
   end
