@@ -6,18 +6,16 @@
 
 <h2>Details</h2>
 
-<p>
-  <ul>
-    <li><strong>Photonia User:</strong> <%= h @user.email %> (#<%= h @user.serial_number %>)</li>
-    <li><strong>Flickr Username:</strong> <%= h @flickr_user.username %></li>
-    <li><strong>Flickr NSID:</strong> <%= h @flickr_user.nsid %></li>
-    <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
-    <li><strong>Claim Type:</strong> Manual</li>
-    <% if @reason.present? %>
-    <li><strong>Reason:</strong> <%= h @reason %></li>
-    <% end %>
-  </ul>
-</p>
+<ul>
+  <li><strong>Photonia User:</strong> <%= h @user.email %> (#<%= h @user.serial_number %>)</li>
+  <li><strong>Flickr Username:</strong> <%= h @flickr_user.username %></li>
+  <li><strong>Flickr NSID:</strong> <%= h @flickr_user.nsid %></li>
+  <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
+  <li><strong>Claim Type:</strong> Manual</li>
+  <% if @reason.present? %>
+  <li><strong>Reason:</strong> <%= h @reason %></li>
+  <% end %>
+</ul>
 
 <h2>Actions</h2>
 
