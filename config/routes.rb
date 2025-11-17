@@ -26,11 +26,10 @@ Rails.application.routes.draw do
   end
 
   # Admin area routes
-  scope 'admin', controller: 'admin' do
-    get '', action: :index, as: :admin
-    get 'settings', action: :settings, as: :admin_settings
-    get 'users', action: :users, as: :admin_users
-    get 'users/:id', action: :show_user, as: :admin_show_user
+  namespace :admin do
+    root to: 'settings#index', as: ''
+    resource :settings, only: [:index]
+    resources :users, only: [:index, :show]
   end
 
   # Main resource routes
