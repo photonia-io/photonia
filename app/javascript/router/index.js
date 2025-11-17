@@ -83,12 +83,6 @@ export function createAppRouter(pinia) {
       beforeEnter: redirectIfNotSignedIn,
     },
     {
-      path: settings.users_admin_settings_path,
-      name: "users-admin-settings",
-      component: () => import("../users/admin-settings.vue"),
-      beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("admin")],
-    },
-    {
       path: settings.admin_path,
       name: "admin",
       component: () => import("../admin/index.vue"),

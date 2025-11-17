@@ -22,14 +22,13 @@ Rails.application.routes.draw do
     get 'sign_in', action: :sign_in, as: :users_sign_in
     get 'sign_out', action: :sign_out, as: :users_sign_out
     get 'settings', action: :settings, as: :users_settings
-    get 'admin-settings', action: :admin_settings, as: :users_admin_settings
   end
 
   # Admin area routes
   namespace :admin do
-    root to: 'settings#index', as: ''
-    resource :settings, only: [:index]
-    resources :users, only: [:index, :show]
+    root to: 'settings#index'
+    resources :settings, only: %i[index]
+    resources :users, only: %i[index show]
   end
 
   # Main resource routes
