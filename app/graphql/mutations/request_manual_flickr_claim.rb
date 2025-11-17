@@ -17,15 +17,11 @@ module Mutations
       flickr_user = FlickrUser.find_by(nsid: flickr_user_nsid)
       return { claim: nil, errors: ['Flickr user not found'] } unless flickr_user
 
-      if flickr_user.claimed_by_user_id.present?
-        return { claim: nil, errors: ['This Flickr user has already been claimed'] }
-      end
+      return { claim: nil, errors: ['This Flickr user has already been claimed'] } if flickr_user.claimed_by_user_id.present?
 
       # Check if user already has a pending claim for this Flickr user
-      existing_claim = FlickrUserClaim.find_by(user: current_user, flickr_user: flickr_user, status: 'pending')
-      if existing_claim
-        return { claim: existing_claim, errors: [] }
-      end
+      existing_claim = FlickrUserClaim.find_by(user: current_user, flickr_user: flickr_user, status: 'pending', claim_type: 'manual')
+      return { claim: existing_claim, errors: [] } if existing_claim
 
       authorize(FlickrUserClaim.new(user: current_user), :create?)
 
