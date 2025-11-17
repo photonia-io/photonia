@@ -88,6 +88,30 @@ export function createAppRouter(pinia) {
       beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("admin")],
     },
     {
+      path: settings.admin_path,
+      name: "admin",
+      component: () => import("../admin/index.vue"),
+      beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("admin")],
+      redirect: { name: "admin-settings" },
+      children: [
+        {
+          path: "settings",
+          name: "admin-settings",
+          component: () => import("../admin/settings.vue"),
+        },
+        {
+          path: "users",
+          name: "admin-users",
+          component: () => import("../admin/users.vue"),
+        },
+        {
+          path: "users/:id",
+          name: "admin-show-user",
+          component: () => import("../admin/show-user.vue"),
+        },
+      ],
+    },
+    {
       path: settings.photos_path + "/upload",
       name: "photos-upload",
       component: () => import("../photos/upload.vue"),

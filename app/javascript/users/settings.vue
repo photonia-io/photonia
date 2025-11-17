@@ -10,11 +10,11 @@
         <div class="level-right">
           <div class="level-item">
             <router-link
-              :to="{ name: 'users-admin-settings' }"
+              :to="{ name: 'admin' }"
               v-if="userStore.admin"
               class="button is-small is-link"
             >
-              Admin Settings
+              Admin
             </router-link>
           </div>
         </div>

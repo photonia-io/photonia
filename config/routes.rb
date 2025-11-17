@@ -29,6 +29,14 @@ Rails.application.routes.draw do
     get 'admin-settings', action: :admin_settings, as: :users_admin_settings
   end
 
+  # Admin area routes
+  scope 'admin', controller: 'admin' do
+    get '', action: :index, as: :admin
+    get 'settings', action: :settings, as: :admin_settings
+    get 'users', action: :users, as: :admin_users
+    get 'users/:id', action: :show_user, as: :admin_show_user
+  end
+
   # Main resource routes
   resources :photos, except: %i[new] do
     collection do

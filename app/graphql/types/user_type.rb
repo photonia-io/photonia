@@ -16,6 +16,7 @@ module Types
     field :first_name, String, 'First name', null: true
     field :id, String, 'User ID', null: false
     field :last_name, String, 'Last name', null: true
+    field :signup_provider, String, 'Signup provider (local, google, facebook)', null: false
     field :timezone, Types::TimezoneType, 'Timezone', null: false
     field :uploader, Boolean, 'Uploader', null: false
 
