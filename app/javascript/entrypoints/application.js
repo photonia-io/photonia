@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const apolloClient = new ApolloClient({
     link: authLink.concat(afterwareLink.concat(httpLink)),
     cache,
-    connectToDevTools: true,
+    devtools: { enabled: import.meta.env.MODE !== "production" },
   });
 
   // if a token was found in local storage, fetch the user synchronously before router initialization
