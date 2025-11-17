@@ -16,12 +16,7 @@
             <div class="field-body">
               <div class="field">
                 <div class="control">
-                  <input
-                    class="input"
-                    type="text"
-                    :value="user.id"
-                    readonly
-                  />
+                  <input class="input" type="text" :value="user.id" readonly />
                 </div>
               </div>
             </div>
@@ -106,11 +101,14 @@
             <div class="field-body">
               <div class="field">
                 <div class="control">
-                  <span class="tag is-medium" :class="{
-                    'is-info': user.signupProvider === 'google',
-                    'is-link': user.signupProvider === 'facebook',
-                    'is-light': user.signupProvider === 'local'
-                  }">
+                  <span
+                    class="tag is-medium"
+                    :class="{
+                      'is-info': user.signupProvider === 'google',
+                      'is-link': user.signupProvider === 'facebook',
+                      'is-light': user.signupProvider === 'local',
+                    }"
+                  >
                     <span v-if="user.signupProvider === 'google'">
                       <i class="fab fa-google mr-2"></i>
                     </span>
@@ -131,7 +129,9 @@
             <div class="field-body">
               <div class="field">
                 <div class="control">
-                  <span v-if="user.admin" class="tag is-success is-medium">Yes</span>
+                  <span v-if="user.admin" class="tag is-success is-medium"
+                    >Yes</span
+                  >
                   <span v-else class="tag is-medium">No</span>
                 </div>
               </div>
@@ -164,10 +164,7 @@
             <div class="field-body">
               <div class="field">
                 <div class="control">
-                  <button
-                    class="button"
-                    @click="goBack"
-                  >
+                  <button class="button" @click="goBack">
                     <span>Back to Users</span>
                   </button>
                 </div>

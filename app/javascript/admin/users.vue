@@ -27,14 +27,17 @@
                 style="cursor: pointer"
               >
                 <td>{{ user.id }}</td>
-                <td>{{ user.displayName || '-' }}</td>
+                <td>{{ user.displayName || "-" }}</td>
                 <td>{{ user.email }}</td>
                 <td>
-                  <span class="tag" :class="{
-                    'is-info': user.signupProvider === 'google',
-                    'is-link': user.signupProvider === 'facebook',
-                    'is-light': user.signupProvider === 'local'
-                  }">
+                  <span
+                    class="tag"
+                    :class="{
+                      'is-info': user.signupProvider === 'google',
+                      'is-link': user.signupProvider === 'facebook',
+                      'is-light': user.signupProvider === 'local',
+                    }"
+                  >
                     {{ user.signupProvider }}
                   </span>
                 </td>

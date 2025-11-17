@@ -1,125 +1,124 @@
 <template>
   <div>
     <div class="card">
-        <div class="card-content">
-          <form @submit.prevent="submit">
-            <div class="field is-horizontal">
-              <div class="field-label is-normal">
-                <label class="label">Site Name</label>
+      <div class="card-content">
+        <form @submit.prevent="submit">
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label">Site Name</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <input
+                    class="input"
+                    type="text"
+                    placeholder="Site Name"
+                    v-model="siteName"
+                  />
+                </div>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control">
+            </div>
+          </div>
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label">Site Description</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <input
+                    class="input"
+                    type="text"
+                    placeholder="Site Description"
+                    v-model="siteDescription"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label">Site Tracking Code</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <textarea
+                    class="textarea"
+                    placeholder="Site Tracking Code"
+                    v-model="siteTrackingCode"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h3 class="title is-5 mt-5 mb-0">Social Logins</h3>
+          <hr class="mt-2 mb-4" />
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Continue with Google</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <label class="checkbox">
                     <input
-                      class="input"
-                      type="text"
-                      placeholder="Site Name"
-                      v-model="siteName"
+                      type="checkbox"
+                      v-model="continueWithGoogleEnabled"
                     />
-                  </div>
+                    Enabled
+                  </label>
                 </div>
               </div>
             </div>
-            <div class="field is-horizontal">
-              <div class="field-label is-normal">
-                <label class="label">Site Description</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control">
+          </div>
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Continue with Facebook</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <label class="checkbox">
                     <input
-                      class="input"
-                      type="text"
-                      placeholder="Site Description"
-                      v-model="siteDescription"
+                      type="checkbox"
+                      v-model="continueWithFacebookEnabled"
                     />
-                  </div>
+                    Enabled
+                  </label>
                 </div>
               </div>
             </div>
-            <div class="field is-horizontal">
-              <div class="field-label is-normal">
-                <label class="label">Site Tracking Code</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
+          </div>
+          <hr />
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <!-- Left empty for spacing -->
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="field is-grouped">
                   <div class="control">
-                    <textarea
-                      class="textarea"
-                      placeholder="Site Tracking Code"
-                      v-model="siteTrackingCode"
-                    ></textarea>
+                    <button type="submit" class="button is-primary">
+                      <span>Save</span>
+                    </button>
                   </div>
-                </div>
-              </div>
-            </div>
-            <h3 class="title is-5 mt-5 mb-0">Social Logins</h3>
-            <hr class="mt-2 mb-4" />
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Continue with Google</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control">
-                    <label class="checkbox">
-                      <input
-                        type="checkbox"
-                        v-model="continueWithGoogleEnabled"
-                      />
-                      Enabled
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Continue with Facebook</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control">
-                    <label class="checkbox">
-                      <input
-                        type="checkbox"
-                        v-model="continueWithFacebookEnabled"
-                      />
-                      Enabled
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <hr />
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <!-- Left empty for spacing -->
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="field is-grouped">
-                    <div class="control">
-                      <button type="submit" class="button is-primary">
-                        <span>Save</span>
-                      </button>
-                    </div>
 
-                    <div class="control">
-                      <button
-                        class="button is-warning"
-                        v-if="showReloadButton"
-                        @click.prevent="reloadApplication()"
-                      >
-                        <span>Reload Application</span>
-                      </button>
-                    </div>
+                  <div class="control">
+                    <button
+                      class="button is-warning"
+                      v-if="showReloadButton"
+                      @click.prevent="reloadApplication()"
+                    >
+                      <span>Reload Application</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>

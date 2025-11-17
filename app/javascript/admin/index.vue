@@ -8,7 +8,13 @@
           <li :class="{ 'is-active': $route.name === 'admin-settings' }">
             <router-link :to="{ name: 'admin-settings' }">Settings</router-link>
           </li>
-          <li :class="{ 'is-active': $route.name === 'admin-users' || $route.name === 'admin-show-user' }">
+          <li
+            :class="{
+              'is-active':
+                $route.name === 'admin-users' ||
+                $route.name === 'admin-show-user',
+            }"
+          >
             <router-link :to="{ name: 'admin-users' }">Users</router-link>
           </li>
         </ul>
