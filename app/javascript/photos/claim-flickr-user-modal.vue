@@ -38,8 +38,11 @@
               </div>
 
               <div v-else-if="claim && !claim.verificationCode">
-                <div class="notification is-warning">
-                  <p>Loading claim details...</p>
+                <div class="notification is-danger">
+                  <p>
+                    Unexpected claim state: verification code unavailable.
+                    Please try again or contact support.
+                  </p>
                 </div>
               </div>
 
@@ -79,7 +82,7 @@
                       </a>
                     </li>
                     <li>
-                      Add the verification code above to the first field ("Wite
+                      Add the verification code above to the first field ("Write
                       a little about yourself") on that page
                     </li>
                     <li>Save your Flickr profile changes</li>
