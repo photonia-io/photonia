@@ -12,6 +12,7 @@ export function createAppRouter(pinia) {
 
   const redirectIfNotSignedIn = (to, from) => {
     if (!userStore.signedIn) {
+      toaster("You need to sign in to access that page.", "is-warning");
       return { name: "users-sign-in" };
     }
   };
