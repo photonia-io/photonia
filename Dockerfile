@@ -44,7 +44,7 @@ RUN bundle install && \
 
 # Copy Yarn Berry config and local release so "yarn" works in the build stage
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn/ ./.yarn/
+# COPY .yarn/ ./.yarn/
 # Install dependencies immutably (will fail if yarn.lock needs changes)
 RUN yarn --version && yarn install --immutable && \
     yarn cache clean

@@ -1,5 +1,12 @@
 <template>
   <div>
+    <ThumbnailEditor
+      v-if="thumbnailEditMode"
+      :photo="photo"
+      :edit-mode="thumbnailEditMode"
+      @save="saveThumbnail"
+      @cancel="cancelThumbnailEdit"
+    />
     <DisplayHero
       :photo="photo"
       :loading="loading"
@@ -52,6 +59,7 @@
                 v-if="!loading && canEditPhoto"
                 :photo="photo"
                 @delete-photo="deletePhoto"
+                @edit-thumbnail="startThumbnailEdit"
               />
 
               <PhotoComments :photo="photo" :loading="loading" @refresh="refreshPhoto" />
@@ -131,7 +139,13 @@
                       </div>
                     </div>
                   </div>
-                  <PhotoTagInput v-if="!loading" :photo="photo" />
+                  <PhotoTagInput
+                    v-if="!loading"
+                    :user-tags="photo.userTags || []"
+                    :machine-tags="photo.machineTags || []"
+                    :is-adding-tag="isAddingTag"
+                    @add-tag="handleAddTag"
+                  />
                 </div>
                 <div v-else>
                   <div class="tags" v-if="photo.userTags?.length > 0">
@@ -316,6 +330,7 @@ import Tag from "@/tags/tag.vue";
 import RemoveTag from "@/tags/remove-tag.vue";
 import Empty from "@/empty.vue";
 import PhotoTagInput from "./photo-tag-input.vue";
+import ThumbnailEditor from "./thumbnail-editor.vue";
 
 // route & router
 const route = useRoute();
@@ -341,6 +356,7 @@ const { result, loading, refetch } = useQuery(
   { id: id },
 );
 const labelHighlights = ref({});
+const isAddingTag = ref(false);
 
 const apolloClient = inject("apolloClient");
 
@@ -382,6 +398,46 @@ const {
   }
 `);
 
+const {
+  mutate: updatePhotoThumbnail,
+  onDone: onUpdateThumbnailDone,
+  onError: onUpdateThumbnailError,
+} = useMutation(gql`
+  mutation ($id: String!, $thumbnail: UserThumbnailInput!) {
+    updatePhotoThumbnail(id: $id, thumbnail: $thumbnail) {
+      id
+      userThumbnail {
+        top
+        left
+        width
+        height
+      }
+    }
+  }
+`);
+
+const {
+  mutate: addTagToPhoto,
+  onDone: onAddTagDone,
+  onError: onAddTagError,
+} = useMutation(gql`
+  mutation AddTagToPhoto($id: String!, $tagName: String!) {
+    addTagToPhoto(id: $id, tagName: $tagName) {
+      photo {
+        id
+        userTags {
+          id
+          name
+        }
+      }
+      tag {
+        id
+        name
+      }
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -413,6 +469,67 @@ onDeletePhotoDone(({ data }) => {
 onDeletePhotoError((error) => {
   // todo console.log(error)
 });
+
+onUpdateThumbnailDone(({ data }) => {
+  toaster(
+    "The thumbnail is being updated in the background. It will soon be available.",
+    "is-success",
+  );
+  thumbnailEditMode.value = false;
+  applicationStore.enableNavigationShortcuts();
+});
+
+onUpdateThumbnailError((error) => {
+  toaster(
+    "An error occurred while updating the thumbnail: " + error.message,
+    "is-danger",
+  );
+});
+
+const thumbnailEditMode = ref(false);
+
+const startThumbnailEdit = () => {
+  thumbnailEditMode.value = true;
+  applicationStore.disableNavigationShortcuts();
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+const cancelThumbnailEdit = () => {
+  thumbnailEditMode.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+const saveThumbnail = (thumbnailData) => {
+  updatePhotoThumbnail({
+    id: photo.value.id,
+    thumbnail: thumbnailData,
+  });
+};
+
+onAddTagDone(({ data }) => {
+  isAddingTag.value = false;
+  toaster(
+    `Tag "${data.addTagToPhoto.tag.name}" added successfully`,
+    "is-success",
+  );
+});
+
+onAddTagError((error) => {
+  isAddingTag.value = false;
+  toaster(
+    "An error occurred while adding the tag: " + error.message,
+    "is-danger",
+  );
+});
+
+const handleAddTag = async (tagName) => {
+  isAddingTag.value = true;
+  await addTagToPhoto({
+    id: photo.value.id,
+    tagName: tagName,
+  });
+};
 
 const highlightLabel = (label) => {
   labelHighlights.value[label.id] = true;

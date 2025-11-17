@@ -406,7 +406,8 @@ CREATE TABLE public.photos (
     impressions_count integer DEFAULT 0 NOT NULL,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
     taken_at_from_exif boolean DEFAULT false,
-    description_html text
+    description_html text,
+    user_thumbnail jsonb
 );
 
 
@@ -1488,6 +1489,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251108131127'),
 ('20251107000001'),
 ('20251106121510'),
 ('20251105154000'),

@@ -22,8 +22,17 @@
 #  username              :string
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
+#  claimed_by_user_id    :bigint
 #  timezone_id           :string
 #  claimed_by_user_id    :bigint
+#
+# Indexes
+#
+#  index_flickr_users_on_claimed_by_user_id  (claimed_by_user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (claimed_by_user_id => users.id)
 #
 # Indexes
 #

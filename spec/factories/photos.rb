@@ -26,6 +26,7 @@
 #  timezone                 :string           default("UTC"), not null
 #  title                    :string
 #  tsv                      :tsvector
+#  user_thumbnail           :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  user_id                  :bigint
@@ -49,6 +50,13 @@ FactoryBot.define do
 
     trait :with_taken_at do
       taken_at { Faker::Time.between(from: 1.year.ago, to: Time.zone.now) }
+    end
+
+    trait :with_image do
+      after(:build) do |photo|
+        file_path = Rails.root.join('spec/support/images/zell-am-see-with-exif.jpg')
+        photo.image = File.open(file_path)
+      end
     end
   end
 end
