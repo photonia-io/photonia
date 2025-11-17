@@ -2,9 +2,11 @@
 
 module Queries
   class FlickrUserClaimQuery < BaseQuery
+    description 'Get a specific Flickr user claim by ID. Only accessible to the claim owner or admins.'
+    
     type Types::FlickrUserClaimType, null: true
 
-    argument :id, ID, required: true
+    argument :id, ID, required: true, description: 'The ID of the Flickr user claim to retrieve'
 
     def resolve(id:)
       current_user = context[:current_user]

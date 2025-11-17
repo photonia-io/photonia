@@ -2,13 +2,13 @@
 
 module Mutations
   class ApproveFlickrClaim < BaseMutation
-    description 'Approve a Flickr user claim (admin only)'
+    description 'Approve a pending Flickr user claim and link the Flickr account to the user (admin only)'
 
-    argument :claim_id, ID, required: true
+    argument :claim_id, ID, required: true, description: 'The ID of the Flickr user claim to approve'
 
-    field :claim, Types::FlickrUserClaimType, null: true
-    field :success, Boolean, null: false
-    field :errors, [String], null: false
+    field :claim, Types::FlickrUserClaimType, null: true, description: 'The approved Flickr user claim'
+    field :success, Boolean, null: false, description: 'Whether the claim was successfully approved'
+    field :errors, [String], null: false, description: 'List of error messages if the operation failed'
 
     def resolve(claim_id:)
       current_user = context[:current_user]

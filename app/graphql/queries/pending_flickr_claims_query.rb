@@ -2,6 +2,8 @@
 
 module Queries
   class PendingFlickrClaimsQuery < BaseQuery
+    description 'Get all pending Flickr user claims that require admin review, ordered by creation date (most recent first). Admin only.'
+    
     type [Types::FlickrUserClaimType], null: false
 
     def resolve

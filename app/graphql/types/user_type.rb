@@ -19,9 +19,17 @@ module Types
     field :signup_provider, String, 'Signup provider (local, google, facebook)', null: false
     field :timezone, Types::TimezoneType, 'Timezone', null: false
     field :uploader, Boolean, 'Uploader', null: false
+    field :pending_flickr_claims, [Types::FlickrUserClaimType], 'Pending Flickr user claims for this user', null: false
 
     def id
       @object.slug
+    end
+
+    def pending_flickr_claims
+      # Only admins can view pending claims for other users
+      return [] unless context[:current_user]&.admin?
+      
+      FlickrUserClaim.where(user_id: @object.id, status: 'pending').order(created_at: :desc)
     end
 
     def albums

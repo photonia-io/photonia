@@ -2,12 +2,12 @@
 
 module Mutations
   class RequestAutomaticFlickrClaim < BaseMutation
-    description 'Request an automatic claim for a Flickr user'
+    description 'Request an automatic claim for a Flickr user. Returns a verification code that must be added to the Flickr profile description for verification.'
 
-    argument :flickr_user_nsid, String, required: true
+    argument :flickr_user_nsid, String, required: true, description: 'The NSID of the Flickr user to claim'
 
-    field :claim, Types::FlickrUserClaimType, null: true
-    field :errors, [String], null: false
+    field :claim, Types::FlickrUserClaimType, null: true, description: 'The created Flickr user claim with verification code'
+    field :errors, [String], null: false, description: 'List of error messages if the operation failed'
 
     def resolve(flickr_user_nsid:)
       current_user = context[:current_user]

@@ -2,13 +2,13 @@
 
 module Mutations
   class DenyFlickrClaim < BaseMutation
-    description 'Deny a Flickr user claim (admin only)'
+    description 'Deny a pending Flickr user claim and reject the request to link the Flickr account (admin only)'
 
-    argument :claim_id, ID, required: true
+    argument :claim_id, ID, required: true, description: 'The ID of the Flickr user claim to deny'
 
-    field :claim, Types::FlickrUserClaimType, null: true
-    field :success, Boolean, null: false
-    field :errors, [String], null: false
+    field :claim, Types::FlickrUserClaimType, null: true, description: 'The denied Flickr user claim'
+    field :success, Boolean, null: false, description: 'Whether the claim was successfully denied'
+    field :errors, [String], null: false, description: 'List of error messages if the operation failed'
 
     def resolve(claim_id:)
       current_user = context[:current_user]

@@ -98,47 +98,6 @@ class FlickrUserClaimService
   end
 
   class << self
-    def approve_claim_by_token(claim_id, token)
-      claim = FlickrUserClaim.find_by(id: claim_id)
-      return { success: false, error: 'Claim not found' } unless claim
-
-      # Verify token using Rails message verifier
-      verifier = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base)
-      begin
-        data = verifier.verify(token)
-        return { success: false, error: 'Invalid token' } unless data['claim_id'] == claim.id
-      rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError
-        return { success: false, error: 'Invalid token' }
-      end
-
-      service = new(claim.user, claim.flickr_user)
-      service.approve_claim(claim)
-    end
-
-    def deny_claim_by_token(claim_id, token)
-      claim = FlickrUserClaim.find_by(id: claim_id)
-      return { success: false, error: 'Claim not found' } unless claim
-
-      # Verify token using Rails message verifier
-      verifier = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base)
-      begin
-        data = verifier.verify(token)
-        return { success: false, error: 'Invalid token' } unless data['claim_id'] == claim.id
-      rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError
-        return { success: false, error: 'Invalid token' }
-      end
-
-      service = new(claim.user, claim.flickr_user)
-      service.deny_claim(claim)
-    end
-
-    def generate_token(claim)
-      # Use Rails message verifier for secure token generation
-      verifier = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base)
-      data = { claim_id: claim.id, created_at: claim.created_at.to_i }
-      verifier.generate(data, expires_in: 30.days)
-    end
-
     def undo_claim(claim_id)
       claim = FlickrUserClaim.find_by(id: claim_id)
       return { success: false, error: 'Claim not found' } unless claim

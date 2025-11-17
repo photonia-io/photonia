@@ -2,13 +2,13 @@
 
 module Mutations
   class VerifyAutomaticFlickrClaim < BaseMutation
-    description 'Verify an automatic Flickr user claim'
+    description 'Verify an automatic Flickr user claim by checking if the verification code is present in the Flickr profile description. If verified, the claim is approved automatically.'
 
-    argument :claim_id, ID, required: true
+    argument :claim_id, ID, required: true, description: 'The ID of the Flickr user claim to verify'
 
-    field :claim, Types::FlickrUserClaimType, null: true
-    field :success, Boolean, null: false
-    field :errors, [String], null: false
+    field :claim, Types::FlickrUserClaimType, null: true, description: 'The verified Flickr user claim (with updated status)'
+    field :success, Boolean, null: false, description: 'Whether the verification was successful'
+    field :errors, [String], null: false, description: 'List of error messages if the verification failed'
 
     def resolve(claim_id:)
       current_user = context[:current_user]

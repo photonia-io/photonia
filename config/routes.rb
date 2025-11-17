@@ -17,10 +17,6 @@ Rails.application.routes.draw do
   post 'facebook_data_deletion/callback', to: 'facebook_data_deletion#callback'
   get 'facebook_data_deletion/status', to: 'facebook_data_deletion#status'
 
-  # Flickr claim approval/denial via email
-  get 'flickr_claims/approve', to: 'flickr_claims#approve', as: :flickr_claim_approve
-  get 'flickr_claims/deny', to: 'flickr_claims#deny', as: :flickr_claim_deny
-
   # User-related routes
   scope 'users', controller: 'users' do
     get 'sign_in', action: :sign_in, as: :users_sign_in
