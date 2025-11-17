@@ -87,8 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // if a token was found in local storage, fetch the user synchronously before router initialization
 
   if (tokenStore.authorization) {
-    // we will suppose that the token is valid, later we will check for an error
-    userStore.signedIn = true;
     provideApolloClient(apolloClient);
 
     try {
@@ -105,6 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         `,
       });
 
+      userStore.signedIn = true;
       userStore.email = data.currentUser.email;
       userStore.admin = data.currentUser.admin;
       userStore.uploader = data.currentUser.uploader;
