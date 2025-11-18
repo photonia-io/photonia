@@ -21,7 +21,8 @@ class GraphqlController < ApplicationController
       sign_out: method(:sign_out),
       authorize: method(:authorize),
       pagy: method(:pagy),
-      impressionist: method(:impressionist)
+      impressionist: method(:impressionist),
+      visitor_token: params[:token] # Support visitor token for album sharing
     }
     result = PhotoniaSchema.execute(query, variables:, context:, operation_name:)
     render json: result

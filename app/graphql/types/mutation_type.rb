@@ -7,7 +7,9 @@ module Types
 
     field :add_photos_to_album, mutation: Mutations::AddPhotosToAlbum, description: 'Add photos to album'
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
+    field :create_album_share, mutation: Mutations::CreateAlbumShare, description: 'Share an album with a user by email'
     field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
+    field :delete_album_share, mutation: Mutations::DeleteAlbumShare, description: 'Revoke album access by deleting a share'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'

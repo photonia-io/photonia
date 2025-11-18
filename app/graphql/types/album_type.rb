@@ -36,6 +36,8 @@ module Types
       description 'Photos in the album'
     end
 
+    field :album_shares, [Types::AlbumShareType], 'Shares/invites for this album (owner only)', null: true
+
     def all_photos
       begin
         context[:authorize].call(@object, :update?)
@@ -110,6 +112,17 @@ module Types
 
     def sorting_type
       @object.graphql_sorting_type
+    end
+
+    def album_shares
+      # Only album owners and admins can see who the album is shared with
+      begin
+        context[:authorize].call(@object, :update?)
+      rescue Pundit::NotAuthorizedError
+        return nil
+      end
+
+      @object.album_shares.order(created_at: :desc)
     end
 
     private

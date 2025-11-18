@@ -39,7 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tokenStore = useTokenStore(pinia);
 
-  const httpLink = createHttpLink({ uri: settings.graphql_path });
+  // Get visitor token from URL if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const visitorToken = urlParams.get("token");
+
+  // Build GraphQL URI with visitor token if present
+  let graphqlUri = settings.graphql_path;
+  if (visitorToken) {
+    graphqlUri = `${graphqlUri}?token=${encodeURIComponent(visitorToken)}`;
+  }
+
+  const httpLink = createHttpLink({ uri: graphqlUri });
   const authLink = setContext((_, { headers }) => {
     return {
       headers: {

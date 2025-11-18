@@ -70,6 +70,13 @@ class GraphqlQueryCollection
           sortingOrder
           canEdit
           privacy
+          albumShares {
+            id
+            email
+            isRegisteredUser
+            visitorUrl
+            createdAt
+          }
         }
       }
     GQL

@@ -57,6 +57,7 @@
         @delete-album="deleteAlbum"
         @update-sorting="updateAlbumSorting"
         @set-album-privacy="handleSetAlbumPrivacy"
+        @refetch-album="refetchAlbum"
       />
 
       <SelectionOptions
@@ -617,6 +618,18 @@ onSetAlbumCoverPhotoError((error) => {
     "is-danger",
   );
 });
+
+/* Refetch album data (used when shares are added/removed) */
+const refetchAlbum = () => {
+  const albumCacheId = apolloClient.cache.identify({
+    __typename: "Album",
+    id: id.value,
+  });
+
+  // Evict the albumShares field to force a refetch
+  apolloClient.cache.evict({ id: albumCacheId, fieldName: "albumShares" });
+  apolloClient.cache.gc();
+};
 </script>
 
 <style></style>

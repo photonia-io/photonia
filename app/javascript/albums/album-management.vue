@@ -51,12 +51,23 @@
       </button>
 
       <div class="buttons mt-5">
+        <button class="button is-info" @click="showShareDialog">
+          Share Album
+        </button>
         <button class="button is-danger" @click="showConfirmationModal">
           Delete Album
         </button>
       </div>
     </div>
   </div>
+  <AlbumShareDialog
+    :is-active="shareDialogActive"
+    :album-id="props.album.id"
+    :shares="props.album.albumShares || []"
+    @close="closeShareDialog"
+    @share-created="handleShareCreated"
+    @share-deleted="handleShareDeleted"
+  />
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
@@ -89,6 +100,7 @@
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useApplicationStore } from "../stores/application";
+import AlbumShareDialog from "./album-share-dialog.vue";
 
 // router
 const router = useRouter();
@@ -100,10 +112,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deleteAlbum", "updateSorting", "setAlbumPrivacy"]);
+const emit = defineEmits(["deleteAlbum", "updateSorting", "setAlbumPrivacy", "refetchAlbum"]);
 const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
+const shareDialogActive = ref(false);
 
 const showConfirmationModal = () => {
   modalActive.value = true;
@@ -166,6 +179,26 @@ const manageSorting = () => {
 const performDelete = () => {
   emit("deleteAlbum", { id: props.album.id });
   closeConfirmationModal();
+};
+
+const showShareDialog = () => {
+  shareDialogActive.value = true;
+  applicationStore.disableNavigationShortcuts();
+};
+
+const closeShareDialog = () => {
+  shareDialogActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+const handleShareCreated = () => {
+  // Refetch album data to get updated shares list
+  emit("refetchAlbum");
+};
+
+const handleShareDeleted = () => {
+  // Refetch album data to get updated shares list
+  emit("refetchAlbum");
 };
 </script>
 
