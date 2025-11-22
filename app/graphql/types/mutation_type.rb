@@ -21,6 +21,13 @@ module Types
     field :continue_with_facebook, mutation: Mutations::ContinueWithFacebook, description: 'Sign up or sign in with Facebook'
     field :continue_with_google, mutation: Mutations::ContinueWithGoogle, description: 'Sign up or sign in with Google'
 
+    # Flickr claim mutations
+    field :request_automatic_flickr_claim, mutation: Mutations::RequestAutomaticFlickrClaim, description: 'Request an automatic claim for a Flickr user'
+    field :verify_automatic_flickr_claim, mutation: Mutations::VerifyAutomaticFlickrClaim, description: 'Verify an automatic Flickr user claim'
+    field :request_manual_flickr_claim, mutation: Mutations::RequestManualFlickrClaim, description: 'Request a manual claim for a Flickr user'
+    field :approve_flickr_claim, mutation: Mutations::ApproveFlickrClaim, description: 'Approve a Flickr user claim (admin only)'
+    field :deny_flickr_claim, mutation: Mutations::DenyFlickrClaim, description: 'Deny a Flickr user claim (admin only)'
+
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
       argument :photo_ids, [String], 'Photo Ids', required: true
@@ -58,14 +65,7 @@ module Types
       argument :timezone, String, 'User timezone', required: true
     end
 
-    field :update_admin_settings, AdminSettingsType, null: false do
-      description 'Update admin settings'
-      argument :continue_with_facebook_enabled, Boolean, 'Continue with Facebook active', required: true
-      argument :continue_with_google_enabled, Boolean, 'Continue with Google active', required: true
-      argument :site_description, String, 'Site description', required: true
-      argument :site_name, String, 'Site name', required: true
-      argument :site_tracking_code, String, 'Site tracking code', required: true
-    end
+    field :update_admin_settings, mutation: Mutations::UpdateAdminSettings, description: 'Update admin settings'
 
     def create_album_with_photos(title:, photo_ids:)
       album = Album.new(title: title)
@@ -131,16 +131,6 @@ module Types
       user.update(display_name: display_name)
       user.update(timezone: timezone)
       user
-    end
-
-    def update_admin_settings(site_name:, site_description:, site_tracking_code:, continue_with_google_enabled:, continue_with_facebook_enabled:)
-      context[:authorize].call(Setting, :update?)
-      Setting.site_name = site_name
-      Setting.site_description = site_description
-      Setting.site_tracking_code = site_tracking_code
-      Setting.continue_with_google_enabled = continue_with_google_enabled
-      Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
-      Setting
     end
   end
 end
