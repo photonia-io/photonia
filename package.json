@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@apollo/client": "^3.14.0",
-    "@sentry/vue": "^10.27.0",
+    "@sentry/vue": "^10.29.0",
     "@vue/apollo-composable": "^4.2.2",
     "@vue/apollo-option": "^4.2.2",
     "animate.css": "^4.1.1",
@@ -36,7 +36,7 @@
     "prettier": "3.6.2",
     "vite": "^7.1.12",
     "vite-plugin-ruby": "^5.1.1",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.15"
   },
   "scripts": {
     "test:run": "vitest run --no-color"
