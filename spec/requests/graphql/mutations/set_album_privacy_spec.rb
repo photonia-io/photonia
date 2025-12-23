@@ -10,15 +10,21 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
   let(:album) { create(:album) }
   let(:new_privacy) { 'private' }
 
+  let(:update_photos) { false }
+
   let(:query) do
     <<~GQL
       mutation {
         setAlbumPrivacy(
           id: "#{album.slug}",
-          privacy: "#{new_privacy}"
+          privacy: "#{new_privacy}",
+          updatePhotos: #{update_photos}
         ) {
-          id
-          privacy
+          album {
+            id
+            privacy
+          }
+          photosUpdatedCount
         }
       }
     GQL
@@ -61,10 +67,11 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
       json = response.parsed_body
       data = json['data']['setAlbumPrivacy']
 
-      expect(data).to include(
+      expect(data['album']).to include(
         'id' => album.slug,
         'privacy' => 'private'
       )
+      expect(data['photosUpdatedCount']).to eq(0)
       expect(album.reload.privacy).to eq('private')
     end
 
@@ -76,7 +83,7 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
         json = response.parsed_body
         data = json['data']['setAlbumPrivacy']
 
-        expect(data).to include(
+        expect(data['album']).to include(
           'id' => album.slug,
           # GraphQL returns the Rails enum key
           'privacy' => 'friends_and_family'
@@ -110,11 +117,89 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
         json = response.parsed_body
         data = json['data']['setAlbumPrivacy']
 
-        expect(data).to include(
+        expect(data['album']).to include(
           'id' => album.slug,
           'privacy' => 'public'
         )
         expect(album.reload.privacy).to eq('public')
+      end
+    end
+
+    context 'when changing album from public to private with updatePhotos flag' do
+      let(:update_photos) { true }
+      let(:new_privacy) { 'private' }
+      let!(:photo1) { create(:photo, user: album.user, privacy: 'public') }
+      let!(:photo2) { create(:photo, user: album.user, privacy: 'public') }
+      let!(:photo3) { create(:photo, user: album.user, privacy: 'private') }
+
+      before do
+        album.update(privacy: 'public')
+        album.photos << photo1
+        album.photos << photo2
+        album.photos << photo3
+      end
+
+      it 'sets all contained photos to private' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['album']['privacy']).to eq('private')
+        expect(data['photosUpdatedCount']).to eq(3)
+
+        expect(photo1.reload.privacy).to eq('private')
+        expect(photo2.reload.privacy).to eq('private')
+        expect(photo3.reload.privacy).to eq('private')
+      end
+    end
+
+    context 'when changing album from public to private without updatePhotos flag' do
+      let(:update_photos) { false }
+      let(:new_privacy) { 'private' }
+      let!(:photo1) { create(:photo, user: album.user, privacy: 'public') }
+      let!(:photo2) { create(:photo, user: album.user, privacy: 'public') }
+
+      before do
+        album.update(privacy: 'public')
+        album.photos << photo1
+        album.photos << photo2
+      end
+
+      it 'does not update photo privacy' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['album']['privacy']).to eq('private')
+        expect(data['photosUpdatedCount']).to eq(0)
+
+        expect(photo1.reload.privacy).to eq('public')
+        expect(photo2.reload.privacy).to eq('public')
+      end
+    end
+
+    context 'when changing album from private to public with updatePhotos flag' do
+      let(:update_photos) { true }
+      let(:new_privacy) { 'public' }
+      let!(:photo1) { create(:photo, user: album.user, privacy: 'private') }
+      let!(:photo2) { create(:photo, user: album.user, privacy: 'private') }
+
+      before do
+        album.update(privacy: 'private')
+        album.photos << photo1
+        album.photos << photo2
+      end
+
+      it 'does not update photo privacy (photos remain private)' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['album']['privacy']).to eq('public')
+        expect(data['photosUpdatedCount']).to eq(0)
+
+        expect(photo1.reload.privacy).to eq('private')
+        expect(photo2.reload.privacy).to eq('private')
       end
     end
   end
