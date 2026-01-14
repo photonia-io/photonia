@@ -377,20 +377,30 @@ const {
   onDone: onSetAlbumPrivacyDone,
   onError: onSetAlbumPrivacyError,
 } = useMutation(gql`
-  mutation ($id: String!, $privacy: String!) {
-    setAlbumPrivacy(id: $id, privacy: $privacy) {
-      id
-      privacy
+  mutation ($id: String!, $privacy: String!, $updatePhotos: Boolean!) {
+    setAlbumPrivacy(id: $id, privacy: $privacy, updatePhotos: $updatePhotos) {
+      album {
+        id
+        privacy
+      }
+      photosUpdatedCount
     }
   }
 `);
 
-const handleSetAlbumPrivacy = ({ id, privacy }) => {
-  setAlbumPrivacyMutation({ id, privacy });
+const handleSetAlbumPrivacy = ({ id, privacy, updatePhotos }) => {
+  setAlbumPrivacyMutation({ id, privacy, updatePhotos });
 };
 
 onSetAlbumPrivacyDone(({ data }) => {
-  toaster("Album privacy has been updated");
+  const photosUpdatedCount = data?.setAlbumPrivacy?.photosUpdatedCount || 0;
+  if (photosUpdatedCount > 0) {
+    toaster(
+      `Album privacy has been updated. ${photosUpdatedCount} ${photosUpdatedCount === 1 ? "photo" : "photos"} also set to private.`
+    );
+  } else {
+    toaster("Album privacy has been updated");
+  }
   // Evict albums list to refresh visibility if necessary
   apolloClient.cache.evict({ fieldName: "albums" });
   apolloClient.cache.gc();
