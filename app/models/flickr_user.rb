@@ -35,6 +35,8 @@
 #
 class FlickrUser < ApplicationRecord
   has_many :comments, dependent: :destroy
+  has_many :flickr_user_claims, dependent: :destroy
+  belongs_to :claimed_by_user, class_name: 'User', optional: true
 
   # has_many :photos, dependent: :destroy
 

@@ -3,6 +3,7 @@
 # This is the application controller, duh
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
+
   before_action :set_settings
   before_action :set_gql_queries
 
@@ -17,7 +18,9 @@ class ApplicationController < ActionController::Base
       users_sign_in_path:,
       users_sign_out_path:,
       users_settings_path:,
-      users_admin_settings_path:,
+      admin_path: admin_root_path,
+      admin_settings_path:,
+      admin_users_path:,
       stats_path:,
       about_path:,
       privacy_policy_path:,

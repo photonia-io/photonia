@@ -21,6 +21,11 @@ module Queries
       photo_query = base
       photo_query = photo_query.includes(comments: %i[flickr_user versions]) if lookahead.selects?(:comments)
 
+      if lookahead.selection(:comments).selection(:flickr_user).selects?(:claimable)
+        context[:user_has_claim] =
+          current_user ? FlickrUserClaim.exists?(user_id: current_user.id, status: %w[pending approved]) : false
+      end
+
       photo =
         if fetch_type == 'latest'
           photo_query.order(posted_at: :desc).first
@@ -29,6 +34,7 @@ module Queries
         end
 
       raise GraphQL::ExecutionError, 'Photo not found' unless photo
+
       authorize(photo, :show?)
       record_impression(photo)
       photo
