@@ -88,81 +88,85 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // if a token was found in local storage, fetch the user
 
-  if (tokenStore.authorization) {
-    // we will suppose that the token is valid, later we will check for an error
-    userStore.signedIn = true;
-    provideApolloClient(apolloClient);
-    const { result, error } = useQuery(gql`
-      query CurrentUserQuery {
-        currentUser {
-          id
-          email
-          admin
-          uploader
+  const initializeApp = async () => {
+    if (tokenStore.authorization) {
+      // we will suppose that the token is valid, later we will check for an error
+      userStore.signedIn = true;
+      provideApolloClient(apolloClient);
+      
+      try {
+        const { data } = await apolloClient.query({
+          query: gql`
+            query CurrentUserQuery {
+              currentUser {
+                id
+                email
+                admin
+                uploader
+              }
+            }
+          `,
+        });
+
+        userStore.email = data.currentUser.email;
+        userStore.admin = data.currentUser.admin;
+        userStore.uploader = data.currentUser.uploader;
+      } catch (error) {
+        // if the query fails, the token is invalid
+        // and the user is not signed in anymore
+        if (error && error.graphQLErrors && error.graphQLErrors.length > 0) {
+          userStore.signOut();
+          toaster(
+            "Your session has expired. Please sign in again.",
+            "is-warning",
+          );
         }
       }
-    `);
+    }
 
-    watch(result, (value) => {
-      userStore.email = value.currentUser.email;
-      userStore.admin = value.currentUser.admin;
-      userStore.uploader = value.currentUser.uploader;
+    // go for Vue!
+
+    const app = createApp({
+      setup() {
+        provide(DefaultApolloClient, apolloClient);
+      },
+      render: () => h(App),
     });
 
-    // if the query fails, the token is invalid
-    // and the user is not signed in anymore
-    watch(error, (value) => {
-      if (value && value.graphQLErrors && value.graphQLErrors.length > 0) {
-        userStore.signOut();
-        toaster(
-          "Your session has expired. Please sign in again.",
-          "is-warning",
-        );
-        router.push({ name: "root" });
-      }
-    });
-  }
+    app.provide("apolloClient", apolloClient);
 
-  // go for Vue!
+    app.config.globalProperties.gql_queries = window.gql_queries;
+    app.config.globalProperties.gql_cached_query = window.gql_cached_query;
+    app.config.globalProperties.gql_cached_result = window.gql_cached_result;
 
-  const app = createApp({
-    setup() {
-      provide(DefaultApolloClient, apolloClient);
-    },
-    render: () => h(App),
-  });
+    // Start Sentry
 
-  app.provide("apolloClient", apolloClient);
+    if (import.meta.env.PROD) {
+      Sentry.init({
+        app,
+        dsn: settings.sentry_dsn,
+        integrations: [
+          Sentry.browserTracingIntegration({ router }),
+          Sentry.replayIntegration(),
+        ],
+        tracesSampleRate: settings.sentry_sample_rate,
+        tracePropagationTargets: ["photos.rusiczki.net", /^\//],
+      });
+    }
 
-  app.config.globalProperties.gql_queries = window.gql_queries;
-  app.config.globalProperties.gql_cached_query = window.gql_cached_query;
-  app.config.globalProperties.gql_cached_result = window.gql_cached_result;
+    app.use(router);
+    app.use(pinia);
 
-  // Start Sentry
+    app.use(
+      pageTitle({
+        suffix: settings.site_name,
+        separator: " - ",
+        mixin: true,
+      }),
+    );
 
-  if (import.meta.env.PROD) {
-    Sentry.init({
-      app,
-      dsn: settings.sentry_dsn,
-      integrations: [
-        Sentry.browserTracingIntegration({ router }),
-        Sentry.replayIntegration(),
-      ],
-      tracesSampleRate: settings.sentry_sample_rate,
-      tracePropagationTargets: ["photos.rusiczki.net", /^\//],
-    });
-  }
+    app.mount("#app");
+  };
 
-  app.use(router);
-  app.use(pinia);
-
-  app.use(
-    pageTitle({
-      suffix: settings.site_name,
-      separator: " - ",
-      mixin: true,
-    }),
-  );
-
-  app.mount("#app");
+  initializeApp();
 });

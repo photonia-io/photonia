@@ -83,6 +83,37 @@
       </div>
     </div>
   </teleport>
+  <teleport to="#modal-root">
+    <div :class="['modal', privacyModalActive ? 'is-active' : null]">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title has-text-centered">
+            Change Album Privacy to Private
+          </p>
+        </header>
+        <div class="modal-card-body">
+          <p>
+            When you set this album to Private, all
+            <strong>{{ album.photosCount }}</strong>
+            {{ album.photosCount === 1 ? "photo" : "photos" }} contained in
+            this album will also be set to Private.
+          </p>
+          <p class="mt-3">Do you want to continue?</p>
+        </div>
+        <footer class="modal-card-foot is-justify-content-center">
+          <div class="buttons">
+            <button class="button is-warning" @click="confirmPrivacyChange">
+              Yes, set album and photos to Private
+            </button>
+            <button class="button is-info" @click="cancelPrivacyChange">
+              Cancel
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -141,11 +172,46 @@ const updateSorting = () => {
   });
 };
 
+const privacyModalActive = ref(false);
+const pendingPrivacy = ref(null);
+
 const setPrivacy = () => {
+  const oldPrivacy = props.album.privacy === "friend & family" ? "friends_and_family" : props.album.privacy;
+  const newPrivacy = privacy.value;
+
+  // If changing from public to private, show confirmation modal
+  if (oldPrivacy === "public" && newPrivacy === "private") {
+    pendingPrivacy.value = newPrivacy;
+    privacyModalActive.value = true;
+    applicationStore.disableNavigationShortcuts();
+  } else {
+    // Otherwise, just emit the change without confirmation
+    emit("setAlbumPrivacy", {
+      id: props.album.id,
+      privacy: newPrivacy,
+      updatePhotos: false,
+    });
+  }
+};
+
+const confirmPrivacyChange = () => {
   emit("setAlbumPrivacy", {
     id: props.album.id,
-    privacy: privacy.value,
+    privacy: pendingPrivacy.value,
+    updatePhotos: true,
   });
+  privacyModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+  pendingPrivacy.value = null;
+};
+
+const cancelPrivacyChange = () => {
+  // Revert the select back to the original value
+  const oldPrivacy = props.album.privacy === "friend & family" ? "friends_and_family" : props.album.privacy;
+  privacy.value = oldPrivacy;
+  privacyModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+  pendingPrivacy.value = null;
 };
 
 const sortingOrderAscendingText = computed(() => {
