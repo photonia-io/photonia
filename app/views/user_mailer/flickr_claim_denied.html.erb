@@ -1,0 +1,18 @@
+<h1>Your Flickr User Claim Has Been Denied</h1>
+
+<p>
+  Unfortunately, your request to claim the Flickr user <strong><%= h @flickr_user.username %></strong> has been denied.
+</p>
+
+<ul>
+  <li><strong>Flickr Username:</strong> <%= h @flickr_user.username %></li>
+  <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
+</ul>
+
+<p>
+  If you believe this was an error, please contact the administrator.
+</p>
+
+<p>
+  Your friendly Photonia bot.
+</p>
