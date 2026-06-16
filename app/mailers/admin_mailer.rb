@@ -11,4 +11,21 @@ class AdminMailer < ApplicationMailer
     @email = params[:email]
     mail to: params[:admin_emails], subject: "New user signed up via #{@provider}"
   end
+
+  def flickr_claim_request
+    @user = params[:user]
+    @flickr_user = params[:flickr_user]
+    @claim = params[:claim]
+    @reason = params[:reason]
+    @user_admin_url = admin_user_url(@user.slug)
+    mail to: params[:admin_emails], subject: 'New Flickr user claim request'
+  end
+
+  def flickr_claim_approved
+    @user = params[:user]
+    @flickr_user = params[:flickr_user]
+    @claim = params[:claim]
+    @user_admin_url = admin_user_url(@user.slug)
+    mail to: params[:admin_emails], subject: 'Flickr user claim approved'
+  end
 end

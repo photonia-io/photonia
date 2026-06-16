@@ -32,10 +32,8 @@ import settings from "../mixins/settings";
 
 import * as Sentry from "@sentry/vue";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const userStore = useUserStore(pinia);
-
-  const router = createAppRouter(pinia);
 
   const tokenStore = useTokenStore(pinia);
 
@@ -83,45 +81,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const apolloClient = new ApolloClient({
     link: authLink.concat(afterwareLink.concat(httpLink)),
     cache,
-    connectToDevTools: true,
+    devtools: { enabled: import.meta.env.MODE !== "production" },
   });
 
-  // if a token was found in local storage, fetch the user
+  // if a token was found in local storage, fetch the user synchronously before router initialization
 
   if (tokenStore.authorization) {
-    // we will suppose that the token is valid, later we will check for an error
-    userStore.signedIn = true;
     provideApolloClient(apolloClient);
-    const { result, error } = useQuery(gql`
-      query CurrentUserQuery {
-        currentUser {
-          id
-          email
-          admin
-          uploader
-        }
-      }
-    `);
 
-    watch(result, (value) => {
-      userStore.email = value.currentUser.email;
-      userStore.admin = value.currentUser.admin;
-      userStore.uploader = value.currentUser.uploader;
-    });
+    try {
+      const { data } = await apolloClient.query({
+        query: gql`
+          query CurrentUserQuery {
+            currentUser {
+              id
+              email
+              admin
+              uploader
+            }
+          }
+        `,
+      });
 
-    // if the query fails, the token is invalid
-    // and the user is not signed in anymore
-    watch(error, (value) => {
-      if (value && value.graphQLErrors && value.graphQLErrors.length > 0) {
+      userStore.signedIn = true;
+      userStore.email = data.currentUser.email;
+      userStore.admin = data.currentUser.admin;
+      userStore.uploader = data.currentUser.uploader;
+    } catch (error) {
+      if (error && error.graphQLErrors && error.graphQLErrors.length > 0) {
         userStore.signOut();
         toaster(
           "Your session has expired. Please sign in again.",
           "is-warning",
         );
-        router.push({ name: "root" });
       }
-    });
+    }
   }
+
+  // Initialize router after user data is loaded
+  const router = createAppRouter(pinia);
 
   // go for Vue!
 

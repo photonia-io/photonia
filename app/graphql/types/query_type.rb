@@ -9,6 +9,8 @@ module Types
     field :album, resolver: Queries::AlbumQuery, description: 'Find an album by ID'
     field :albums, resolver: Queries::AlbumsQuery, description: 'Find all albums by page'
     field :current_user, resolver: Queries::CurrentUserQuery, description: 'Get the current user'
+    field :user, resolver: Queries::UserQuery, description: 'Find a user by ID (admin only)'
+    field :users, resolver: Queries::UsersQuery, description: 'List all users (admin only)'
     field :impression_counts_by_date, resolver: Queries::ImpressionCountsByDateQuery, description: 'Find impression counts by type and date range'
     field :page, resolver: Queries::PageQuery, description: 'Find a page by ID'
     field :photo, resolver: Queries::PhotoQuery, description: 'Find a photo by ID'
@@ -17,5 +19,10 @@ module Types
     field :tag, resolver: Queries::TagQuery, description: 'Find a tag by ID'
     field :tags, resolver: Queries::TagsQuery, description: 'Find tags'
     field :timezones, resolver: Queries::TimezonesQuery, description: 'List of timezones'
+
+    # Flickr claim queries
+    field :flickr_user_claim, resolver: Queries::FlickrUserClaimQuery, description: 'Find a Flickr user claim by ID'
+    field :my_flickr_claims, resolver: Queries::MyFlickrClaimsQuery, description: 'Get current user\'s Flickr claims'
+    field :pending_flickr_claims, resolver: Queries::PendingFlickrClaimsQuery, description: 'Get pending Flickr claims (admin only)'
   end
 end
