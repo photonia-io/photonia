@@ -2,6 +2,27 @@
   <div class="container">
     <h1 class="title mt-5 mb-0">Upload Photos</h1>
     <hr class="mt-2 mb-4" />
+
+    <!-- NEW: Batch Album Selection (shows when files are queued) -->
+    <div class="box" v-show="files.length > 0 && !uploadStarted">
+      <h2 class="subtitle">Album Association (applies to all files)</h2>
+      <select-or-create-album ref="albumSelector" />
+    </div>
+
+    <!-- Info message when upload has started -->
+    <div class="notification is-info" v-if="uploadStarted">
+      <p v-if="!allUploadsComplete">
+        <strong>Upload in progress.</strong>
+        Once all uploads complete, click the "Remove Uploaded" button to clear
+        files and reset the form for the next batch.
+      </p>
+      <p v-else>
+        <strong>Uploads complete.</strong>
+        Click the "Remove Uploaded" button to clear files and reset the form for
+        the next batch.
+      </p>
+    </div>
+
     <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
       <h3>Drop files here to upload</h3>
     </div>
@@ -110,6 +131,12 @@
           <file-upload
             name="photo[image]"
             class="button is-primary"
+            :class="{ 'is-static': uploadStarted }"
+            :aria-disabled="uploadStarted ? 'true' : 'false'"
+            :style="{
+              pointerEvents: uploadStarted ? 'none' : null,
+              opacity: uploadStarted ? 0.6 : 1,
+            }"
             post-action="/photos"
             extensions="jpg,jpeg,png,gif,webp"
             accept="image/jpeg,image/png,image/gif,image/webp"
@@ -117,9 +144,10 @@
             :headers="{ Authorization: tokenStore.authorization }"
             v-model="files"
             @input-filter="inputFilter"
-            @input-file="inputFile"
+            @input-file="handleFileInput"
             ref="uploader"
             :drop="true"
+            :disabled="uploadStarted"
           >
             <span class="icon is-small">
               <i class="fa fa-plus" aria-hidden="true"></i>
@@ -130,8 +158,8 @@
             type="button"
             class="button is-success"
             v-if="!uploader || !uploader.active"
-            @click.prevent="uploader.active = true"
-            :disabled="files.length === 0"
+            @click.prevent="startUpload"
+            :disabled="files.length === 0 || uploadStarted"
           >
             <span class="icon is-small">
               <i class="fa fa-arrow-up" aria-hidden="true"></i>
@@ -143,6 +171,7 @@
             class="btn btn-danger"
             v-else
             @click.prevent="uploader.active = false"
+            :disabled="!uploadStarted"
           >
             <span class="icon is-small">
               <i class="fa fa-stop" aria-hidden="true"></i>
@@ -157,7 +186,7 @@
             type="button"
             class="button is-danger"
             @click.prevent="$refs.uploader.clear()"
-            :disabled="files.length === 0"
+            :disabled="files.length === 0 || uploadStarted"
           >
             <span class="icon is-small">
               <i class="fa fa-trash" aria-hidden="true"></i>
@@ -168,7 +197,7 @@
             type="button"
             class="button is-danger"
             @click.prevent="removeUploadedFiles()"
-            :disabled="removeUploadedFilesDisabled()"
+            :disabled="!allUploadsComplete"
           >
             <span class="icon is-small">
               <i class="fa fa-broom" aria-hidden="true"></i>
@@ -192,17 +221,78 @@
 </style>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import { useTokenStore } from "../stores/token.js";
 import { useTitle } from "vue-page-title";
 import FileUpload from "vue-upload-component";
+import SelectOrCreateAlbum from "../albums/select-or-create-album.vue";
 
 useTitle("Upload Photos");
 
 const uploader = ref(null);
 const files = ref([]);
 const tokenStore = useTokenStore();
+const albumSelector = ref(null);
+const uploadStarted = ref(false);
+
+const allUploadsComplete = computed(() => {
+  // Upload must have started and every file must be either successful or errored
+  if (!uploadStarted.value || files.value.length === 0) return false;
+  return files.value.every((file) => file.success || file.error);
+});
+
+// When all uploads complete, refresh the album picker (single request via child component).
+watch(
+  allUploadsComplete,
+  async (val) => {
+    if (val && albumSelector.value?.refetch) {
+      try {
+        await albumSelector.value.refetch();
+      } catch (e) {
+        // ignore refetch errors - not critical for upload success
+      }
+    }
+  },
+  { immediate: false },
+);
+
+// Watch for changes in album selection and update all files
+watch(
+  () => [
+    albumSelector.value?.selectedAlbumId,
+    albumSelector.value?.newAlbumTitle,
+  ],
+  () => {
+    updateAllFilesWithAlbumData();
+  },
+  { deep: true },
+);
+
+const applyAlbumDataToFile = (file) => {
+  if (!albumSelector.value) return;
+  if (!file.data) file.data = {};
+
+  const selectedAlbumId = albumSelector.value.selectedAlbumId;
+  const newAlbumTitle = albumSelector.value.newAlbumTitle;
+
+  // Clear previous album data
+  delete file.data["photo[album_ids][]"];
+  delete file.data["photo[new_album_titles][]"];
+
+  // Set new album data
+  if (selectedAlbumId) {
+    file.data["photo[album_ids][]"] = [selectedAlbumId];
+  } else if (newAlbumTitle) {
+    file.data["photo[new_album_titles][]"] = [newAlbumTitle];
+  }
+};
+
+const updateAllFilesWithAlbumData = () => {
+  files.value.forEach((file) => {
+    applyAlbumDataToFile(file);
+  });
+};
 
 const inputFilter = function (newFile, oldFile, prevent) {
   if (newFile && !oldFile) {
@@ -235,11 +325,37 @@ const inputFilter = function (newFile, oldFile, prevent) {
       newFile.data = {
         "photo[title]": newFile.name,
       };
+
+      // Apply current album selection to new file
+      applyAlbumDataToFile(newFile);
     }
   }
 };
 
-const inputFile = function (newFile, oldFile) {
+// Handle successful upload response
+const handleUploadSuccess = async (file, response) => {
+  if (response.created_album_ids && response.created_album_ids.length > 0) {
+    // Update remaining files to use the created album ID instead of title
+    const createdId = response.created_album_ids[0];
+    const newAlbumTitle = albumSelector.value?.newAlbumTitle;
+
+    if (newAlbumTitle) {
+      // Update albumSelector to show existing album
+      albumSelector.value.selectedAlbumId = createdId;
+      albumSelector.value.newAlbumTitle = "";
+
+      // Update remaining pending files
+      files.value.forEach((f) => {
+        if (!f.success && !f.active && f.data) {
+          delete f.data["photo[new_album_titles][]"];
+          f.data["photo[album_ids][]"] = [createdId];
+        }
+      });
+    }
+  }
+};
+
+const handleFileInput = function (newFile, oldFile) {
   if (newFile && !oldFile) {
     // add
     console.log("add", newFile);
@@ -247,11 +363,21 @@ const inputFile = function (newFile, oldFile) {
   if (newFile && oldFile) {
     // update
     console.log("update", newFile);
+
+    // Handle upload success
+    if (newFile.success && newFile.response) {
+      handleUploadSuccess(newFile, newFile.response);
+    }
   }
   if (!newFile && oldFile) {
     // remove
     console.log("remove", oldFile);
   }
+};
+
+const startUpload = () => {
+  uploadStarted.value = true;
+  uploader.value.active = true;
 };
 
 const removeUploadedFiles = function () {
@@ -260,6 +386,14 @@ const removeUploadedFiles = function () {
       uploader.value.remove(file);
     }
   });
+
+  // Reset upload state if all files are removed
+  if (files.value.length === 0) {
+    uploadStarted.value = false;
+    if (albumSelector.value) {
+      albumSelector.value.reset();
+    }
+  }
 };
 
 const removeUploadedFilesDisabled = function () {
