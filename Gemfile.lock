@@ -156,6 +156,10 @@ GEM
       warden-jwt_auth (~> 0.10)
     diff-lcs (1.6.2)
     docile (1.4.1)
+    dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+      railties (>= 6.1)
     down (5.4.2)
       addressable (~> 2.8)
     drb (2.2.3)
@@ -558,6 +562,7 @@ DEPENDENCIES
   capybara (>= 3.38.0)
   devise
   devise-jwt
+  dotenv-rails
   ed25519
   exif
   factory_bot_rails

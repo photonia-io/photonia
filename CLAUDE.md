@@ -130,11 +130,7 @@ OAuth is not OmniAuth — `Mutations::ContinueWithGoogle` verifies a Google One-
 
 ## Environment
 
-All app config is `PHOTONIA_`-prefixed in `.env`. **There is no dotenv gem** — `.env` is not loaded automatically, so shell out the values first or Rails will fail to connect to the database:
-
-```bash
-set -a; source .env; set +a
-```
+All app config is `PHOTONIA_`-prefixed. In development and test, `dotenv-rails` loads `.env` automatically at boot, so `bin/rails` and `bundle exec rspec` work with no shell setup. It never overrides variables already set in the environment, so CI and production (which get real env vars) are unaffected.
 
 - DB / cache: `PHOTONIA_DATABASE_URL`, `PHOTONIA_TEST_DATABASE_URL`, `PHOTONIA_REDIS_URL`, `REDIS_URL`
 - S3 and Rekognition use **separate credential pairs**: `PHOTONIA_S3_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY` / `_REGION` / `_BUCKET`, and `PHOTONIA_REKOGNITION_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY`
