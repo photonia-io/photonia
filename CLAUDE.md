@@ -70,7 +70,7 @@ So resolvers call `context[:authorize].call(record, :update?)` and `context[:pag
 
 `PhotoniaSchema` rescues both `ActiveRecord::RecordNotFound` **and** `Pundit::NotAuthorizedError` into the same `NOT_FOUND` error — unauthorized and missing are deliberately indistinguishable. Preserve that when adding error handling.
 
-**Query documents live in Ruby.** `app/graphql/graphql_query_collection.rb` holds the shared query strings; `ApplicationController#set_gql_queries` dumps them to `window.gql_queries`, and Vue components do `useQuery(gql\`${gql_queries.photos_show}\`)`. Mutations are the opposite — inline `gql` literals inside components. Vue route paths likewise come from `window.settings` (`ApplicationController#set_settings`), so Rails stays the source of truth for URLs.
+**Query documents live in Ruby.** `app/graphql/graphql_query_collection.rb` holds the shared query strings; `ApplicationController#set_gql_queries` dumps them to `window.gql_queries`, and Vue components do ``useQuery(gql`${gql_queries.photos_show}`)``. Mutations are the opposite — inline `gql` literals inside components. Vue route paths likewise come from `window.settings` (`ApplicationController#set_settings`), so Rails stays the source of truth for URLs.
 
 Two mutation styles exist: the current one is a class in `app/graphql/mutations/`; about eight legacy mutations are still defined inline as fields on `Types::MutationType`. Put new mutations in `app/graphql/mutations/`.
 
