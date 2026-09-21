@@ -59,6 +59,45 @@ RSpec.describe FlickrUserClaim do
       expect(duplicate_claim).not_to be_valid
       expect(duplicate_claim.errors[:user_id]).to include('has already claimed this Flickr user')
     end
+
+    context 'when the user already has an active claim on a different flickr user' do
+      let(:user) { create(:user) }
+
+      it 'is invalid when the user has a pending claim on another flickr user' do
+        create(:flickr_user_claim, user: user, status: 'pending')
+        second_claim = build(:flickr_user_claim, user: user, flickr_user: create(:flickr_user))
+
+        expect(second_claim).not_to be_valid
+        expect(second_claim.errors[:base])
+          .to include('You already have a pending or approved claim on a different Flickr user')
+      end
+
+      it 'is invalid when the user has an approved claim on another flickr user' do
+        create(:flickr_user_claim, :approved, user: user)
+        second_claim = build(:flickr_user_claim, user: user, flickr_user: create(:flickr_user))
+
+        expect(second_claim).not_to be_valid
+        expect(second_claim.errors[:base])
+          .to include('You already have a pending or approved claim on a different Flickr user')
+      end
+
+      it 'is valid when the user only has a denied claim on another flickr user' do
+        create(:flickr_user_claim, :denied, user: user)
+        second_claim = build(:flickr_user_claim, user: user, flickr_user: create(:flickr_user))
+
+        expect(second_claim).to be_valid
+      end
+
+      it 'is valid when updating an existing claim (not just on create)' do
+        claim = create(:flickr_user_claim, :approved, user: user)
+        # created as denied (valid), then force-flipped to pending to simulate
+        # pre-existing conflicting data without going through the create validation
+        other_claim = create(:flickr_user_claim, :denied, user: user)
+        other_claim.update_column(:status, 'pending')
+
+        expect(claim.reload).to be_valid
+      end
+    end
   end
 
   describe 'associations' do

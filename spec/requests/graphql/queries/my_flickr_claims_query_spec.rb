@@ -34,7 +34,8 @@ RSpec.describe 'myFlickrClaims Query', type: :request do
   context 'when the user is logged in' do
     let(:user) { create(:user) }
     let!(:claim1) { create(:flickr_user_claim, :automatic, user: user) }
-    let!(:claim2) { create(:flickr_user_claim, :manual, user: user) }
+    # denied, so it doesn't conflict with claim1's pending claim on a different Flickr user
+    let!(:claim2) { create(:flickr_user_claim, :manual, :denied, user: user) }
     let(:query) { build_query }
 
     before { sign_in(user) }

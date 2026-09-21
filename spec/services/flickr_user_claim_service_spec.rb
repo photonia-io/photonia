@@ -60,6 +60,22 @@ RSpec.describe FlickrUserClaimService do
           ActiveJob::Base.queue_adapter = original_adapter
         end
       end
+
+      it 'sends email to the user who made the claim' do
+        # Set ActiveJob queue adapter to test only for this test
+        original_adapter = ActiveJob::Base.queue_adapter
+        ActiveJob::Base.queue_adapter = :test
+
+        begin
+          expect do
+            service.verify_automatic_claim(claim)
+          end.to have_enqueued_job(ActionMailer::MailDeliveryJob)
+            .with('UserMailer', 'flickr_claim_approved', 'deliver_now', any_args)
+        ensure
+          # Restore the original adapter
+          ActiveJob::Base.queue_adapter = original_adapter
+        end
+      end
     end
 
     context 'when code is not found in profile' do

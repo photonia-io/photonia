@@ -143,4 +143,32 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
       expect(flickr_user_data['claimable']).to eq(true)
     end
   end
+
+  # PhotoQuery precomputes context[:user_has_claim] to avoid an N+1 across a photo's comments.
+  # Querying `claimable` through a path that doesn't go through that lookahead (myFlickrClaims'
+  # flickrUser field) must still reflect the user's real claim state instead of defaulting to
+  # "claimable" just because the context key was never set.
+  context 'when claimable is queried through a path that does not precompute context[:user_has_claim]' do
+    let(:user) { create(:user) }
+    let!(:pending_claim) { create(:flickr_user_claim, user: user, status: 'pending') }
+    let(:query) do
+      <<~GQL
+        query {
+          myFlickrClaims {
+            flickrUser { nsid, claimable }
+          }
+        }
+      GQL
+    end
+
+    before { sign_in(user) }
+
+    it 'still returns false instead of defaulting to claimable' do
+      post_query
+      flickr_user_data = data_dig(response, 'myFlickrClaims').first['flickrUser']
+
+      expect(flickr_user_data['nsid']).to eq(pending_claim.flickr_user.nsid)
+      expect(flickr_user_data['claimable']).to eq(false)
+    end
+  end
 end

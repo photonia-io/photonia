@@ -21,8 +21,18 @@ module Types
       current_user = context[:current_user]
       return true unless current_user
 
-      # If the current user has a pending or approved claim on ANY flickr_user return false
-      !context[:user_has_claim]
+      # If the current user has a pending or approved claim on ANY flickr_user return false.
+      # Callers that already know the answer (e.g. PhotoQuery, batched across all comments on
+      # a photo to avoid an N+1) can precompute it into context[:user_has_claim]; otherwise fall
+      # back to computing it directly here rather than silently defaulting to "claimable".
+      user_has_claim = context.key?(:user_has_claim) ? context[:user_has_claim] : current_user_has_active_claim?(current_user)
+      !user_has_claim
+    end
+
+    private
+
+    def current_user_has_active_claim?(current_user)
+      FlickrUserClaim.exists?(user_id: current_user.id, status: %w[pending approved])
     end
   end
 end

@@ -40,6 +40,7 @@ class FlickrUserClaim < ApplicationRecord
   validates :status, presence: true, inclusion: { in: STATUSES }
   validates :verification_code, presence: true, if: -> { claim_type == 'automatic' }
   validates :user_id, uniqueness: { scope: :flickr_user_id, message: 'has already claimed this Flickr user' }
+  validate :user_has_no_other_active_claim, on: :create
 
   scope :pending, -> { where(status: 'pending') }
   scope :approved, -> { where(status: 'approved') }
@@ -76,5 +77,23 @@ class FlickrUserClaim < ApplicationRecord
 
   def manual?
     claim_type == 'manual'
+  end
+
+  private
+
+  # A user may only have one active (pending or approved) claim at a time. This
+  # mirrors the business rule documented on Types::FlickrUserType#claimable, but
+  # enforces it on write too, since that field only enforces it on read.
+  def user_has_no_other_active_claim
+    return if user_id.blank? || flickr_user_id.blank?
+    # Only a newly created active claim can conflict - creating a claim that's
+    # already denied (as some factories/backfills do) never competes with anything.
+    return unless %w[pending approved].include?(status)
+
+    conflicting = FlickrUserClaim.where(user_id: user_id, status: %w[pending approved])
+                                 .where.not(flickr_user_id: flickr_user_id)
+    return unless conflicting.exists?
+
+    errors.add(:base, 'You already have a pending or approved claim on a different Flickr user')
   end
 end

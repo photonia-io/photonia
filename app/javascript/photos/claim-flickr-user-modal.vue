@@ -368,6 +368,10 @@ onRequestManualClaimDone((result) => {
     manualError.value = result.data.requestManualFlickrClaim.errors.join(", ");
   } else {
     manualSuccess.value = true;
+    // A successful manual request also puts the user in "has a pending claim"
+    // state, so other claim links should refresh/disappear just like they do
+    // after a successful automatic claim.
+    emit("claimed");
     setTimeout(() => {
       closeModal();
     }, 3000);

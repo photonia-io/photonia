@@ -45,6 +45,9 @@ class FlickrUserClaimService
         ).flickr_claim_approved.deliver_later
       end
 
+      # Send email to the user who made the claim
+      notify_user_claim_approved(claim)
+
       { success: true, claim: claim }
     else
       { success: false, error: 'Verification code not found in Flickr profile description' }
@@ -84,9 +87,7 @@ class FlickrUserClaimService
     claim.approve!
 
     # Send email to user
-    UserMailer.with(user: claim.user, flickr_user: claim.flickr_user)
-              .flickr_claim_approved
-              .deliver_later
+    notify_user_claim_approved(claim)
 
     { success: true, claim: claim }
   rescue StandardError => e
@@ -109,9 +110,17 @@ class FlickrUserClaimService
     { success: false, error: e.message }
   end
 
+  private
+
+  def notify_user_claim_approved(claim)
+    UserMailer.with(user: claim.user, flickr_user: claim.flickr_user)
+              .flickr_claim_approved
+              .deliver_later
+  end
+
   class << self
     # The following methods are intended for debug purposes only, no test coverage needed
-    # :nocov:
+    # simplecov:disable
     def undo_claim(claim)
       return { success: false, error: 'Claim not found' } unless claim
 
@@ -136,6 +145,6 @@ class FlickrUserClaimService
     rescue StandardError => e
       { success: false, error: e.message }
     end
-    # :cov:
+    # simplecov:enable
   end
 end
