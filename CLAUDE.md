@@ -8,6 +8,8 @@ Photonia is a self-hosted photo sharing app: Rails 7 (Ruby 3.4.7) API + a Vue 3 
 
 Do not use emojis in commit messages. Much of the existing history is gitmoji-prefixed (`⬆️ Update …`); do not copy that style for new commits.
 
+Never add Claude attribution to commit messages or PR descriptions — no `Co-Authored-By`, no `Claude-Session`, no "Generated with Claude Code".
+
 ## Commands
 
 Dev servers (three processes):
