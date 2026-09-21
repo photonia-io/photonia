@@ -7,6 +7,8 @@ ruby '3.4.7'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 7.0'
+# json 3.0 dropped the `quirks_mode` keyword that Rails 7.2's ActiveSupport::JSON encoder still passes to JSON.generate
+gem 'json', '< 3'
 # Use postgresql as the database for Active Record
 gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
