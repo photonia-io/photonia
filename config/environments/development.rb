@@ -98,4 +98,11 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Allow the dev server to be reached by any Host header (e.g. accessing it
+  # over the LAN by hostname instead of localhost). Rails' default dev
+  # allow-list only covers localhost/.localhost/.test and raw IPs, so an
+  # arbitrary hostname is blocked by ActionDispatch::HostAuthorization
+  # otherwise. Clearing the list turns the check into a no-op entirely.
+  config.hosts.clear
 end

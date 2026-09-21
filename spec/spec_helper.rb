@@ -2,17 +2,17 @@
 
 require 'simplecov'
 SimpleCov.start do
-  add_group 'Controllers', 'app/controllers'
-  add_group 'Models', 'app/models'
-  add_group 'GraphQL', 'app/graphql'
-  add_group 'Policies', 'app/policies'
-  add_group 'Services', 'app/services'
-  add_group 'Jobs', 'app/jobs'
-  add_group 'Mailers', 'app/mailers'
-  add_group 'Helpers', 'app/helpers'
-  add_group 'Libraries', 'lib'
+  group 'Controllers', 'app/controllers'
+  group 'Models', 'app/models'
+  group 'GraphQL', 'app/graphql'
+  group 'Policies', 'app/policies'
+  group 'Services', 'app/services'
+  group 'Jobs', 'app/jobs'
+  group 'Mailers', 'app/mailers'
+  group 'Helpers', 'app/helpers'
+  group 'Libraries', 'lib'
 
-  add_filter 'config/initializers'
+  skip 'config/initializers'
 end
 
 if ENV['CI']
