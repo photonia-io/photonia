@@ -13,6 +13,17 @@ export default defineConfig({
     // own dev-server host check rejects it.
     allowedHosts: true
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Bulma 1.0.4 still calls the Sass if() function, deprecated in
+        // Sass 1.95. Fixed upstream on Bulma main but unreleased (latest
+        // release is 1.0.4, 2025-04). Drop this once Bulma ships a release
+        // containing the fix - see issue #1070.
+        silenceDeprecations: ['if-function']
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'happy-dom'
