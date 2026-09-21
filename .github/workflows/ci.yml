@@ -1,17 +1,14 @@
-# This workflow uses actions that are not certified by GitHub.  They are
-# provided by a third-party and are governed by separate terms of service,
-# privacy policy, and support documentation.
-#
-# This workflow will install a prebuilt Ruby version, install dependencies, and
-# run tests and linters.
-name: "Ruby on Rails CI"
+# Uses actions that are not certified by GitHub. They are provided by a third
+# party and governed by separate terms of service, privacy policy and support
+# documentation.
+name: "CI"
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 jobs:
-  test:
+  rspec:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -39,12 +36,15 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+      # Node is needed even though this job runs no JS tests: config/vite.json
+      # sets autoBuild for the test environment, so request specs that render a
+      # layout make ViteRuby build the assets on demand.
       - name: Enable Corepack
         run: corepack enable
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: "yarn"
       - name: Install Node packages
         run: yarn install --immutable
@@ -58,6 +58,21 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           slug: photonia-io/photonia
+
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "yarn"
+      - name: Install Node packages
+        run: yarn install --immutable
       - name: Run vitest
         run: yarn test:run
 
