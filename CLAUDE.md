@@ -34,7 +34,7 @@ System specs are **excluded by default** in `.rspec` (`--exclude-pattern spec/sy
 
 Node: CI and the production image are pinned to **24 LTS**; local dev may be newer. Node 25+ defines its own inert `localStorage`/`sessionStorage` globals, which older Vitest let shadow happy-dom's working ones — Vitest 5 fixes that, so stay on 5+.
 
-Lint: `bundle exec rubocop`. Note it is **not enforced in CI** — the lint job in `.github/workflows/rubyonrails.yml` is commented out; CI runs rspec + vitest only.
+Lint: `bundle exec rubocop`. Note it is **not enforced in CI** — the lint job in `.github/workflows/ci.yml` is commented out; CI runs the `rspec` and `vitest` jobs only.
 
 Setup on a fresh machine:
 
