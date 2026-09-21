@@ -26,6 +26,10 @@ yarn test:run                                      # Vitest (Yarn 4 via Corepack
 
 System specs are **excluded by default** in `.rspec` (`--exclude-pattern spec/system/**/*_spec.rb`). They need a Selenium Grid running in Docker (see README) and must be run explicitly by path.
 
+**Test runs are expected to be warning-free.** A new warning in the output is a defect to fix at its source, not noise to step over — and not something to paper over with `--no-warnings` or by opting out of a runtime feature. Fix it upstream (a dependency bump) where that is what it takes.
+
+Node: CI and the production image are pinned to **24 LTS**; local dev may be newer. Node 25+ defines its own inert `localStorage`/`sessionStorage` globals, which older Vitest let shadow happy-dom's working ones — Vitest 5 fixes that, so stay on 5+.
+
 Lint: `bundle exec rubocop`. Note it is **not enforced in CI** — the lint job in `.github/workflows/rubyonrails.yml` is commented out; CI runs rspec + vitest only.
 
 Setup on a fresh machine:
