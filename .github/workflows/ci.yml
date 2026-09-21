@@ -22,6 +22,7 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/photonia_test"
+      PHOTONIA_DEVISE_JWT_SECRET_KEY: ci-test-jwt-secret-key
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
