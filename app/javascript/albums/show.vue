@@ -66,14 +66,14 @@
           album.canEdit &&
           applicationStore.managingAlbum
         "
-        :photos="album.photos.collection"
+        :photos="album.photos?.collection"
         :album-id="id"
         @request-remove-from-album="openRemoveFromAlbumModal"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
         <PhotoItem
-          v-for="photo in album.photos.collection"
+          v-for="photo in album.photos?.collection"
           :photo="photo"
           :in-album="true"
           :key="photo.id"
@@ -83,7 +83,7 @@
       </div>
       <hr class="mt-1 mb-4" />
       <Pagination
-        v-if="album.photos.metadata"
+        v-if="album.photos?.metadata"
         :metadata="album.photos.metadata"
         :routeParams="{ id: id }"
         routeName="albums-show"
@@ -178,11 +178,6 @@ import Pagination from "@/shared/pagination.vue";
 const route = useRoute();
 const router = useRouter();
 
-const emptyAlbum = {
-  title: "",
-  photos: [],
-};
-
 const applicationStore = useApplicationStore();
 const userStore = useUserStore();
 const selectionStore = useSelectionStore();
@@ -223,18 +218,17 @@ const { result, loading } = useQuery(
     ${gql_queries.albums_show}
   `,
   { id: id, page: page },
+  { keepPreviousResult: true },
 );
 
-const album = computed(() => result.value?.album ?? emptyAlbum);
+const album = computed(() => result.value?.album ?? {});
 
-const title = computed(() => `Album: ${titleHelper(album, loading)}`);
+const title = computed(() => `Album: ${titleHelper(album)}`);
 useTitle(title);
 
-const canEditAlbum = computed(
-  () => !loading.value && userStore.signedIn && album.value.canEdit,
-);
+const canEditAlbum = computed(() => userStore.signedIn && album.value.canEdit);
 
-const descriptionHtml = computed(() => descriptionHtmlHelper(album, loading));
+const descriptionHtml = computed(() => descriptionHtmlHelper(album));
 
 const {
   mutate: updateAlbumTitle,

@@ -12,32 +12,38 @@
       />
     </div>
     <div class="hero-body pt-4 pb-4" style="text-align: center">
-      <div id="image-wrapper">
+      <div
+        id="image-wrapper"
+        :class="{ 'is-animated': animated }"
+        :style="{ '--photo-ratio': ratio }"
+      >
         <!-- Loading spinner -->
         <div v-if="loading || imageLoading" class="loading-spinner">
           <div class="spinner"></div>
         </div>
 
-        <router-link
-          v-if="isHomepage"
-          :to="{ name: 'photos-show', params: { id: photo.id } }"
-        >
+        <template v-if="photo.extralargeImageUrl">
+          <router-link
+            v-if="isHomepage"
+            :to="{ name: 'photos-show', params: { id: photo.id } }"
+          >
+            <img
+              :src="photo.extralargeImageUrl"
+              @load="onImageLoad"
+              @error="onImageError"
+              :style="{ opacity: heroOpacity }"
+            />
+          </router-link>
           <img
+            v-else
             :src="photo.extralargeImageUrl"
+            :alt="photo.title"
+            @click="openLightbox"
             @load="onImageLoad"
             @error="onImageError"
-            :style="{ opacity: imageLoading ? 0 : 1 }"
+            :style="{ cursor: 'pointer', opacity: heroOpacity }"
           />
-        </router-link>
-        <img
-          v-else
-          :src="photo.extralargeImageUrl"
-          :alt="photo.title"
-          @click="openLightbox"
-          @load="onImageLoad"
-          @error="onImageError"
-          :style="{ cursor: 'pointer', opacity: imageLoading ? 0 : 1 }"
-        />
+        </template>
         <div v-if="showLabels" class="labels">
           <DisplayLabel
             v-for="label in photo.labels"
@@ -79,7 +85,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import DisplayLabel from "./display-label.vue";
 import LabelListItem from "./label-list-item.vue";
 import PhotoLightbox from "./photo-lightbox.vue";
@@ -88,7 +94,8 @@ import { useApplicationStore } from "@/stores/application";
 const props = defineProps({
   photo: {
     type: Object,
-    required: true,
+    required: false,
+    default: () => ({}),
   },
   labelHighlights: {
     type: Object,
@@ -116,6 +123,39 @@ const lightboxOpen = ref(false);
 // Image loading state
 const imageLoading = ref(true);
 
+// Reserved box shape, driven by the displayed derivative's real dimensions -
+// never the original's, which can disagree when the original carries an
+// EXIF rotation flag. Falls back to a plausible landscape ratio until the
+// first real dimensions arrive, and is never reset to that fallback
+// afterwards, so during next/prev the box holds the outgoing photo's shape
+// until the incoming one is known.
+const ratio = ref(3 / 2);
+
+// Only the very first real ratio should apply without a transition, so a
+// fresh page load settles once, together with the rest of the page, rather
+// than visibly animating in.
+const animated = ref(false);
+let animationEnabled = false;
+
+watch(
+  () => props.photo.extralargeDimensions,
+  (dimensions) => {
+    if (dimensions?.width > 0 && dimensions?.height > 0) {
+      ratio.value = dimensions.width / dimensions.height;
+
+      if (!animationEnabled) {
+        animationEnabled = true;
+        nextTick(() => {
+          requestAnimationFrame(() => {
+            animated.value = true;
+          });
+        });
+      }
+    }
+  },
+  { immediate: true },
+);
+
 // Reset loading state when photo changes
 watch(
   () => props.photo.id,
@@ -140,6 +180,14 @@ const onImageError = () => {
   imageLoading.value = false;
 };
 
+// 0 while the new image is downloading, 0.6 while the previous photo is
+// being held on screen during a navigation, 1 otherwise.
+const heroOpacity = computed(() => {
+  if (imageLoading.value) return 0;
+  if (props.loading) return 0.6;
+  return 1;
+});
+
 const showLabels = computed(() => {
   return (
     applicationStore.showLabelsOnHero &&
@@ -150,23 +198,40 @@ const showLabels = computed(() => {
 </script>
 
 <style scoped lang="scss">
+@property --photo-ratio {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1.5;
+}
+
 #image-wrapper {
-  margin: 0 auto;
-  display: inline-block;
+  --hero-max-height: calc(100vh - 150px);
+
   position: relative;
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  max-width: calc(var(--hero-max-height) * var(--photo-ratio));
+  aspect-ratio: var(--photo-ratio);
+
+  &.is-animated {
+    transition: --photo-ratio 350ms ease;
+  }
+}
+
+#image-wrapper > a {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 #image-wrapper img {
-  max-height: calc(100vh - 150px);
+  display: block;
   width: 100%;
-  border-radius: 2px;
+  height: 100%;
   object-fit: contain;
-  display: inline-block;
-  vertical-align: top;
-
-  @media (min-width: 1024px) {
-    min-height: 400px;
-  }
+  border-radius: 2px;
+  transition: opacity 300ms ease-in-out;
 }
 
 /* remove padding from hero-body when on mobile */
@@ -239,9 +304,5 @@ const showLabels = computed(() => {
   100% {
     transform: rotate(360deg);
   }
-}
-
-#image-wrapper img {
-  transition: opacity 0.3s ease-in-out;
 }
 </style>

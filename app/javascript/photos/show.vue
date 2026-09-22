@@ -344,27 +344,13 @@ import ThumbnailEditor from "./thumbnail-editor.vue";
 const route = useRoute();
 const router = useRouter();
 
-const emptyPhoto = {
-  title: "",
-  description: "",
-  largeImageUrl: "",
-  privacy: "public",
-  scanned: false,
-  takenAtInfo: null,
-  previousPhoto: null,
-  nextPhoto: null,
-  albums: [],
-  tags: [],
-  rekognitionTags: [],
-  labels: null,
-};
-
 const id = computed(() => route.params.id);
 const { result, loading } = useQuery(
   gql`
     ${gql_queries.photos_show}
   `,
   { id: id },
+  { keepPreviousResult: true },
 );
 const labelHighlights = ref({});
 const isAddingTag = ref(false);
@@ -668,15 +654,15 @@ const unHighlightLabel = (label) => {
   labelHighlights.value[label.id] = false;
 };
 
-const photo = computed(() => result.value?.photo ?? emptyPhoto);
+const photo = computed(() => result.value?.photo ?? {});
 const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
 
-const showAlbumBrowser = computed(() => photo.value.albums.length > 0);
+const showAlbumBrowser = computed(() => photo.value.albums?.length > 0);
 
-const title = computed(() => titleHelper(photo, loading));
+const title = computed(() => titleHelper(photo));
 useTitle(title);
 
-const descriptionHtml = computed(() => descriptionHtmlHelper(photo, loading));
+const descriptionHtml = computed(() => descriptionHtmlHelper(photo));
 
 const userStore = useUserStore();
 const applicationStore = useApplicationStore();

@@ -9,6 +9,10 @@ class GraphqlQueryCollection
           id
           title
           extralargeImageUrl: imageUrl(type: "extralarge")
+          extralargeDimensions: imageDimensions(type: "extralarge") {
+            width
+            height
+          }
         }
         randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
           collection {
@@ -149,6 +153,10 @@ class GraphqlQueryCollection
           descriptionHtml
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
+          extralargeDimensions: imageDimensions(type: "extralarge") {
+            width
+            height
+          }
           takenAt
           takenAtInfo {
             year
