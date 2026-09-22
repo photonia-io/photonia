@@ -11,12 +11,14 @@
     <div v-if="!loading && canEdit" class="icon-text">
       <span class="icon"><i :class="privacyDisplay.icon"></i></span>
       <span class="has-text-weight-semibold">Privacy:</span>
-      <span
-        class="is-underlined is-clickable ml-1"
+      <button
+        ref="privacyTriggerButton"
+        type="button"
+        class="privacy-trigger is-underlined is-clickable ml-1"
         @click="openPrivacyModal"
       >
         {{ privacyDisplay.label }}
-      </span>
+      </button>
     </div>
     <div class="icon-text">
       <span class="icon"><i class="fas fa-camera"></i></span>
@@ -52,7 +54,14 @@
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
-      <div class="modal-card">
+      <div
+        ref="modalCard"
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Photo Privacy"
+        tabindex="-1"
+      >
         <header class="modal-card-head">
           <p class="modal-card-title has-text-centered">Photo Privacy</p>
         </header>
@@ -100,7 +109,7 @@
 </template>
 
 <script setup>
-import { computed, ref, toRefs } from "vue";
+import { computed, nextTick, onUnmounted, ref, toRefs } from "vue";
 import { useApplicationStore } from "../stores/application";
 import PhotoInfobox from "./photo-infobox.vue";
 import SidebarHeader from "./sidebar-header.vue";
@@ -164,17 +173,38 @@ const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
 const selectedPrivacy = ref(photo.value.privacy);
+const privacyTriggerButton = ref(null);
+const modalCard = ref(null);
+
+const handleModalKeydown = (event) => {
+  if (event.key === "Escape") {
+    closePrivacyModal();
+  }
+};
 
 const openPrivacyModal = () => {
   selectedPrivacy.value = photo.value.privacy;
   modalActive.value = true;
   applicationStore.disableNavigationShortcuts();
+  document.addEventListener("keydown", handleModalKeydown);
+  nextTick(() => {
+    modalCard.value?.focus();
+  });
 };
 
 const closePrivacyModal = () => {
   modalActive.value = false;
   applicationStore.enableNavigationShortcuts();
+  document.removeEventListener("keydown", handleModalKeydown);
+  privacyTriggerButton.value?.focus();
 };
+
+onUnmounted(() => {
+  if (modalActive.value) {
+    applicationStore.enableNavigationShortcuts();
+    document.removeEventListener("keydown", handleModalKeydown);
+  }
+});
 
 const savePrivacy = () => {
   if (selectedPrivacy.value !== photo.value.privacy) {
@@ -230,5 +260,13 @@ const savePrivacy = () => {
 
 .privacy-option-description {
   margin-top: 0.25rem;
+}
+
+.privacy-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
 }
 </style>

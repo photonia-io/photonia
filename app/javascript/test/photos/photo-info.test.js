@@ -87,6 +87,53 @@ describe("PhotoInfo", () => {
       expect(body().find(".modal").classes()).not.toContain("is-active");
     });
 
+    it("renders the privacy trigger as a native button", () => {
+      const { wrapper } = mountPhotoInfo();
+      expect(wrapper.find(".is-underlined").element.tagName).toBe("BUTTON");
+    });
+
+    it("closes on Escape and restores navigation shortcuts", async () => {
+      const { wrapper, applicationStore } = mountPhotoInfo({
+        photo: { ...basePhoto, privacy: "private" },
+      });
+      await wrapper.find(".is-underlined").trigger("click");
+      expect(body().find(".modal").classes()).toContain("is-active");
+
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      await wrapper.vm.$nextTick();
+
+      expect(body().find(".modal").classes()).not.toContain("is-active");
+      expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+    });
+
+    it("moves focus into the modal on open and restores it to the trigger on close", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, privacy: "private" },
+      });
+      const trigger = wrapper.find(".is-underlined");
+      await trigger.trigger("click");
+      await wrapper.vm.$nextTick();
+
+      expect(document.activeElement).toBe(body().find(".modal-card").element);
+
+      await body().find(".button.is-info").trigger("click");
+
+      expect(document.activeElement).toBe(trigger.element);
+    });
+
+    it("re-enables navigation shortcuts if unmounted while the modal is open", async () => {
+      const { wrapper, applicationStore } = mountPhotoInfo({
+        photo: { ...basePhoto, privacy: "private" },
+      });
+      await wrapper.find(".is-underlined").trigger("click");
+      expect(applicationStore.navigationShortcutsEnabled).toBe(false);
+
+      wrapper.unmount();
+      mountedWrapper = undefined;
+
+      expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+    });
+
     it("opens when the privacy value is clicked and disables navigation shortcuts", async () => {
       const { wrapper, applicationStore } = mountPhotoInfo({
         photo: { ...basePhoto, privacy: "private" },
