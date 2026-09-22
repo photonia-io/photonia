@@ -241,6 +241,54 @@ RSpec.describe Photo do
         expect { photo_with_exif.populate_exif_fields }.not_to change(photo_with_exif, :taken_at)
         expect(photo_with_exif.taken_at_source).to eq('user')
       end
+
+      it 'logs and falls back when EXIF data exists but has no date field' do
+        photo = build_stubbed(:photo, exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+
+      it 'logs and falls back when the EXIF date is not parseable' do
+        photo = build_stubbed(:photo, exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(Rails.logger).to have_received(:error).with("Invalid date format not-a-real-date for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+    end
+
+    describe '#taken_at_text' do
+      let(:photo) { build_stubbed(:photo, timezone: 'Bucharest') }
+
+      it 'returns an empty string when taken_at is not set' do
+        expect(photo.taken_at_text).to eq('')
+      end
+
+      it 'formats a year-precision date' do
+        photo.assign_taken_at(year: 1985)
+        expect(photo.taken_at_text).to eq('1985')
+      end
+
+      it 'formats a month-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8)
+        expect(photo.taken_at_text).to eq('August 1985')
+      end
+
+      it 'formats a day-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31)
+        expect(photo.taken_at_text).to eq(photo.taken_at.in_time_zone(photo.timezone).strftime('%B %e, %Y'))
+      end
+
+      it 'formats a minute-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at_text).to eq(photo.taken_at.in_time_zone(photo.timezone).strftime('%B %e, %Y, %H:%M'))
+      end
     end
 
     describe '#assign_taken_at' do
@@ -345,9 +393,8 @@ RSpec.describe Photo do
       # bang methods are defined via method_missing in ImageProcessing::Chainable
       # https://github.com/janko/image_processing/blob/master/lib/image_processing/chainable.rb#L84
 
-      # rubocop:disable RSpec/VerifiedDoubles
+      # rubocop:disable-next RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
-      # rubocop:enable RSpec/VerifiedDoubles
 
       let(:medium_side) { 800 }
       let(:thumbnail_side) { 300 }
@@ -447,9 +494,8 @@ RSpec.describe Photo do
       let(:photo) { build_stubbed(:photo) }
       let(:image_attacher) { instance_double(Shrine::Attacher) }
       # See the comment in the #add_derivatives spec for why we don't use instance_double here
-      # rubocop:disable RSpec/VerifiedDoubles
+      # rubocop:disable-next RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
-      # rubocop:enable RSpec/VerifiedDoubles
       let(:pixel_width) { 1600 }
       let(:pixel_height) { 1200 }
       let(:thumbnail) do
