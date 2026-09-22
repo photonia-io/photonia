@@ -75,8 +75,10 @@
               v-model="selectedPrivacy"
               :disabled="option.disabled"
             />
-            <span class="icon"><i :class="option.icon"></i></span>
-            <span class="has-text-weight-semibold">{{ option.label }}</span>
+            <span class="icon-text">
+              <span class="icon"><i :class="option.icon"></i></span>
+              <span class="has-text-weight-semibold">{{ option.label }}</span>
+            </span>
             <span class="has-text-weak is-block privacy-option-description">{{
               option.description
             }}</span>
@@ -206,10 +208,12 @@ const savePrivacy = () => {
     outline-offset: 2px;
   }
 
+  // Same background/text pairing as .tag/.notification's is-light variant,
+  // which is already dark-mode safe (see the is-light fix above).
   &.is-selected {
     border-color: var(--bulma-primary);
-    background-color: var(--bulma-primary-light);
-    color: var(--bulma-primary-light-invert);
+    background-color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-light-l));
+    color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-light-invert-l));
   }
 
   &.is-option-disabled {
