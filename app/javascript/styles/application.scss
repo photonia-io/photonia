@@ -141,36 +141,29 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   gap: 0.75rem;
 }
 
-// `allow-discrete` + `@starting-style` let `display: none <-> flex` itself
-// transition, so open AND close both animate with no JS on either end.
+// Bulma hides a modal with display:none, which can't transition, so this
+// keeps it always display:flex and animates opacity/visibility instead -
+// visibility's delay is what makes it un-interactible only once closed,
+// without blocking the closing fade the way display:none would. Widely
+// supported (no @starting-style/allow-discrete dependency).
 .modal {
-  transition: opacity 0.18s ease-out, display 0.18s allow-discrete;
+  display: flex !important;
   opacity: 0;
-
-  .modal-content,
-  .modal-card {
-    transition: transform 0.18s ease-out;
-    transform: translateY(-12px) scale(0.97);
-  }
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s linear, visibility 0s linear 0.18s;
 }
 
 .modal.is-active {
   opacity: 1;
-
-  @starting-style {
-    opacity: 0;
-  }
-
-  .modal-content,
-  .modal-card {
-    transform: none;
-  }
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.18s linear, visibility 0s linear 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .modal,
-  .modal .modal-content,
-  .modal .modal-card {
+  .modal.is-active {
     transition: none;
   }
 }
