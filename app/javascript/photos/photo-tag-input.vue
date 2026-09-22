@@ -52,7 +52,7 @@
       </div>
     </div>
     <div v-if="relatedTagsSuggestions.length > 0" class="mt-2">
-      <span class="has-text-grey-light is-size-7">Suggested tags: </span>
+      <span class="has-text-weak is-size-7">Suggested tags: </span>
       <a
         v-for="tag in relatedTagsSuggestions"
         :key="tag.id"

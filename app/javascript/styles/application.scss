@@ -1,5 +1,7 @@
 // @use "bulma/sass/utilities/mixins";
 
+@use "sass:list";
+
 @use "bulma/sass" with (
   $box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1),
   $section-padding: 3rem 0.75rem
@@ -10,6 +12,79 @@
 @use "bulma-divider" with (
   $divider-margin-size: 0.75rem
 );
+
+// Bulma's `is-light` variants are broken on a dark page, in two separate ways.
+//
+// 1. Every `is-light` element takes its background from `--bulma-light-l`, and
+//    the dark theme never overrides it, so an `is-light` tag or button stays a
+//    near-white slab whatever the theme.
+// 2. Bulma registers the `-light-l` / `-light-invert-l` lightness pair only for
+//    the themed colors, but `.tag.is-light` and `.notification.is-light` still
+//    ask for `--bulma-{white,black,light,dark}-light-invert-l`. Nothing defines
+//    those, so the whole `color` declaration is dropped and the label falls back
+//    to the inherited body text: light grey on that near-white background.
+//
+// Define the missing pairs, then swap light for dark in the dark theme so
+// `is-light` reads as a tinted surface with text to match.
+$is-light-neutrals: "white", "black", "light", "dark";
+$is-light-colors: "text", "primary", "link", "info", "success", "warning",
+  "danger";
+
+:root {
+  @each $name in $is-light-neutrals {
+    --bulma-#{$name}-light-l: var(--bulma-light-l);
+    --bulma-#{$name}-light-invert-l: var(--bulma-light-invert-l);
+  }
+}
+
+@mixin dark-theme-is-light {
+  // Drop `is-light` surfaces to the `dark` lightness so they sit just above the
+  // page instead of glaring off it.
+  --bulma-light-l: var(--bulma-dark-l);
+  --bulma-light-invert-l: var(--bulma-dark-invert-l);
+
+  // Label them with the pale tint of each color rather than its near-black one.
+  @each $name in $is-light-colors {
+    --bulma-#{$name}-light-invert-l: var(--bulma-#{$name}-light-l);
+  }
+
+  // Notifications are the one variant that hardcodes its `is-light` background
+  // instead of reading --bulma-light-l, so the surface has to be moved by hand.
+  @each $name in list.join($is-light-neutrals, $is-light-colors) {
+    .notification.is-#{$name}.is-light {
+      --bulma-notification-background-l: var(--bulma-dark-l);
+    }
+  }
+}
+
+// Covers the window before app.vue stamps data-theme on <html>.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not(.theme-light) {
+    @include dark-theme-is-light;
+  }
+}
+
+[data-theme="dark"],
+.theme-dark {
+  @include dark-theme-is-light;
+}
+
+// Bulma ships an `is-soft` modifier for buttons only, but the same "one step off
+// the page" surface is what the label and tag chips want. Doing it with
+// `has-background-grey-lighter` instead hardcodes a light-theme grey and leaves
+// the tag's own text color alone, so the chip turns into 71% grey on an 86% slab
+// as soon as the dark theme is on. The soft/soft-invert pair is theme-aware.
+.tag.is-soft {
+  --bulma-tag-background-l: var(--bulma-soft-l);
+  --bulma-tag-color-l: var(--bulma-soft-invert-l);
+}
+
+// Same story for de-emphasised text: `has-text-grey-light` is a fixed 71% grey,
+// which is tuned for a dark page and drops to 2:1 on a light one. Bulma keeps a
+// theme-aware `text-weak` but ships no helper for it.
+.has-text-weak {
+  color: var(--bulma-text-weak) !important;
+}
 
 .tag span.icon {
   margin-right: 0.3em !important;

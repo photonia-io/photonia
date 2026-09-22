@@ -52,6 +52,10 @@ const props = defineProps({
   position: absolute;
   font-size: 10px;
   background: rgba(255, 255, 255, 0.9);
+  /* Sits on a fixed white chip over the photo, so the text colour is fixed too
+     rather than themed -- without it the caption inherits the dark hero's light
+     text and comes out white on white. */
+  color: hsl(221, 14%, 21%);
   padding: 4px;
   margin: -26px 0 0 0;
   white-space: nowrap;

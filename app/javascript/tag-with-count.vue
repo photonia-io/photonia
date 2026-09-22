@@ -1,7 +1,7 @@
 <template>
   <div class="control">
     <div class="tags has-addons">
-      <router-link :to="{ name: 'tags-show', params: { id: tag.id } }" class="tag has-background-grey-lighter">{{ tag.name }}</router-link>
+      <router-link :to="{ name: 'tags-show', params: { id: tag.id } }" class="tag is-soft">{{ tag.name }}</router-link>
       <span class="tag">{{ tag.taggingsCount }}</span>
     </div>
   </div>
