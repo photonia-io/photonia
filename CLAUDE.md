@@ -14,6 +14,10 @@ Do not use emojis in commit messages. Much of the existing history is gitmoji-pr
 
 Never add Claude attribution to commit messages or PR descriptions — no `Co-Authored-By`, no `Claude-Session`, no "Generated with Claude Code".
 
+## UI changes
+
+When applying a UI change the user requested, do not verify it yourself with Playwright, run any test suite, or write any tests. Do not commit or push. After each changeset, ask the user to verify manually and wait for their feedback before doing anything further.
+
 ## Commands
 
 Dev servers (three processes):
