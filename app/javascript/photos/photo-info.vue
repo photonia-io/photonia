@@ -291,6 +291,11 @@ const handleTakenAtSave = (payload) => {
 const handleTakenAtReset = () => {
   emit("resetTakenAt", { id: photo.value.id });
 };
+
+// Called by show.vue once setPhotoTakenAt/resetPhotoTakenAt actually
+// succeed - the modal itself stays open on save/reset so a failed
+// mutation doesn't lose what the user entered.
+defineExpose({ closeTakenAtModal: handleTakenAtModalClose });
 </script>
 
 <style scoped lang="scss">

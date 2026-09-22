@@ -408,7 +408,12 @@ class Photo < ApplicationRecord
   def exif_taken_at
     return nil unless exif_exists?
 
-    raw = exif['exif']['date_time_original'] || exif['ifd0']['date_time']
+    # exif_exists? only rules out the {'error' => ...} shape - a real EXIF
+    # payload can still be missing the exif/ifd0 sections entirely.
+    data = exif
+    exif_section = data['exif'].is_a?(Hash) ? data['exif'] : {}
+    ifd0_section = data['ifd0'].is_a?(Hash) ? data['ifd0'] : {}
+    raw = exif_section['date_time_original'] || ifd0_section['date_time']
     unless raw
       Rails.logger.error "No date taken for slug = #{slug}"
       return nil

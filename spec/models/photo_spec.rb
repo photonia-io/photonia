@@ -252,6 +252,16 @@ RSpec.describe Photo do
         expect(photo.taken_at_source).to eq('unknown')
       end
 
+      it 'logs and falls back, rather than raising, when the exif or ifd0 section is entirely missing' do
+        photo = build_stubbed(:photo, exif: { 'gps' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        expect { photo.populate_exif_fields }.not_to raise_error
+
+        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+
       it 'logs and falls back when the EXIF date is not parseable' do
         photo = build_stubbed(:photo, exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
         allow(Rails.logger).to receive(:error)

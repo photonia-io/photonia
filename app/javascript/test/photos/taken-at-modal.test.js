@@ -185,6 +185,14 @@ describe("TakenAtModal", () => {
         scanned: true,
       });
     });
+
+    it("stays open after save, since the mutation is async and can fail", async () => {
+      mountModal();
+
+      await body().find(".modal-card-foot .button.is-primary").trigger("click");
+
+      expect(body().find(".modal").classes()).toContain("is-active");
+    });
   });
 
   describe("reset button", () => {
@@ -217,6 +225,14 @@ describe("TakenAtModal", () => {
       await body().find(".button.is-light").trigger("click");
 
       expect(wrapper.emitted("reset")).toBeTruthy();
+    });
+
+    it("stays open after reset, since the mutation is async and can fail", async () => {
+      mountModal({ takenAtInfo: { ...baseTakenAtInfo, source: "user" } });
+
+      await body().find(".button.is-light").trigger("click");
+
+      expect(body().find(".modal").classes()).toContain("is-active");
     });
   });
 

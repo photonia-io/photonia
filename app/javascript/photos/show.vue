@@ -67,6 +67,7 @@
               <div class="columns equal-height-columns">
                 <div class="column is-half">
                   <PhotoInfo
+                    ref="photoInfoRef"
                     :photo="photo"
                     :loading="loading"
                     :can-edit="canEditPhoto"
@@ -570,8 +571,13 @@ onSetPrivacyError((error) => {
   );
 });
 
+// Template ref to PhotoInfo, so its Date Taken modal can be closed once
+// the mutation actually succeeds, rather than closing it optimistically.
+const photoInfoRef = ref(null);
+
 onSetTakenAtDone(({ data }) => {
   toaster("The date taken has been updated");
+  photoInfoRef.value?.closeTakenAtModal();
 });
 
 onSetTakenAtError((error) => {
@@ -583,6 +589,7 @@ onSetTakenAtError((error) => {
 
 onResetTakenAtDone(({ data }) => {
   toaster("The date taken has been reset");
+  photoInfoRef.value?.closeTakenAtModal();
 });
 
 onResetTakenAtError((error) => {

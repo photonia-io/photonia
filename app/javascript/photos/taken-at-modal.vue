@@ -236,6 +236,9 @@ watch(
 
 const modalCard = modal.modalCard;
 
+// save()/reset() don't close the modal themselves - the mutation is async
+// and owned by show.vue, so entered values stay on screen (and correctable)
+// until show.vue confirms success and calls the exposed closeTakenAtModal.
 function save() {
   emit("save", {
     year: year.value,
@@ -246,12 +249,10 @@ function save() {
     approximate: approximate.value,
     scanned: scannedLocal.value,
   });
-  modal.close();
 }
 
 function reset() {
   emit("reset");
-  modal.close();
 }
 
 function close() {

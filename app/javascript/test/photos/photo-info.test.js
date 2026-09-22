@@ -5,10 +5,16 @@ import { createPinia, setActivePinia } from "pinia";
 import PhotoInfo from "../../photos/photo-info.vue";
 import { useApplicationStore } from "../../stores/application";
 
-// The privacy modal is teleported to #modal-root, outside the component's
-// own DOM tree, so it must be queried through the document body rather
-// than through the mounted wrapper.
+// Both modals are teleported to #modal-root, outside the component's own
+// DOM tree, so they must be queried through the document body rather than
+// through the mounted wrapper.
 const body = () => new DOMWrapper(document.body);
+
+// Disambiguates the two teleported ".modal" divs (privacy and Date Taken).
+const takenAtModal = () =>
+  body()
+    .findAll(".modal")
+    .find((modal) => modal.find('[aria-label="Photo Date Taken"]').exists());
 
 const basePhoto = {
   id: "some-slug",
@@ -403,6 +409,30 @@ describe("PhotoInfo", () => {
         .find((btn) => btn.text() === "Cancel");
       await cancelButton.trigger("click");
 
+      expect(document.activeElement).toBe(trigger.element);
+    });
+
+    it("stays open after saving, since show.vue owns the mutation result", async () => {
+      const { wrapper } = mountPhotoInfo();
+      await wrapper.find(".taken-at-trigger").trigger("click");
+
+      await body()
+        .find('[aria-label="Photo Date Taken"] .button.is-primary')
+        .trigger("click");
+
+      expect(takenAtModal().classes()).toContain("is-active");
+    });
+
+    it("exposes closeTakenAtModal for show.vue to call once the mutation succeeds", async () => {
+      const { wrapper } = mountPhotoInfo();
+      const trigger = wrapper.find(".taken-at-trigger");
+      await trigger.trigger("click");
+      expect(takenAtModal().classes()).toContain("is-active");
+
+      wrapper.vm.closeTakenAtModal();
+      await wrapper.vm.$nextTick();
+
+      expect(takenAtModal().classes()).not.toContain("is-active");
       expect(document.activeElement).toBe(trigger.element);
     });
   });
