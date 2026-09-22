@@ -79,9 +79,11 @@
               <span class="icon"><i :class="option.icon"></i></span>
               <span class="has-text-weight-semibold">{{ option.label }}</span>
             </span>
-            <span class="has-text-weak is-block privacy-option-description">{{
-              option.description
-            }}</span>
+            <span
+              class="is-block privacy-option-description"
+              :class="{ 'has-text-weak': selectedPrivacy !== option.value }"
+              >{{ option.description }}</span
+            >
           </label>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
