@@ -66,7 +66,12 @@
 
               <div class="columns equal-height-columns">
                 <div class="column is-half">
-                  <PhotoInfo :photo="photo" :loading="loading" />
+                  <PhotoInfo
+                    :photo="photo"
+                    :loading="loading"
+                    :can-edit="canEditPhoto"
+                    @update-privacy="setPhotoPrivacy"
+                  />
                 </div>
                 <div class="column is-half">
                   <PhotoInfobox>
@@ -340,6 +345,7 @@ const emptyPhoto = {
   title: "",
   description: "",
   largeImageUrl: "",
+  privacy: "public",
   previousPhoto: null,
   nextPhoto: null,
   albums: [],
@@ -394,6 +400,19 @@ const {
   mutation ($id: String!) {
     deletePhoto(id: $id) {
       id
+    }
+  }
+`);
+
+const {
+  mutate: setPhotoPrivacy,
+  onDone: onSetPrivacyDone,
+  onError: onSetPrivacyError,
+} = useMutation(gql`
+  mutation ($id: String!, $privacy: String!) {
+    setPhotoPrivacy(id: $id, privacy: $privacy) {
+      id
+      privacy
     }
   }
 `);
@@ -468,6 +487,17 @@ onDeletePhotoDone(({ data }) => {
 
 onDeletePhotoError((error) => {
   // todo console.log(error)
+});
+
+onSetPrivacyDone(({ data }) => {
+  toaster("The privacy has been updated");
+});
+
+onSetPrivacyError((error) => {
+  toaster(
+    "An error occurred while updating the privacy: " + error.message,
+    "is-danger",
+  );
 });
 
 onUpdateThumbnailDone(({ data }) => {

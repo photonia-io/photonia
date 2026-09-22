@@ -159,6 +159,7 @@ class GraphqlQueryCollection
           exifIso
           postedAt
           impressionsCount
+          privacy
           previousPhoto {
             id
             title
