@@ -26,7 +26,18 @@ describe 'photo Query' do
             largeImageUrl: imageUrl(type: "large")
             extralargeImageUrl: imageUrl(type: "extralarge")
             takenAt
-            isTakenAtFromExif
+            takenAtInfo {
+              year
+              month
+              day
+              hour
+              minute
+              precision
+              source
+              approximate
+              exifAvailable
+            }
+            scanned
             exifExists
             exifCameraFriendlyName
             exifFNumber
@@ -75,7 +86,8 @@ describe 'photo Query' do
       expect(response_photo['extralargeImageUrl']).to eq photo.image_url(:extralarge)
 
       expect(response_photo['takenAt']).to eq photo.taken_at.iso8601
-      expect(response_photo['isTakenAtFromExif']).to eq photo.taken_at_from_exif
+      expect(response_photo['takenAtInfo']).to eq(photo.taken_at_info.deep_transform_keys { |key| key.to_s.camelize(:lower) })
+      expect(response_photo['scanned']).to eq photo.scanned
 
       expect(response_photo['exifExists']).to eq photo.exif_exists?
       expect(response_photo['exifCameraFriendlyName']).to eq photo.exif_camera_friendly_name
@@ -110,7 +122,7 @@ describe 'photo Query' do
         end
       end
 
-      expect(response_photo['canEdit']).to eq false
+      expect(response_photo['canEdit']).to be false
     end
   end
 

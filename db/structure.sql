@@ -1,6 +1,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -405,9 +406,12 @@ CREATE TABLE public.photos (
     tsv tsvector,
     impressions_count integer DEFAULT 0 NOT NULL,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
-    taken_at_from_exif boolean DEFAULT false,
     description_html text,
-    user_thumbnail jsonb
+    user_thumbnail jsonb,
+    taken_at_precision character varying DEFAULT 'minute'::character varying NOT NULL,
+    taken_at_source character varying DEFAULT 'unknown'::character varying NOT NULL,
+    taken_at_approximate boolean DEFAULT false NOT NULL,
+    scanned boolean DEFAULT false NOT NULL
 );
 
 
@@ -1489,6 +1493,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260922131026'),
 ('20251108131127'),
 ('20251107000001'),
 ('20251106121510'),

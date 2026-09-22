@@ -45,7 +45,7 @@ namespace :photos do
 
   desc 'Fix date taken for photos without EXIF'
   task fix_taken_at: :environment do
-    Photo.unscoped.where(taken_at_from_exif: false).update_all('taken_at = posted_at')
+    Photo.unscoped.where(taken_at_source: 'unknown').update_all('taken_at = posted_at')
   end
 
   desc 'Set HTML description for all photos'

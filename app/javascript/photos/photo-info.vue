@@ -23,14 +23,27 @@
     <div class="icon-text">
       <span class="icon"><i class="fas fa-camera"></i></span>
       <span class="has-text-weight-semibold">Date Taken:</span>
-      <span v-if="!loading" class="ml-1">{{
-        momentFormat(photo.takenAt)
+      <span v-if="!loading && !canEdit" class="ml-1">{{
+        formatTakenAt(photo.takenAtInfo)
       }}</span>
-      <span
-        v-if="!loading && photo.isTakenAtFromExif"
-        class="tag has-background ml-1 has-text-weight-bold"
+      <button
+        v-if="!loading && canEdit"
+        ref="takenAtTriggerButton"
+        type="button"
+        class="taken-at-trigger is-underlined is-clickable ml-1"
+        @click="openTakenAtModal"
       >
-        EXIF
+        {{ formatTakenAt(photo.takenAtInfo) }}
+      </button>
+      <span v-if="takenAtChips.length" class="taken-at-chips">
+        <span
+          v-for="chip in takenAtChips"
+          :key="chip.label"
+          :title="chip.title"
+          class="tag taken-at-chip has-background has-text-weight-bold"
+        >
+          {{ chip.label }}
+        </span>
       </span>
     </div>
     <div class="icon-text">
@@ -106,13 +119,22 @@
       </div>
     </div>
   </teleport>
+  <TakenAtModal
+    :active="takenAtModalActive"
+    :taken-at-info="photo.takenAtInfo"
+    :scanned="photo.scanned"
+    @save="handleTakenAtSave"
+    @reset="handleTakenAtReset"
+    @close="handleTakenAtModalClose"
+  />
 </template>
 
 <script setup>
-import { computed, nextTick, onUnmounted, ref, toRefs } from "vue";
-import { useApplicationStore } from "../stores/application";
+import { computed, ref, toRefs } from "vue";
+import { useModal } from "../mixins/use-modal.js";
 import PhotoInfobox from "./photo-infobox.vue";
 import SidebarHeader from "./sidebar-header.vue";
+import TakenAtModal from "./taken-at-modal.vue";
 import moment from "moment/min/moment-with-locales";
 
 const props = defineProps({
@@ -132,11 +154,36 @@ const props = defineProps({
 
 const { photo } = toRefs(props);
 
-const emit = defineEmits(["updatePrivacy"]);
+const emit = defineEmits(["updatePrivacy", "updateTakenAt", "resetTakenAt"]);
 
 const format = "dddd, MMMM Do YYYY, H:mm";
 function momentFormat(date) {
   return moment(date).format(format);
+}
+
+// Builds a local moment from the taken_at components directly, rather than
+// parsing an ISO string, so no timezone shifting can happen for a partial date.
+function formatTakenAt(info) {
+  if (!info) return "";
+
+  const local = moment({
+    year: info.year,
+    month: (info.month ?? 1) - 1,
+    day: info.day ?? 1,
+    hour: info.hour ?? 0,
+    minute: info.minute ?? 0,
+  });
+
+  switch (info.precision) {
+    case "year":
+      return local.format("YYYY");
+    case "month":
+      return local.format("MMMM YYYY");
+    case "day":
+      return local.format("dddd, MMMM Do YYYY");
+    default:
+      return local.format(format);
+  }
 }
 
 const PRIVACY_OPTIONS = [
@@ -169,42 +216,22 @@ const privacyDisplay = computed(
   () => PRIVACY_DISPLAY[photo.value.privacy] ?? PRIVACY_DISPLAY.public,
 );
 
-const applicationStore = useApplicationStore();
-
-const modalActive = ref(false);
 const selectedPrivacy = ref(photo.value.privacy);
 const privacyTriggerButton = ref(null);
-const modalCard = ref(null);
 
-const handleModalKeydown = (event) => {
-  if (event.key === "Escape") {
-    closePrivacyModal();
-  }
-};
+const {
+  active: modalActive,
+  modalCard,
+  open: openModal,
+  close: closePrivacyModal,
+} = useModal({
+  onClose: () => privacyTriggerButton.value?.focus(),
+});
 
 const openPrivacyModal = () => {
   selectedPrivacy.value = photo.value.privacy;
-  modalActive.value = true;
-  applicationStore.disableNavigationShortcuts();
-  document.addEventListener("keydown", handleModalKeydown);
-  nextTick(() => {
-    modalCard.value?.focus();
-  });
+  openModal();
 };
-
-const closePrivacyModal = () => {
-  modalActive.value = false;
-  applicationStore.enableNavigationShortcuts();
-  document.removeEventListener("keydown", handleModalKeydown);
-  privacyTriggerButton.value?.focus();
-};
-
-onUnmounted(() => {
-  if (modalActive.value) {
-    applicationStore.enableNavigationShortcuts();
-    document.removeEventListener("keydown", handleModalKeydown);
-  }
-});
 
 const savePrivacy = () => {
   if (selectedPrivacy.value !== photo.value.privacy) {
@@ -214,6 +241,55 @@ const savePrivacy = () => {
     });
   }
   closePrivacyModal();
+};
+
+const takenAtChips = computed(() => {
+  const info = photo.value.takenAtInfo;
+  const chips = [];
+  if (info?.source === "exif") {
+    chips.push({
+      label: "EXIF",
+      title: "This date was read from the photo's EXIF metadata.",
+    });
+  } else if (info?.source === "user") {
+    chips.push({
+      label: "User Set",
+      title: "This date was entered manually.",
+    });
+  }
+  if (photo.value.scanned) {
+    chips.push({
+      label: "Scan",
+      title: "This is a scan of a print or negative.",
+    });
+  }
+  if (info?.approximate) {
+    chips.push({
+      label: "Approximate",
+      title: "This date is not exact.",
+    });
+  }
+  return chips;
+});
+
+const takenAtTriggerButton = ref(null);
+const takenAtModalActive = ref(false);
+
+const openTakenAtModal = () => {
+  takenAtModalActive.value = true;
+};
+
+const handleTakenAtModalClose = () => {
+  takenAtModalActive.value = false;
+  takenAtTriggerButton.value?.focus();
+};
+
+const handleTakenAtSave = (payload) => {
+  emit("updateTakenAt", { id: photo.value.id, ...payload });
+};
+
+const handleTakenAtReset = () => {
+  emit("resetTakenAt", { id: photo.value.id });
 };
 </script>
 
@@ -262,11 +338,31 @@ const savePrivacy = () => {
   margin-top: 0.25rem;
 }
 
-.privacy-trigger {
+.privacy-trigger,
+.taken-at-trigger {
   background: none;
   border: none;
   padding: 0;
   font: inherit;
   color: inherit;
+}
+
+// A tighter, self-contained gap for chip-to-chip spacing than
+// .icon-text's own row-wide gap gives - kept separate so it doesn't
+// affect the icon/label/value spacing shared by every other row.
+.taken-at-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  margin-left: 0.1em;
+}
+
+// has-background gives these chips the page's own background (see the
+// EXIF chip this was copied from), so the pill itself is invisible - Bulma's
+// default 0.75em side padding then reads as bare whitespace around the
+// text rather than pill padding. Trim it so the chips sit close together.
+.taken-at-chip {
+  padding-left: 0.35em;
+  padding-right: 0.35em;
 }
 </style>

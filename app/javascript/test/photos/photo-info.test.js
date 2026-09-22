@@ -14,8 +14,19 @@ const basePhoto = {
   id: "some-slug",
   impressionsCount: 42,
   takenAt: "2024-01-01T00:00:00Z",
+  takenAtInfo: {
+    year: 2024,
+    month: 1,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    precision: "minute",
+    source: "exif",
+    approximate: false,
+    exifAvailable: true,
+  },
+  scanned: false,
   postedAt: "2024-01-02T00:00:00Z",
-  isTakenAtFromExif: false,
   rekognitionLabelModelVersion: "",
   privacy: "private",
 };
@@ -210,6 +221,189 @@ describe("PhotoInfo", () => {
       expect(wrapper.emitted("updatePrivacy")).toBeFalsy();
       expect(body().find(".modal").classes()).not.toContain("is-active");
       expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+    });
+  });
+
+  describe("Date Taken trigger", () => {
+    it("renders as plain text when canEdit is false", () => {
+      const { wrapper } = mountPhotoInfo({ canEdit: false });
+      expect(wrapper.find(".taken-at-trigger").exists()).toBe(false);
+      expect(wrapper.text()).toContain("Date Taken:");
+    });
+
+    it("renders as a button when canEdit is true", () => {
+      const { wrapper } = mountPhotoInfo({ canEdit: true });
+      expect(wrapper.find(".taken-at-trigger").element.tagName).toBe(
+        "BUTTON",
+      );
+    });
+  });
+
+  describe("Date Taken formatting", () => {
+    it.each([
+      ["year", { year: 1985 }, "1985"],
+      ["month", { year: 1985, month: 8 }, "August 1985"],
+      ["day", { year: 1985, month: 8, day: 31 }, "Saturday, August 31st 1985"],
+      [
+        "minute",
+        { year: 1985, month: 8, day: 31, hour: 17, minute: 5 },
+        "Saturday, August 31st 1985, 17:05",
+      ],
+    ])("formats %s precision as %s", (precision, parts, expected) => {
+      const { wrapper } = mountPhotoInfo({
+        photo: {
+          ...basePhoto,
+          takenAtInfo: {
+            ...basePhoto.takenAtInfo,
+            year: null,
+            month: null,
+            day: null,
+            hour: null,
+            minute: null,
+            ...parts,
+            precision,
+          },
+        },
+      });
+      expect(wrapper.find(".taken-at-trigger").text()).toBe(expected);
+    });
+  });
+
+  describe("Date Taken chips", () => {
+    it("shows an EXIF chip when the source is exif", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, takenAtInfo: { ...basePhoto.takenAtInfo, source: "exif" } },
+      });
+      expect(wrapper.text()).toContain("EXIF");
+      expect(wrapper.text()).not.toContain("User Set");
+    });
+
+    it("shows a User Set chip when the source is user", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, takenAtInfo: { ...basePhoto.takenAtInfo, source: "user" } },
+      });
+      expect(wrapper.text()).toContain("User Set");
+    });
+
+    it("shows no source chip when the source is unknown", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, takenAtInfo: { ...basePhoto.takenAtInfo, source: "unknown" } },
+      });
+      expect(wrapper.text()).not.toContain("EXIF");
+      expect(wrapper.text()).not.toContain("User Set");
+    });
+
+    it("shows a Scan chip when the photo is scanned", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, scanned: true },
+      });
+      expect(wrapper.text()).toContain("Scan");
+    });
+
+    it("shows an Approximate chip when the date is approximate", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: {
+          ...basePhoto,
+          takenAtInfo: { ...basePhoto.takenAtInfo, approximate: true },
+        },
+      });
+      expect(wrapper.text()).toContain("Approximate");
+    });
+
+    it("shows all three chips together", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: {
+          ...basePhoto,
+          scanned: true,
+          takenAtInfo: {
+            ...basePhoto.takenAtInfo,
+            source: "user",
+            approximate: true,
+          },
+        },
+      });
+      expect(wrapper.text()).toContain("User Set");
+      expect(wrapper.text()).toContain("Scan");
+      expect(wrapper.text()).toContain("Approximate");
+    });
+
+    it("gives each chip an explanatory title attribute", () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: {
+          ...basePhoto,
+          scanned: true,
+          takenAtInfo: {
+            ...basePhoto.takenAtInfo,
+            source: "user",
+            approximate: true,
+          },
+        },
+      });
+      const chips = wrapper.findAll(".taken-at-chip");
+      const titles = chips.map((chip) => chip.attributes("title"));
+      expect(titles).toEqual([
+        "This date was entered manually.",
+        "This is a scan of a print or negative.",
+        "This date is not exact.",
+      ]);
+    });
+  });
+
+  describe("Date Taken modal wiring", () => {
+    it("opens the modal when the date is clicked", async () => {
+      const { wrapper } = mountPhotoInfo();
+      await wrapper.find(".taken-at-trigger").trigger("click");
+
+      expect(
+        body().find('[aria-label="Photo Date Taken"]').exists(),
+      ).toBe(true);
+    });
+
+    it("emits updateTakenAt with the id when the modal saves", async () => {
+      const { wrapper } = mountPhotoInfo();
+      await wrapper.find(".taken-at-trigger").trigger("click");
+
+      await body()
+        .find('[aria-label="Photo Date Taken"] .button.is-primary')
+        .trigger("click");
+
+      expect(wrapper.emitted("updateTakenAt")).toBeTruthy();
+      expect(wrapper.emitted("updateTakenAt")[0][0]).toMatchObject({
+        id: "some-slug",
+      });
+    });
+
+    it("emits resetTakenAt with the id when reset is clicked", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: {
+          ...basePhoto,
+          takenAtInfo: { ...basePhoto.takenAtInfo, source: "user" },
+        },
+      });
+      await wrapper.find(".taken-at-trigger").trigger("click");
+
+      const resetButton = body()
+        .findAll('[aria-label="Photo Date Taken"] .button.is-light')
+        .find((btn) => btn.text().includes("Reset"));
+      await resetButton.trigger("click");
+
+      expect(wrapper.emitted("resetTakenAt")).toEqual([
+        [{ id: "some-slug" }],
+      ]);
+    });
+
+    it("returns focus to the trigger on close", async () => {
+      const { wrapper } = mountPhotoInfo();
+      const trigger = wrapper.find(".taken-at-trigger");
+      await trigger.trigger("click");
+      await wrapper.vm.$nextTick();
+
+      const cancelButton = body()
+        .findAll('[aria-label="Photo Date Taken"] .button')
+        .find((btn) => btn.text() === "Cancel");
+      await cancelButton.trigger("click");
+
+      expect(document.activeElement).toBe(trigger.element);
     });
   });
 });
