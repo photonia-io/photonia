@@ -129,14 +129,9 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   }
 }
 
-// Bulma 1.x's modal-card reuses one "head" padding variable for both the
-// head AND the foot (2rem on every side), and sizes the title at
-// --bulma-size-4 (1.5rem). For this app's short titles ("Delete Photo",
-// "Photo Privacy") that reads as an oversized banner floating in empty
-// space, and gives the footer the same tall padding as the header while
-// its action buttons touch each other with no gap — Bulma only spaces
-// buttons via the separate `.buttons` helper class, which about half of
-// this app's modals don't use.
+// Bulma's modal-card shares one padding var between head and foot, and
+// sizes the title at --bulma-size-4 - both oversized for this app's short
+// titles, and the footer gets no gap between its buttons by default.
 .modal {
   --bulma-modal-card-head-padding: 1rem 1.5rem;
   --bulma-modal-card-title-size: var(--bulma-size-5);

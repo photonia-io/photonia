@@ -12,13 +12,8 @@ export default defineConfig({
     // it over the LAN by hostname instead of localhost) - otherwise Vite's
     // own dev-server host check rejects it.
     allowedHosts: true,
-    // Regular asset requests already reach this dev server through Rails'
-    // ViteRuby::DevServerProxy, so any Host works for those without this.
-    // HMR's websocket is different: the browser opens it directly against
-    // this port (Rails can't proxy a websocket upgrade), targeting
-    // whatever hostname is in the address bar - by default Vite only
-    // binds loopback, so that connection is refused from any other host on
-    // the LAN. Bind every interface so it's actually reachable there too.
+    // HMR's websocket connects to this port directly from the browser
+    // (Rails can't proxy it), so it needs to be reachable beyond loopback.
     host: true
   },
   css: {

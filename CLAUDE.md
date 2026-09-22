@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Photonia is a self-hosted photo sharing app: Rails 7 (Ruby 3.4.7) API + a Vue 3 SPA, Postgres, Sidekiq/Redis, Shrine on S3, AWS Rekognition for auto-tagging. Most of the photo corpus was originally imported from a Flickr export.
 
+## Code style
+
+Keep comments short — no kilometric comments explaining the obvious.
+
 ## Git
 
 Do not use emojis in commit messages. Much of the existing history is gitmoji-prefixed (`⬆️ Update …`); do not copy that style for new commits.
