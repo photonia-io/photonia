@@ -119,4 +119,25 @@ RSpec.describe 'approveFlickrClaim Mutation', type: :request do
       expect(claim.flickr_user.reload.claimed_by_user).to eq(claim.user)
     end
   end
+
+  context 'when an unexpected error occurs' do
+    let(:admin) { create(:user, admin: true) }
+    let(:claim) { create(:flickr_user_claim) } # pending by default
+    let(:query) { build_query(claim.id) }
+
+    before do
+      sign_in(admin)
+      fake_service = instance_double(FlickrUserClaimService)
+      allow(FlickrUserClaimService).to receive(:new).and_return(fake_service)
+      allow(fake_service).to receive(:approve_claim).and_raise(StandardError, 'boom')
+    end
+
+    it 'returns error payload with the error message' do
+      post_mutation
+      payload = data_dig(response, 'approveFlickrClaim')
+      expect(payload['success']).to be(false)
+      expect(payload['claim']).to be_nil
+      expect(payload['errors']).to include('boom')
+    end
+  end
 end

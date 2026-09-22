@@ -130,6 +130,21 @@ RSpec.describe FlickrUserClaimService do
         expect(result[:error]).to eq('Invalid claim type')
       end
     end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(FlickrAPIService).to receive(:profile_get_profile_description)
+          .with(flickr_user.nsid)
+          .and_raise(StandardError, 'boom')
+      end
+
+      it 'returns a failure result with the error message' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('boom')
+      end
+    end
   end
 
   describe '#request_manual_claim' do
@@ -202,6 +217,19 @@ RSpec.describe FlickrUserClaimService do
         expect(result[:error]).to eq('Claim is not pending')
       end
     end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(claim).to receive(:approve!).and_raise(StandardError, 'boom')
+      end
+
+      it 'returns a failure result with the error message' do
+        result = service.approve_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('boom')
+      end
+    end
   end
 
   describe '#deny_claim' do
@@ -227,6 +255,19 @@ RSpec.describe FlickrUserClaimService do
         ).and_return(double(flickr_claim_denied: double(deliver_later: true)))
 
         service.deny_claim(claim)
+      end
+    end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(claim).to receive(:deny!).and_raise(StandardError, 'boom')
+      end
+
+      it 'returns a failure result with the error message' do
+        result = service.deny_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('boom')
       end
     end
 

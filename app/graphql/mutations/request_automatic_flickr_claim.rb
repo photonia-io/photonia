@@ -28,8 +28,9 @@ module Mutations
       claim = service.request_automatic_claim
 
       { claim: claim, errors: [] }
-    rescue Pundit::NotAuthorizedError
-      { claim: nil, errors: ['Not authorized to create claim'] }
+    # No rescue Pundit::NotAuthorizedError here: FlickrUserClaimPolicy#create? is just
+    # `user.present?`, and current_user is already guaranteed present above, so authorize
+    # can never actually deny this - unlike the other claim mutations.
     rescue StandardError => e
       { claim: nil, errors: [e.message] }
     end
