@@ -143,7 +143,7 @@ GEM
     cgi (0.5.2)
     coderay (1.1.3)
     concurrent-ruby (1.3.8)
-    connection_pool (3.0.2)
+    connection_pool (2.5.5)
     content_disposition (1.0.0)
     crass (1.0.7)
     date (3.5.1)
@@ -476,12 +476,12 @@ GEM
     shrine (3.10.0)
       content_disposition (~> 1.0)
       down (~> 5.1)
-    sidekiq (7.3.9)
+    sidekiq (7.3.10)
       base64
-      connection_pool (>= 2.3.0)
+      connection_pool (>= 2.3.0, < 3)
       logger
-      rack (>= 2.2.4)
-      redis-client (>= 0.22.2)
+      rack (>= 2.2.4, < 3.3)
+      redis-client (>= 0.23.0, < 1)
     sidekiq-scheduler (5.0.6)
       rufus-scheduler (~> 3.2)
       sidekiq (>= 6, < 8)
@@ -601,7 +601,7 @@ DEPENDENCIES
   sentry-ruby (~> 5.8)
   shoulda-matchers (~> 6.1)
   shrine (~> 3.0)
-  sidekiq
+  sidekiq (~> 7.3, >= 7.3.10)
   sidekiq-scheduler (~> 5.0)
   simplecov
   simplecov-cobertura
