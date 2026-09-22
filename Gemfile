@@ -51,7 +51,7 @@ gem 'redis'
 gem 'sentry-rails', '~> 5.8'
 gem 'sentry-ruby', '~> 5.8'
 gem 'shrine', '~> 3.0'
-gem 'sidekiq'
+gem 'sidekiq', '~> 7.3.0', '>= 7.3.10'
 gem 'sidekiq-scheduler', '~> 5.0'
 gem 'sitemap_generator'
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby] # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
