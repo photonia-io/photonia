@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { mount, RouterLinkStub } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
@@ -190,6 +190,33 @@ describe("DisplayHero", () => {
 
       await wrapper.find("img").trigger("load");
       expect(wrapper.find(".loading-spinner").exists()).toBe(false);
+    });
+
+    it("stays up until the box finishes resizing, even if the incoming image loads instantly from cache", async () => {
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+
+      try {
+        const wrapper = mountDisplayHero({ photo: portraitPhoto });
+        await wrapper.find("img").trigger("load");
+        await nextTick();
+        await nextFrame(); // arms the box's CSS transition
+
+        await wrapper.setProps({ photo: landscapePhoto, loading: false });
+        // Simulates a cache hit: the browser resolves "load" immediately,
+        // well before the box's transition would finish.
+        await wrapper.find("img").trigger("load");
+
+        expect(wrapper.find("img").element.style.opacity).toBe("0");
+        expect(wrapper.find(".loading-spinner").exists()).toBe(true);
+
+        vi.advanceTimersByTime(350);
+        await nextTick();
+
+        expect(wrapper.find("img").element.style.opacity).toBe("1");
+        expect(wrapper.find(".loading-spinner").exists()).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

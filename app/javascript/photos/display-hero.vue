@@ -18,7 +18,7 @@
         :style="{ '--photo-ratio': ratio, '--photo-width': nativeWidth }"
       >
         <!-- Loading spinner -->
-        <div v-if="loading || imageLoading" class="loading-spinner">
+        <div v-if="showSpinner" class="loading-spinner">
           <div class="spinner"></div>
         </div>
 
@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import DisplayLabel from "./display-label.vue";
 import LabelListItem from "./label-list-item.vue";
 import PhotoLightbox from "./photo-lightbox.vue";
@@ -139,6 +139,20 @@ const nativeWidth = ref(1200);
 const animated = ref(false);
 let animationEnabled = false;
 
+// Must match #image-wrapper.is-animated's transition-duration below.
+const BOX_TRANSITION_MS = 350;
+
+// True once the box has finished animating to the incoming photo's shape.
+// A cached image can fire "load" almost instantly - far faster than the box
+// transition - so gating the reveal on imageLoading alone would show the
+// image while the box is still resizing under it, making the photo itself
+// look like it's growing or shrinking. Starts true: there's nothing to wait
+// for until a navigation actually starts an animated transition.
+const boxSettled = ref(true);
+let boxSettleTimer = null;
+
+onBeforeUnmount(() => clearTimeout(boxSettleTimer));
+
 watch(
   () => props.photo.extralargeDimensions,
   (dimensions) => {
@@ -164,6 +178,16 @@ watch(
   () => props.photo.id,
   () => {
     imageLoading.value = true;
+
+    // Only an actual navigation (not the first-ever load, which never
+    // animates) needs the reveal gated on the box settling.
+    if (animated.value) {
+      boxSettled.value = false;
+      clearTimeout(boxSettleTimer);
+      boxSettleTimer = setTimeout(() => {
+        boxSettled.value = true;
+      }, BOX_TRANSITION_MS);
+    }
   },
 );
 
@@ -183,12 +207,20 @@ const onImageError = () => {
   imageLoading.value = false;
 };
 
-// 0 while the new image is downloading, 0.6 while the previous photo is
-// being held on screen during a navigation, 1 otherwise.
+// 0 while the new image is downloading or the box is still resizing to its
+// shape, 0.6 while the previous photo is being held on screen during a
+// navigation, 1 otherwise.
 const heroOpacity = computed(() => {
-  if (imageLoading.value) return 0;
+  if (imageLoading.value || !boxSettled.value) return 0;
   if (props.loading) return 0.6;
   return 1;
+});
+
+// Covers the same span as heroOpacity's hidden state, plus the initial
+// "a navigation has started but the new photo hasn't arrived yet" moment
+// (props.loading, when the old image is only dimmed rather than hidden).
+const showSpinner = computed(() => {
+  return props.loading || imageLoading.value || !boxSettled.value;
 });
 
 const showLabels = computed(() => {
