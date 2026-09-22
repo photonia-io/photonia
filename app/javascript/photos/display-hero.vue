@@ -16,6 +16,7 @@
         id="image-wrapper"
         :class="{ 'is-animated': animated }"
         :style="{ '--photo-ratio': ratio, '--photo-width': nativeWidth }"
+        @transitionend="onBoxTransitionEnd"
       >
         <!-- Loading spinner -->
         <div v-if="showSpinner" class="loading-spinner">
@@ -31,7 +32,7 @@
               :src="photo.extralargeImageUrl"
               @load="onImageLoad"
               @error="onImageError"
-              :style="{ opacity: heroOpacity }"
+              :style="imageStyle"
             />
           </router-link>
           <img
@@ -41,7 +42,7 @@
             @click="openLightbox"
             @load="onImageLoad"
             @error="onImageError"
-            :style="{ cursor: 'pointer', opacity: heroOpacity }"
+            :style="{ cursor: 'pointer', ...imageStyle }"
           />
         </template>
         <div v-if="showLabels" class="labels">
@@ -139,8 +140,11 @@ const nativeWidth = ref(1200);
 const animated = ref(false);
 let animationEnabled = false;
 
-// Must match #image-wrapper.is-animated's transition-duration below.
-const BOX_TRANSITION_MS = 350;
+// Slightly longer than #image-wrapper.is-animated's transition-duration
+// below - only a safety net for when transitionend doesn't fire (e.g. the
+// incoming photo happens to share the outgoing one's exact ratio and native
+// width, so nothing actually animates), never the primary signal.
+const BOX_TRANSITION_FALLBACK_MS = 500;
 
 // True once the box has finished animating to the incoming photo's shape.
 // A cached image can fire "load" almost instantly - far faster than the box
@@ -149,9 +153,22 @@ const BOX_TRANSITION_MS = 350;
 // look like it's growing or shrinking. Starts true: there's nothing to wait
 // for until a navigation actually starts an animated transition.
 const boxSettled = ref(true);
-let boxSettleTimer = null;
+let boxSettleFallbackTimer = null;
 
-onBeforeUnmount(() => clearTimeout(boxSettleTimer));
+const settleBox = () => {
+  clearTimeout(boxSettleFallbackTimer);
+  boxSettled.value = true;
+};
+
+// Real signal that the box has reached its new shape, rather than a guessed
+// duration that has to be kept in sync with the CSS by hand.
+const onBoxTransitionEnd = (event) => {
+  if (event.target !== event.currentTarget) return; // ignore the img's own opacity transition bubbling up
+  if (event.propertyName !== "--photo-ratio" && event.propertyName !== "--photo-width") return;
+  settleBox();
+};
+
+onBeforeUnmount(() => clearTimeout(boxSettleFallbackTimer));
 
 watch(
   () => props.photo.extralargeDimensions,
@@ -183,10 +200,8 @@ watch(
     // animates) needs the reveal gated on the box settling.
     if (animated.value) {
       boxSettled.value = false;
-      clearTimeout(boxSettleTimer);
-      boxSettleTimer = setTimeout(() => {
-        boxSettled.value = true;
-      }, BOX_TRANSITION_MS);
+      clearTimeout(boxSettleFallbackTimer);
+      boxSettleFallbackTimer = setTimeout(settleBox, BOX_TRANSITION_FALLBACK_MS);
     }
   },
 );
@@ -215,6 +230,15 @@ const heroOpacity = computed(() => {
   if (props.loading) return 0.6;
   return 1;
 });
+
+// The hide (triggered by imageLoading going true at the start of a
+// navigation) must be instant, not a fade: #image-wrapper's resize starts
+// at that exact moment, and a 300ms fade-out would stay visible - and
+// visibly resize - throughout it. Only the later reveal should be smooth.
+const imageStyle = computed(() => ({
+  opacity: heroOpacity.value,
+  transition: imageLoading.value ? "none" : "opacity 300ms ease-in-out",
+}));
 
 // Covers the same span as heroOpacity's hidden state, plus the initial
 // "a navigation has started but the new photo hasn't arrived yet" moment
@@ -280,7 +304,8 @@ const showLabels = computed(() => {
   height: 100%;
   object-fit: contain;
   border-radius: 2px;
-  transition: opacity 300ms ease-in-out;
+  // transition itself is set inline (imageStyle) - the hide must be instant,
+  // only the reveal fades, so it can't be a single static rule here.
 }
 
 /* remove padding from hero-body when on mobile */

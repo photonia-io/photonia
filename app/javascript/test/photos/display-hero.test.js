@@ -193,23 +193,69 @@ describe("DisplayHero", () => {
     });
 
     it("stays up until the box finishes resizing, even if the incoming image loads instantly from cache", async () => {
+      const wrapper = mountDisplayHero({ photo: portraitPhoto });
+      await wrapper.find("img").trigger("load");
+      await nextTick();
+      await nextFrame(); // arms the box's CSS transition
+
+      await wrapper.setProps({ photo: landscapePhoto, loading: false });
+      // Simulates a cache hit: the browser resolves "load" immediately,
+      // well before the box's transition would finish.
+      await wrapper.find("img").trigger("load");
+
+      expect(wrapper.find("img").element.style.opacity).toBe("0");
+      expect(wrapper.find(".loading-spinner").exists()).toBe(true);
+
+      // The real signal: the box's own transition (not the img's opacity
+      // transition, which must be ignored) reaching its end.
+      await wrapper.find("#image-wrapper").trigger("transitionend", {
+        propertyName: "--photo-ratio",
+      });
+
+      expect(wrapper.find("img").element.style.opacity).toBe("1");
+      expect(wrapper.find(".loading-spinner").exists()).toBe(false);
+    });
+
+    it("ignores a transitionend bubbling up from the image's own opacity transition", async () => {
+      const wrapper = mountDisplayHero({ photo: portraitPhoto });
+      await wrapper.find("img").trigger("load");
+      await nextTick();
+      await nextFrame();
+
+      await wrapper.setProps({ photo: landscapePhoto, loading: false });
+      await wrapper.find("img").trigger("load");
+
+      // A transitionend for the img's own "opacity" property, as it would
+      // bubble up from the child element - must not be mistaken for the
+      // box's own ratio/width transition finishing.
+      await wrapper.find("img").trigger("transitionend", {
+        propertyName: "opacity",
+      });
+
+      expect(wrapper.find("img").element.style.opacity).toBe("0");
+      expect(wrapper.find(".loading-spinner").exists()).toBe(true);
+    });
+
+    it("falls back to a timer if the box never actually transitions (e.g. the same ratio and width as before)", async () => {
       vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
 
       try {
         const wrapper = mountDisplayHero({ photo: portraitPhoto });
         await wrapper.find("img").trigger("load");
         await nextTick();
-        await nextFrame(); // arms the box's CSS transition
+        await nextFrame();
 
-        await wrapper.setProps({ photo: landscapePhoto, loading: false });
-        // Simulates a cache hit: the browser resolves "load" immediately,
-        // well before the box's transition would finish.
+        // Same ratio and native width as portraitPhoto: no CSS custom
+        // property actually changes, so no transitionend will ever fire.
+        await wrapper.setProps({
+          photo: { ...portraitPhoto, id: "another-portrait-slug" },
+          loading: false,
+        });
         await wrapper.find("img").trigger("load");
 
         expect(wrapper.find("img").element.style.opacity).toBe("0");
-        expect(wrapper.find(".loading-spinner").exists()).toBe(true);
 
-        vi.advanceTimersByTime(350);
+        vi.advanceTimersByTime(500);
         await nextTick();
 
         expect(wrapper.find("img").element.style.opacity).toBe("1");
