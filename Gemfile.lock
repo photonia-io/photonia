@@ -601,7 +601,7 @@ DEPENDENCIES
   sentry-ruby (~> 5.8)
   shoulda-matchers (~> 6.1)
   shrine (~> 3.0)
-  sidekiq (~> 7.3, >= 7.3.10)
+  sidekiq (~> 7.3.0, >= 7.3.10)
   sidekiq-scheduler (~> 5.0)
   simplecov
   simplecov-cobertura
