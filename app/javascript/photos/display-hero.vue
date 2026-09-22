@@ -15,7 +15,7 @@
       <div
         id="image-wrapper"
         :class="{ 'is-animated': animated }"
-        :style="{ '--photo-ratio': ratio }"
+        :style="{ '--photo-ratio': ratio, '--photo-width': nativeWidth }"
       >
         <!-- Loading spinner -->
         <div v-if="loading || imageLoading" class="loading-spinner">
@@ -125,11 +125,13 @@ const imageLoading = ref(true);
 
 // Reserved box shape, driven by the displayed derivative's real dimensions -
 // never the original's, which can disagree when the original carries an
-// EXIF rotation flag. Falls back to a plausible landscape ratio until the
-// first real dimensions arrive, and is never reset to that fallback
-// afterwards, so during next/prev the box holds the outgoing photo's shape
-// until the incoming one is known.
+// EXIF rotation flag. ratio sizes the box; nativeWidth caps it so photos are
+// never upscaled past their own resolution. Both fall back to a plausible
+// value until the first real dimensions arrive, and are never reset to that
+// fallback afterwards, so during next/prev the box holds the outgoing
+// photo's shape until the incoming one is known.
 const ratio = ref(3 / 2);
+const nativeWidth = ref(1200);
 
 // Only the very first real ratio should apply without a transition, so a
 // fresh page load settles once, together with the rest of the page, rather
@@ -142,6 +144,7 @@ watch(
   (dimensions) => {
     if (dimensions?.width > 0 && dimensions?.height > 0) {
       ratio.value = dimensions.width / dimensions.height;
+      nativeWidth.value = dimensions.width;
 
       if (!animationEnabled) {
         animationEnabled = true;
@@ -204,18 +207,32 @@ const showLabels = computed(() => {
   initial-value: 1.5;
 }
 
+@property --photo-width {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1200;
+}
+
 #image-wrapper {
   --hero-max-height: calc(100vh - 150px);
 
   position: relative;
   display: block;
   margin: 0 auto;
-  width: 100%;
-  max-width: calc(var(--hero-max-height) * var(--photo-ratio));
   aspect-ratio: var(--photo-ratio);
+  // Never upscale past the displayed derivative's own resolution: whichever
+  // constraint is smallest wins - the container's width, the derivative's
+  // native pixel width, or the width implied by the height ceiling. Small
+  // photos display small; the hero's height genuinely varies per photo
+  // rather than always filling to the ceiling.
+  width: min(
+    100%,
+    calc(var(--photo-width) * 1px),
+    calc(var(--hero-max-height) * var(--photo-ratio))
+  );
 
   &.is-animated {
-    transition: --photo-ratio 350ms ease;
+    transition: --photo-ratio 350ms ease, --photo-width 350ms ease;
   }
 }
 

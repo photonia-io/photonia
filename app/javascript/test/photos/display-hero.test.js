@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { mount, RouterLinkStub } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
@@ -11,6 +11,11 @@ const nextFrame = () =>
 const ratioOf = (wrapper) =>
   wrapper.find("#image-wrapper").element.style.getPropertyValue(
     "--photo-ratio",
+  );
+
+const nativeWidthOf = (wrapper) =>
+  wrapper.find("#image-wrapper").element.style.getPropertyValue(
+    "--photo-width",
   );
 
 const portraitPhoto = {
@@ -55,23 +60,43 @@ describe("DisplayHero", () => {
     it("reserves a plausible landscape box before any dimensions are known", () => {
       const wrapper = mountDisplayHero({ photo: {}, loading: true });
       expect(ratioOf(wrapper)).toBe("1.5");
+      expect(nativeWidthOf(wrapper)).toBe("1200");
     });
 
     it("sizes the box from the displayed derivative's own dimensions", async () => {
       const wrapper = mountDisplayHero({ photo: portraitPhoto });
       await nextTick();
       expect(ratioOf(wrapper)).toBe("0.5");
+      expect(nativeWidthOf(wrapper)).toBe("1000");
     });
 
     it("holds the previous shape rather than reverting to the fallback while new dimensions are unknown", async () => {
       const wrapper = mountDisplayHero({ photo: portraitPhoto });
       await nextTick();
       expect(ratioOf(wrapper)).toBe("0.5");
+      expect(nativeWidthOf(wrapper)).toBe("1000");
 
       // Simulates a navigation with keepPreviousResult: the incoming photo
       // hasn't reported dimensions yet.
       await wrapper.setProps({ photo: { id: "next-slug" } });
       expect(ratioOf(wrapper)).toBe("0.5");
+      expect(nativeWidthOf(wrapper)).toBe("1000");
+    });
+
+    it("caps the box at the derivative's native pixel width, never upscaling past it", async () => {
+      // A low-resolution old scan: small dimensions, still a valid ratio.
+      const tinyPhoto = {
+        id: "tiny-slug",
+        extralargeImageUrl: "https://example.com/tiny.jpg",
+        extralargeDimensions: { width: 200, height: 150 },
+      };
+      const wrapper = mountDisplayHero({ photo: tinyPhoto });
+      await nextTick();
+
+      expect(nativeWidthOf(wrapper)).toBe("200");
+      // The actual pixel cap is enforced by the CSS min() in the width
+      // rule (jsdom doesn't run layout), but the custom property driving
+      // it must carry the derivative's true width, not a scaled-up value.
     });
 
     it("does not transition the very first ratio it applies", () => {
