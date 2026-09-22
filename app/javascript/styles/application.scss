@@ -129,6 +129,45 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   }
 }
 
+// Bulma's modal-card shares one padding var between head and foot, and
+// sizes the title at --bulma-size-4 - both oversized for this app's short
+// titles, and the footer gets no gap between its buttons by default.
+.modal {
+  --bulma-modal-card-head-padding: 1rem 1.5rem;
+  --bulma-modal-card-title-size: var(--bulma-size-5);
+}
+
+.modal-card-foot {
+  gap: 0.75rem;
+}
+
+// Bulma hides a modal with display:none, which can't transition, so this
+// keeps it always display:flex and animates opacity/visibility instead -
+// visibility's delay is what makes it un-interactible only once closed,
+// without blocking the closing fade the way display:none would. Widely
+// supported (no @starting-style/allow-discrete dependency).
+.modal {
+  display: flex !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s linear, visibility 0s linear 0.18s;
+}
+
+.modal.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.18s linear, visibility 0s linear 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal.is-active {
+    transition: none;
+  }
+}
+
 .navbar-brand picture {
   display: flex;
   align-items: center;

@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 describe 'photo Query' do
+  include Devise::Test::IntegrationHelpers
+
   subject(:post_query) { post '/graphql', params: { query: query } }
 
   let(:photo) { create(:photo, image_data: TestData.image_data) }
@@ -33,6 +35,7 @@ describe 'photo Query' do
             exifIso
             postedAt
             impressionsCount
+            privacy
             comments {
               id
               body
@@ -83,6 +86,7 @@ describe 'photo Query' do
 
       expect(response_photo['postedAt']).to eq photo.posted_at.iso8601
       expect(response_photo['impressionsCount']).to eq photo.impressions_count
+      expect(response_photo['privacy']).to eq 'public'
 
       expect(response_photo['comments'].count).to eq 3
 
@@ -107,6 +111,31 @@ describe 'photo Query' do
       end
 
       expect(response_photo['canEdit']).to eq false
+    end
+  end
+
+  context 'when getting a private photo as its owner' do
+    let(:photo) { create(:photo, privacy: :private, image_data: TestData.image_data) }
+    let(:query) do
+      <<~GQL
+        query {
+          photo(id: #{photo.slug}) {
+            id
+            privacy
+          }
+        }
+      GQL
+    end
+
+    before do
+      sign_in(photo.user)
+    end
+
+    it 'returns the private privacy value' do
+      post_query
+      response_photo = response.parsed_body['data']['photo']
+
+      expect(response_photo['privacy']).to eq 'private'
     end
   end
 

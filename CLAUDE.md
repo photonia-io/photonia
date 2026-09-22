@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Photonia is a self-hosted photo sharing app: Rails 7 (Ruby 3.4.7) API + a Vue 3 SPA, Postgres, Sidekiq/Redis, Shrine on S3, AWS Rekognition for auto-tagging. Most of the photo corpus was originally imported from a Flickr export.
 
+## Code style
+
+Keep comments short — no kilometric comments explaining the obvious.
+
 ## Git
 
 Do not use emojis in commit messages. Much of the existing history is gitmoji-prefixed (`⬆️ Update …`); do not copy that style for new commits.
@@ -103,6 +107,8 @@ Frontend lives in `app/javascript` with a single entrypoint (`entrypoints/applic
 - `PHOTONIA_THUMBNAIL_SIDE` / `PHOTONIA_MEDIUM_SIDE` are passed straight to MiniMagick — unset means `nil` reaches `resize_to_fill!`, so they are effectively required.
 - User-defined thumbnails take priority over intelligent ones, must stay square, and regenerate derivatives asynchronously. Only relative percentages are stored in `user_thumbnail`; pixels are recomputed in `Photo#custom_crop`.
 - `Photo#exif` is lazily computed from S3 on first read and written back with `save(validate: false)`.
+- Bulma 1.x's modal-card shares one padding variable between the head and the foot, and sizes the title at `--bulma-size-4` — both oversized for this app's short modal titles, and the footer gets no gap between its action buttons by default. `app/javascript/styles/application.scss` overrides `--bulma-modal-card-head-padding` / `--bulma-modal-card-title-size` and adds `gap` to `.modal-card-foot` globally, so new modals don't need per-instance spacing hacks or a `.buttons` wrapper just to space their footer buttons.
+- Always wrap an icon next to text in Bulma's `.icon-text`, never a bare `.icon` span beside plain text — without it the icon and text have mismatched line-heights and misalign vertically.
 
 ## Testing
 
