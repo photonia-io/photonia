@@ -58,48 +58,29 @@
         </header>
         <div class="modal-card-body">
           <p class="mb-4">Choose who can see this photo.</p>
-          <div class="control">
-            <label class="radio is-block mb-3">
-              <input
-                type="radio"
-                name="photo-privacy"
-                value="public"
-                v-model="selectedPrivacy"
-              />
-              <span class="icon"><i class="fas fa-globe"></i></span>
-              Public
-              <span class="has-text-weak is-block ml-5"
-                >Anyone can see this photo.</span
-              >
-            </label>
-            <label class="radio is-block mb-3">
-              <input
-                type="radio"
-                name="photo-privacy"
-                value="friends_and_family"
-                v-model="selectedPrivacy"
-                disabled
-              />
-              <span class="icon"><i class="fas fa-user-friends"></i></span>
-              Friends &amp; Family
-              <span class="has-text-weak is-block ml-5"
-                >Not implemented yet. Behaves the same as Private.</span
-              >
-            </label>
-            <label class="radio is-block">
-              <input
-                type="radio"
-                name="photo-privacy"
-                value="private"
-                v-model="selectedPrivacy"
-              />
-              <span class="icon"><i class="fas fa-lock"></i></span>
-              Private
-              <span class="has-text-weak is-block ml-5"
-                >Only you and site admins can see this photo.</span
-              >
-            </label>
-          </div>
+          <label
+            v-for="option in PRIVACY_OPTIONS"
+            :key="option.value"
+            class="privacy-option"
+            :class="{
+              'is-selected': selectedPrivacy === option.value,
+              'is-option-disabled': option.disabled,
+            }"
+          >
+            <input
+              type="radio"
+              name="photo-privacy"
+              class="is-sr-only"
+              :value="option.value"
+              v-model="selectedPrivacy"
+              :disabled="option.disabled"
+            />
+            <span class="icon"><i :class="option.icon"></i></span>
+            <span class="has-text-weight-semibold">{{ option.label }}</span>
+            <span class="has-text-weak is-block privacy-option-description">{{
+              option.description
+            }}</span>
+          </label>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
           <button class="button is-primary" @click="savePrivacy">
@@ -145,11 +126,31 @@ function momentFormat(date) {
   return moment(date).format(format);
 }
 
-const PRIVACY_DISPLAY = {
-  public: { icon: "fas fa-globe", label: "Public" },
-  private: { icon: "fas fa-lock", label: "Private" },
-  friends_and_family: { icon: "fas fa-user-friends", label: "Friends & Family" },
-};
+const PRIVACY_OPTIONS = [
+  {
+    value: "public",
+    icon: "fas fa-globe",
+    label: "Public",
+    description: "Anyone can see this photo.",
+  },
+  {
+    value: "friends_and_family",
+    icon: "fas fa-user-friends",
+    label: "Friends & Family",
+    description: "Not implemented yet. Behaves the same as Private.",
+    disabled: true,
+  },
+  {
+    value: "private",
+    icon: "fas fa-lock",
+    label: "Private",
+    description: "Only you and site admins can see this photo.",
+  },
+];
+
+const PRIVACY_DISPLAY = Object.fromEntries(
+  PRIVACY_OPTIONS.map(({ value, icon, label }) => [value, { icon, label }]),
+);
 
 const privacyDisplay = computed(
   () => PRIVACY_DISPLAY[photo.value.privacy] ?? PRIVACY_DISPLAY.public,
@@ -181,3 +182,47 @@ const savePrivacy = () => {
   closePrivacyModal();
 };
 </script>
+
+<style scoped lang="scss">
+.privacy-option {
+  display: block;
+  border: 1px solid var(--bulma-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    border-color: var(--bulma-primary);
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--bulma-link);
+    outline-offset: 2px;
+  }
+
+  &.is-selected {
+    border-color: var(--bulma-primary);
+    background-color: var(--bulma-primary-light);
+    color: var(--bulma-primary-light-invert);
+  }
+
+  &.is-option-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    &:hover {
+      border-color: var(--bulma-border);
+    }
+  }
+}
+
+.privacy-option-description {
+  margin-top: 0.25rem;
+}
+</style>
