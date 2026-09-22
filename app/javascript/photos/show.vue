@@ -67,10 +67,13 @@
               <div class="columns equal-height-columns">
                 <div class="column is-half">
                   <PhotoInfo
+                    ref="photoInfoRef"
                     :photo="photo"
                     :loading="loading"
                     :can-edit="canEditPhoto"
                     @update-privacy="setPhotoPrivacy"
+                    @update-taken-at="setPhotoTakenAt"
+                    @reset-taken-at="resetPhotoTakenAt"
                   />
                 </div>
                 <div class="column is-half">
@@ -346,6 +349,8 @@ const emptyPhoto = {
   description: "",
   largeImageUrl: "",
   privacy: "public",
+  scanned: false,
+  takenAtInfo: null,
   previousPhoto: null,
   nextPhoto: null,
   albums: [],
@@ -413,6 +418,72 @@ const {
     setPhotoPrivacy(id: $id, privacy: $privacy) {
       id
       privacy
+    }
+  }
+`);
+
+const {
+  mutate: setPhotoTakenAt,
+  onDone: onSetTakenAtDone,
+  onError: onSetTakenAtError,
+} = useMutation(gql`
+  mutation (
+    $id: String!
+    $year: Int!
+    $month: Int
+    $day: Int
+    $hour: Int
+    $minute: Int
+    $approximate: Boolean
+    $scanned: Boolean
+  ) {
+    setPhotoTakenAt(
+      id: $id
+      year: $year
+      month: $month
+      day: $day
+      hour: $hour
+      minute: $minute
+      approximate: $approximate
+      scanned: $scanned
+    ) {
+      id
+      scanned
+      takenAtInfo {
+        year
+        month
+        day
+        hour
+        minute
+        precision
+        source
+        approximate
+        exifAvailable
+      }
+    }
+  }
+`);
+
+const {
+  mutate: resetPhotoTakenAt,
+  onDone: onResetTakenAtDone,
+  onError: onResetTakenAtError,
+} = useMutation(gql`
+  mutation ($id: String!) {
+    resetPhotoTakenAt(id: $id) {
+      id
+      scanned
+      takenAtInfo {
+        year
+        month
+        day
+        hour
+        minute
+        precision
+        source
+        approximate
+        exifAvailable
+      }
     }
   }
 `);
@@ -496,6 +567,34 @@ onSetPrivacyDone(({ data }) => {
 onSetPrivacyError((error) => {
   toaster(
     "An error occurred while updating the privacy: " + error.message,
+    "is-danger",
+  );
+});
+
+// Template ref to PhotoInfo, so its Date Taken modal can be closed once
+// the mutation actually succeeds, rather than closing it optimistically.
+const photoInfoRef = ref(null);
+
+onSetTakenAtDone(({ data }) => {
+  toaster("The date taken has been updated");
+  photoInfoRef.value?.closeTakenAtModal();
+});
+
+onSetTakenAtError((error) => {
+  toaster(
+    "An error occurred while updating the date taken: " + error.message,
+    "is-danger",
+  );
+});
+
+onResetTakenAtDone(({ data }) => {
+  toaster("The date taken has been reset");
+  photoInfoRef.value?.closeTakenAtModal();
+});
+
+onResetTakenAtError((error) => {
+  toaster(
+    "An error occurred while resetting the date taken: " + error.message,
     "is-danger",
   );
 });

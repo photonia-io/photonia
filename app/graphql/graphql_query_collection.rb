@@ -150,7 +150,18 @@ class GraphqlQueryCollection
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
           takenAt
-          isTakenAtFromExif
+          takenAtInfo {
+            year
+            month
+            day
+            hour
+            minute
+            precision
+            source
+            approximate
+            exifAvailable
+          }
+          scanned
           exifExists
           exifCameraFriendlyName
           exifFNumber
