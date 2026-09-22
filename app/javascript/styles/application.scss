@@ -141,6 +141,40 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   gap: 0.75rem;
 }
 
+// `allow-discrete` + `@starting-style` let `display: none <-> flex` itself
+// transition, so open AND close both animate with no JS on either end.
+.modal {
+  transition: opacity 0.18s ease-out, display 0.18s allow-discrete;
+  opacity: 0;
+
+  .modal-content,
+  .modal-card {
+    transition: transform 0.18s ease-out;
+    transform: translateY(-12px) scale(0.97);
+  }
+}
+
+.modal.is-active {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  .modal-content,
+  .modal-card {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal .modal-content,
+  .modal .modal-card {
+    transition: none;
+  }
+}
+
 .navbar-brand picture {
   display: flex;
   align-items: center;
