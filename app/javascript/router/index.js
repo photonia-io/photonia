@@ -132,6 +132,14 @@ export function createAppRouter(pinia) {
     history: createWebHistory(),
     routes,
     scrollBehavior(to, from, savedPosition) {
+      // Starting/stopping album navigation only changes the query string on the
+      // photo we are already looking at - don't yank the page to the top.
+      const sameShownPhoto =
+        to.name === "photos-show" &&
+        from.name === "photos-show" &&
+        to.params.id === from.params.id;
+      if (sameShownPhoto) return false;
+
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve({ top: 0, behavior: "smooth" });

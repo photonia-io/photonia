@@ -33,12 +33,14 @@
               v-if="photo.previousPhoto"
               :photo="photo.previousPhoto"
               :loading="loading"
+              :query="navigationQuery"
               direction="left"
             />
             <SmallNavigationButton
               v-if="photo.nextPhoto"
               :photo="photo.nextPhoto"
               :loading="loading"
+              :query="navigationQuery"
               direction="right"
             />
           </div>
@@ -209,11 +211,13 @@
                 v-if="showAlbumBrowser"
                 class="block-list is-small has-radius pb-4"
               >
-                <li v-for="album in photo.albums" :key="album.id">
+                <li
+                  v-for="album in photo.albums"
+                  :key="album.id"
+                  :class="{ 'is-navigating': album.id === inAlbumId }"
+                >
                   <h4 class="is-size-6 mb-2">
-                    <router-link
-                      :to="{ name: 'albums-show', params: { id: album.id } }"
-                    >
+                    <router-link :to="albumRoute(album)">
                       {{ album.title }}
                     </router-link>
                   </h4>
@@ -224,6 +228,7 @@
                         :to="{
                           name: 'photos-show',
                           params: { id: album.previousPhotoInAlbum.id },
+                          query: navigationQuery,
                         }"
                         class="button is-fullwidth is-image-button"
                       >
@@ -265,6 +270,7 @@
                         :to="{
                           name: 'photos-show',
                           params: { id: album.nextPhotoInAlbum.id },
+                          query: navigationQuery,
                         }"
                         class="button is-fullwidth is-image-button"
                       >
@@ -301,6 +307,41 @@
                       </button>
                     </div>
                   </div>
+                  <div class="album-navigation">
+                    <template v-if="album.id === inAlbumId">
+                      <p
+                        v-if="album.photoPositionInAlbum"
+                        class="has-text-weight-semibold mb-1"
+                      >
+                        {{ album.photoPositionInAlbum.position }} of
+                        {{ album.photoPositionInAlbum.total }}
+                      </p>
+                      <p class="help mt-0 mb-2">
+                        You can navigate in this album by using the J / K keys
+                      </p>
+                      <button
+                        class="button is-small is-fullwidth"
+                        @click="stopNavigatingAlbum()"
+                      >
+                        <span class="icon-text">
+                          <span class="icon"><i class="fas fa-xmark"></i></span>
+                          <span>Stop navigating this album</span>
+                        </span>
+                      </button>
+                    </template>
+                    <button
+                      v-else
+                      class="button is-small is-fullwidth"
+                      @click="startNavigatingAlbum(album.id)"
+                    >
+                      <span class="icon-text">
+                        <span class="icon"
+                          ><i class="fas fa-keyboard"></i
+                        ></span>
+                        <span>Navigate this album</span>
+                      </span>
+                    </button>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -322,6 +363,10 @@ import { useApplicationStore } from "@/stores/application";
 import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
 import { descriptionHtmlHelper } from "../mixins/description-helper";
+import {
+  isTypingTarget,
+  useAlbumNavigation,
+} from "../mixins/use-album-navigation";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
@@ -664,6 +709,17 @@ const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
 
 const showAlbumBrowser = computed(() => photo.value.albums?.length > 0);
 
+const {
+  inAlbumId,
+  navigationQuery,
+  navigateToPhoto,
+  albumRoute,
+  startNavigatingAlbum,
+  stopNavigatingAlbum,
+  navigateToNextPhotoInAlbum,
+  navigateToPreviousPhotoInAlbum,
+} = useAlbumNavigation(photo);
+
 const title = computed(() => titleHelper(photo));
 useTitle(title);
 
@@ -697,33 +753,26 @@ const handleKeyDown = (event) => {
   // loads, so its previousPhoto/nextPhoto are stale until the route and the
   // result agree again. Key repeat would otherwise navigate from them.
   if (!showingCurrentPhoto.value) return;
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  if (isTypingTarget(event.target)) return;
 
   if (applicationStore.navigationShortcutsEnabled === true) {
     if (event.key === "ArrowLeft") {
       navigateToPreviousPhoto();
     } else if (event.key === "ArrowRight") {
       navigateToNextPhoto();
+    } else if (event.key === "j") {
+      navigateToNextPhotoInAlbum();
+    } else if (event.key === "k") {
+      navigateToPreviousPhotoInAlbum();
     }
   }
 };
 
-const navigateToNextPhoto = () => {
-  if (photo.value.nextPhoto) {
-    router.push({
-      name: "photos-show",
-      params: { id: photo.value.nextPhoto.id },
-    });
-  }
-};
+const navigateToNextPhoto = () => navigateToPhoto(photo.value.nextPhoto);
 
-const navigateToPreviousPhoto = () => {
-  if (photo.value.previousPhoto) {
-    router.push({
-      name: "photos-show",
-      params: { id: photo.value.previousPhoto.id },
-    });
-  }
-};
+const navigateToPreviousPhoto = () =>
+  navigateToPhoto(photo.value.previousPhoto);
 </script>
 
 <style scoped>
@@ -738,5 +787,22 @@ const navigateToPreviousPhoto = () => {
 .tag-gaps {
   row-gap: 0.5em;
   column-gap: 0.5em;
+}
+
+/* Album currently being navigated - matches block-list's is-highlighted idiom,
+   but with a colour that stays visible in both schemes. */
+.block-list li.is-navigating {
+  border-left: 5px solid var(--bulma-link);
+}
+
+.album-navigation {
+  margin-top: 0.75em;
+}
+
+/* The sidebar is narrow, so let the button labels wrap */
+.album-navigation .button {
+  white-space: normal;
+  height: auto;
+  min-height: 2em;
 }
 </style>

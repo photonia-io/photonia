@@ -34,11 +34,11 @@
           <span class="tag is-info is-light is-small">Cover Photo</span>
         </div>
       </div>
-      <router-link :to="{ name: 'photos-show', params: { id: photo.id } }">
+      <router-link :to="photoRoute">
         {{ photo.title }}
       </router-link>
     </div>
-    <router-link v-else :to="{ name: 'photos-show', params: { id: photo.id } }">
+    <router-link v-else :to="photoRoute">
       <div class="image-wrapper">
         <ItemImage :photo="photo" />
         <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
@@ -125,7 +125,20 @@ const props = defineProps({
     default: false,
     required: false,
   },
+  // Slug of the album this grid belongs to. Distinct from `inAlbum`, which only
+  // picks the selection store. When set, photo links start album navigation.
+  albumId: {
+    type: String,
+    default: null,
+    required: false,
+  },
 });
+
+const photoRoute = computed(() => ({
+  name: "photos-show",
+  params: { id: props.photo.id },
+  ...(props.albumId ? { query: { inAlbum: props.albumId } } : {}),
+}));
 
 const selected = computed(() => {
   if (props.inAlbum) {
