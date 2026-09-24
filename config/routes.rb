@@ -26,7 +26,7 @@ Rails.application.routes.draw do
   end
 
   # Main resource routes
-  resources :photos, except: %i[new] do
+  resources :photos, except: %i[new edit destroy] do
     collection do
       get :upload
       get :organizer

@@ -57,15 +57,12 @@ gem 'vite_rails', '~> 3.0', '>= 3.0.14'
 gem 'warden-jwt_auth', git: 'https://github.com/photonia-io/warden-jwt_auth', branch: 'add-request-body-matcher'
 
 group :development, :test do
-  gem 'bcrypt_pbkdf'
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: %i[mri mingw x64_mingw]
   gem 'dotenv-rails'
-  gem 'ed25519'
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'pry'
-  gem 'rspec_junit_formatter' # for CircleCI
   gem 'rspec-rails'
   gem 'rubocop'
   gem 'rubocop-graphql'
