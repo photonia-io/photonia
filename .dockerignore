@@ -54,8 +54,8 @@
 /.rubocop.yml
 /.vscode
 /coverage
-/config/deploy.yml
-/config/deploy.template.yml
+/config/deploy*.yml
+/.kamal
 /flickr/*
 /Procfile*
 /README.md

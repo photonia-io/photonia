@@ -112,7 +112,7 @@ Frontend lives in `app/javascript` with a single entrypoint (`entrypoints/applic
 - `flickr_user_claims` exists in `structure.sql` but has **no model** — a half-built feature.
 - Upload pipeline order matters: `PromoteJob` → `RekognitionJob` (creates labels) → `AddDerivativesJob` (crops depend on those labels). Rekognition reads the `extralarge` derivative from S3, so derivatives must exist before it runs.
 - Shrine ACL split: the original is uploaded `private`, every derivative `public-read`, so full-resolution originals are never publicly reachable. Thumbnail resolution order is `user` → `intelligent` → `square` (`PhotoType#image_url`).
-- `PHOTONIA_THUMBNAIL_SIDE` / `PHOTONIA_MEDIUM_SIDE` are passed straight to MiniMagick — unset means `nil` reaches `resize_to_fill!`, so they are effectively required.
+- `THUMBNAIL_SIDE` / `MEDIUM_SIDE` are passed straight to MiniMagick — unset means `nil` reaches `resize_to_fill!`, so they are effectively required.
 - User-defined thumbnails take priority over intelligent ones, must stay square, and regenerate derivatives asynchronously. Only relative percentages are stored in `user_thumbnail`; pixels are recomputed in `Photo#custom_crop`.
 - `Photo#exif` is lazily computed from S3 on first read and written back with `save(validate: false)`.
 - Bulma 1.x's modal-card shares one padding variable between the head and the foot, and sizes the title at `--bulma-size-4` — both oversized for this app's short modal titles, and the footer gets no gap between its action buttons by default. `app/javascript/styles/application.scss` overrides `--bulma-modal-card-head-padding` / `--bulma-modal-card-title-size` and adds `gap` to `.modal-card-foot` globally, so new modals don't need per-instance spacing hacks or a `.buttons` wrapper just to space their footer buttons.
@@ -150,12 +150,25 @@ OAuth is not OmniAuth — `Mutations::ContinueWithGoogle` verifies a Google One-
 
 ## Environment
 
-All app config is `PHOTONIA_`-prefixed. In development and test, `dotenv-rails` loads `.env` automatically at boot, so `bin/rails` and `bundle exec rspec` work with no shell setup. It never overrides variables already set in the environment, so CI and production (which get real env vars) are unaffected.
+Env vars carry no app prefix. In development and test, `dotenv-rails` loads `.env` automatically at boot (plus `.env.development` / `.env.test` for the per-environment `DATABASE_URL`, see below), so `bin/rails` and `bundle exec rspec` work with no shell setup. It never overrides variables already set in the environment, so CI and production (which get real env vars, from Kamal in production) are unaffected. `.env.example` documents every key.
 
-- DB / cache: `PHOTONIA_DATABASE_URL`, `PHOTONIA_TEST_DATABASE_URL`, `PHOTONIA_REDIS_URL`, `REDIS_URL`
-- S3 and Rekognition use **separate credential pairs**: `PHOTONIA_S3_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY` / `_REGION` / `_BUCKET`, and `PHOTONIA_REKOGNITION_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY`
-- Images: `PHOTONIA_THUMBNAIL_SIDE`, `PHOTONIA_MEDIUM_SIDE`
-- Auth: `PHOTONIA_DEVISE_JWT_SECRET_KEY`, `PHOTONIA_GOOGLE_CLIENT_ID`, `PHOTONIA_FACEBOOK_APP_ID` / `_SECRET`, `PHOTONIA_FLICKR_API_KEY`
-- Ops: `PHOTONIA_SIDEKIQ_WEB_USERNAME` / `_PASSWORD` (basic auth on `/sidekiq`), `PHOTONIA_BE_SENTRY_DSN`, `PHOTONIA_FE_SENTRY_DSN`
+- `DATABASE_URL` is deliberately **not** in the shared `.env` — Rails applies it to every environment that has no explicit `url:` in `database.yml`, so a value in `.env` would make `rspec` run against the dev database. It lives in `.env.development` / `.env.test` instead (and is fetched from 1Password for production, see Deployment below).
+- `REDIS_URL`: shared by Sidekiq and, in production, Action Cable (`config/cable.yml`).
+- S3 and Rekognition use **separate credential pairs**: `S3_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY` / `_REGION` / `_BUCKET`, and `REKOGNITION_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY`
+- Images: `THUMBNAIL_SIDE`, `MEDIUM_SIDE`
+- Auth: `DEVISE_JWT_SECRET_KEY`, `GOOGLE_CLIENT_ID`, `FACEBOOK_APP_ID` / `_SECRET`, `FLICKR_API_KEY`
+- Ops: `SIDEKIQ_WEB_USERNAME` / `_PASSWORD` (basic auth on `/sidekiq`), `BE_SENTRY_DSN`, `FE_SENTRY_DSN`
 
 In production the S3 bucket name doubles as the CDN hostname for derivative URLs.
+
+## Deployment
+
+Deployed with **Kamal**, requiring a destination (`require_destination: true` in `config/deploy.yml`):
+
+```bash
+kamal deploy -d production
+```
+
+`config/deploy.yml` (tracked) holds shared, non-private config, including non-secret `env.clear` values (S3_BUCKET is the public CDN hostname; the rest are non-sensitive). `config/deploy.production.yml` (gitignored — has the real server IP/hostname) holds server, proxy and accessory config; `config/deploy.production.template.yml` is its tracked placeholder version to copy from.
+
+Secrets are fetched from **1Password** via `.kamal/secrets.production` (tracked, contains no values) using Kamal's `1password` adapter — `kamal secrets fetch --adapter 1password --account $OP_ACCOUNT --from Credentials/Photonia ...`. Requires the `op` CLI signed in and `$OP_ACCOUNT` exported in your shell. The Docker registry password is pulled from a separate shared `Credentials/General` item.

@@ -344,15 +344,15 @@ class Photo < ApplicationRecord
       image_attacher.add_derivative(
         :medium_intelligent,
         pipeline.resize_to_fill!(
-          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
-          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+          ENV.fetch('MEDIUM_SIDE', nil),
+          ENV.fetch('MEDIUM_SIDE', nil)
         )
       )
       image_attacher.add_derivative(
         :thumbnail_intelligent,
         pipeline.resize_to_fill!(
-          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
-          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+          ENV.fetch('THUMBNAIL_SIDE', nil),
+          ENV.fetch('THUMBNAIL_SIDE', nil)
         )
       )
     end
@@ -362,15 +362,15 @@ class Photo < ApplicationRecord
       image_attacher.add_derivative(
         :medium_user,
         pipeline.resize_to_fill!(
-          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
-          ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
+          ENV.fetch('MEDIUM_SIDE', nil),
+          ENV.fetch('MEDIUM_SIDE', nil)
         )
       )
       image_attacher.add_derivative(
         :thumbnail_user,
         pipeline.resize_to_fill!(
-          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
-          ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
+          ENV.fetch('THUMBNAIL_SIDE', nil),
+          ENV.fetch('THUMBNAIL_SIDE', nil)
         )
       )
     end
@@ -394,7 +394,7 @@ class Photo < ApplicationRecord
     }
     # closest_pole, min_distance = distances.min_by { |_, distance| distance }
     _, min_distance = distances.min_by { |_, distance| distance }
-    # if(min_distance >= ENV['PHOTONIA_MEDIUM_SIDE'])
+    # if(min_distance >= ENV['MEDIUM_SIDE'])
     {
       x: x = cog_x - min_distance,
       y: y = cog_y - min_distance,
