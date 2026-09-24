@@ -655,6 +655,11 @@ const unHighlightLabel = (label) => {
 };
 
 const photo = computed(() => result.value?.photo ?? {});
+
+// False while a navigation is in flight and the retained photo is still the
+// outgoing one, i.e. whenever photo's identity disagrees with the route.
+const showingCurrentPhoto = computed(() => photo.value.id === id.value);
+
 const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
 
 const showAlbumBrowser = computed(() => photo.value.albums?.length > 0);
@@ -688,6 +693,11 @@ onBeforeUnmount(() => {
 });
 
 const handleKeyDown = (event) => {
+  // keepPreviousResult holds the outgoing photo on screen while the next one
+  // loads, so its previousPhoto/nextPhoto are stale until the route and the
+  // result agree again. Key repeat would otherwise navigate from them.
+  if (!showingCurrentPhoto.value) return;
+
   if (applicationStore.navigationShortcutsEnabled === true) {
     if (event.key === "ArrowLeft") {
       navigateToPreviousPhoto();

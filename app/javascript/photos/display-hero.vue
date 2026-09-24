@@ -57,7 +57,7 @@
             :key="label.id"
           />
         </div>
-        <div v-if="isHomepage" class="overlay">
+        <div v-if="isHomepage && photo.id" class="overlay">
           <div class="level p-2">
             <div class="level-left pl-3">
               <p class="is-size-4">
@@ -208,9 +208,15 @@ const imageStyle = computed(() => ({
 
 // Genuine waiting only - the query in flight or the image still
 // downloading. The morph deliberately doesn't count: it's a cosmetic
-// animation we chose to run, not something being waited on.
+// animation we chose to run, not something being waited on. imageLoading
+// only counts when there's a URL to load: with none there's no <img> to
+// fire load or error, so it would otherwise stay true forever (a photo
+// whose derivatives haven't been generated yet) and spin indefinitely.
 const isBusy = computed(() => {
-  return props.loading || imageLoading.value;
+  return (
+    props.loading ||
+    (Boolean(props.photo.extralargeImageUrl) && imageLoading.value)
+  );
 });
 
 // There's no way to ask the browser whether the image is cached, but the
@@ -223,16 +229,23 @@ const SPINNER_DELAY_MS = 150;
 const showSpinner = ref(false);
 let spinnerDelayTimer = null;
 
-watch(isBusy, (busy) => {
-  clearTimeout(spinnerDelayTimer);
-  if (busy) {
-    spinnerDelayTimer = setTimeout(() => {
-      showSpinner.value = true;
-    }, SPINNER_DELAY_MS);
-  } else {
-    showSpinner.value = false;
-  }
-});
+// immediate, because isBusy is already true at mount (imageLoading starts
+// true): without it a slow first page load would never arm the timer, and
+// so would never show a spinner at all.
+watch(
+  isBusy,
+  (busy) => {
+    clearTimeout(spinnerDelayTimer);
+    if (busy) {
+      spinnerDelayTimer = setTimeout(() => {
+        showSpinner.value = true;
+      }, SPINNER_DELAY_MS);
+    } else {
+      showSpinner.value = false;
+    }
+  },
+  { immediate: true },
+);
 
 onBeforeUnmount(() => clearTimeout(spinnerDelayTimer));
 

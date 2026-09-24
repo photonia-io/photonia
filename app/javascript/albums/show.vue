@@ -226,7 +226,13 @@ const album = computed(() => result.value?.album ?? {});
 const title = computed(() => `Album: ${titleHelper(album)}`);
 useTitle(title);
 
-const canEditAlbum = computed(() => userStore.signedIn && album.value.canEdit);
+// The id check matters because keepPreviousResult retains the outgoing album
+// while the next one loads: without it the title and description editors
+// would stay live over an album the URL has already moved away from. Paging
+// within one album keeps the same id, so editing stays available there.
+const canEditAlbum = computed(
+  () => userStore.signedIn && album.value.canEdit && album.value.id === id.value,
+);
 
 const descriptionHtml = computed(() => descriptionHtmlHelper(album));
 
