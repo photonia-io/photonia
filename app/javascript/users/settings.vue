@@ -134,21 +134,24 @@
                   <div class="control">
                     <div class="select is-fullwidth">
                       <select v-model="defaultLicense">
-                        <option value="">None</option>
-                        <option value="CC BY 4.0">CC BY 4.0 - Attribution</option>
-                        <option value="CC BY-SA 4.0">CC BY-SA 4.0 - Attribution-ShareAlike</option>
-                        <option value="CC BY-ND 4.0">CC BY-ND 4.0 - Attribution-NoDerivatives</option>
-                        <option value="CC BY-NC 4.0">CC BY-NC 4.0 - Attribution-NonCommercial</option>
-                        <option value="CC BY-NC-SA 4.0">CC BY-NC-SA 4.0 - Attribution-NonCommercial-ShareAlike</option>
-                        <option value="CC BY-NC-ND 4.0">CC BY-NC-ND 4.0 - Attribution-NonCommercial-NoDerivatives</option>
-                        <option value="CC0 1.0">CC0 1.0 - Public Domain Dedication</option>
+                        <option
+                          v-for="option in LICENSE_OPTIONS"
+                          :key="option.value"
+                          :value="option.value"
+                        >
+                          {{ option.name ? `${option.label} - ${option.name}` : option.label }}
+                        </option>
                       </select>
                     </div>
                   </div>
                   <p class="help">
                     Select the default license for photos you upload. This will
                     be automatically applied to new uploads.
-                    <a @click.prevent="showLicenseInfoModal" class="has-text-link" style="cursor: pointer;">
+                    <a
+                      href="https://creativecommons.org/choose/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Learn more about licenses
                     </a>
                   </p>
@@ -177,7 +180,6 @@
       </div>
     </div>
   </section>
-  <LicenseInfoModal v-model="licenseInfoModalActive" :current-license="defaultLicense" />
 </template>
 
 <script setup>
@@ -187,7 +189,7 @@ import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import { useUserStore } from "@/stores/user";
 import toaster from "../mixins/toaster";
-import LicenseInfoModal from "../shared/license-info-modal.vue";
+import { LICENSE_OPTIONS, ALL_RIGHTS_RESERVED } from "../shared/licenses.js";
 
 const CURRENT_USER_QUERY = gql`
   query CurrentUserQuery {
@@ -217,13 +219,8 @@ const newFirstName = ref(null);
 const newLastName = ref(null);
 const newDisplayName = ref(null);
 const newDefaultLicense = ref(null);
-const licenseInfoModalActive = ref(false);
 
 const { result } = useQuery(CURRENT_USER_QUERY);
-
-const showLicenseInfoModal = () => {
-  licenseInfoModalActive.value = true;
-};
 
 const email = computed(() => result.value?.currentUser.email);
 const firstName = computed({
@@ -243,7 +240,7 @@ const timezone = computed({
   set: (value) => (newTimezone.value = value),
 });
 const defaultLicense = computed({
-  get: () => result.value?.currentUser.defaultLicense,
+  get: () => result.value?.currentUser.defaultLicense || ALL_RIGHTS_RESERVED,
   set: (value) => (newDefaultLicense.value = value),
 });
 

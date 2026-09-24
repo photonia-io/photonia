@@ -61,7 +61,6 @@
                 v-if="!loading && canEditPhoto"
                 :photo="photo"
                 @delete-photo="deletePhoto"
-                @update-license="updatePhotoLicense"
                 @edit-thumbnail="startThumbnailEdit"
               />
 
@@ -77,6 +76,7 @@
                     @update-privacy="setPhotoPrivacy"
                     @update-taken-at="setPhotoTakenAt"
                     @reset-taken-at="resetPhotoTakenAt"
+                    @update-license="setPhotoLicense"
                   />
                 </div>
                 <div class="column is-half">
@@ -426,12 +426,12 @@ const {
 `);
 
 const {
-  mutate: updatePhotoLicense,
-  onDone: onUpdateLicenseDone,
-  onError: onUpdateLicenseError,
+  mutate: setPhotoLicense,
+  onDone: onSetLicenseDone,
+  onError: onSetLicenseError,
 } = useMutation(gql`
   mutation ($id: String!, $license: String) {
-    updatePhotoLicense(id: $id, license: $license) {
+    setPhotoLicense(id: $id, license: $license) {
       id
       license
     }
@@ -591,11 +591,11 @@ onUpdateDescriptionError((error) => {
   );
 });
 
-onUpdateLicenseDone(({ data }) => {
+onSetLicenseDone(({ data }) => {
   toaster("The license has been updated");
 });
 
-onUpdateLicenseError((error) => {
+onSetLicenseError((error) => {
   toaster(
     "An error occurred while updating the license: " + error.message,
     "is-danger",

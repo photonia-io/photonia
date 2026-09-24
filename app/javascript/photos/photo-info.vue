@@ -53,17 +53,37 @@
         momentFormat(photo.postedAt)
       }}</span>
     </div>
-    <div v-if="!loading && photo.license" class="icon-text">
+    <div v-if="!loading" class="icon-text">
       <span class="icon"><i class="fas fa-certificate"></i></span>
       <span class="has-text-weight-semibold">License:</span>
-      <span class="ml-1">{{ photo.license }}</span>
-      <a
-        @click.prevent="showLicenseInfoModal"
-        class="ml-1 has-text-link"
-        style="cursor: pointer"
+      <!-- Keyed to force a full replace - Font Awesome's JS swaps <i> for
+           <svg>, so patching individual icons in place leaves stale ones. -->
+      <span
+        v-if="licenseDisplay.icons?.length"
+        :key="licenseDisplay.value"
+        class="license-icons"
       >
-        What's this?
+        <i v-for="icon in licenseDisplay.icons" :key="icon" :class="icon"></i>
+      </span>
+      <button
+        v-if="canEdit"
+        ref="licenseTriggerButton"
+        type="button"
+        class="license-trigger is-underlined is-clickable ml-1"
+        @click="openLicenseModal"
+      >
+        {{ licenseDisplay.label }}
+      </button>
+      <a
+        v-else-if="licenseDisplay.url"
+        :href="licenseDisplay.url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ml-1"
+      >
+        {{ licenseDisplay.label }}
       </a>
+      <span v-else class="ml-1">{{ licenseDisplay.label }}</span>
     </div>
     <div
       v-if="!loading && photo.rekognitionLabelModelVersion !== ''"
@@ -139,7 +159,12 @@
     @reset="handleTakenAtReset"
     @close="handleTakenAtModalClose"
   />
-  <LicenseInfoModal v-model="licenseInfoModalActive" :current-license="photo.license" />
+  <LicenseModal
+    :active="licenseModalActive"
+    :license="photo.license"
+    @save="handleLicenseSave"
+    @close="handleLicenseModalClose"
+  />
 </template>
 
 <script setup>
@@ -148,7 +173,8 @@ import { useModal } from "../mixins/use-modal.js";
 import PhotoInfobox from "./photo-infobox.vue";
 import SidebarHeader from "./sidebar-header.vue";
 import TakenAtModal from "./taken-at-modal.vue";
-import LicenseInfoModal from "../shared/license-info-modal.vue";
+import LicenseModal from "./license-modal.vue";
+import { licenseDisplay as getLicenseDisplay } from "../shared/licenses.js";
 import moment from "moment/min/moment-with-locales";
 
 const props = defineProps({
@@ -168,7 +194,12 @@ const props = defineProps({
 
 const { photo } = toRefs(props);
 
-const emit = defineEmits(["updatePrivacy", "updateTakenAt", "resetTakenAt"]);
+const emit = defineEmits([
+  "updatePrivacy",
+  "updateTakenAt",
+  "resetTakenAt",
+  "updateLicense",
+]);
 
 const licenseInfoModalActive = ref(false);
 
@@ -261,6 +292,23 @@ const savePrivacy = () => {
     });
   }
   closePrivacyModal();
+};
+
+const licenseDisplay = computed(() => getLicenseDisplay(photo.value.license));
+const licenseTriggerButton = ref(null);
+const licenseModalActive = ref(false);
+
+const openLicenseModal = () => {
+  licenseModalActive.value = true;
+};
+
+const handleLicenseModalClose = () => {
+  licenseModalActive.value = false;
+  licenseTriggerButton.value?.focus();
+};
+
+const handleLicenseSave = ({ license }) => {
+  emit("updateLicense", { id: photo.value.id, license });
 };
 
 const takenAtChips = computed(() => {
@@ -364,12 +412,25 @@ defineExpose({ closeTakenAtModal: handleTakenAtModalClose });
 }
 
 .privacy-trigger,
-.taken-at-trigger {
+.taken-at-trigger,
+.license-trigger {
   background: none;
   border: none;
   padding: 0;
   font: inherit;
   color: inherit;
+}
+
+// Bulma's .icon boxes each glyph into a fixed 1.5rem square, which is a lot
+// of dead space once several CC badge icons sit side by side - tighten it
+// to how CC actually displays its badges, without affecting single icons
+// elsewhere in this file.
+.license-icons {
+  display: inline-flex;
+  align-items: center;
+  height: 1.5rem;
+  margin-left: 0.25rem;
+  gap: 0.15em;
 }
 
 // A tighter, self-contained gap for chip-to-chip spacing than
