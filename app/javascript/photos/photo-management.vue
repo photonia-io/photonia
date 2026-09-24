@@ -8,10 +8,19 @@
         To edit the photo's title or description click / tap on the texts
         themselves.
       </p>
-      <!-- delete photo button -->
-      <button class="button is-danger" @click="showConfirmationModal">
-        Delete Photo
-      </button>
+      <div class="buttons mb-2">
+        <!-- edit thumbnail button -->
+        <button class="button is-info" @click="editThumbnail">
+          <span class="icon">
+            <i class="fas fa-crop"></i>
+          </span>
+          <span>Edit Thumbnail</span>
+        </button>
+        <!-- delete photo button -->
+        <button class="button is-danger" @click="showConfirmationModal">
+          Delete Photo
+        </button>
+      </div>
     </div>
   </div>
   <teleport to="#modal-root">
@@ -48,10 +57,14 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deletePhoto"]);
+const emit = defineEmits(["deletePhoto", "editThumbnail"]);
 const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
+
+const editThumbnail = () => {
+  emit("editThumbnail");
+};
 
 const showConfirmationModal = () => {
   modalActive.value = true;

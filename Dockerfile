@@ -29,7 +29,7 @@ FROM base AS build
 # Install packages needed to build gems
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     apt-get install --no-install-recommends -y build-essential git libyaml-dev nodejs && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
@@ -44,7 +44,7 @@ RUN bundle install && \
 
 # Copy Yarn Berry config and local release so "yarn" works in the build stage
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn/ ./.yarn/
+# COPY .yarn/ ./.yarn/
 # Install dependencies immutably (will fail if yarn.lock needs changes)
 RUN yarn --version && yarn install --immutable && \
     yarn cache clean

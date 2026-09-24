@@ -22,11 +22,17 @@ Rails.application.routes.draw do
     get 'sign_in', action: :sign_in, as: :users_sign_in
     get 'sign_out', action: :sign_out, as: :users_sign_out
     get 'settings', action: :settings, as: :users_settings
-    get 'admin-settings', action: :admin_settings, as: :users_admin_settings
+  end
+
+  # Admin area routes
+  namespace :admin do
+    root to: 'settings#index'
+    resources :settings, only: %i[index]
+    resources :users, only: %i[index show]
   end
 
   # Main resource routes
-  resources :photos, except: %i[new] do
+  resources :photos, except: %i[new edit destroy] do
     collection do
       get :upload
       get :organizer
@@ -57,8 +63,8 @@ Rails.application.routes.draw do
   require 'sidekiq-scheduler/web'
 
   Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-    username == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_USERNAME') &&
-      password == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_PASSWORD')
+    username == ENV.fetch('SIDEKIQ_WEB_USERNAME') &&
+      password == ENV.fetch('SIDEKIQ_WEB_PASSWORD')
   end
 
   mount Sidekiq::Web => '/sidekiq'

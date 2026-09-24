@@ -83,6 +83,35 @@
       </div>
     </div>
   </teleport>
+  <teleport to="#modal-root">
+    <div :class="['modal', privacyModalActive ? 'is-active' : null]">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title has-text-centered">
+            Change Album Privacy to Private
+          </p>
+        </header>
+        <div class="modal-card-body">
+          <p>
+            When you set this album to Private,
+            <strong>{{ album.privatizablePhotosCount }}</strong>
+            {{ album.privatizablePhotosCount === 1 ? "photo" : "photos" }}
+            contained in this album will also be set to Private.
+          </p>
+          <p class="mt-3">Do you want to continue?</p>
+        </div>
+        <footer class="modal-card-foot is-justify-content-center">
+          <button class="button is-warning" @click="confirmPrivacyChange">
+            Yes, set album and photos to Private
+          </button>
+          <button class="button is-info" @click="cancelPrivacyChange">
+            Cancel
+          </button>
+        </footer>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -118,6 +147,8 @@ const closeConfirmationModal = () => {
 const sortingType = ref("takenAt");
 const sortingOrder = ref("asc");
 const privacy = ref("public");
+// The privacy last confirmed by the server, so Cancel has something to revert to
+const committedPrivacy = ref("public");
 
 // Initialize sorting values from album prop
 watch(
@@ -127,7 +158,8 @@ watch(
       sortingType.value = newAlbum.sortingType || "takenAt";
       sortingOrder.value = newAlbum.sortingOrder || "asc";
       const p = newAlbum.privacy || "public";
-      privacy.value = p === "friend & family" ? "friends_and_family" : p;
+      privacy.value = p;
+      committedPrivacy.value = p;
     }
   },
   { immediate: true },
@@ -141,11 +173,48 @@ const updateSorting = () => {
   });
 };
 
+const privacyModalActive = ref(false);
+
 const setPrivacy = () => {
+  const newPrivacy = privacy.value;
+
+  // Cascading to photos only makes sense when going private and there's
+  // something in the album to cascade to
+  const needsConfirmation =
+    newPrivacy === "private" &&
+    committedPrivacy.value !== "private" &&
+    (props.album.privatizablePhotosCount ?? 0) > 0;
+
+  if (needsConfirmation) {
+    privacyModalActive.value = true;
+    applicationStore.disableNavigationShortcuts();
+  } else {
+    emit("setAlbumPrivacy", {
+      id: props.album.id,
+      privacy: newPrivacy,
+      updatePhotos: false,
+    });
+  }
+};
+
+const confirmPrivacyChange = () => {
   emit("setAlbumPrivacy", {
     id: props.album.id,
     privacy: privacy.value,
+    updatePhotos: true,
   });
+  privacyModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+const revertPrivacy = () => {
+  privacy.value = committedPrivacy.value;
+};
+
+const cancelPrivacyChange = () => {
+  revertPrivacy();
+  privacyModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
 };
 
 const sortingOrderAscendingText = computed(() => {
@@ -167,6 +236,8 @@ const performDelete = () => {
   emit("deleteAlbum", { id: props.album.id });
   closeConfirmationModal();
 };
+
+defineExpose({ revertPrivacy });
 </script>
 
 <style scoped>

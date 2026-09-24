@@ -1,0 +1,182 @@
+App model: the admin (site owner) shares photos with the world. Visitors can sign up for an account today (self-service via "Continue with Google"/"Continue with Facebook", gated by a `Setting` toggle - there's no local email/password registration) but that only grants the unused `registered_user` role; only the admin can upload photos, edit them, or create/manage albums, gated by `has_role?(:uploader)` in `PhotoPolicy`/`AlbumPolicy` (`ApplicationPolicy` denies everything by default). Commenting and favoriting are the intended reason for letting people sign up, but neither exists yet - `Comment` records today are read-only, imported from Flickr, with no mutation to create one, and there's no favorites feature at all.
+
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+Photonia is a self-hosted photo sharing app: Rails 7 (Ruby 3.4.7) API + a Vue 3 SPA, Postgres, Sidekiq/Redis, Shrine on S3, AWS Rekognition for auto-tagging. Most of the photo corpus was originally imported from a Flickr export.
+
+## Code style
+
+Keep comments short — no kilometric comments explaining the obvious.
+
+## Git
+
+Do not use emojis in commit messages. Much of the existing history is gitmoji-prefixed (`⬆️ Update …`); do not copy that style for new commits.
+
+Never add Claude attribution to commit messages or PR descriptions — no `Co-Authored-By`, no `Claude-Session`, no "Generated with Claude Code".
+
+## UI changes
+
+On the **first** implementation of a UI change, write the tests and run them as usual, then hand over for manual verification. Never verify a UI change yourself with Playwright, and do not commit or push.
+
+Once the user comes back **requesting changes**, apply them and then stop: wait for their manual check and their OK before writing or updating any tests. Repeat that for every further round of changes.
+
+The point is that automated checks are not a substitute for the user looking at the UI — so tests never get rewritten against behaviour the user has not yet signed off on.
+
+## Commands
+
+Dev servers (three processes):
+
+```bash
+overmind s -N -f Procfile.dev   # or run the three separately:
+bundle exec rails s
+bin/vite dev
+bundle exec sidekiq
+```
+
+Tests:
+
+```bash
+bundle exec rspec                                  # full Ruby suite
+bundle exec rspec spec/models/photo_spec.rb        # single file
+bundle exec rspec spec/models/photo_spec.rb:42     # single example
+yarn test:run                                      # Vitest (Yarn 4 via Corepack, not npm)
+```
+
+System specs are **excluded by default** in `.rspec` (`--exclude-pattern spec/system/**/*_spec.rb`). They need a Selenium Grid running in Docker (see README) and must be run explicitly by path.
+
+**Test runs are expected to be warning-free.** A new warning in the output is a defect to fix at its source, not noise to step over — and not something to paper over with `--no-warnings` or by opting out of a runtime feature. Fix it upstream (a dependency bump) where that is what it takes.
+
+Node: CI and the production image are pinned to **24 LTS**; local dev may be newer. Node 25+ defines its own inert `localStorage`/`sessionStorage` globals, which older Vitest let shadow happy-dom's working ones — Vitest 5 fixes that, so stay on 5+.
+
+Lint: `bundle exec rubocop`. Note it is **not enforced in CI** — the lint job in `.github/workflows/ci.yml` is commented out; CI runs the `rspec` and `vitest` jobs only.
+
+Setup on a fresh machine:
+
+```bash
+sudo apt install libpq-dev libexif-dev imagemagick
+bundle install && yarn install
+bin/rails db:schema:load     # loads db/structure.sql
+bin/rails db:seed            # REQUIRED: seeds Roles + TaggingSources
+```
+
+There is no registration UI. Create the first admin with rake tasks (**escape the brackets in zsh**):
+
+```bash
+bin/rails users:create\[me@example.com,password\]
+bin/rails users:make_admin\[me@example.com\]
+```
+
+`lib/tasks/` is the real ops surface — `flickr:import*`, `photos:add_derivatives`, `albums:maintenance`, `rekognition:tag_batch`, `related_tags:precompute`, `users:*`.
+
+## Architecture
+
+**Rails renders a shell; Vue replaces it.** The layout renders server HTML inside `<div id="app">`, then `app.mount("#app")` blows it away. The ERB views (`app/views/photos/show.html.erb`, `*_shell.html.erb`) exist only as SEO / no-JS fallbacks — they are not the real UI, and changing the UI means changing the Vue components.
+
+**One endpoint for all data:** `POST /graphql`. Photo upload is the single REST exception.
+
+`app/controllers/graphql_controller.rb` injects bound controller methods into the GraphQL context rather than letting resolvers reach for globals:
+
+```ruby
+context = { current_user:, sign_in:, sign_out:, authorize:, pagy:, impressionist: }
+```
+
+So resolvers call `context[:authorize].call(record, :update?)` and `context[:pagy].call(relation, page:)`. Authorization is per-resolver and per-field, not central.
+
+`PhotoniaSchema` rescues both `ActiveRecord::RecordNotFound` **and** `Pundit::NotAuthorizedError` into the same `NOT_FOUND` error — unauthorized and missing are deliberately indistinguishable. Preserve that when adding error handling.
+
+**Query documents live in Ruby.** `app/graphql/graphql_query_collection.rb` holds the shared query strings; `ApplicationController#set_gql_queries` dumps them to `window.gql_queries`, and Vue components do ``useQuery(gql`${gql_queries.photos_show}`)``. Mutations are the opposite — inline `gql` literals inside components. Vue route paths likewise come from `window.settings` (`ApplicationController#set_settings`), so Rails stays the source of truth for URLs.
+
+Two mutation styles exist: the current one is a class in `app/graphql/mutations/`; about eight legacy mutations are still defined inline as fields on `Types::MutationType`. Put new mutations in `app/graphql/mutations/`.
+
+**Schema of record is `db/structure.sql`** (`config.active_record.schema_format = :sql`, `config/application.rb:29`) — not `schema.rb`. Models carry `annotate`-generated schema comments, which are the fastest way to read a table's columns.
+
+Frontend lives in `app/javascript` with a single entrypoint (`entrypoints/application.js`); `@/` and `~/` alias there automatically via `vite-plugin-ruby`. Bulma + Sass for styling (no Tailwind), Pinia for state, Apollo Client 3 with an afterware link that picks the refreshed JWT out of the `Authorization` response header.
+
+## Domain invariants
+
+- **Never expose database ids.** The user-facing id of a Photo, Album or User is its `slug`. A GraphQL `id` argument or field is *always* a slug.
+- `friendly_id` cannot find multiple records: use `Model.where(slug: slugs)`, never `Model.friendly.find(slugs)`.
+- Album covers: `user_cover_photo_id` is set by the owner; `public_cover_photo_id` is **derived** — never write it from a mutation, `Album#maintenance` owns it.
+- Album ordering lives on `albums_photos.ordering`, gap-spaced by 100_000. When `sorting_type != manual` it is set by `Album#apply_automatic_photo_ordering!`; manual ordering goes through `Album#execute_bulk_ordering_update`. `AlbumsPhoto` deliberately does *not* run `maintenance` on create/destroy (too slow in bulk) — the caller must.
+- Photo search is Postgres full-text search into `photos.tsv` (title, description, album titles, tags), maintained by a DB trigger defined in `db/migrate/20231107090606_create_trigger_tsvupdate_v5.rb`.
+
+## Gotchas
+
+- `Photo` and `Album` carry `default_scope { where(privacy: 'public') }` (`app/models/photo.rb:78`). Nearly every real query needs `Photo.unscoped` combined with a Pundit scope; forgetting this silently hides records.
+- The `privacy` enum maps `friends_and_family` to the DB string `'friend & family'` — with a space and ampersand (`app/models/photo.rb:46-49`).
+- **JWT issuance is matched on the GraphQL operation name in the request body** (`config/initializers/devise.rb:317-322`): `/signIn|continueWithGoogle|continueWithFacebook/` dispatches a token, `/signOut/` revokes one. Request-body matching is not upstream behavior — it is why the Gemfile pins the `photonia-io/warden-jwt_auth` fork. Renaming any of those operations silently breaks authentication.
+- `ActsAsTaggableOn::Tag`'s `rekognition` and `flickr` scopes **hardcode `tagger_id: 2` and `tagger_id: 1`** (`config/initializers/acts_as_taggable_on/tag.rb:11-23`), which depend on the insertion order in `db/seeds.rb` (Flickr first). Seeding in a different order silently breaks the user-tags vs machine-tags split.
+- There is no `Tag` or `Tagging` model — tags come from `acts-as-taggable-on`, monkey-patched in that same initializer to add friendly_id and scopes.
+- The `tags.source` column (`tag_source` enum) is dead legacy, superseded by `TaggingSource`. Nothing reads it.
+- Always run user-supplied tag input through `TagNormalizer.normalize`.
+- `flickr_user_claims` exists in `structure.sql` but has **no model** — a half-built feature.
+- Upload pipeline order matters: `PromoteJob` → `RekognitionJob` (creates labels) → `AddDerivativesJob` (crops depend on those labels). Rekognition reads the `extralarge` derivative from S3, so derivatives must exist before it runs.
+- Shrine ACL split: the original is uploaded `private`, every derivative `public-read`, so full-resolution originals are never publicly reachable. Thumbnail resolution order is `user` → `intelligent` → `square` (`PhotoType#image_url`).
+- `THUMBNAIL_SIDE` / `MEDIUM_SIDE` are passed straight to MiniMagick — unset means `nil` reaches `resize_to_fill!`, so they are effectively required.
+- User-defined thumbnails take priority over intelligent ones, must stay square, and regenerate derivatives asynchronously. Only relative percentages are stored in `user_thumbnail`; pixels are recomputed in `Photo#custom_crop`.
+- `Photo#exif` is lazily computed from S3 on first read and written back with `save(validate: false)`.
+- Bulma 1.x's modal-card shares one padding variable between the head and the foot, and sizes the title at `--bulma-size-4` — both oversized for this app's short modal titles, and the footer gets no gap between its action buttons by default. `app/javascript/styles/application.scss` overrides `--bulma-modal-card-head-padding` / `--bulma-modal-card-title-size` and adds `gap` to `.modal-card-foot` globally, so new modals don't need per-instance spacing hacks or a `.buttons` wrapper just to space their footer buttons.
+- Always wrap an icon next to text in Bulma's `.icon-text`, never a bare `.icon` span beside plain text — without it the icon and text have mismatched line-heights and misalign vertically. **Not inside a `.button`**, though: a button is already `inline-flex` + `align-items: center` and spaces its own `.icon` children, so there `.icon` and the label go in side by side. Nesting `.icon-text` in a button re-misaligns it, because `.icon-text` is `align-items: flex-start` — visible as soon as the label wraps to a second line.
+
+## Testing
+
+Specs live in `spec/{models,requests,jobs,services,policies,mailers,lib,system,factories,support}`. GraphQL specs are under `spec/requests/graphql/{queries,mutations}`.
+
+`spec/rails_helper.rb` runs `Rails.application.load_seed` **before the suite**, so `Role` (`registered_user`, `uploader`) and `TaggingSource` (Flickr, Rekognition) rows exist in every test. Transactional fixtures; there is **no DatabaseCleaner, no VCR and no WebMock** — external HTTP is stubbed with plain RSpec doubles.
+
+The GraphQL request-spec pattern, consistent across ~35 files: a heredoc `let(:query)` interpolating **slugs** (never ids), `post '/graphql', params: { query: }`, then assertions against `response.parsed_body['data']`. Authentication uses Devise's `sign_in(user)` integration helper, not hand-minted JWTs.
+
+Reuse these before writing new scaffolding:
+
+- `spec/support/graphql_response_helpers.rb` — `data_dig(response, *)`, `first_error_message(response)`
+- `spec/support/test_data.rb` — `TestData.image_data` for `create(:photo, image_data: ...)`
+- shared context `'with auth actors'` — `owner` / `stranger` / `admin`
+- shared examples in `spec/support/` (authorization, trackable title/description)
+
+Always check whether a FactoryBot factory already exists before writing one.
+
+When seeding photos for **manual** testing (e.g. a `bin/rails runner` script creating albums/photos in the dev DB for the user to click through), don't reuse the same `zell-am-see-with-exif.jpg` for every photo — it makes photos indistinguishable at a glance in the UI. Use `spec/support/images/{1-one,2-two,3-three,4-four,5-five}.jpg` instead: five 4K (3840×2160) white photos, each with one number word ("one" – "five") centered in large black text, named after their number. Same derivative-setting approach as `TestData.image_data`, one distinct image per photo.
+
+When directing the user to a piece of manually-seeded test data, refer to it by what it visibly says rather than by slug/id — e.g. "open the photo that says 'one'" or "the album whose cover says 'two'" — since a slug means nothing to them at a glance in the browser. Still give the slug/URL too, for anyone following along in a transcript.
+
+Rubocop config shapes test style: `RSpec/ImplicitExpect: should` (so `it { should permit_only_actions(...) }`), with `ExampleLength` and `MultipleExpectations` disabled.
+
+## Authorization
+
+Two parallel mechanisms, both live:
+
+- `users.admin` boolean.
+- `roles` / `roles_users` HABTM with `Role#symbol`. `User#has_role?(sym)` returns true for **any** admin regardless of assigned roles. Uploading requires `has_role?(:uploader)`.
+
+Policies in `app/policies/` deny by default. `PhotoPolicy::Scope` / `AlbumPolicy::Scope` implement the three-tier visibility rule: visitor sees public only, user sees public + own, admin sees all.
+
+OAuth is not OmniAuth — `Mutations::ContinueWithGoogle` verifies a Google One-Tap credential directly, and `ContinueWithFacebookService` verifies Facebook's signed request. Both are gated behind `Setting` toggles.
+
+## Environment
+
+Env vars carry no app prefix. In development and test, `dotenv-rails` loads `.env` automatically at boot (plus `.env.development` / `.env.test` for the per-environment `DATABASE_URL`, see below), so `bin/rails` and `bundle exec rspec` work with no shell setup. It never overrides variables already set in the environment, so CI and production (which get real env vars, from Kamal in production) are unaffected. `.env.example` documents every key.
+
+- `DATABASE_URL` is deliberately **not** in the shared `.env` — Rails applies it to every environment that has no explicit `url:` in `database.yml`, so a value in `.env` would make `rspec` run against the dev database. It lives in `.env.development` / `.env.test` instead (and is fetched from 1Password for production, see Deployment below).
+- `REDIS_URL`: shared by Sidekiq and, in production, Action Cable (`config/cable.yml`).
+- S3 and Rekognition use **separate credential pairs**: `S3_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY` / `_REGION` / `_BUCKET`, and `REKOGNITION_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY`
+- Images: `THUMBNAIL_SIDE`, `MEDIUM_SIDE`
+- Auth: `DEVISE_JWT_SECRET_KEY`, `GOOGLE_CLIENT_ID`, `FACEBOOK_APP_ID` / `_SECRET`, `FLICKR_API_KEY`
+- Ops: `SIDEKIQ_WEB_USERNAME` / `_PASSWORD` (basic auth on `/sidekiq`), `BE_SENTRY_DSN`, `FE_SENTRY_DSN`
+
+In production the S3 bucket name doubles as the CDN hostname for derivative URLs.
+
+## Deployment
+
+Deployed with **Kamal**, requiring a destination (`require_destination: true` in `config/deploy.yml`):
+
+```bash
+kamal deploy -d production
+```
+
+`config/deploy.yml` (tracked) holds shared, non-private config, including non-secret `env.clear` values (S3_BUCKET is the public CDN hostname; the rest are non-sensitive). `config/deploy.production.yml` (gitignored — has the real server IP/hostname) holds server, proxy and accessory config; `config/deploy.production.template.yml` is its tracked placeholder version to copy from.
+
+Secrets are fetched from **1Password** via `.kamal/secrets.production` (tracked, contains no values) using Kamal's `1password` adapter — `kamal secrets fetch --adapter 1password --account $OP_ACCOUNT --from Credentials/Photonia ...`. Requires the `op` CLI signed in and `$OP_ACCOUNT` exported in your shell. The Docker registry password is pulled from a separate shared `Credentials/General` item.
+
+**Publish a GitHub release after every deploy.** Tag and title format are in the README's "Versioning & Releases" section (tag `release-X.Y.Z`, title prefixed with the version). Start from GitHub's auto-generated notes (`gh api repos/photonia-io/photonia/releases/generate-notes -f tag_name=release-X.Y.Z -f previous_tag_name=<last tag>`), then reorganize them and write the title to match the last three releases (`gh release list --limit 3`, then `gh release view <tag>`).

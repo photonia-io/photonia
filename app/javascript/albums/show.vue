@@ -53,6 +53,7 @@
           album.canEdit &&
           applicationStore.managingAlbum
         "
+        ref="albumManagementRef"
         :album="album"
         @delete-album="deleteAlbum"
         @update-sorting="updateAlbumSorting"
@@ -66,16 +67,17 @@
           album.canEdit &&
           applicationStore.managingAlbum
         "
-        :photos="album.photos.collection"
+        :photos="album.photos?.collection"
         :album-id="id"
         @request-remove-from-album="openRemoveFromAlbumModal"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
         <PhotoItem
-          v-for="photo in album.photos.collection"
+          v-for="photo in album.photos?.collection"
           :photo="photo"
           :in-album="true"
+          :album-id="id"
           :key="photo.id"
           :can-edit-album="canEditAlbum"
           @set-cover-photo="handleSetAlbumCoverPhoto"
@@ -83,7 +85,7 @@
       </div>
       <hr class="mt-1 mb-4" />
       <Pagination
-        v-if="album.photos.metadata"
+        v-if="album.photos?.metadata"
         :metadata="album.photos.metadata"
         :routeParams="{ id: id }"
         routeName="albums-show"
@@ -177,11 +179,7 @@ import Pagination from "@/shared/pagination.vue";
 // route
 const route = useRoute();
 const router = useRouter();
-
-const emptyAlbum = {
-  title: "",
-  photos: [],
-};
+const albumManagementRef = ref(null);
 
 const applicationStore = useApplicationStore();
 const userStore = useUserStore();
@@ -223,18 +221,23 @@ const { result, loading } = useQuery(
     ${gql_queries.albums_show}
   `,
   { id: id, page: page },
+  { keepPreviousResult: true },
 );
 
-const album = computed(() => result.value?.album ?? emptyAlbum);
+const album = computed(() => result.value?.album ?? {});
 
-const title = computed(() => `Album: ${titleHelper(album, loading)}`);
+const title = computed(() => `Album: ${titleHelper(album)}`);
 useTitle(title);
 
+// The id check matters because keepPreviousResult retains the outgoing album
+// while the next one loads: without it the title and description editors
+// would stay live over an album the URL has already moved away from. Paging
+// within one album keeps the same id, so editing stays available there.
 const canEditAlbum = computed(
-  () => !loading.value && userStore.signedIn && album.value.canEdit,
+  () => userStore.signedIn && album.value.canEdit && album.value.id === id.value,
 );
 
-const descriptionHtml = computed(() => descriptionHtmlHelper(album, loading));
+const descriptionHtml = computed(() => descriptionHtmlHelper(album));
 
 const {
   mutate: updateAlbumTitle,
@@ -377,22 +380,37 @@ const {
   onDone: onSetAlbumPrivacyDone,
   onError: onSetAlbumPrivacyError,
 } = useMutation(gql`
-  mutation ($id: String!, $privacy: String!) {
-    setAlbumPrivacy(id: $id, privacy: $privacy) {
-      id
-      privacy
+  mutation ($id: String!, $privacy: String!, $updatePhotos: Boolean!) {
+    setAlbumPrivacy(id: $id, privacy: $privacy, updatePhotos: $updatePhotos) {
+      album {
+        id
+        privacy
+        privatizablePhotosCount
+      }
+      photosUpdatedCount
     }
   }
 `);
 
-const handleSetAlbumPrivacy = ({ id, privacy }) => {
-  setAlbumPrivacyMutation({ id, privacy });
+const handleSetAlbumPrivacy = ({ id, privacy, updatePhotos }) => {
+  setAlbumPrivacyMutation({ id, privacy, updatePhotos });
 };
 
 onSetAlbumPrivacyDone(({ data }) => {
-  toaster("Album privacy has been updated");
+  const photosUpdatedCount = data?.setAlbumPrivacy?.photosUpdatedCount || 0;
+  if (photosUpdatedCount > 0) {
+    toaster(
+      `Album privacy has been updated. ${photosUpdatedCount} ${photosUpdatedCount === 1 ? "photo" : "photos"} also set to private.`
+    );
+  } else {
+    toaster("Album privacy has been updated");
+  }
   // Evict albums list to refresh visibility if necessary
   apolloClient.cache.evict({ fieldName: "albums" });
+  if (photosUpdatedCount > 0) {
+    // Cascaded photos may be cached elsewhere (e.g. a photo page) still showing the old privacy
+    apolloClient.cache.evict({ fieldName: "photo" });
+  }
   apolloClient.cache.gc();
 });
 
@@ -401,6 +419,7 @@ onSetAlbumPrivacyError((error) => {
     "An error occurred while updating album privacy: " + error.message,
     "is-danger",
   );
+  albumManagementRef.value?.revertPrivacy();
 });
 
 const updateAlbumSorting = (sortingData) => {

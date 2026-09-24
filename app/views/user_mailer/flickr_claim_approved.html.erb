@@ -1,0 +1,20 @@
+<h1>Your Flickr User Claim Has Been Approved!</h1>
+
+<p>
+  Good news! Your request to claim the Flickr user <strong><%= h @flickr_user.username %></strong> has been approved.
+</p>
+
+<ul>
+  <li><strong>Flickr Username:</strong> <%= h @flickr_user.username %></li>
+  <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
+</ul>
+
+<% if @claim&.automatic? %>
+<p>
+  You can now remove the verification code from your Flickr profile description.
+</p>
+<% end %>
+
+<p>
+  Your friendly Photonia bot.
+</p>

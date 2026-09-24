@@ -9,16 +9,28 @@ module Types
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
     field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
+    field :reset_photo_taken_at, mutation: Mutations::ResetPhotoTakenAt, description: 'Reset photo date taken to the EXIF or upload date'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'
+    field :set_photo_license, mutation: Mutations::SetPhotoLicense, description: 'Set photo license'
+    field :set_photo_privacy, mutation: Mutations::SetPhotoPrivacy, description: 'Set photo privacy'
+    field :set_photo_taken_at, mutation: Mutations::SetPhotoTakenAt, description: 'Set photo date taken'
     field :update_album_description, mutation: Mutations::UpdateAlbumDescription, description: 'Update album description'
     field :update_album_photo_order, mutation: Mutations::UpdateAlbumPhotoOrder, description: 'Update the order of photos in an album'
     field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
     field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
+    field :update_photo_thumbnail, mutation: Mutations::UpdatePhotoThumbnail, description: 'Update photo user-defined thumbnail'
     field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
     field :continue_with_facebook, mutation: Mutations::ContinueWithFacebook, description: 'Sign up or sign in with Facebook'
     field :continue_with_google, mutation: Mutations::ContinueWithGoogle, description: 'Sign up or sign in with Google'
+
+    # Flickr claim mutations
+    field :request_automatic_flickr_claim, mutation: Mutations::RequestAutomaticFlickrClaim, description: 'Request an automatic claim for a Flickr user'
+    field :verify_automatic_flickr_claim, mutation: Mutations::VerifyAutomaticFlickrClaim, description: 'Verify an automatic Flickr user claim'
+    field :request_manual_flickr_claim, mutation: Mutations::RequestManualFlickrClaim, description: 'Request a manual claim for a Flickr user'
+    field :approve_flickr_claim, mutation: Mutations::ApproveFlickrClaim, description: 'Approve a Flickr user claim (admin only)'
+    field :deny_flickr_claim, mutation: Mutations::DenyFlickrClaim, description: 'Deny a Flickr user claim (admin only)'
 
     field :create_album_with_photos, AlbumType, null: false do
       description 'Create album with photos'
@@ -50,6 +62,7 @@ module Types
 
     field :update_user_settings, UserType, null: false do
       description 'Update user settings'
+      argument :default_license, String, 'User default license', required: false
       argument :display_name, String, 'User display name', required: true
       argument :email, String, 'User email', required: true
       argument :first_name, String, 'User first name', required: true
@@ -57,14 +70,7 @@ module Types
       argument :timezone, String, 'User timezone', required: true
     end
 
-    field :update_admin_settings, AdminSettingsType, null: false do
-      description 'Update admin settings'
-      argument :continue_with_facebook_enabled, Boolean, 'Continue with Facebook active', required: true
-      argument :continue_with_google_enabled, Boolean, 'Continue with Google active', required: true
-      argument :site_description, String, 'Site description', required: true
-      argument :site_name, String, 'Site name', required: true
-      argument :site_tracking_code, String, 'Site tracking code', required: true
-    end
+    field :update_admin_settings, mutation: Mutations::UpdateAdminSettings, description: 'Update admin settings'
 
     def create_album_with_photos(title:, photo_ids:)
       album = Album.new(title: title)
@@ -117,11 +123,12 @@ module Types
       }
     end
 
-    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
+    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:, **optional)
       user = context[:current_user]
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
 
       context[:authorize].call(user, :update?)
+      default_license = validated_default_license(optional)
       # for now we don't allow users to change their email
       # as that should trigger Devise's confirmation email
       # user.update(email: email)
@@ -129,17 +136,19 @@ module Types
       user.update(last_name: last_name)
       user.update(display_name: display_name)
       user.update(timezone: timezone)
+      # An omitted argument must not wipe the user's existing default
+      user.update(default_license:) if optional.key?(:default_license)
       user
     end
 
-    def update_admin_settings(site_name:, site_description:, site_tracking_code:, continue_with_google_enabled:, continue_with_facebook_enabled:)
-      context[:authorize].call(Setting, :update?)
-      Setting.site_name = site_name
-      Setting.site_description = site_description
-      Setting.site_tracking_code = site_tracking_code
-      Setting.continue_with_google_enabled = continue_with_google_enabled
-      Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
-      Setting
+    private
+
+    # Checked before any write so an invalid value can't leave the other settings half-saved
+    def validated_default_license(optional)
+      normalized = optional[:default_license].presence
+      raise GraphQL::ExecutionError, 'Invalid license value' if normalized && License::VALUES.exclude?(normalized)
+
+      normalized
     end
   end
 end

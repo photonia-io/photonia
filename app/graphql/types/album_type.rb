@@ -15,6 +15,10 @@ module Types
       argument :photo_id, ID, 'Id of the photo for which the next photo is to be found', required: true
     end
 
+    field :photo_position_in_album, Types::AlbumPositionType, 'Position of a photo within the album', null: true do
+      argument :photo_id, ID, 'Id of the photo whose position is to be found', required: true
+    end
+
     field :can_edit, Boolean, 'Whether the current user can edit the album', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :cover_photo, PhotoType, 'Cover photo of the album', null: true
@@ -22,6 +26,7 @@ module Types
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
     field :photos_count, Integer, 'Number of photos in the album', null: false
+    field :privatizable_photos_count, Integer, 'Number of non-private photos the current user may set to private (editors only)', null: true
 
     field :privacy, String, 'Privacy level of the album', null: false
 
@@ -76,20 +81,22 @@ module Types
 
     def cover_photo
       # For editors (owner/admin), prefer the user-set cover if present,
-      if Pundit.policy(context[:current_user], @object)&.update?
-        # we can't unscope belongs_to associations, so we need to do it manually
-        association_scope = @object.association(:user_cover_photo).scope
-        unscoped_association = association_scope.unscope(where: :privacy)
-        user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
-        return user_cover if user_cover
-      end
+      return editor_cover_photo if Pundit.policy(context[:current_user], @object)&.update?
 
       # Fallback to the public cover (what visitors/non-owners see)
       @object.public_cover_photo
     end
 
+    def privatizable_photos_count
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.non_private_photos.count
+    end
+
     def previous_photo_in_album(photo_id:)
       scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      return nil if scoped_photo_ordering.nil?
+
       scoped_previous_photo = scoped_previous_photo(scoped_photo_ordering)
       return nil if scoped_previous_photo.nil?
 
@@ -98,10 +105,25 @@ module Types
 
     def next_photo_in_album(photo_id:)
       scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      return nil if scoped_photo_ordering.nil?
+
       scoped_next_photo = scoped_next_photo(scoped_photo_ordering)
       return nil if scoped_next_photo.nil?
 
       context[:authorize].call(scoped_next_photo, :show?)
+    end
+
+    def photo_position_in_album(photo_id:)
+      ordering = scoped_photo_ordering(photo_id)
+      return nil if ordering.nil?
+
+      position = scoped_album_photos.where(albums_photos: { ordering: ..ordering }).count
+
+      {
+        position:,
+        total: scoped_album_photos.count,
+        page: (position / Pagy::DEFAULT[:limit].to_f).ceil
+      }
     end
 
     def can_edit
@@ -114,25 +136,47 @@ module Types
 
     private
 
-    def scoped_photo_ordering(photo_id)
-      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-      base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id).ordering
+    def editor_cover_photo
+      # we can't unscope belongs_to associations, so we need to do it manually
+      association_scope = @object.association(:user_cover_photo).scope
+      unscoped_association = association_scope.unscope(where: :privacy)
+      user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
+      return user_cover if user_cover
+
+      return @object.public_cover_photo if @object.public_cover_photo
+
+      fallback_cover_photo
     end
 
+    # Editors can see every photo in the album, so when there's no
+    # user-set cover and no public one (e.g. every photo is private),
+    # fall back to any photo rather than showing none at all.
+    def fallback_cover_photo
+      return nil if @object.photos_count.zero?
+
+      @object.all_photos(select: false, refetch: true).first
+    end
+
+    def scoped_photo_ordering(photo_id)
+      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id)&.ordering
+    end
+
+    # Already INNER JOINs albums_photos constrained to this album, so callers
+    # must not join it again: a second, unconstrained join multiplies every row
+    # by the number of albums the photo belongs to.
     def scoped_album_photos
       Pundit.policy_scope(context[:current_user], @object.photos.unscope(where: :privacy))
     end
 
     def scoped_next_photo(current_ordering)
-      scoped_album_photos.joins(:albums_photos)
-                         .where('albums_photos.ordering > ?', current_ordering)
+      scoped_album_photos.where('albums_photos.ordering > ?', current_ordering)
                          .order('albums_photos.ordering ASC')
                          .first
     end
 
     def scoped_previous_photo(current_ordering)
-      scoped_album_photos.joins(:albums_photos)
-                         .where(albums_photos: { ordering: ...current_ordering })
+      scoped_album_photos.where(albums_photos: { ordering: ...current_ordering })
                          .order('albums_photos.ordering DESC')
                          .first
     end

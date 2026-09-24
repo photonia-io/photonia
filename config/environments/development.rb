@@ -52,11 +52,14 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address: 'email-smtp.us-east-1.amazonaws.com',
     port: 587,
-    user_name: ENV['PHOTONIA_SES_SMTP_USERNAME'],
-    password: ENV['PHOTONIA_SES_SMTP_PASSWORD'],
+    user_name: ENV['SES_SMTP_USERNAME'],
+    password: ENV['SES_SMTP_PASSWORD'],
     authentication: :login,
     enable_starttls_auto: true
   }
+
+  # Set default URL options for mailers in test environment
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
@@ -81,9 +84,6 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
-  # Suppress logger output for asset requests.
-  config.assets.quiet = true
-
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
@@ -95,4 +95,11 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Allow the dev server to be reached by any Host header (e.g. accessing it
+  # over the LAN by hostname instead of localhost). Rails' default dev
+  # allow-list only covers localhost/.localhost/.test and raw IPs, so an
+  # arbitrary hostname is blocked by ActionDispatch::HostAuthorization
+  # otherwise. Clearing the list turns the check into a no-op entirely.
+  config.hosts.clear
 end

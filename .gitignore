@@ -32,12 +32,14 @@
 /public/packs-test
 /node_modules
 /.yarn/install-state.gz
+package-lock.json
 
 # Ignore flickr directory with private data and photos
 /flickr/*
 
 # Ignore .env files
 .env*
+!.env.example
 
 # Ignore generated sitemap
 /public/sitemap.xml.gz
@@ -52,8 +54,6 @@ node_modules
 # Coverage directory used by tools like SimpleCov
 /coverage/
 
-# Ignore the Kamal deploy config file
-config/deploy.yml
-
-# Ignore the Aider AI code generation tool
-.aider*
+# Ignore the per-destination Kamal deploy config (server IP, real hostnames);
+# config/deploy.yml itself is tracked and holds no host-specific data.
+config/deploy.production.yml

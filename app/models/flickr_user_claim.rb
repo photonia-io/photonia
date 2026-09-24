@@ -1,0 +1,111 @@
+# frozen_string_literal: true
+
+# == Schema Information
+#
+# Table name: flickr_user_claims
+#
+#  id                :bigint           not null, primary key
+#  approved_at       :datetime
+#  claim_type        :string           not null
+#  denied_at         :datetime
+#  reason            :text
+#  status            :string           default("pending"), not null
+#  verification_code :string
+#  verified_at       :datetime
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  flickr_user_id    :bigint           not null
+#  user_id           :bigint           not null
+#
+# Indexes
+#
+#  index_flickr_user_claims_on_active_user_and_flickr_user  (user_id,flickr_user_id) UNIQUE WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]))
+#  index_flickr_user_claims_on_flickr_user_id               (flickr_user_id)
+#  index_flickr_user_claims_on_status                       (status)
+#  index_flickr_user_claims_on_user_id                      (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (flickr_user_id => flickr_users.id)
+#  fk_rails_...  (user_id => users.id)
+#
+class FlickrUserClaim < ApplicationRecord
+  class AlreadyClaimedError < StandardError; end
+
+  CLAIM_TYPES = %w[automatic manual].freeze
+  STATUSES = %w[pending approved denied].freeze
+
+  belongs_to :user
+  belongs_to :flickr_user
+
+  validates :claim_type, presence: true, inclusion: { in: CLAIM_TYPES }
+  validates :status, presence: true, inclusion: { in: STATUSES }
+  validates :verification_code, presence: true, if: -> { claim_type == 'automatic' }
+  validates :user_id,
+            uniqueness: { scope: :flickr_user_id,
+                          conditions: -> { where(status: %w[pending approved]) },
+                          message: 'has already claimed this Flickr user' },
+            if: -> { %w[pending approved].include?(status) }
+  validate :user_has_no_other_active_claim, on: :create
+
+  scope :pending, -> { where(status: 'pending') }
+  scope :approved, -> { where(status: 'approved') }
+  scope :denied, -> { where(status: 'denied') }
+  scope :automatic, -> { where(claim_type: 'automatic') }
+  scope :manual, -> { where(claim_type: 'manual') }
+
+  def approve!
+    transaction do
+      # Lock the Flickr user row so concurrent approvals can't hand it to two users.
+      locked_flickr_user = FlickrUser.lock.find(flickr_user_id)
+      if locked_flickr_user.claimed_by_user_id.present? && locked_flickr_user.claimed_by_user_id != user_id
+        raise AlreadyClaimedError, 'This Flickr user has already been claimed by another user'
+      end
+
+      update!(status: 'approved', approved_at: Time.current)
+      locked_flickr_user.update!(claimed_by_user: user)
+    end
+  end
+
+  def deny!
+    update!(status: 'denied', denied_at: Time.current)
+  end
+
+  def pending?
+    status == 'pending'
+  end
+
+  def approved?
+    status == 'approved'
+  end
+
+  def denied?
+    status == 'denied'
+  end
+
+  def automatic?
+    claim_type == 'automatic'
+  end
+
+  def manual?
+    claim_type == 'manual'
+  end
+
+  private
+
+  # A user may only have one active (pending or approved) claim at a time. This
+  # mirrors the business rule documented on Types::FlickrUserType#claimable, but
+  # enforces it on write too, since that field only enforces it on read.
+  def user_has_no_other_active_claim
+    return if user_id.blank? || flickr_user_id.blank?
+    # Only a newly created active claim can conflict - creating a claim that's
+    # already denied (as some factories/backfills do) never competes with anything.
+    return unless %w[pending approved].include?(status)
+
+    conflicting = FlickrUserClaim.where(user_id: user_id, status: %w[pending approved])
+                                 .where.not(flickr_user_id: flickr_user_id)
+    return unless conflicting.exists?
+
+    errors.add(:base, 'You already have a pending or approved claim on a different Flickr user')
+  end
+end

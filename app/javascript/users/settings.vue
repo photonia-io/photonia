@@ -10,11 +10,11 @@
         <div class="level-right">
           <div class="level-item">
             <router-link
-              :to="{ name: 'users-admin-settings' }"
+              :to="{ name: 'admin' }"
               v-if="userStore.admin"
               class="button is-small is-link"
             >
-              Admin Settings
+              Admin
             </router-link>
           </div>
         </div>
@@ -125,6 +125,39 @@
                 </div>
               </div>
             </div>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label">Default License</label>
+              </div>
+              <div class="field-body">
+                <div class="field is-expanded">
+                  <div class="control">
+                    <div class="select is-fullwidth">
+                      <select v-model="defaultLicense">
+                        <option
+                          v-for="option in LICENSE_OPTIONS"
+                          :key="option.value"
+                          :value="option.value"
+                        >
+                          {{ option.name ? `${option.label} - ${option.name}` : option.label }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="help">
+                    Select the default license for photos you upload. This will
+                    be automatically applied to new uploads.
+                    <a
+                      href="https://creativecommons.org/choose/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Learn more about licenses
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
             <hr />
             <div class="field is-horizontal">
               <div class="field-label">
@@ -156,6 +189,7 @@ import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import { useUserStore } from "@/stores/user";
 import toaster from "../mixins/toaster";
+import { LICENSE_OPTIONS, ALL_RIGHTS_RESERVED } from "../shared/licenses.js";
 
 const CURRENT_USER_QUERY = gql`
   query CurrentUserQuery {
@@ -165,6 +199,7 @@ const CURRENT_USER_QUERY = gql`
       firstName
       lastName
       displayName
+      defaultLicense
       timezone {
         name
       }
@@ -183,6 +218,7 @@ const newTimezone = ref(null);
 const newFirstName = ref(null);
 const newLastName = ref(null);
 const newDisplayName = ref(null);
+const newDefaultLicense = ref(null);
 
 const { result } = useQuery(CURRENT_USER_QUERY);
 
@@ -203,6 +239,12 @@ const timezone = computed({
   get: () => result.value?.currentUser.timezone.name,
   set: (value) => (newTimezone.value = value),
 });
+// A null default displays as All Rights Reserved, but is only sent once the
+// select is actually changed, so saving other settings keeps it null.
+const defaultLicense = computed({
+  get: () => result.value?.currentUser.defaultLicense || ALL_RIGHTS_RESERVED,
+  set: (value) => (newDefaultLicense.value = value),
+});
 
 const {
   mutate: submit,
@@ -216,6 +258,7 @@ const {
       $lastName: String!
       $displayName: String!
       $timezone: String!
+      $defaultLicense: String
     ) {
       updateUserSettings(
         email: $email
@@ -223,12 +266,14 @@ const {
         lastName: $lastName
         displayName: $displayName
         timezone: $timezone
+        defaultLicense: $defaultLicense
       ) {
         id
         email
         firstName
         lastName
         displayName
+        defaultLicense
         timezone {
           name
         }
@@ -242,6 +287,9 @@ const {
       lastName: newLastName.value || lastName.value,
       displayName: newDisplayName.value || displayName.value,
       timezone: newTimezone.value || timezone.value,
+      ...(newDefaultLicense.value !== null && {
+        defaultLicense: newDefaultLicense.value,
+      }),
     },
   }),
 );

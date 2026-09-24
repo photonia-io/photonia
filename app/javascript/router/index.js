@@ -12,6 +12,7 @@ export function createAppRouter(pinia) {
 
   const redirectIfNotSignedIn = (to, from) => {
     if (!userStore.signedIn) {
+      toaster("You need to sign in to access that page.", "is-warning");
       return { name: "users-sign-in" };
     }
   };
@@ -82,10 +83,28 @@ export function createAppRouter(pinia) {
       beforeEnter: redirectIfNotSignedIn,
     },
     {
-      path: settings.users_admin_settings_path,
-      name: "users-admin-settings",
-      component: () => import("../users/admin-settings.vue"),
+      path: settings.admin_path,
+      name: "admin",
+      component: () => import("../admin/index.vue"),
       beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("admin")],
+      redirect: { name: "admin-settings" },
+      children: [
+        {
+          path: "settings",
+          name: "admin-settings",
+          component: () => import("../admin/settings.vue"),
+        },
+        {
+          path: "users",
+          name: "admin-users",
+          component: () => import("../admin/users.vue"),
+        },
+        {
+          path: "users/:id",
+          name: "admin-show-user",
+          component: () => import("../admin/show-user.vue"),
+        },
+      ],
     },
     {
       path: settings.photos_path + "/upload",
@@ -132,6 +151,14 @@ export function createAppRouter(pinia) {
     history: createWebHistory(),
     routes,
     scrollBehavior(to, from, savedPosition) {
+      // Starting/stopping album navigation only changes the query string on the
+      // photo we are already looking at - don't yank the page to the top.
+      const sameShownPhoto =
+        to.name === "photos-show" &&
+        from.name === "photos-show" &&
+        to.params.id === from.params.id;
+      if (sameShownPhoto) return false;
+
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve({ top: 0, behavior: "smooth" });
