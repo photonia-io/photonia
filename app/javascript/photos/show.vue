@@ -209,17 +209,24 @@
               />
               <ul
                 v-if="showAlbumBrowser"
-                class="block-list is-small has-radius pb-4"
+                class="block-list is-small has-radius mt-2 pb-4"
               >
                 <li
                   v-for="album in photo.albums"
                   :key="album.id"
                   :class="{ 'is-navigating': album.id === inAlbumId }"
                 >
-                  <h4 class="is-size-6 mb-2">
-                    <router-link :to="albumRoute(album)">
+                  <h4 class="is-size-6 mb-2 is-flex is-align-items-baseline">
+                    <router-link :to="albumRoute(album)" class="album-title">
                       {{ album.title }}
                     </router-link>
+                    <span
+                      v-if="album.photoPositionInAlbum"
+                      class="is-size-7 has-text-weight-normal is-flex-shrink-0 ml-2"
+                    >
+                      {{ album.photoPositionInAlbum.position }} /
+                      {{ album.photoPositionInAlbum.total }}
+                    </span>
                   </h4>
                   <div class="columns is-1 is-mobile">
                     <div class="column is-half">
@@ -307,26 +314,19 @@
                       </button>
                     </div>
                   </div>
-                  <div class="album-navigation">
+                  <!-- Keyboard-only, so there is nothing to offer on touch -->
+                  <div class="album-navigation is-hidden-touch">
                     <template v-if="album.id === inAlbumId">
-                      <p
-                        v-if="album.photoPositionInAlbum"
-                        class="has-text-weight-semibold mb-1"
-                      >
-                        {{ album.photoPositionInAlbum.position }} of
-                        {{ album.photoPositionInAlbum.total }}
-                      </p>
                       <p class="help mt-0 mb-2">
-                        You can navigate in this album by using the J / K keys
+                        You can navigate in this album by using the
+                        <strong>J</strong> / <strong>K</strong> keys
                       </p>
                       <button
                         class="button is-small is-fullwidth"
                         @click="stopNavigatingAlbum()"
                       >
-                        <span class="icon-text">
-                          <span class="icon"><i class="fas fa-xmark"></i></span>
-                          <span>Stop navigating this album</span>
-                        </span>
+                        <span class="icon"><i class="fas fa-times"></i></span>
+                        <span>Stop navigating this album</span>
                       </button>
                     </template>
                     <button
@@ -334,12 +334,8 @@
                       class="button is-small is-fullwidth"
                       @click="startNavigatingAlbum(album.id)"
                     >
-                      <span class="icon-text">
-                        <span class="icon"
-                          ><i class="fas fa-keyboard"></i
-                        ></span>
-                        <span>Navigate this album</span>
-                      </span>
+                      <span class="icon"><i class="fas fa-keyboard"></i></span>
+                      <span>Navigate this album</span>
                     </button>
                   </div>
                 </li>
@@ -789,14 +785,37 @@ const navigateToPreviousPhoto = () =>
   column-gap: 0.5em;
 }
 
-/* Album currently being navigated - matches block-list's is-highlighted idiom,
-   but with a colour that stays visible in both schemes. */
-.block-list li.is-navigating {
-  border-left: 5px solid var(--bulma-link);
+/* Each album sits in its own rounded box, dim until it is the one being
+   navigated. The box-shadow thickens the active border without shifting
+   the layout the way a wider border would. */
+.block-list li {
+  border: 1px solid var(--bulma-border-weak);
+  /* block-list's own 0.25rem separator is too tight now the boxes are outlined */
+  margin-bottom: 0.75rem;
+  transition:
+    border-color 120ms ease-in-out,
+    box-shadow 120ms ease-in-out;
 }
 
-.album-navigation {
-  margin-top: 0.75em;
+.block-list li.is-navigating {
+  border-color: var(--bulma-link);
+  box-shadow: 0 0 0 1px var(--bulma-link);
+}
+
+/* Takes the space the counter beside it does not, truncating rather than
+   wrapping a long album title onto a second line. */
+.album-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bulma gives .columns:not(:last-child) a block-spacing minus column-gap
+   bottom margin - 1.25rem at is-1, far too much in this narrow sidebar. */
+.block-list li .columns:not(:last-child) {
+  margin-bottom: 0.5rem;
 }
 
 /* The sidebar is narrow, so let the button labels wrap */

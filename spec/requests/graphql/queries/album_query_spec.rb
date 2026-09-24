@@ -217,6 +217,25 @@ describe 'album Query' do
         expect(response.parsed_body['errors']).to be_nil
       end
     end
+
+    # A second albums_photos row per photo used to multiply the count
+    context 'when the album\'s photos are also in another album' do
+      let(:other_album) { create(:album, user: user) }
+      let(:photo_id) { last_public_photo.slug }
+
+      before do
+        public_photos.each { |photo| other_album.photos << photo }
+        other_album.maintenance
+      end
+
+      it 'counts each photo once' do
+        post_query
+
+        expect(data_dig(response, 'album', 'photoPositionInAlbum')).to eq(
+          'position' => public_photo_count, 'total' => public_photo_count, 'page' => 1
+        )
+      end
+    end
   end
 end
 

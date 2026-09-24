@@ -116,10 +116,13 @@ module Types
       ordering = scoped_photo_ordering(photo_id)
       return nil if ordering.nil?
 
-      photos = scoped_album_photos.joins(:albums_photos)
-      position = photos.where(albums_photos: { ordering: ..ordering }).count
+      position = scoped_album_photos.where(albums_photos: { ordering: ..ordering }).count
 
-      { position:, total: photos.count, page: (position / Pagy::DEFAULT[:limit].to_f).ceil }
+      {
+        position:,
+        total: scoped_album_photos.count,
+        page: (position / Pagy::DEFAULT[:limit].to_f).ceil
+      }
     end
 
     def can_edit
@@ -137,20 +140,21 @@ module Types
       base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id)&.ordering
     end
 
+    # Already INNER JOINs albums_photos constrained to this album, so callers
+    # must not join it again: a second, unconstrained join multiplies every row
+    # by the number of albums the photo belongs to.
     def scoped_album_photos
       Pundit.policy_scope(context[:current_user], @object.photos.unscope(where: :privacy))
     end
 
     def scoped_next_photo(current_ordering)
-      scoped_album_photos.joins(:albums_photos)
-                         .where('albums_photos.ordering > ?', current_ordering)
+      scoped_album_photos.where('albums_photos.ordering > ?', current_ordering)
                          .order('albums_photos.ordering ASC')
                          .first
     end
 
     def scoped_previous_photo(current_ordering)
-      scoped_album_photos.joins(:albums_photos)
-                         .where(albums_photos: { ordering: ...current_ordering })
+      scoped_album_photos.where(albums_photos: { ordering: ...current_ordering })
                          .order('albums_photos.ordering DESC')
                          .first
     end
