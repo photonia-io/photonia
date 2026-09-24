@@ -1,3 +1,5 @@
+App model: the admin (site owner) shares photos with the world. Visitors can sign up for an account today (self-service via "Continue with Google"/"Continue with Facebook", gated by a `Setting` toggle - there's no local email/password registration) but that only grants the unused `registered_user` role; only the admin can upload photos, edit them, or create/manage albums, gated by `has_role?(:uploader)` in `PhotoPolicy`/`AlbumPolicy` (`ApplicationPolicy` denies everything by default). Commenting and favoriting are the intended reason for letting people sign up, but neither exists yet - `Comment` records today are read-only, imported from Flickr, with no mutation to create one, and there's no favorites feature at all.
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -134,6 +136,10 @@ Reuse these before writing new scaffolding:
 - shared examples in `spec/support/` (authorization, trackable title/description)
 
 Always check whether a FactoryBot factory already exists before writing one.
+
+When seeding photos for **manual** testing (e.g. a `bin/rails runner` script creating albums/photos in the dev DB for the user to click through), don't reuse the same `zell-am-see-with-exif.jpg` for every photo — it makes photos indistinguishable at a glance in the UI. Use `spec/support/images/{1-one,2-two,3-three,4-four,5-five}.jpg` instead: five 4K (3840×2160) white photos, each with one number word ("one" – "five") centered in large black text, named after their number. Same derivative-setting approach as `TestData.image_data`, one distinct image per photo.
+
+When directing the user to a piece of manually-seeded test data, refer to it by what it visibly says rather than by slug/id — e.g. "open the photo that says 'one'" or "the album whose cover says 'two'" — since a slug means nothing to them at a glance in the browser. Still give the slug/URL too, for anyone following along in a transcript.
 
 Rubocop config shapes test style: `RSpec/ImplicitExpect: should` (so `it { should permit_only_actions(...) }`), with `ExampleLength` and `MultipleExpectations` disabled.
 

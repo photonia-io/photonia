@@ -239,6 +239,137 @@ describe 'album Query' do
   end
 end
 
+# Guards against the frontend (album-management.vue) needing a field that
+# the shared query string doesn't actually fetch - a hand-written query
+# above wouldn't catch that gap.
+describe 'the shared albums_show query' do
+  include Devise::Test::IntegrationHelpers
+
+  let(:user) { create(:user) }
+  let(:album) { create(:album, user: user) }
+
+  before do
+    create_list(:photo, 2, user: user, albums: [album])
+    create(:photo, user: user, albums: [album], privacy: :private)
+    album.maintenance
+    sign_in(user)
+  end
+
+  it 'includes privatizablePhotosCount, which the album management modal needs' do
+    query = GraphqlQueryCollection::COLLECTION[:albums_show]
+    post '/graphql', params: { query: query, variables: { id: album.slug, page: 1 }.to_json }
+
+    expect(data_dig(response, 'album', 'privatizablePhotosCount')).to eq(2)
+  end
+end
+
+describe 'coverPhoto field' do
+  include Devise::Test::IntegrationHelpers
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
+  let(:user) { create(:user) }
+  let(:album) { create(:album, user: user) }
+
+  let(:query) do
+    <<~GQL
+      query {
+        album(id: "#{album.slug}") {
+          coverPhoto { id }
+        }
+      }
+    GQL
+  end
+
+  context 'when every photo in the album is private and there is no user-set cover' do
+    let!(:photos) { create_list(:photo, 2, user: user, albums: [album], privacy: :private) }
+
+    before { album.maintenance }
+
+    it "falls back to one of the editor's own photos for the owner" do
+      sign_in(user)
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(photos.first.slug)
+    end
+
+    it 'stays null for a signed-out visitor' do
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto')).to be_nil
+    end
+  end
+
+  context 'when a public photo exists' do
+    let!(:private_photo) { create(:photo, user: user, albums: [album], privacy: :private) }
+    let!(:public_photo) { create(:photo, user: user, albums: [album], privacy: :public) }
+
+    before { album.maintenance }
+
+    it 'still prefers the public cover over an arbitrary private photo' do
+      sign_in(user)
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(public_photo.slug)
+    end
+  end
+
+  context "when every photo is private and one belongs to another user" do
+    include_context 'with auth actors'
+
+    let!(:foreign_photo) { create(:photo, user: stranger, albums: [album], privacy: :private) }
+
+    before do
+      album.update(user: owner)
+      album.maintenance
+    end
+
+    it "falls back to it for the owner too - any editor may see any photo in the album" do
+      sign_in(owner)
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(foreign_photo.slug)
+    end
+  end
+end
+
+describe 'privatizablePhotosCount field' do
+  include Devise::Test::IntegrationHelpers
+  include_context 'with auth actors'
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
+  let(:album) { create(:album, user: owner) }
+  let!(:owned_public_photo) { create(:photo, user: owner, albums: [album], privacy: :public) }
+  let!(:owned_private_photo) { create(:photo, user: owner, albums: [album], privacy: :private) }
+  let!(:foreign_public_photo) { create(:photo, user: stranger, albums: [album], privacy: :public) }
+
+  let(:query) do
+    <<~GQL
+      query {
+        album(id: "#{album.slug}") {
+          privatizablePhotosCount
+        }
+      }
+    GQL
+  end
+
+  before { album.maintenance }
+
+  it 'counts every non-private photo in the album, regardless of who owns it' do
+    sign_in(owner)
+    post_query
+
+    expect(data_dig(response, 'album', 'privatizablePhotosCount')).to eq(2)
+  end
+
+  it 'is null for a visitor who cannot edit the album' do
+    post_query
+
+    expect(data_dig(response, 'album', 'privatizablePhotosCount')).to be_nil
+  end
+end
+
 describe 'unknown album slug' do
   let(:query) do
     <<~GQL
