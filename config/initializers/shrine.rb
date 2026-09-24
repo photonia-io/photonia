@@ -13,10 +13,10 @@ elsif ENV.fetch('DOCKER_BUILD', 'false') == 'false'
   require 'shrine/storage/s3'
 
   s3_options = {
-    access_key_id: ENV.fetch('PHOTONIA_S3_ACCESS_KEY_ID', nil),
-    secret_access_key: ENV.fetch('PHOTONIA_S3_SECRET_ACCESS_KEY', nil),
-    region: ENV.fetch('PHOTONIA_S3_REGION', nil),
-    bucket: ENV.fetch('PHOTONIA_S3_BUCKET', nil)
+    access_key_id: ENV.fetch('S3_ACCESS_KEY_ID', nil),
+    secret_access_key: ENV.fetch('S3_SECRET_ACCESS_KEY', nil),
+    region: ENV.fetch('S3_REGION', nil),
+    bucket: ENV.fetch('S3_BUCKET', nil)
   }
 
   Shrine.storages = {

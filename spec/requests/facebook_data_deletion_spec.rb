@@ -14,7 +14,7 @@ RSpec.describe 'FacebookDataDeletion' do
   let(:signed_request) { "#{signature}.#{encoded_payload}" }
 
   before do
-    allow(ENV).to receive(:fetch).with('PHOTONIA_FACEBOOK_APP_SECRET').and_return(app_secret)
+    allow(ENV).to receive(:fetch).with('FACEBOOK_APP_SECRET').and_return(app_secret)
   end
 
   describe 'POST /facebook_data_deletion/callback' do

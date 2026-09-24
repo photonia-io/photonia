@@ -1,7 +1,11 @@
 <template>
   <div class="level-item">
     <router-link
-      :to="{ name: 'photos-show', params: { id: props.photo.id } }"
+      :to="{
+        name: 'photos-show',
+        params: { id: props.photo.id },
+        query: props.query,
+      }"
       :class="['button', 'is-light', props.loading ? 'disabled' : '']"
     >
       <span v-if="props.direction === 'left'" class="icon">
@@ -38,6 +42,11 @@ const props = defineProps({
   loading: {
     type: Boolean,
     required: true,
+  },
+  // carries the album navigation context (?inAlbum=) across global navigation
+  query: {
+    type: Object,
+    default: () => ({}),
   },
 });
 </script>

@@ -39,6 +39,7 @@ package-lock.json
 
 # Ignore .env files
 .env*
+!.env.example
 
 # Ignore generated sitemap
 /public/sitemap.xml.gz
@@ -53,5 +54,6 @@ node_modules
 # Coverage directory used by tools like SimpleCov
 /coverage/
 
-# Ignore the Kamal deploy config file
-config/deploy.yml
+# Ignore the per-destination Kamal deploy config (server IP, real hostnames);
+# config/deploy.yml itself is tracked and holds no host-specific data.
+config/deploy.production.yml

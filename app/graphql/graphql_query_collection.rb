@@ -9,6 +9,10 @@ class GraphqlQueryCollection
           id
           title
           extralargeImageUrl: imageUrl(type: "extralarge")
+          extralargeDimensions: imageDimensions(type: "extralarge") {
+            width
+            height
+          }
         }
         randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
           collection {
@@ -149,8 +153,24 @@ class GraphqlQueryCollection
           descriptionHtml
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
+          extralargeDimensions: imageDimensions(type: "extralarge") {
+            width
+            height
+          }
           takenAt
-          isTakenAtFromExif
+          license
+          takenAtInfo {
+            year
+            month
+            day
+            hour
+            minute
+            precision
+            source
+            approximate
+            exifAvailable
+          }
+          scanned
           exifExists
           exifCameraFriendlyName
           exifFNumber
@@ -159,6 +179,7 @@ class GraphqlQueryCollection
           exifIso
           postedAt
           impressionsCount
+          privacy
           previousPhoto {
             id
             title
@@ -198,6 +219,11 @@ class GraphqlQueryCollection
               id
               title
               intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
+            }
+            photoPositionInAlbum(photoId: $id) {
+              position
+              total
+              page
             }
           }
           userTags {

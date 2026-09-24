@@ -1,7 +1,7 @@
 <template>
   <DisplayHero
-    v-if="!loading"
-    :photo="result.latestPhoto"
+    :photo="result?.latestPhoto ?? {}"
+    :loading="loading"
     :isHomepage="true"
   />
   <section class="section-pt-pb-0">

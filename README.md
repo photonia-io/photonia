@@ -74,3 +74,14 @@ mkdir -p ./photonia-web/sitemap
 touch ./photonia-web/sitemap/sitemap.xml.gz
 chmod 777 ./photonia-web/sitemap/sitemap.xml.gz
 ```
+
+## Deploying
+
+Deploys go through [Kamal](https://kamal-deploy.org/). Secrets are pulled from 1Password, so you need the `op` CLI installed and signed in, with `$OP_ACCOUNT` exported in your shell.
+
+```bash
+cp config/deploy.production.template.yml config/deploy.production.yml   # first time only; fill in the real server
+kamal deploy -d production
+```
+
+See the "Deployment" section in `CLAUDE.md` for how the config and secrets files fit together.

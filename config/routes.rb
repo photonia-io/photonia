@@ -32,7 +32,7 @@ Rails.application.routes.draw do
   end
 
   # Main resource routes
-  resources :photos, except: %i[new] do
+  resources :photos, except: %i[new edit destroy] do
     collection do
       get :upload
       get :organizer
@@ -63,8 +63,8 @@ Rails.application.routes.draw do
   require 'sidekiq-scheduler/web'
 
   Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-    username == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_USERNAME') &&
-      password == ENV.fetch('PHOTONIA_SIDEKIQ_WEB_PASSWORD')
+    username == ENV.fetch('SIDEKIQ_WEB_USERNAME') &&
+      password == ENV.fetch('SIDEKIQ_WEB_PASSWORD')
   end
 
   mount Sidekiq::Web => '/sidekiq'

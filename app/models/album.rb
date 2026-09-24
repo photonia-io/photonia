@@ -65,6 +65,8 @@ class Album < ApplicationRecord
   include HtmlDescriptionable
   include TrackableTitleAndDescription
 
+  has_paper_trail only: %i[title description]
+
   after_create :maintenance
   after_update :maintenance
 

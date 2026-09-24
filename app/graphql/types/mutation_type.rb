@@ -9,8 +9,12 @@ module Types
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
     field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
+    field :reset_photo_taken_at, mutation: Mutations::ResetPhotoTakenAt, description: 'Reset photo date taken to the EXIF or upload date'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'
+    field :set_photo_license, mutation: Mutations::SetPhotoLicense, description: 'Set photo license'
+    field :set_photo_privacy, mutation: Mutations::SetPhotoPrivacy, description: 'Set photo privacy'
+    field :set_photo_taken_at, mutation: Mutations::SetPhotoTakenAt, description: 'Set photo date taken'
     field :update_album_description, mutation: Mutations::UpdateAlbumDescription, description: 'Update album description'
     field :update_album_photo_order, mutation: Mutations::UpdateAlbumPhotoOrder, description: 'Update the order of photos in an album'
     field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
@@ -58,6 +62,7 @@ module Types
 
     field :update_user_settings, UserType, null: false do
       description 'Update user settings'
+      argument :default_license, String, 'User default license', required: false
       argument :display_name, String, 'User display name', required: true
       argument :email, String, 'User email', required: true
       argument :first_name, String, 'User first name', required: true
@@ -118,11 +123,12 @@ module Types
       }
     end
 
-    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:)
+    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:, **optional)
       user = context[:current_user]
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
 
       context[:authorize].call(user, :update?)
+      default_license = validated_default_license(optional)
       # for now we don't allow users to change their email
       # as that should trigger Devise's confirmation email
       # user.update(email: email)
@@ -130,7 +136,19 @@ module Types
       user.update(last_name: last_name)
       user.update(display_name: display_name)
       user.update(timezone: timezone)
+      # An omitted argument must not wipe the user's existing default
+      user.update(default_license:) if optional.key?(:default_license)
       user
+    end
+
+    private
+
+    # Checked before any write so an invalid value can't leave the other settings half-saved
+    def validated_default_license(optional)
+      normalized = optional[:default_license].presence
+      raise GraphQL::ExecutionError, 'Invalid license value' if normalized && License::VALUES.exclude?(normalized)
+
+      normalized
     end
   end
 end

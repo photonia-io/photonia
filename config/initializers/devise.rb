@@ -313,7 +313,7 @@ Devise.setup do |config|
   # config.sign_in_after_change_password = true
 
   config.jwt do |jwt|
-    jwt.secret = ENV.fetch('PHOTONIA_DEVISE_JWT_SECRET_KEY', nil)
+    jwt.secret = ENV.fetch('DEVISE_JWT_SECRET_KEY', nil)
     jwt.dispatch_requests = [
       ['POST', %r{^/graphql$}, /signIn|continueWithGoogle|continueWithFacebook/]
     ]

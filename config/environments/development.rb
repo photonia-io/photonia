@@ -52,8 +52,8 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address: 'email-smtp.us-east-1.amazonaws.com',
     port: 587,
-    user_name: ENV.fetch('PHOTONIA_SES_SMTP_USERNAME', nil),
-    password: ENV.fetch('PHOTONIA_SES_SMTP_PASSWORD', nil),
+    user_name: ENV['SES_SMTP_USERNAME'],
+    password: ENV['SES_SMTP_PASSWORD'],
     authentication: :login,
     enable_starttls_auto: true
   }
@@ -83,9 +83,6 @@ Rails.application.configure do
 
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
-
-  # Suppress logger output for asset requests.
-  config.assets.quiet = true
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true

@@ -19,10 +19,13 @@
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
+#  scanned                  :boolean          default(FALSE), not null
 #  serial_number            :bigint           not null
 #  slug                     :string
 #  taken_at                 :datetime
-#  taken_at_from_exif       :boolean          default(FALSE)
+#  taken_at_approximate     :boolean          default(FALSE), not null
+#  taken_at_precision       :string           default("minute"), not null
+#  taken_at_source          :string           default("unknown"), not null
 #  timezone                 :string           default("UTC"), not null
 #  title                    :string
 #  tsv                      :tsvector
@@ -210,10 +213,205 @@ RSpec.describe Photo do
         end
       end
 
+      it 'sets taken_at_source to exif when the file has EXIF data' do
+        photo_with_exif.populate_exif_fields
+        expect(photo_with_exif.taken_at_source).to eq('exif')
+      end
+
       it 'sets taken_at to the current time when the file has no EXIF data' do
         Timecop.freeze do
           expect { photo_without_exif.populate_exif_fields }.to change(photo_without_exif, :taken_at).from(nil).to(Time.zone.now)
         end
+      end
+
+      it 'sets taken_at_source to unknown when the file has no EXIF data' do
+        photo_without_exif.populate_exif_fields
+        expect(photo_without_exif.taken_at_source).to eq('unknown')
+      end
+
+      it 'ignores EXIF data on a scanned photo, falling back to posted_at' do
+        photo_with_exif.scanned = true
+        photo_with_exif.populate_exif_fields
+        expect(photo_with_exif.taken_at_source).to eq('unknown')
+        expect(photo_with_exif.taken_at).to eq(photo_with_exif.posted_at)
+      end
+
+      it 'does not overwrite a manually-set date' do
+        photo_with_exif.assign_taken_at(year: 1950)
+        expect { photo_with_exif.populate_exif_fields }.not_to change(photo_with_exif, :taken_at)
+        expect(photo_with_exif.taken_at_source).to eq('user')
+      end
+
+      it 'logs and falls back when EXIF data exists but has no date field' do
+        photo = build_stubbed(:photo, exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+
+      it 'logs and falls back, rather than raising, when the exif or ifd0 section is entirely missing' do
+        photo = build_stubbed(:photo, exif: { 'gps' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        expect { photo.populate_exif_fields }.not_to raise_error
+
+        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+
+      it 'logs and falls back when the EXIF date is not parseable' do
+        photo = build_stubbed(:photo, exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(Rails.logger).to have_received(:error).with("Invalid date format not-a-real-date for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+    end
+
+    describe '#taken_at_text' do
+      let(:photo) { build_stubbed(:photo, timezone: 'Bucharest') }
+
+      it 'returns an empty string when taken_at is not set' do
+        expect(photo.taken_at_text).to eq('')
+      end
+
+      it 'formats a year-precision date' do
+        photo.assign_taken_at(year: 1985)
+        expect(photo.taken_at_text).to eq('1985')
+      end
+
+      it 'formats a month-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8)
+        expect(photo.taken_at_text).to eq('August 1985')
+      end
+
+      it 'formats a day-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31)
+        expect(photo.taken_at_text).to eq(photo.taken_at.in_time_zone(photo.timezone).strftime('%B %e, %Y'))
+      end
+
+      it 'formats a minute-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at_text).to eq(photo.taken_at.in_time_zone(photo.timezone).strftime('%B %e, %Y, %H:%M'))
+      end
+    end
+
+    describe '#assign_taken_at' do
+      let(:photo) { build_stubbed(:photo, timezone: 'Bucharest') }
+
+      it 'accepts a year only and derives year precision' do
+        expect(photo.assign_taken_at(year: 1985)).to be true
+        expect(photo.taken_at_precision).to eq('year')
+        expect(photo.taken_at_source).to eq('user')
+        expect(photo.taken_at.in_time_zone(photo.timezone)).to have_attributes(year: 1985, month: 1, day: 1)
+      end
+
+      it 'accepts year and month and derives month precision' do
+        photo.assign_taken_at(year: 1985, month: 8)
+        expect(photo.taken_at_precision).to eq('month')
+        expect(photo.taken_at.in_time_zone(photo.timezone).month).to eq(8)
+      end
+
+      it 'accepts a full date and derives day precision' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31)
+        expect(photo.taken_at_precision).to eq('day')
+      end
+
+      it 'accepts a full date and time and derives minute precision' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at_precision).to eq('minute')
+        local = photo.taken_at.in_time_zone(photo.timezone)
+        expect(local).to have_attributes(year: 1985, month: 8, day: 31, hour: 17, min: 25)
+      end
+
+      it 'round-trips through the timezone' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at).to eq(ActiveSupport::TimeZone['Bucharest'].local(1985, 8, 31, 17, 25))
+      end
+
+      it 'sets approximate and scanned' do
+        photo.assign_taken_at(year: 1985, approximate: true, scanned: true)
+        expect(photo.taken_at_approximate).to be true
+        expect(photo.scanned).to be true
+      end
+
+      it 'rejects a day without a month' do
+        expect(photo.assign_taken_at(year: 1985, day: 5)).to be false
+        expect(photo.errors[:taken_at]).to be_present
+      end
+
+      it 'rejects a time without a full date' do
+        expect(photo.assign_taken_at(year: 1985, month: 8, hour: 17, minute: 0)).to be false
+      end
+
+      it 'rejects an invalid calendar date' do
+        expect(photo.assign_taken_at(year: 1985, month: 2, day: 30)).to be false
+      end
+
+      it 'rejects a year outside the valid range' do
+        expect(photo.assign_taken_at(year: 1800)).to be false
+        expect(photo.assign_taken_at(year: Date.current.year + 5)).to be false
+      end
+
+      it 'rejects an out-of-range hour or minute' do
+        expect(photo.assign_taken_at(year: 1985, month: 1, day: 1, hour: 24, minute: 0)).to be false
+        expect(photo.assign_taken_at(year: 1985, month: 1, day: 1, hour: 0, minute: 60)).to be false
+      end
+    end
+
+    describe '#reset_taken_at' do
+      let(:user) { create(:user, timezone: 'Bucharest') }
+      let(:photo_with_exif) { create(:photo, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
+      let(:photo_without_exif) { create(:photo, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-without-exif.jpg')) }
+      let(:scanned_photo) { create(:photo, :scanned, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
+
+      it 're-derives taken_at from EXIF for a photo with EXIF data' do
+        photo_with_exif.assign_taken_at(year: 1950)
+        photo_with_exif.reset_taken_at
+        expect(photo_with_exif.taken_at_source).to eq('exif')
+        expect(photo_with_exif.taken_at.year).to eq(2014)
+      end
+
+      it 'falls back to posted_at for a photo without EXIF data' do
+        photo_without_exif.assign_taken_at(year: 1950)
+        photo_without_exif.reset_taken_at
+        expect(photo_without_exif.taken_at_source).to eq('unknown')
+        expect(photo_without_exif.taken_at).to eq(photo_without_exif.posted_at)
+      end
+
+      it 'ignores EXIF data and stays scanned for a scanned photo' do
+        scanned_photo.assign_taken_at(year: 1950, scanned: true)
+        scanned_photo.reset_taken_at
+        expect(scanned_photo.taken_at_source).to eq('unknown')
+        expect(scanned_photo.taken_at).to eq(scanned_photo.posted_at)
+        expect(scanned_photo.scanned).to be true
+      end
+    end
+
+    describe '#derivative_dimensions' do
+      it "returns the derivative's own stored dimensions" do
+        image_data = { 'derivatives' => { 'extralarge' => { 'metadata' => { 'width' => 1371, 'height' => 2048 } } } }
+        photo = build_stubbed(:photo, image_data: image_data)
+
+        expect(photo.derivative_dimensions(:extralarge)).to eq(width: 1371, height: 2048)
+      end
+
+      it 'returns nil when the derivative does not exist' do
+        photo = build_stubbed(:photo, image_data: { 'derivatives' => {} })
+
+        expect(photo.derivative_dimensions(:extralarge)).to be_nil
+      end
+
+      it 'returns nil rather than falling back to the original dimensions when metadata is missing' do
+        image_data = { 'derivatives' => { 'extralarge' => { 'metadata' => {} } } }
+        photo = build_stubbed(:photo, image_data: image_data)
+
+        expect(photo.derivative_dimensions(:extralarge)).to be_nil
       end
     end
 
@@ -227,9 +425,8 @@ RSpec.describe Photo do
       # bang methods are defined via method_missing in ImageProcessing::Chainable
       # https://github.com/janko/image_processing/blob/master/lib/image_processing/chainable.rb#L84
 
-      # rubocop:disable RSpec/VerifiedDoubles
+      # rubocop:disable-next RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
-      # rubocop:enable RSpec/VerifiedDoubles
 
       let(:medium_side) { 800 }
       let(:thumbnail_side) { 300 }
@@ -260,8 +457,8 @@ RSpec.describe Photo do
 
       before do
         allow(photo).to receive(:image_attacher).and_return(image_attacher)
-        allow(ENV).to receive(:fetch).with('PHOTONIA_MEDIUM_SIDE', nil).and_return(medium_side)
-        allow(ENV).to receive(:fetch).with('PHOTONIA_THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
+        allow(ENV).to receive(:fetch).with('MEDIUM_SIDE', nil).and_return(medium_side)
+        allow(ENV).to receive(:fetch).with('THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
         allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
         allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
         allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
@@ -329,9 +526,8 @@ RSpec.describe Photo do
       let(:photo) { build_stubbed(:photo) }
       let(:image_attacher) { instance_double(Shrine::Attacher) }
       # See the comment in the #add_derivatives spec for why we don't use instance_double here
-      # rubocop:disable RSpec/VerifiedDoubles
+      # rubocop:disable-next RSpec/VerifiedDoubles
       let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
-      # rubocop:enable RSpec/VerifiedDoubles
       let(:pixel_width) { 1600 }
       let(:pixel_height) { 1200 }
       let(:thumbnail) do
@@ -413,4 +609,20 @@ RSpec.describe Photo do
   end
 
   it_behaves_like 'it has trackable title and description', model: :photo
+
+  describe 'license tracking' do
+    let(:photo) { create(:photo, license: 'CC BY-SA 4.0') }
+
+    it 'records a dated version with the old and new license when it changes' do
+      expect { photo.update(license: 'All Rights Reserved') }.to change { photo.versions.count }.by(1)
+
+      version = photo.versions.last
+      expect(version.object_changes['license']).to eq(['CC BY-SA 4.0', 'All Rights Reserved'])
+      expect(version.created_at).to be_present
+    end
+
+    it 'does not record a version for untracked changes' do
+      expect { photo.update(impressions_count: 5) }.not_to(change { photo.versions.count })
+    end
+  end
 end
