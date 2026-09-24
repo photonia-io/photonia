@@ -429,14 +429,19 @@ class Photo < ApplicationRecord
     ifd0_section = data['ifd0'].is_a?(Hash) ? data['ifd0'] : {}
     raw = exif_section['date_time_original'] || ifd0_section['date_time']
     unless raw
-      Rails.logger.error "No date taken for slug = #{slug}"
+      Rails.logger.error "No date taken for #{log_ref}"
       return nil
     end
 
     Time.use_zone(timezone) { Time.zone.strptime(raw, '%Y:%m:%d %H:%M:%S') }
   rescue ArgumentError
-    Rails.logger.error "Invalid date format #{raw} for slug = #{slug}"
+    Rails.logger.error "Invalid date format #{raw} for #{log_ref}"
     nil
+  end
+
+  # A new upload has no slug yet, so fall back to the uploaded file's id.
+  def log_ref
+    slug ? "slug = #{slug}" : "file = #{image_attacher.file&.id}"
   end
 
   def taken_at_validation_error(year:, month:, day:, hour:, minute:)

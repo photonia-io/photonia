@@ -243,33 +243,43 @@ RSpec.describe Photo do
       end
 
       it 'logs and falls back when EXIF data exists but has no date field' do
-        photo = build_stubbed(:photo, exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        photo = build_stubbed(:photo, slug: 'abc', exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
         allow(Rails.logger).to receive(:error)
 
         photo.populate_exif_fields
 
-        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(Rails.logger).to have_received(:error).with('No date taken for slug = abc')
         expect(photo.taken_at_source).to eq('unknown')
       end
 
       it 'logs and falls back, rather than raising, when the exif or ifd0 section is entirely missing' do
-        photo = build_stubbed(:photo, exif: { 'gps' => {} }.to_json)
+        photo = build_stubbed(:photo, slug: 'abc', exif: { 'gps' => {} }.to_json)
         allow(Rails.logger).to receive(:error)
 
         expect { photo.populate_exif_fields }.not_to raise_error
 
-        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(Rails.logger).to have_received(:error).with('No date taken for slug = abc')
         expect(photo.taken_at_source).to eq('unknown')
       end
 
       it 'logs and falls back when the EXIF date is not parseable' do
-        photo = build_stubbed(:photo, exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
+        photo = build_stubbed(:photo, slug: 'abc', exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
         allow(Rails.logger).to receive(:error)
 
         photo.populate_exif_fields
 
-        expect(Rails.logger).to have_received(:error).with("Invalid date format not-a-real-date for slug = #{photo.slug}")
+        expect(Rails.logger).to have_received(:error).with('Invalid date format not-a-real-date for slug = abc')
         expect(photo.taken_at_source).to eq('unknown')
+      end
+
+      it 'logs the file id for a new upload that has no slug yet' do
+        photo = build(:photo, image_data: TestData.image_data, exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(photo.slug).to be_nil
+        expect(Rails.logger).to have_received(:error).with("No date taken for file = #{photo.image.id}")
       end
     end
 
