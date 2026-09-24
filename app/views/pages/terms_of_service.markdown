@@ -1,11 +1,11 @@
-Effective Date: October 15, 2024
+Effective Date: September 24, 2026
 
 Welcome to [Photonia](https://photos.rusiczki.net), a photo-sharing website where you can explore and interact with images. These Terms of Service ("Terms") govern your access to and use of the website located at [https://photos.rusiczki.net](https://photos.rusiczki.net) (the "Site"). Please read these Terms carefully before using the Site. By accessing or using the Site, you agree to be bound by these Terms. If you disagree with any part of the Terms, then you may not access the Site.
 
 #### 1. Content and Ownership
 
    - Exclusive Posting Rights: All photos and images displayed on the Site are owned and uploaded solely by the Site owner. You understand and agree that you do not have the ability to upload or share your own photos on this platform.
-   - Creative Commons Licensing: All photos on the Site are made available under specific Creative Commons licenses. Each photo will clearly display its applicable license, which dictates how you may use the image. You agree to comply with the terms of the relevant Creative Commons license for each photo you use. You can learn more about Creative Commons licenses at [https://creativecommons.org/](https://creativecommons.org/).
+   - Creative Commons Licensing: Photos on the Site are made available either under a specific Creative Commons license or on an All Rights Reserved basis, as indicated on each photo (see Section 4, "Photo Licensing," below for the applicable transition date and further detail). Each photo will clearly display its applicable license, which dictates how you may use the image. You agree to comply with the terms of the license attributed to each photo you use. You can learn more about Creative Commons licenses at [https://creativecommons.org/](https://creativecommons.org/).
    - Your Content: You may contribute to the Site by posting comments and favoriting photos. You are solely responsible for the content you post. You represent and warrant that your content:
      - Does not infringe on the intellectual property rights of others.
      - Does not violate any applicable laws or regulations.
@@ -32,7 +32,7 @@ Welcome to [Photonia](https://photos.rusiczki.net), a photo-sharing website wher
 #### 4. Intellectual Property
 
    - Site Content: The Site and its entire contents, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof) are owned by the Site owner, its licensors, or other providers of such material and are protected by copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
-   - Photo Licensing: The individual photos displayed on the Site are licensed under the terms of the Creative Commons license attributed to each photo. You must adhere to the specific terms of the applicable Creative Commons license when using any photo from this Site.
+   - Photo Licensing: The individual photos displayed on the Site are licensed under the terms of the license attributed to each such photo, which may be a specific Creative Commons license or an All Rights Reserved designation. Prior to September 24, 2026 (the "License Transition Date"), all photos published on the Site were, and shall remain, All Rights Reserved, notwithstanding any subsequent change in this Section 4 or in the Site's licensing practices generally. From and after the License Transition Date, the Site owner may, in its sole discretion, designate a license individually for each photo, and such designations may differ from photo to photo and may be changed by the Site owner from time to time. You must ascertain the license attributed to a given photo, as displayed on the Site at the time of your use, and adhere to its specific terms; you may not rely on the license of any other photo, whether published before or after the License Transition Date, as indicative of the license applicable to the photo you intend to use.
    - Trademarks: Photonia and any associated logos are trademarks of the Site owner. You may not use these trademarks without the express written permission of the Site owner.
 
 #### 5. Disclaimer of Warranties
