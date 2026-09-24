@@ -2,7 +2,7 @@ class FlickrAPIService
   def initialize
     @base_uri = URI('https://api.flickr.com/services/rest')
     @default_params = {
-      api_key: ENV['PHOTONIA_FLICKR_API_KEY'],
+      api_key: ENV['FLICKR_API_KEY'],
       format: 'json',
       nojsoncallback: '1'
     }

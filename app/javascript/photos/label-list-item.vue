@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'tag has-background-grey-lighter',
+      'tag is-soft',
       { 'label-list-item-hoverable': hoverable },
     ]"
     @mouseover="hoverable && hovered(true)"

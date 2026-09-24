@@ -7,6 +7,7 @@
 #  id                          :bigint           not null, primary key
 #  admin                       :boolean          default(FALSE)
 #  created_from_facebook       :boolean          default(FALSE), not null
+#  default_license             :string
 #  disabled                    :boolean          default(FALSE), not null
 #  display_name                :string
 #  email                       :string           default(""), not null
@@ -55,6 +56,7 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :timezone, presence: true
   validates :signup_provider, inclusion: { in: %w[local facebook google] }
+  validates :default_license, inclusion: { in: License::VALUES }, allow_blank: true
 
   scope :admins, -> { where(admin: true) }
 

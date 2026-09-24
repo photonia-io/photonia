@@ -66,16 +66,17 @@
           album.canEdit &&
           applicationStore.managingAlbum
         "
-        :photos="album.photos.collection"
+        :photos="album.photos?.collection"
         :album-id="id"
         @request-remove-from-album="openRemoveFromAlbumModal"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
         <PhotoItem
-          v-for="photo in album.photos.collection"
+          v-for="photo in album.photos?.collection"
           :photo="photo"
           :in-album="true"
+          :album-id="id"
           :key="photo.id"
           :can-edit-album="canEditAlbum"
           @set-cover-photo="handleSetAlbumCoverPhoto"
@@ -83,7 +84,7 @@
       </div>
       <hr class="mt-1 mb-4" />
       <Pagination
-        v-if="album.photos.metadata"
+        v-if="album.photos?.metadata"
         :metadata="album.photos.metadata"
         :routeParams="{ id: id }"
         routeName="albums-show"
@@ -178,11 +179,6 @@ import Pagination from "@/shared/pagination.vue";
 const route = useRoute();
 const router = useRouter();
 
-const emptyAlbum = {
-  title: "",
-  photos: [],
-};
-
 const applicationStore = useApplicationStore();
 const userStore = useUserStore();
 const selectionStore = useSelectionStore();
@@ -223,18 +219,23 @@ const { result, loading } = useQuery(
     ${gql_queries.albums_show}
   `,
   { id: id, page: page },
+  { keepPreviousResult: true },
 );
 
-const album = computed(() => result.value?.album ?? emptyAlbum);
+const album = computed(() => result.value?.album ?? {});
 
-const title = computed(() => `Album: ${titleHelper(album, loading)}`);
+const title = computed(() => `Album: ${titleHelper(album)}`);
 useTitle(title);
 
+// The id check matters because keepPreviousResult retains the outgoing album
+// while the next one loads: without it the title and description editors
+// would stay live over an album the URL has already moved away from. Paging
+// within one album keeps the same id, so editing stays available there.
 const canEditAlbum = computed(
-  () => !loading.value && userStore.signedIn && album.value.canEdit,
+  () => userStore.signedIn && album.value.canEdit && album.value.id === id.value,
 );
 
-const descriptionHtml = computed(() => descriptionHtmlHelper(album, loading));
+const descriptionHtml = computed(() => descriptionHtmlHelper(album));
 
 const {
   mutate: updateAlbumTitle,

@@ -7,6 +7,7 @@
 #  id                          :bigint           not null, primary key
 #  admin                       :boolean          default(FALSE)
 #  created_from_facebook       :boolean          default(FALSE), not null
+#  default_license             :string
 #  disabled                    :boolean          default(FALSE), not null
 #  display_name                :string
 #  email                       :string           default(""), not null
@@ -45,6 +46,7 @@ RSpec.describe User do
     it { should validate_uniqueness_of(:email).case_insensitive }
     it { should validate_presence_of(:timezone) }
     it { should validate_inclusion_of(:signup_provider).in_array(%w[local facebook google]) }
+    it { should validate_inclusion_of(:default_license).in_array(License::VALUES).allow_blank }
   end
 
   describe 'scopes' do

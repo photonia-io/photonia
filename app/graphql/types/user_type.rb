@@ -11,6 +11,7 @@ module Types
       description 'Find albums that contain the given photos'
       argument :photo_ids, [String], 'IDs of the photos', required: true
     end
+    field :default_license, String, 'Default license for new photos', null: true
     field :display_name, String, 'Full name', null: true
     field :email, String, 'Email', null: true
     field :first_name, String, 'First name', null: true

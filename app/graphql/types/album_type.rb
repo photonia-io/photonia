@@ -15,6 +15,10 @@ module Types
       argument :photo_id, ID, 'Id of the photo for which the next photo is to be found', required: true
     end
 
+    field :photo_position_in_album, Types::AlbumPositionType, 'Position of a photo within the album', null: true do
+      argument :photo_id, ID, 'Id of the photo whose position is to be found', required: true
+    end
+
     field :can_edit, Boolean, 'Whether the current user can edit the album', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :cover_photo, PhotoType, 'Cover photo of the album', null: true
@@ -90,6 +94,8 @@ module Types
 
     def previous_photo_in_album(photo_id:)
       scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      return nil if scoped_photo_ordering.nil?
+
       scoped_previous_photo = scoped_previous_photo(scoped_photo_ordering)
       return nil if scoped_previous_photo.nil?
 
@@ -98,10 +104,25 @@ module Types
 
     def next_photo_in_album(photo_id:)
       scoped_photo_ordering = scoped_photo_ordering(photo_id)
+      return nil if scoped_photo_ordering.nil?
+
       scoped_next_photo = scoped_next_photo(scoped_photo_ordering)
       return nil if scoped_next_photo.nil?
 
       context[:authorize].call(scoped_next_photo, :show?)
+    end
+
+    def photo_position_in_album(photo_id:)
+      ordering = scoped_photo_ordering(photo_id)
+      return nil if ordering.nil?
+
+      position = scoped_album_photos.where(albums_photos: { ordering: ..ordering }).count
+
+      {
+        position:,
+        total: scoped_album_photos.count,
+        page: (position / Pagy::DEFAULT[:limit].to_f).ceil
+      }
     end
 
     def can_edit
@@ -116,23 +137,24 @@ module Types
 
     def scoped_photo_ordering(photo_id)
       base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
-      base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id).ordering
+      base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id)&.ordering
     end
 
+    # Already INNER JOINs albums_photos constrained to this album, so callers
+    # must not join it again: a second, unconstrained join multiplies every row
+    # by the number of albums the photo belongs to.
     def scoped_album_photos
       Pundit.policy_scope(context[:current_user], @object.photos.unscope(where: :privacy))
     end
 
     def scoped_next_photo(current_ordering)
-      scoped_album_photos.joins(:albums_photos)
-                         .where('albums_photos.ordering > ?', current_ordering)
+      scoped_album_photos.where('albums_photos.ordering > ?', current_ordering)
                          .order('albums_photos.ordering ASC')
                          .first
     end
 
     def scoped_previous_photo(current_ordering)
-      scoped_album_photos.joins(:albums_photos)
-                         .where(albums_photos: { ordering: ...current_ordering })
+      scoped_album_photos.where(albums_photos: { ordering: ...current_ordering })
                          .order('albums_photos.ordering DESC')
                          .first
     end
