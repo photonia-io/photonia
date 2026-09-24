@@ -20,7 +20,7 @@
             <span class="icon is-small">
               <i class="fa fa-plus" aria-hidden="true"></i>
             </span>
-            <span>Select Files</span>
+            <span>Select photos</span>
           </button>
         </div>
 
@@ -173,6 +173,20 @@
                     <span>Retry</span>
                   </button>
                   <button
+                    v-if="item.status === 'success'"
+                    type="button"
+                    class="button is-small is-light"
+                    title="Clear from this list - the photo stays on the site"
+                    aria-label="Clear from this list - the photo stays on the site"
+                    @click.prevent="remove(item)"
+                  >
+                    <span class="icon is-small">
+                      <i class="fa fa-times" aria-hidden="true"></i>
+                    </span>
+                    <span>Clear</span>
+                  </button>
+                  <button
+                    v-else
                     type="button"
                     class="button is-small is-danger is-light"
                     :disabled="item.status === 'uploading'"
@@ -211,70 +225,68 @@
         </template>
 
         <div class="upload-actions" v-if="items.length">
-          <div class="columns is-mobile is-vcentered">
-            <div class="column">
-              <div class="buttons">
-                <button
-                  type="button"
-                  class="button is-primary"
-                  :disabled="uploading"
-                  @click="openFilePicker"
-                >
-                  <span class="icon is-small">
-                    <i class="fa fa-plus" aria-hidden="true"></i>
-                  </span>
-                  <span>Select Files</span>
-                </button>
-                <button
-                  type="button"
-                  class="button is-success"
-                  v-if="!uploading"
-                  :disabled="!hasPending"
-                  @click.prevent="uploadAll"
-                >
-                  <span class="icon is-small">
-                    <i class="fa fa-arrow-up" aria-hidden="true"></i>
-                  </span>
-                  <span>Upload All</span>
-                </button>
-                <button
-                  type="button"
-                  class="button is-danger"
-                  v-else
-                  @click.prevent="stop"
-                >
-                  <span class="icon is-small">
-                    <i class="fa fa-stop" aria-hidden="true"></i>
-                  </span>
-                  <span>Stop Upload</span>
-                </button>
-              </div>
+          <div class="upload-actions-bar">
+            <div class="buttons">
+              <button
+                type="button"
+                class="button is-primary is-outlined"
+                :disabled="uploading"
+                @click="openFilePicker"
+              >
+                <span class="icon is-small">
+                  <i class="fa fa-plus" aria-hidden="true"></i>
+                </span>
+                <span>Add photos</span>
+              </button>
+              <button
+                type="button"
+                class="button"
+                :disabled="uploading"
+                @click.prevent="clearList"
+              >
+                Clear list
+              </button>
+              <button
+                type="button"
+                class="button"
+                v-if="showClearCompleted"
+                :disabled="uploading"
+                @click.prevent="clearFinished"
+              >
+                Clear completed
+              </button>
             </div>
-            <div class="column">
-              <div class="buttons is-pulled-right">
-                <button
-                  type="button"
-                  class="button is-danger"
-                  :disabled="uploading"
-                  @click.prevent="clearAll"
+
+            <div class="buttons">
+              <Transition name="grow">
+                <div class="stop-wrap" v-if="uploading">
+                  <button
+                    type="button"
+                    class="button is-danger"
+                    @click.prevent="stop"
+                  >
+                    <span class="icon is-small">
+                      <i class="fa fa-stop" aria-hidden="true"></i>
+                    </span>
+                    <span>Stop</span>
+                  </button>
+                </div>
+              </Transition>
+              <button
+                type="button"
+                class="button is-success"
+                v-if="hasPending || uploading"
+                :disabled="uploading"
+                @click.prevent="uploadAll"
+              >
+                <span class="icon is-small">
+                  <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                </span>
+                <span v-if="uploading">Uploading&hellip;</span>
+                <span v-else
+                  >Upload {{ pendingCount }} {{ pendingCount === 1 ? "photo" : "photos" }}</span
                 >
-                  <span class="icon is-small">
-                    <i class="fa fa-trash" aria-hidden="true"></i>
-                  </span>
-                  <span>Remove All</span>
-                </button>
-                <button
-                  type="button"
-                  class="button is-danger"
-                  :disabled="!hasSuccess || uploading"
-                  @click.prevent="clearFinished"
-                >
-                  <span class="icon is-small">
-                    <i class="fa fa-broom" aria-hidden="true"></i>
-                  </span>
-                  <span>Remove Uploaded</span>
-                </button>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -394,6 +406,25 @@ const retryItem = (item) => {
 };
 
 const uploadAll = () => start();
+
+const showClearCompleted = computed(
+  () => hasSuccess.value && items.value.some((item) => item.status !== "success"),
+);
+
+const clearList = () => {
+  const unfinished = items.value.filter(
+    (item) => item.status === "pending" || item.status === "error",
+  ).length;
+  if (
+    unfinished > 0 &&
+    !window.confirm(
+      `Clear the list? ${unfinished} photo${unfinished === 1 ? " hasn't" : "s haven't"} been uploaded yet.`,
+    )
+  ) {
+    return;
+  }
+  clearAll();
+};
 
 function statusTag(item) {
   if (item.status === "error") {
@@ -687,6 +718,45 @@ const formatSize = function (size) {
   background-color: var(--bulma-scheme-main);
   border-top: 1px solid var(--bulma-border);
   padding: 0.75rem 0;
+}
+
+.upload-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.upload-actions-bar .buttons {
+  margin-bottom: 0;
+}
+
+/* Grows the Stop button in from nothing instead of it popping into the flex
+   row at full size and shoving Upload sideways in one frame. max-width (not
+   width) so no JS measurement is needed - it only has to clear the button's
+   actual width, not match it exactly. */
+.stop-wrap {
+  overflow: hidden;
+}
+
+.grow-enter-active,
+.grow-leave-active {
+  transition: max-width 0.2s ease, opacity 0.15s ease, margin-left 0.2s ease;
+}
+
+.grow-enter-from,
+.grow-leave-to {
+  max-width: 0;
+  opacity: 0;
+  margin-left: -0.5rem;
+}
+
+.grow-enter-to,
+.grow-leave-from {
+  max-width: 10rem;
+  opacity: 1;
+  margin-left: 0;
 }
 
 .upload-help .icon-text:not(:last-child) {

@@ -72,9 +72,15 @@ function findButton(wrapper, text) {
   return wrapper.findAll("button").find((b) => b.text().includes(text));
 }
 
+// The upload button's label is "Upload N photo(s)" - the count moves, so
+// match on the stable prefix rather than a fixed string.
+function findUploadButton(wrapper) {
+  return wrapper.findAll("button").find((b) => /^Upload \d/.test(b.text()));
+}
+
 async function uploadAndRespond(wrapper, name, status, body) {
   await addFile(wrapper, name);
-  await findButton(wrapper, "Upload All").trigger("click");
+  await findUploadButton(wrapper).trigger("click");
   await Promise.resolve();
   await Promise.resolve();
   FakeXHR.instances.at(-1).respond(status, body);
@@ -104,25 +110,32 @@ afterEach(() => {
 });
 
 describe("Upload", () => {
-  it("shows only Select Files when the queue is empty", () => {
+  it("shows only Select photos when the queue is empty", () => {
     const wrapper = mountUpload();
     const buttons = wrapper.findAll("button").map((b) => b.text());
-    expect(buttons).toContain("Select Files");
-    expect(buttons.some((t) => t.includes("Upload All"))).toBe(false);
+    expect(buttons).toContain("Select photos");
+    expect(buttons.some((t) => t.includes("Upload"))).toBe(false);
   });
 
-  it("enables Upload All once a file is pending, and disables it once uploading", async () => {
+  it("enables Upload once a file is pending, and disables everything but Stop once uploading", async () => {
     const wrapper = mountUpload();
     await addFile(wrapper);
 
-    const uploadAll = findButton(wrapper, "Upload All");
-    expect(uploadAll.attributes("disabled")).toBeUndefined();
+    const uploadButton = findUploadButton(wrapper);
+    expect(uploadButton.text()).toBe("Upload 1 photo");
+    expect(uploadButton.attributes("disabled")).toBeUndefined();
 
-    await uploadAll.trigger("click");
+    await uploadButton.trigger("click");
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(findButton(wrapper, "Stop Upload")).toBeTruthy();
+    expect(findButton(wrapper, "Stop")).toBeTruthy();
+    // The button stays put rather than disappearing - just disabled, with
+    // its label swapped instead of showing a stale pending count.
+    expect(findUploadButton(wrapper)).toBeUndefined();
+    expect(findButton(wrapper, "Uploading").attributes("disabled")).toBeDefined();
+    expect(findButton(wrapper, "Add photos").attributes("disabled")).toBeDefined();
+    expect(findButton(wrapper, "Clear list").attributes("disabled")).toBeDefined();
   });
 
   it("leaves the form usable after a failed upload, and Retry re-queues it", async () => {
@@ -134,12 +147,12 @@ describe("Upload", () => {
     expect(wrapper.text()).toContain("Title can't be blank");
     expect(wrapper.text()).toContain("Failed");
 
-    const select = findButton(wrapper, "Select Files");
-    const removeAll = findButton(wrapper, "Remove All");
+    const addPhotos = findButton(wrapper, "Add photos");
+    const clearList = findButton(wrapper, "Clear list");
     const retry = wrapper.find('button[title="Retry"]');
 
-    expect(select.attributes("disabled")).toBeUndefined();
-    expect(removeAll.attributes("disabled")).toBeUndefined();
+    expect(addPhotos.attributes("disabled")).toBeUndefined();
+    expect(clearList.attributes("disabled")).toBeUndefined();
     expect(retry.exists()).toBe(true);
 
     await retry.trigger("click");
@@ -174,7 +187,7 @@ describe("Upload", () => {
     await uploadAndRespond(wrapper, "one.jpg", 201, { photo: { id: "one" } });
 
     await addFile(wrapper, "two.jpg");
-    await findButton(wrapper, "Upload All").trigger("click");
+    await findUploadButton(wrapper).trigger("click");
     await Promise.resolve();
     await Promise.resolve();
 
@@ -193,6 +206,77 @@ describe("Upload", () => {
     await addFile(wrapper, "two.jpg");
 
     expect(wrapper.find(".upload-summary").text()).toContain("0 of 2 uploaded");
+  });
+
+  describe("clear list and clear completed", () => {
+    it("clears without asking when nothing is pending or failed", async () => {
+      const wrapper = mountUpload();
+      await uploadAndRespond(wrapper, "one.jpg", 201, { photo: { id: "one" } });
+      window.confirm = vi.fn();
+
+      await findButton(wrapper, "Clear list").trigger("click");
+
+      expect(window.confirm).not.toHaveBeenCalled();
+      expect(wrapper.findAll(".upload-item")).toHaveLength(0);
+    });
+
+    it("asks for confirmation before discarding pending or failed files, and respects Cancel", async () => {
+      const wrapper = mountUpload();
+      await addFile(wrapper, "one.jpg");
+      window.confirm = vi.fn().mockReturnValue(false);
+
+      await findButton(wrapper, "Clear list").trigger("click");
+
+      expect(window.confirm).toHaveBeenCalledWith(
+        "Clear the list? 1 photo hasn't been uploaded yet.",
+      );
+      expect(wrapper.findAll(".upload-item")).toHaveLength(1);
+
+      window.confirm.mockReturnValue(true);
+      await findButton(wrapper, "Clear list").trigger("click");
+      expect(wrapper.findAll(".upload-item")).toHaveLength(0);
+    });
+
+    it("only shows Clear completed once something is done and something else isn't", async () => {
+      const wrapper = mountUpload();
+      await uploadAndRespond(wrapper, "one.jpg", 201, { photo: { id: "one" } });
+      expect(findButton(wrapper, "Clear completed")).toBeUndefined();
+
+      await addFile(wrapper, "two.jpg");
+      expect(findButton(wrapper, "Clear completed")).toBeTruthy();
+
+      await findButton(wrapper, "Clear completed").trigger("click");
+      const remaining = wrapper.findAll(".upload-fields input[type=text]");
+      expect(remaining.map((i) => i.element.value)).toEqual(["two.jpg"]);
+    });
+  });
+
+  describe("per-row remove/clear", () => {
+    it("labels a finished row's button Clear, not Remove, since the photo stays on the site", async () => {
+      const wrapper = mountUpload();
+      await uploadAndRespond(wrapper, "one.jpg", 201, { photo: { id: "one" } });
+
+      const row = wrapper.find(".upload-item");
+      expect(row.text()).not.toContain("Remove");
+      const clearButton = row.findAll("button").find((b) => b.text() === "Clear");
+      expect(clearButton).toBeTruthy();
+
+      await clearButton.trigger("click");
+      expect(wrapper.findAll(".upload-item")).toHaveLength(0);
+    });
+
+    it("keeps the Remove label for a pending row", async () => {
+      const wrapper = mountUpload();
+      await addFile(wrapper, "one.jpg");
+
+      const row = wrapper.find(".upload-item");
+      expect(row.findAll("button").some((b) => b.text() === "Remove")).toBe(
+        true,
+      );
+      expect(row.findAll("button").some((b) => b.text() === "Clear")).toBe(
+        false,
+      );
+    });
   });
 
   describe("batch operations", () => {
