@@ -114,13 +114,6 @@ require 'pagy/extras/trim'
 # Pagy::DEFAULT[:fragment]   = '#anchor'                       # example
 # Pagy::DEFAULT[:link_extra] = 'data-remote="true"'            # example
 
-# Rails
-
-# Rails: extras assets path required by the helpers that use javascript
-# (pagy*_nav_js, pagy*_combo_nav_js, and pagy_items_selector_js)
-# See https://ddnexus.github.io/pagy/extras#javascript
-# Rails.application.config.assets.paths << Pagy.root.join('javascripts')
-
 # I18n
 
 # Pagy internal I18n: ~18x faster using ~10x less memory than the i18n gem
