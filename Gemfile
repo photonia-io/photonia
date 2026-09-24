@@ -13,8 +13,6 @@ gem 'json', '< 3'
 gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
 gem 'puma', '~> 7.1'
-# Use SCSS for stylesheets
-gem 'sass-rails', '>= 6.0.0'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Use Redis adapter to run Action Cable in production
@@ -78,7 +76,6 @@ end
 group :development do
   gem 'annotate'
   gem 'bullet'
-  gem 'graphiql-rails'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
