@@ -88,5 +88,101 @@ describe 'updateUserSettings Mutation', type: :request do
         'timezone' => { 'name' => new_timezone }
       )
     end
+
+    context 'when defaultLicense is omitted from the query' do
+      let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone, default_license: 'CC BY 4.0') }
+
+      it 'leaves the existing default license untouched' do
+        post_mutation
+        expect(user.reload.default_license).to eq('CC BY 4.0')
+      end
+    end
+
+    context 'when defaultLicense is provided' do
+      let(:default_license_arg) { '"CC0 1.0"' }
+      let(:query) do
+        <<~GQL
+          mutation {
+            updateUserSettings(
+              email: "#{new_email}"
+              firstName: "#{new_first_name}"
+              lastName: "#{new_last_name}"
+              displayName: "#{new_display_name}"
+              timezone: "#{new_timezone}"
+              defaultLicense: #{default_license_arg}
+            ) {
+              id
+              defaultLicense
+            }
+          }
+        GQL
+      end
+
+      it 'updates the default license' do
+        post_mutation
+        expect(user.reload.default_license).to eq('CC0 1.0')
+      end
+    end
+
+    context 'when defaultLicense is provided as an empty string' do
+      let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone, default_license: 'CC BY 4.0') }
+      let(:default_license_arg) { '""' }
+      let(:query) do
+        <<~GQL
+          mutation {
+            updateUserSettings(
+              email: "#{new_email}"
+              firstName: "#{new_first_name}"
+              lastName: "#{new_last_name}"
+              displayName: "#{new_display_name}"
+              timezone: "#{new_timezone}"
+              defaultLicense: #{default_license_arg}
+            ) {
+              id
+              defaultLicense
+            }
+          }
+        GQL
+      end
+
+      it 'clears the default license' do
+        post_mutation
+        expect(user.reload.default_license).to be_nil
+      end
+    end
+
+    context 'when defaultLicense is invalid' do
+      let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone, default_license: 'CC BY 4.0') }
+      let(:default_license_arg) { '"Whatever I Want"' }
+      let(:query) do
+        <<~GQL
+          mutation {
+            updateUserSettings(
+              email: "#{new_email}"
+              firstName: "#{new_first_name}"
+              lastName: "#{new_last_name}"
+              displayName: "#{new_display_name}"
+              timezone: "#{new_timezone}"
+              defaultLicense: #{default_license_arg}
+            ) {
+              id
+              defaultLicense
+            }
+          }
+        GQL
+      end
+
+      it 'returns a validation error and saves none of the settings' do
+        post_mutation
+        json = response.parsed_body
+        errors = json['errors'].first
+
+        expect(errors['message']).to eq('Invalid license value')
+        user.reload
+        expect(user.default_license).to eq('CC BY 4.0')
+        expect(user.first_name).to eq(first_name)
+        expect(user.timezone).to eq(timezone)
+      end
+    end
   end
 end

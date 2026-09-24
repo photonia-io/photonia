@@ -46,6 +46,7 @@ RSpec.describe User do
     it { should validate_uniqueness_of(:email).case_insensitive }
     it { should validate_presence_of(:timezone) }
     it { should validate_inclusion_of(:signup_provider).in_array(%w[local facebook google]) }
+    it { should validate_inclusion_of(:default_license).in_array(License::VALUES).allow_blank }
   end
 
   describe 'scopes' do

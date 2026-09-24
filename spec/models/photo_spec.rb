@@ -609,4 +609,20 @@ RSpec.describe Photo do
   end
 
   it_behaves_like 'it has trackable title and description', model: :photo
+
+  describe 'license tracking' do
+    let(:photo) { create(:photo, license: 'CC BY-SA 4.0') }
+
+    it 'records a dated version with the old and new license when it changes' do
+      expect { photo.update(license: 'All Rights Reserved') }.to change { photo.versions.count }.by(1)
+
+      version = photo.versions.last
+      expect(version.object_changes['license']).to eq(['CC BY-SA 4.0', 'All Rights Reserved'])
+      expect(version.created_at).to be_present
+    end
+
+    it 'does not record a version for untracked changes' do
+      expect { photo.update(impressions_count: 5) }.not_to(change { photo.versions.count })
+    end
+  end
 end

@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-# Concern for tracking changes of the title and description fields
+# Title/description edit helpers; the including model must track both
+# fields itself with has_paper_trail, as it may track others too.
 module TrackableTitleAndDescription
   extend ActiveSupport::Concern
   include FieldEditTracker
-
-  included do
-    has_paper_trail only: %i[title description]
-  end
 
   def title_edited?
     field_edited?('title')

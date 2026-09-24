@@ -79,6 +79,9 @@ class Photo < ApplicationRecord
   include HtmlDescriptionable
   include TrackableTitleAndDescription
 
+  # license is tracked so there's a dated record of every license change
+  has_paper_trail only: %i[title description license]
+
   include PgSearch::Model
 
   pg_search_scope :search,

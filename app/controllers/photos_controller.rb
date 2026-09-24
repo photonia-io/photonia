@@ -45,6 +45,7 @@ class PhotosController < ApplicationController
 
     @photo.user = current_user
     @photo.timezone = current_user.timezone
+    @photo.license = current_user.default_license if current_user.default_license.present?
     @photo.populate_exif_fields
 
     if @photo.valid?

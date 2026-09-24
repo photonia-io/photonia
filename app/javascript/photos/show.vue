@@ -76,6 +76,7 @@
                     @update-privacy="setPhotoPrivacy"
                     @update-taken-at="setPhotoTakenAt"
                     @reset-taken-at="resetPhotoTakenAt"
+                    @update-license="setPhotoLicense"
                   />
                 </div>
                 <div class="column is-half">
@@ -425,6 +426,19 @@ const {
 `);
 
 const {
+  mutate: setPhotoLicense,
+  onDone: onSetLicenseDone,
+  onError: onSetLicenseError,
+} = useMutation(gql`
+  mutation ($id: String!, $license: String) {
+    setPhotoLicense(id: $id, license: $license) {
+      id
+      license
+    }
+  }
+`);
+
+const {
   mutate: deletePhoto,
   onDone: onDeletePhotoDone,
   onError: onDeletePhotoError,
@@ -573,6 +587,17 @@ onUpdateDescriptionDone(({ data }) => {
 onUpdateDescriptionError((error) => {
   toaster(
     "An error occurred while updating the description: " + error.message,
+    "is-danger",
+  );
+});
+
+onSetLicenseDone(({ data }) => {
+  toaster("The license has been updated");
+});
+
+onSetLicenseError((error) => {
+  toaster(
+    "An error occurred while updating the license: " + error.message,
     "is-danger",
   );
 });

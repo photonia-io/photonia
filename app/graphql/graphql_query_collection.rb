@@ -158,6 +158,7 @@ class GraphqlQueryCollection
             height
           }
           takenAt
+          license
           takenAtInfo {
             year
             month
