@@ -1,12 +1,33 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+// Inputs that hold no typed text. A checkbox keeps focus after a click - the
+// "Display labels on the photo" one does - so treating it as typing would kill
+// the shortcuts until the user clicked elsewhere.
+const NON_TEXT_INPUT_TYPES = [
+  "button",
+  "checkbox",
+  "color",
+  "file",
+  "image",
+  "radio",
+  "range",
+  "reset",
+  "submit",
+];
+
 // J/K are ordinary letters, so a shortcut must never fire while the user is
 // typing. Applies to the arrow keys too, which had no such guard.
 export function isTypingTarget(target) {
+  if (target?.tagName === "INPUT") {
+    return !NON_TEXT_INPUT_TYPES.includes(
+      (target.type || "text").toLowerCase(),
+    );
+  }
+
   return (
     target?.isContentEditable ||
-    ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName)
+    ["TEXTAREA", "SELECT"].includes(target?.tagName)
   );
 }
 

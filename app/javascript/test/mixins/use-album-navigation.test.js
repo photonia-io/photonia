@@ -241,6 +241,26 @@ describe("isTypingTarget", () => {
     expect(isTypingTarget({ tagName })).toBe(true);
   });
 
+  it.each(["text", "email", "url", "tel", "number", "password", "search"])(
+    "is true for an input of type %s",
+    (type) => {
+      expect(isTypingTarget({ tagName: "INPUT", type })).toBe(true);
+    },
+  );
+
+  // A checkbox keeps focus after a click, so treating it as typing would
+  // leave the navigation shortcuts dead until the user clicked elsewhere.
+  it.each(["checkbox", "radio", "button", "submit", "reset", "file", "range"])(
+    "is false for an input of type %s",
+    (type) => {
+      expect(isTypingTarget({ tagName: "INPUT", type })).toBe(false);
+    },
+  );
+
+  it("ignores the case of the input type", () => {
+    expect(isTypingTarget({ tagName: "INPUT", type: "CheckBox" })).toBe(false);
+  });
+
   it("is true for a contenteditable element", () => {
     expect(isTypingTarget({ tagName: "DIV", isContentEditable: true })).toBe(
       true,
