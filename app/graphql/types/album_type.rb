@@ -86,6 +86,11 @@ module Types
         unscoped_association = association_scope.unscope(where: :privacy)
         user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
         return user_cover if user_cover
+
+        # Editors can see every photo in the album, so when there's no
+        # user-set cover and no public one (e.g. every photo is private),
+        # fall back to any photo rather than showing none at all.
+        return @object.public_cover_photo || @object.all_photos(select: false, refetch: true).first
       end
 
       # Fallback to the public cover (what visitors/non-owners see)

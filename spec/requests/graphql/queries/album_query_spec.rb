@@ -263,6 +263,58 @@ describe 'the shared albums_show query' do
   end
 end
 
+describe 'coverPhoto field' do
+  include Devise::Test::IntegrationHelpers
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
+  let(:user) { create(:user) }
+  let(:album) { create(:album, user: user) }
+
+  let(:query) do
+    <<~GQL
+      query {
+        album(id: "#{album.slug}") {
+          coverPhoto { id }
+        }
+      }
+    GQL
+  end
+
+  context 'when every photo in the album is private and there is no user-set cover' do
+    let!(:photos) { create_list(:photo, 2, user: user, albums: [album], privacy: :private) }
+
+    before { album.maintenance }
+
+    it "falls back to one of the editor's own photos for the owner" do
+      sign_in(user)
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(photos.first.slug)
+    end
+
+    it 'stays null for a signed-out visitor' do
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto')).to be_nil
+    end
+  end
+
+  context 'when a public photo exists' do
+    let!(:private_photo) { create(:photo, user: user, albums: [album], privacy: :private) }
+    let!(:public_photo) { create(:photo, user: user, albums: [album], privacy: :public) }
+
+    before { album.maintenance }
+
+    it 'still prefers the public cover over an arbitrary private photo' do
+      sign_in(user)
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(public_photo.slug)
+    end
+  end
+end
+
 describe 'unknown album slug' do
   let(:query) do
     <<~GQL
