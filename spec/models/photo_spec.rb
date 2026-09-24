@@ -457,8 +457,8 @@ RSpec.describe Photo do
 
       before do
         allow(photo).to receive(:image_attacher).and_return(image_attacher)
-        allow(ENV).to receive(:fetch).with('PHOTONIA_MEDIUM_SIDE', nil).and_return(medium_side)
-        allow(ENV).to receive(:fetch).with('PHOTONIA_THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
+        allow(ENV).to receive(:fetch).with('MEDIUM_SIDE', nil).and_return(medium_side)
+        allow(ENV).to receive(:fetch).with('THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
         allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
         allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
         allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
