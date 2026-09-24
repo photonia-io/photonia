@@ -175,7 +175,7 @@ import SidebarHeader from "./sidebar-header.vue";
 import TakenAtModal from "./taken-at-modal.vue";
 import LicenseModal from "./license-modal.vue";
 import { licenseDisplay as getLicenseDisplay } from "../shared/licenses.js";
-import moment from "moment/min/moment-with-locales";
+import moment from "moment";
 
 const props = defineProps({
   photo: {
