@@ -203,6 +203,7 @@ class GraphqlQueryCollection
               profileurl
               iconfarm
               iconserver
+              claimable
             }
             createdAt
           }

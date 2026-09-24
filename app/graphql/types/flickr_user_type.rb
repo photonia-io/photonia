@@ -5,11 +5,33 @@ module Types
   class FlickrUserType < Types::BaseObject
     description 'A Flickr User'
 
-    field :nsid, String, 'NSID of the user', null: false
-    field :username, String, 'Username of the user', null: true
-    field :realname, String, 'Real name of the user', null: true
-    field :profileurl, String, 'Flickr profile url of the user', null: true
+    field :claimable, Boolean, 'Whether this Flickr user can be claimed by the current user', null: false
     field :iconfarm, String, 'Icon farm of the user\'s buddy image', null: true
     field :iconserver, String, 'Icon server of the user\'s buddy image', null: true
+    field :nsid, String, 'NSID of the user', null: false
+    field :profileurl, String, 'Flickr profile url of the user', null: true
+    field :realname, String, 'Real name of the user', null: true
+    field :username, String, 'Username of the user', null: true
+
+    def claimable
+      # If the flickr user was claimed return false
+      return false if object.claimed_by_user_id.present?
+
+      current_user = context[:current_user]
+      return true unless current_user
+
+      # If the current user has a pending or approved claim on ANY flickr_user return false.
+      # Callers that already know the answer (e.g. PhotoQuery, batched across all comments on
+      # a photo to avoid an N+1) can precompute it into context[:user_has_claim]; otherwise fall
+      # back to computing it directly here rather than silently defaulting to "claimable".
+      user_has_claim = context.key?(:user_has_claim) ? context[:user_has_claim] : current_user_has_active_claim?(current_user)
+      !user_has_claim
+    end
+
+    private
+
+    def current_user_has_active_claim?(current_user)
+      FlickrUserClaim.exists?(user_id: current_user.id, status: %w[pending approved])
+    end
   end
 end

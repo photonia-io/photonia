@@ -64,7 +64,7 @@
                 @edit-thumbnail="startThumbnailEdit"
               />
 
-              <PhotoComments :photo="photo" :loading="loading" />
+              <PhotoComments :photo="photo" :loading="loading" @refresh="refreshPhoto" />
 
               <div class="columns equal-height-columns">
                 <div class="column is-half">
@@ -387,7 +387,7 @@ const route = useRoute();
 const router = useRouter();
 
 const id = computed(() => route.params.id);
-const { result, loading } = useQuery(
+const { result, loading, refetch } = useQuery(
   gql`
     ${gql_queries.photos_show}
   `,
@@ -720,11 +720,16 @@ const unHighlightLabel = (label) => {
   labelHighlights.value[label.id] = false;
 };
 
+const refreshPhoto = () => {
+  refetch();
+};
+
 const photo = computed(() => result.value?.photo ?? {});
 
 // False while a navigation is in flight and the retained photo is still the
 // outgoing one, i.e. whenever photo's identity disagrees with the route.
 const showingCurrentPhoto = computed(() => photo.value.id === id.value);
+
 
 const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
 

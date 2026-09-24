@@ -7,6 +7,4 @@ class UsersController < ApplicationController
   def sign_out; end
 
   def settings; end
-
-  def admin_settings; end
 end
