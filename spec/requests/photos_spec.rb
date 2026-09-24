@@ -72,4 +72,32 @@ RSpec.describe 'Photos' do
       end
     end
   end
+
+  describe 'POST /photos' do
+    include Devise::Test::IntegrationHelpers
+
+    let(:image) do
+      Rack::Test::UploadedFile.new(Rails.root.join('spec/support/images/zell-am-see-with-exif.jpg'), 'image/jpeg')
+    end
+
+    before { sign_in(user) }
+
+    context 'when the uploader has a default license' do
+      let(:user) { create(:user, :uploader, default_license: 'CC BY 4.0') }
+
+      it "applies the uploader's default license to the new photo" do
+        post '/photos', params: { photo: { title: 'Upload Test', image: image } }
+        expect(Photo.unscoped.order(:id).last.license).to eq('CC BY 4.0')
+      end
+    end
+
+    context 'when the uploader has no default license' do
+      let(:user) { create(:user, :uploader) }
+
+      it 'leaves the license nil' do
+        post '/photos', params: { photo: { title: 'Upload Test', image: image } }
+        expect(Photo.unscoped.order(:id).last.license).to be_nil
+      end
+    end
+  end
 end

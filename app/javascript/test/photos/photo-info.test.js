@@ -10,11 +10,16 @@ import { useApplicationStore } from "../../stores/application";
 // through the mounted wrapper.
 const body = () => new DOMWrapper(document.body);
 
-// Disambiguates the two teleported ".modal" divs (privacy and Date Taken).
+// Disambiguates the teleported ".modal" divs (privacy, Date Taken, License).
 const takenAtModal = () =>
   body()
     .findAll(".modal")
     .find((modal) => modal.find('[aria-label="Photo Date Taken"]').exists());
+
+const licenseModal = () =>
+  body()
+    .findAll(".modal")
+    .find((modal) => modal.find('[aria-label="Photo License"]').exists());
 
 const basePhoto = {
   id: "some-slug",
@@ -434,6 +439,127 @@ describe("PhotoInfo", () => {
 
       expect(takenAtModal().classes()).not.toContain("is-active");
       expect(document.activeElement).toBe(trigger.element);
+    });
+  });
+
+  describe("License row", () => {
+    it("is shown even when canEdit is false", () => {
+      const { wrapper } = mountPhotoInfo({ canEdit: false });
+      expect(wrapper.text()).toContain("License:");
+    });
+
+    it("defaults to All Rights Reserved when the license is blank", () => {
+      const { wrapper } = mountPhotoInfo({
+        canEdit: false,
+        photo: { ...basePhoto, license: null },
+      });
+      expect(wrapper.text()).toContain("All Rights Reserved");
+    });
+
+    it("links visitors to the license deed when one exists", () => {
+      const { wrapper } = mountPhotoInfo({
+        canEdit: false,
+        photo: { ...basePhoto, license: "CC BY 4.0" },
+      });
+      const link = wrapper
+        .findAll("a")
+        .find((a) => a.text() === "CC BY 4.0");
+      expect(link.attributes("href")).toBe(
+        "https://creativecommons.org/licenses/by/4.0/",
+      );
+    });
+
+    it("renders a legacy license with no deed as plain text", () => {
+      const { wrapper } = mountPhotoInfo({
+        canEdit: false,
+        photo: { ...basePhoto, license: "Some old Flickr license" },
+      });
+      expect(wrapper.text()).toContain("Some old Flickr license");
+      expect(
+        wrapper.findAll("a").some((a) => a.text() === "Some old Flickr license"),
+      ).toBe(false);
+    });
+
+    it("renders the license trigger as a native button when canEdit is true", () => {
+      const { wrapper } = mountPhotoInfo({ canEdit: true });
+      expect(wrapper.find(".license-trigger").element.tagName).toBe("BUTTON");
+    });
+  });
+
+  describe("License modal", () => {
+    it("opens when the license trigger is clicked", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, license: "CC BY 4.0" },
+      });
+      await wrapper.find(".license-trigger").trigger("click");
+
+      expect(licenseModal().classes()).toContain("is-active");
+    });
+
+    it("checks the photo's current license", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, license: "CC BY-SA 4.0" },
+      });
+      await wrapper.find(".license-trigger").trigger("click");
+
+      const checked = licenseModal().find(
+        'input[type="radio"][value="CC BY-SA 4.0"]',
+      );
+      expect(checked.element.checked).toBe(true);
+    });
+
+    it("emits updateLicense with the new value when confirmed", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, license: "CC BY 4.0" },
+      });
+      await wrapper.find(".license-trigger").trigger("click");
+
+      const cc0Radio = licenseModal().find(
+        'input[type="radio"][value="CC0 1.0"]',
+      );
+      await cc0Radio.setValue(true);
+      await licenseModal().find(".button.is-primary").trigger("click");
+
+      expect(wrapper.emitted("updateLicense")).toEqual([
+        [{ id: "some-slug", license: "CC0 1.0" }],
+      ]);
+      expect(licenseModal().classes()).not.toContain("is-active");
+    });
+
+    it("does not emit updateLicense when the selection is unchanged", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, license: "CC BY 4.0" },
+      });
+      await wrapper.find(".license-trigger").trigger("click");
+
+      await licenseModal().find(".button.is-primary").trigger("click");
+
+      expect(wrapper.emitted("updateLicense")).toBeFalsy();
+    });
+
+    it("returns focus to the trigger on cancel", async () => {
+      const { wrapper } = mountPhotoInfo({
+        photo: { ...basePhoto, license: "CC BY 4.0" },
+      });
+      const trigger = wrapper.find(".license-trigger");
+      await trigger.trigger("click");
+
+      await licenseModal().find(".button.is-info").trigger("click");
+
+      expect(document.activeElement).toBe(trigger.element);
+    });
+
+    it("closes on Escape and restores navigation shortcuts", async () => {
+      const { wrapper, applicationStore } = mountPhotoInfo({
+        photo: { ...basePhoto, license: "CC BY 4.0" },
+      });
+      await wrapper.find(".license-trigger").trigger("click");
+
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      await wrapper.vm.$nextTick();
+
+      expect(licenseModal().classes()).not.toContain("is-active");
+      expect(applicationStore.navigationShortcutsEnabled).toBe(true);
     });
   });
 });
