@@ -5,8 +5,8 @@ Good news! Your request to claim the Flickr user <%= @flickr_user.username %> ha
 Flickr Username: <%= @flickr_user.username %>
 Flickr Profile: <%= @flickr_user.profileurl %>
 
-<% if @flickr_user.description.present? %>
-If you added a verification code to your Flickr profile description, you can now remove it.
+<% if @claim&.automatic? %>
+You can now remove the verification code from your Flickr profile description.
 <% end %>
 
 Your friendly Photonia bot.

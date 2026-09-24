@@ -18,9 +18,8 @@ module Mutations
 
       return { claim: nil, errors: ['This Flickr user has already been claimed'] } if flickr_user.claimed_by_user_id.present?
 
-      # Check if user already has a pending claim for this Flickr user
-      existing_claim = FlickrUserClaim.find_by(user: current_user, flickr_user: flickr_user, status: 'pending', claim_type: 'automatic')
-      return { claim: existing_claim, errors: [] } if existing_claim
+      existing_claim = FlickrUserClaim.pending.find_by(user: current_user, flickr_user: flickr_user)
+      return existing_claim_payload(existing_claim) if existing_claim
 
       authorize(FlickrUserClaim.new(user: current_user), :create?)
 
@@ -33,6 +32,15 @@ module Mutations
     # can never actually deny this - unlike the other claim mutations.
     rescue StandardError => e
       { claim: nil, errors: [e.message] }
+    end
+
+    private
+
+    # A pending automatic claim is resumed; a pending manual one blocks a new automatic claim.
+    def existing_claim_payload(claim)
+      return { claim: claim, errors: [] } if claim.automatic?
+
+      { claim: nil, errors: ['You already have a pending manual claim for this Flickr user'] }
     end
   end
 end

@@ -48,6 +48,11 @@
               </tr>
             </tbody>
           </table>
+          <Pagination
+            v-if="result && result.users"
+            :metadata="result.users.metadata"
+            routeName="admin-users"
+          />
         </div>
       </div>
     </div>
@@ -56,28 +61,40 @@
 
 <script setup>
 import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery } from "@vue/apollo-composable";
 
+import Pagination from "@/shared/pagination.vue";
+
+const route = useRoute();
 const router = useRouter();
 
 const USERS_QUERY = gql`
-  query UsersQuery {
-    users {
-      id
-      email
-      firstName
-      lastName
-      displayName
-      signupProvider
-      admin
+  query UsersQuery($page: Int) {
+    users(page: $page) {
+      collection {
+        id
+        email
+        firstName
+        lastName
+        displayName
+        signupProvider
+        admin
+      }
+      metadata {
+        totalPages
+        totalCount
+        currentPage
+        limitValue
+      }
     }
   }
 `;
 
-const { result, loading, error } = useQuery(USERS_QUERY);
-const users = computed(() => result.value?.users || []);
+const page = computed(() => parseInt(route.query.page) || 1);
+const { result, loading, error } = useQuery(USERS_QUERY, { page });
+const users = computed(() => result.value?.users?.collection || []);
 
 const viewUser = (userId) => {
   router.push({ name: "admin-show-user", params: { id: userId } });

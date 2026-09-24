@@ -25,6 +25,9 @@
                   verification code that you'll need to temporarily add to your
                   Flickr profile.
                 </p>
+                <div v-if="verificationError" class="notification is-danger mt-4">
+                  {{ verificationError }}
+                </div>
                 <div class="buttons mt-4">
                   <button
                     class="button is-primary"

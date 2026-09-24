@@ -57,13 +57,21 @@ class FlickrUserClaimService
   end
 
   def request_manual_claim(reason: nil)
-    claim = FlickrUserClaim.create!(
-      user: @user,
-      flickr_user: @flickr_user,
-      claim_type: 'manual',
-      status: 'pending',
-      reason: reason
-    )
+    # A pending automatic claim on the same Flickr user becomes the manual claim
+    # instead of competing with it for the one-active-claim-per-pair index.
+    claim = FlickrUserClaim.pending.automatic.find_by(user: @user, flickr_user: @flickr_user)
+
+    if claim
+      claim.update!(claim_type: 'manual', verification_code: nil, reason: reason)
+    else
+      claim = FlickrUserClaim.create!(
+        user: @user,
+        flickr_user: @flickr_user,
+        claim_type: 'manual',
+        status: 'pending',
+        reason: reason
+      )
+    end
 
     # Send email to admins
     admin_emails = User.admins.pluck(:email)
@@ -113,7 +121,7 @@ class FlickrUserClaimService
   private
 
   def notify_user_claim_approved(claim)
-    UserMailer.with(user: claim.user, flickr_user: claim.flickr_user)
+    UserMailer.with(user: claim.user, flickr_user: claim.flickr_user, claim: claim)
               .flickr_claim_approved
               .deliver_later
   end

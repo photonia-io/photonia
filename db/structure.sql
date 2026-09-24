@@ -1096,6 +1096,13 @@ CREATE INDEX index_comments_on_user_id ON public.comments USING btree (user_id);
 
 
 --
+-- Name: index_flickr_user_claims_on_active_user_and_flickr_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_flickr_user_claims_on_active_user_and_flickr_user ON public.flickr_user_claims USING btree (user_id, flickr_user_id) WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]));
+
+
+--
 -- Name: index_flickr_user_claims_on_flickr_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1114,13 +1121,6 @@ CREATE INDEX index_flickr_user_claims_on_status ON public.flickr_user_claims USI
 --
 
 CREATE INDEX index_flickr_user_claims_on_user_id ON public.flickr_user_claims USING btree (user_id);
-
-
---
--- Name: index_flickr_user_claims_on_user_id_and_flickr_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_flickr_user_claims_on_user_id_and_flickr_user_id ON public.flickr_user_claims USING btree (user_id, flickr_user_id);
 
 
 --
@@ -1493,6 +1493,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260924150000'),
 ('20260922131026'),
 ('20251108131127'),
 ('20251107000001'),

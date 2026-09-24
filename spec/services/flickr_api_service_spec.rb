@@ -164,9 +164,27 @@ RSpec.describe FlickrAPIService do
       allow(Net::HTTP).to receive(:get_response).and_return(response)
     end
 
-    it 'returns the profile description' do
+    it 'returns the profile description text' do
       result = described_class.profile_get_profile_description(user_id)
-      expect(result).to eq({ '_content' => profile_description })
+      expect(result).to eq(profile_description)
+    end
+
+    context 'when the description is a plain string' do
+      let(:response_body) { { 'stat' => 'ok', 'profile' => { 'profile_description' => profile_description } }.to_json }
+
+      it 'returns it as is' do
+        result = described_class.profile_get_profile_description(user_id)
+        expect(result).to eq(profile_description)
+      end
+    end
+
+    context 'when the profile has no description' do
+      let(:response_body) { { 'stat' => 'ok', 'profile' => { 'id' => user_id } }.to_json }
+
+      it 'returns nil' do
+        result = described_class.profile_get_profile_description(user_id)
+        expect(result).to be_nil
+      end
     end
 
     context 'when the response is not ok' do

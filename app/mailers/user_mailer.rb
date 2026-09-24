@@ -2,6 +2,7 @@ class UserMailer < ApplicationMailer
   def flickr_claim_approved
     @user = params[:user]
     @flickr_user = params[:flickr_user]
+    @claim = params[:claim]
     mail to: @user.email, subject: 'Your Flickr user claim has been approved'
   end
 

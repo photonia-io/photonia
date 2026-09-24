@@ -178,6 +178,29 @@ RSpec.describe FlickrUserClaimService do
 
       service.request_manual_claim(reason: reason)
     end
+
+    context 'when the user already has a pending automatic claim on this flickr user' do
+      let!(:automatic_claim) { create(:flickr_user_claim, :automatic, user: user, flickr_user: flickr_user) }
+
+      it 'converts it into a manual claim instead of creating a new one' do
+        claim = nil
+        expect { claim = service.request_manual_claim(reason: reason) }.not_to change(FlickrUserClaim, :count)
+
+        expect(claim).to eq(automatic_claim)
+        expect(claim.reload).to be_manual
+        expect(claim).to be_pending
+        expect(claim.verification_code).to be_nil
+        expect(claim.reason).to eq(reason)
+      end
+
+      it 'still sends email to admins' do
+        admin # ensure admin exists
+        expect(AdminMailer).to receive(:with).with(hash_including(claim: automatic_claim))
+                                             .and_return(double(flickr_claim_request: double(deliver_later: true)))
+
+        service.request_manual_claim(reason: reason)
+      end
+    end
   end
 
   describe '#approve_claim' do
@@ -200,7 +223,8 @@ RSpec.describe FlickrUserClaimService do
       it 'sends email to user' do
         expect(UserMailer).to receive(:with).with(
           user: user,
-          flickr_user: flickr_user
+          flickr_user: flickr_user,
+          claim: claim
         ).and_return(double(flickr_claim_approved: double(deliver_later: true)))
 
         service.approve_claim(claim)
@@ -215,6 +239,20 @@ RSpec.describe FlickrUserClaimService do
 
         expect(result[:success]).to be(false)
         expect(result[:error]).to eq('Claim is not pending')
+      end
+    end
+
+    context 'when the flickr user was already claimed by someone else' do
+      before { flickr_user.update!(claimed_by_user: create(:user)) }
+
+      it 'returns error, leaves the claim pending and sends no email' do
+        expect(UserMailer).not_to receive(:with)
+
+        result = service.approve_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('This Flickr user has already been claimed by another user')
+        expect(claim.reload).to be_pending
       end
     end
 

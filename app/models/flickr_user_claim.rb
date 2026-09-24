@@ -19,10 +19,10 @@
 #
 # Indexes
 #
-#  index_flickr_user_claims_on_flickr_user_id              (flickr_user_id)
-#  index_flickr_user_claims_on_status                      (status)
-#  index_flickr_user_claims_on_user_id                     (user_id)
-#  index_flickr_user_claims_on_user_id_and_flickr_user_id  (user_id,flickr_user_id) UNIQUE
+#  index_flickr_user_claims_on_active_user_and_flickr_user  (user_id,flickr_user_id) UNIQUE WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]))
+#  index_flickr_user_claims_on_flickr_user_id               (flickr_user_id)
+#  index_flickr_user_claims_on_status                       (status)
+#  index_flickr_user_claims_on_user_id                      (user_id)
 #
 # Foreign Keys
 #
@@ -30,6 +30,8 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class FlickrUserClaim < ApplicationRecord
+  class AlreadyClaimedError < StandardError; end
+
   CLAIM_TYPES = %w[automatic manual].freeze
   STATUSES = %w[pending approved denied].freeze
 
@@ -39,7 +41,11 @@ class FlickrUserClaim < ApplicationRecord
   validates :claim_type, presence: true, inclusion: { in: CLAIM_TYPES }
   validates :status, presence: true, inclusion: { in: STATUSES }
   validates :verification_code, presence: true, if: -> { claim_type == 'automatic' }
-  validates :user_id, uniqueness: { scope: :flickr_user_id, message: 'has already claimed this Flickr user' }
+  validates :user_id,
+            uniqueness: { scope: :flickr_user_id,
+                          conditions: -> { where(status: %w[pending approved]) },
+                          message: 'has already claimed this Flickr user' },
+            if: -> { %w[pending approved].include?(status) }
   validate :user_has_no_other_active_claim, on: :create
 
   scope :pending, -> { where(status: 'pending') }
@@ -50,8 +56,14 @@ class FlickrUserClaim < ApplicationRecord
 
   def approve!
     transaction do
+      # Lock the Flickr user row so concurrent approvals can't hand it to two users.
+      locked_flickr_user = FlickrUser.lock.find(flickr_user_id)
+      if locked_flickr_user.claimed_by_user_id.present? && locked_flickr_user.claimed_by_user_id != user_id
+        raise AlreadyClaimedError, 'This Flickr user has already been claimed by another user'
+      end
+
       update!(status: 'approved', approved_at: Time.current)
-      flickr_user.update!(claimed_by_user: user)
+      locked_flickr_user.update!(claimed_by_user: user)
     end
   end
 

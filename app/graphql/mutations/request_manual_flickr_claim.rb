@@ -19,9 +19,10 @@ module Mutations
 
       return { claim: nil, errors: ['This Flickr user has already been claimed'] } if flickr_user.claimed_by_user_id.present?
 
-      # Check if user already has a pending claim for this Flickr user
-      existing_claim = FlickrUserClaim.find_by(user: current_user, flickr_user: flickr_user, status: 'pending', claim_type: 'manual')
-      return { claim: existing_claim, errors: [] } if existing_claim
+      # An existing pending manual claim is simply returned; a pending automatic one
+      # is converted to manual by the service below.
+      existing_claim = FlickrUserClaim.pending.find_by(user: current_user, flickr_user: flickr_user)
+      return { claim: existing_claim, errors: [] } if existing_claim&.manual?
 
       authorize(FlickrUserClaim.new(user: current_user), :create?)
 

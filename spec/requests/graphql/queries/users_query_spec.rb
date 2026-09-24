@@ -7,17 +7,26 @@ describe 'users Query' do
 
   subject(:post_query) { post '/graphql', params: { query: query } }
 
+  let(:page) { 1 }
   let(:query) do
     <<~GQL
       query {
-        users {
-          id
-          email
-          firstName
-          lastName
-          displayName
-          signupProvider
-          admin
+        users(page: #{page}) {
+          collection {
+            id
+            email
+            firstName
+            lastName
+            displayName
+            signupProvider
+            admin
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
         }
       }
     GQL
@@ -65,12 +74,10 @@ describe 'users Query' do
 
       it 'returns all users' do
         post_query
-
-        json = JSON.parse(response.body)
-        data = json['data']['users']
+        data = data_dig(response, 'users', 'collection')
 
         expect(data).to be_an(Array)
-        expect(data.length).to be >= 3
+        expect(data.length).to eq(4)
 
         user_emails = data.map { |u| u['email'] }
         expect(user_emails).to include('user1@example.com', 'user2@example.com', 'user3@example.com')
@@ -78,15 +85,41 @@ describe 'users Query' do
 
       it 'includes signup provider information' do
         post_query
-
-        json = JSON.parse(response.body)
-        data = json['data']['users']
+        data = data_dig(response, 'users', 'collection')
 
         google_user = data.find { |u| u['email'] == 'user2@example.com' }
         expect(google_user['signupProvider']).to eq('google')
 
         facebook_user = data.find { |u| u['email'] == 'user3@example.com' }
         expect(facebook_user['signupProvider']).to eq('facebook')
+      end
+
+      it 'returns pagination metadata' do
+        post_query
+
+        expect(data_dig(response, 'users', 'metadata')).to eq(
+          'totalPages' => 1,
+          'totalCount' => 4,
+          'currentPage' => 1,
+          'limitValue' => 20
+        )
+      end
+
+      context 'when there are more users than fit on a page' do
+        let(:page) { 2 }
+
+        before { create_list(:user, 17) }
+
+        it 'returns the overflow on the second page' do
+          post_query
+
+          expect(data_dig(response, 'users', 'collection').length).to eq(1)
+          expect(data_dig(response, 'users', 'metadata')).to include(
+            'totalPages' => 2,
+            'totalCount' => 21,
+            'currentPage' => 2
+          )
+        end
       end
     end
   end

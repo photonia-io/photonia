@@ -6,7 +6,6 @@ module Types
     description 'A Flickr User'
 
     field :claimable, Boolean, 'Whether this Flickr user can be claimed by the current user', null: false
-    field :claimed_by_user, Types::UserType, 'User who claimed this Flickr account', null: true
     field :iconfarm, String, 'Icon farm of the user\'s buddy image', null: true
     field :iconserver, String, 'Icon server of the user\'s buddy image', null: true
     field :nsid, String, 'NSID of the user', null: false

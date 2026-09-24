@@ -144,6 +144,28 @@ RSpec.describe 'FlickrUserType claimable field', type: :request do
     end
   end
 
+  # The claimant is a full User (email, names); exposing it on a public type would leak it
+  # to anyone viewing a photo's comments.
+  context 'when claimedByUser is selected' do
+    let(:query) do
+      <<~GQL
+        query {
+          photo(id: #{photo.slug}) {
+            comments {
+              flickrUser { claimedByUser { id } }
+            }
+          }
+        }
+      GQL
+    end
+
+    it 'is not a field on FlickrUserType' do
+      post_query
+
+      expect(first_error_message(response)).to include("Field 'claimedByUser' doesn't exist on type 'FlickrUser'")
+    end
+  end
+
   # PhotoQuery precomputes context[:user_has_claim] to avoid an N+1 across a photo's comments.
   # Querying `claimable` through a path that doesn't go through that lookahead (myFlickrClaims'
   # flickrUser field) must still reflect the user's real claim state instead of defaulting to

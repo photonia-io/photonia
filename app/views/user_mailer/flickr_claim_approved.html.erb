@@ -9,9 +9,9 @@
   <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
 </ul>
 
-<% if @flickr_user.description.present? %>
+<% if @claim&.automatic? %>
 <p>
-  If you added a verification code to your Flickr profile description, you can now remove it.
+  You can now remove the verification code from your Flickr profile description.
 </p>
 <% end %>
 

@@ -49,7 +49,10 @@ class FlickrAPIService
     response = new.profile_get_profile(user_id)
     return unless response['stat'] == 'ok'
 
-    response.dig('profile', 'profile_description')
+    # Flickr returns element text either as a plain string or as { '_content' => text }
+    value = response.dig('profile', 'profile_description')
+    value = value['_content'] if value.is_a?(Hash)
+    value&.to_s
   end
 
   private

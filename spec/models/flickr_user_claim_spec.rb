@@ -19,10 +19,10 @@
 #
 # Indexes
 #
-#  index_flickr_user_claims_on_flickr_user_id              (flickr_user_id)
-#  index_flickr_user_claims_on_status                      (status)
-#  index_flickr_user_claims_on_user_id                     (user_id)
-#  index_flickr_user_claims_on_user_id_and_flickr_user_id  (user_id,flickr_user_id) UNIQUE
+#  index_flickr_user_claims_on_active_user_and_flickr_user  (user_id,flickr_user_id) UNIQUE WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]))
+#  index_flickr_user_claims_on_flickr_user_id               (flickr_user_id)
+#  index_flickr_user_claims_on_status                       (status)
+#  index_flickr_user_claims_on_user_id                      (user_id)
 #
 # Foreign Keys
 #
@@ -58,6 +58,29 @@ RSpec.describe FlickrUserClaim do
 
       expect(duplicate_claim).not_to be_valid
       expect(duplicate_claim.errors[:user_id]).to include('has already claimed this Flickr user')
+    end
+
+    context 'when the existing claim on the same flickr user is denied' do
+      let(:denied_claim) { create(:flickr_user_claim, :denied) }
+
+      it 'allows a new pending claim' do
+        retry_claim = build(:flickr_user_claim, user: denied_claim.user, flickr_user: denied_claim.flickr_user)
+
+        expect(retry_claim).to be_valid
+      end
+
+      it 'allows another denied claim, in the database too' do
+        expect do
+          create(:flickr_user_claim, :denied, user: denied_claim.user, flickr_user: denied_claim.flickr_user)
+        end.not_to raise_error
+      end
+    end
+
+    it 'does not apply the uniqueness rule to a denied claim' do
+      existing_claim = create(:flickr_user_claim)
+      denied_duplicate = build(:flickr_user_claim, :denied, user: existing_claim.user, flickr_user: existing_claim.flickr_user)
+
+      expect(denied_duplicate).to be_valid
     end
 
     context 'when the user already has an active claim on a different flickr user' do
@@ -155,6 +178,24 @@ RSpec.describe FlickrUserClaim do
       expect { claim.approve! }.to change { claim.reload.status }.from('pending').to('approved')
       expect(claim.approved_at).to be_present
       expect(claim.flickr_user.claimed_by_user).to eq(claim.user)
+    end
+
+    it 'still approves when the flickr user is already claimed by the same user' do
+      claim.flickr_user.update!(claimed_by_user: claim.user)
+
+      expect { claim.approve! }.to change { claim.reload.status }.from('pending').to('approved')
+    end
+
+    context 'when the flickr user is already claimed by another user' do
+      let(:other_user) { create(:user) }
+
+      before { claim.flickr_user.update!(claimed_by_user: other_user) }
+
+      it 'raises and leaves both records untouched' do
+        expect { claim.approve! }.to raise_error(FlickrUserClaim::AlreadyClaimedError)
+        expect(claim.reload).to be_pending
+        expect(claim.flickr_user.reload.claimed_by_user).to eq(other_user)
+      end
     end
   end
 

@@ -95,6 +95,30 @@ RSpec.describe 'requestManualFlickrClaim Mutation', type: :request do
     end
   end
 
+  context 'when a pending automatic claim by the same user exists on this flickr user' do
+    let(:user) { create(:user) }
+    let(:flickr_user) { create(:flickr_user) }
+    let!(:existing_claim) { create(:flickr_user_claim, :automatic, user: user, flickr_user: flickr_user, status: 'pending') }
+    let(:query) { build_query(flickr_user.nsid, reason: 'Lost password') }
+
+    before do
+      sign_in(user)
+      allow(AdminMailer).to receive_message_chain(:with, :flickr_claim_request, :deliver_later)
+    end
+
+    it 'converts it into a manual claim instead of creating a second one' do
+      expect { post_mutation }.not_to change(FlickrUserClaim, :count)
+      payload = data_dig(response, 'requestManualFlickrClaim')
+
+      expect(payload['errors']).to eq([])
+      expect(payload['claim']['id']).to eq(existing_claim.id.to_s)
+      expect(payload['claim']['claimType']).to eq('manual')
+      expect(payload['claim']['reason']).to eq('Lost password')
+      expect(existing_claim.reload).to be_manual
+      expect(existing_claim.verification_code).to be_nil
+    end
+  end
+
   context 'when the user already has a pending claim on a different flickr user' do
     let(:user) { create(:user) }
     let(:other_flickr_user) { create(:flickr_user) }

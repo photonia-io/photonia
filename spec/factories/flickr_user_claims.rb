@@ -19,10 +19,10 @@
 #
 # Indexes
 #
-#  index_flickr_user_claims_on_flickr_user_id              (flickr_user_id)
-#  index_flickr_user_claims_on_status                      (status)
-#  index_flickr_user_claims_on_user_id                     (user_id)
-#  index_flickr_user_claims_on_user_id_and_flickr_user_id  (user_id,flickr_user_id) UNIQUE
+#  index_flickr_user_claims_on_active_user_and_flickr_user  (user_id,flickr_user_id) UNIQUE WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]))
+#  index_flickr_user_claims_on_flickr_user_id               (flickr_user_id)
+#  index_flickr_user_claims_on_status                       (status)
+#  index_flickr_user_claims_on_user_id                      (user_id)
 #
 # Foreign Keys
 #
