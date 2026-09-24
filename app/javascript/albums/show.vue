@@ -404,6 +404,10 @@ onSetAlbumPrivacyDone(({ data }) => {
   }
   // Evict albums list to refresh visibility if necessary
   apolloClient.cache.evict({ fieldName: "albums" });
+  if (photosUpdatedCount > 0) {
+    // Cascaded photos may be cached elsewhere (e.g. a photo page) still showing the old privacy
+    apolloClient.cache.evict({ fieldName: "photo" });
+  }
   apolloClient.cache.gc();
 });
 

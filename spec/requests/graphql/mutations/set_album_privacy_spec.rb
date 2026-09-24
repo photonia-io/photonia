@@ -139,17 +139,95 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
         album.photos << photo3
       end
 
+      it 'sets all contained photos to private and only counts the ones actually changed' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['album']['privacy']).to eq('private')
+        # photo3 was already private, so it isn't counted
+        expect(data['photosUpdatedCount']).to eq(2)
+
+        expect(photo1.reload.privacy).to eq('private')
+        expect(photo2.reload.privacy).to eq('private')
+        expect(photo3.reload.privacy).to eq('private')
+      end
+    end
+
+    context 'when changing album from friends_and_family to private with updatePhotos flag' do
+      let(:update_photos) { true }
+      let(:new_privacy) { 'private' }
+      let!(:photo1) { create(:photo, user: album.user, privacy: 'friends_and_family') }
+      let!(:photo2) { create(:photo, user: album.user, privacy: 'public') }
+
+      before do
+        album.update(privacy: 'friends_and_family')
+        album.photos << photo1
+        album.photos << photo2
+      end
+
       it 'sets all contained photos to private' do
         post_mutation
         json = response.parsed_body
         data = json['data']['setAlbumPrivacy']
 
         expect(data['album']['privacy']).to eq('private')
-        expect(data['photosUpdatedCount']).to eq(3)
+        expect(data['photosUpdatedCount']).to eq(2)
 
         expect(photo1.reload.privacy).to eq('private')
         expect(photo2.reload.privacy).to eq('private')
-        expect(photo3.reload.privacy).to eq('private')
+      end
+    end
+
+    context 'when a cascaded photo belongs to another album' do
+      let(:update_photos) { true }
+      let(:new_privacy) { 'private' }
+      let(:other_album) { create(:album) }
+      let!(:shared_photo) { create(:photo, user: album.user, privacy: 'public') }
+
+      before do
+        album.update(privacy: 'public')
+        album.photos << shared_photo
+        other_album.photos << shared_photo
+        album.maintenance
+        other_album.maintenance
+      end
+
+      it "re-runs maintenance on the other album so it doesn't keep listing the now-private photo as public" do
+        expect(other_album.reload.public_photos_count).to eq(1)
+
+        post_mutation
+
+        expect(other_album.reload.public_photos_count).to eq(0)
+        expect(other_album.public_cover_photo_id).to be_nil
+      end
+
+      it "updates the edited album's own public photo count" do
+        expect(album.reload.public_photos_count).to eq(1)
+
+        post_mutation
+
+        expect(album.reload.public_photos_count).to eq(0)
+      end
+    end
+
+    context 'when updatePhotos is true but the target privacy is not private' do
+      let(:update_photos) { true }
+      let(:new_privacy) { 'public' }
+      let!(:photo1) { create(:photo, user: album.user, privacy: 'private') }
+
+      before do
+        album.update(privacy: 'private')
+        album.photos << photo1
+      end
+
+      it 'does not touch photo privacy' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['photosUpdatedCount']).to eq(0)
+        expect(photo1.reload.privacy).to eq('private')
       end
     end
 

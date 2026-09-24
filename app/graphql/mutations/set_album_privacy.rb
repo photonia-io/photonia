@@ -21,15 +21,13 @@ module Mutations
       mapped_privacy = map_privacy_value(privacy)
       raise GraphQL::ExecutionError, 'Invalid privacy value' unless mapped_privacy
 
-      old_privacy = album.privacy
       photos_updated_count = 0
 
-      # If changing to private and update_photos is true, update all album photos to private
-      if mapped_privacy == 'private' && update_photos && old_privacy != 'private'
-        photos_updated_count = update_album_photos_privacy(album, 'private')
-      end
+      ActiveRecord::Base.transaction do
+        photos_updated_count = cascade_privacy_to_photos(album) if mapped_privacy == 'private' && update_photos
 
-      raise GraphQL::ExecutionError, album.errors.full_messages.join(', ') unless album.update(privacy: mapped_privacy)
+        raise GraphQL::ExecutionError, album.errors.full_messages.join(', ') unless album.update(privacy: mapped_privacy)
+      end
 
       { album:, photos_updated_count: }
     end
@@ -53,22 +51,35 @@ module Mutations
       when 'public' then 'public'
       when 'private' then 'private'
       when 'friends_and_family' then 'friend & family'
-      else
-        nil
       end
     end
 
-    def update_album_photos_privacy(album, privacy)
-      photos = album.all_photos(select: false, refetch: true)
-      updated_count = 0
+    # Sets every non-private photo in the album to private, and re-runs
+    # maintenance on any other album sharing one of those photos so their
+    # public_photos_count / public_cover_photo_id stay in sync.
+    def cascade_privacy_to_photos(album)
+      photo_ids = non_private_photo_ids(album)
+      return 0 if photo_ids.empty?
 
-      photos.each do |photo|
-        next unless photo.update(privacy:)
+      # rubocop:disable Rails/SkipsModelValidations
+      Photo.unscoped.where(id: photo_ids).update_all(privacy: 'private', updated_at: Time.current)
+      # rubocop:enable Rails/SkipsModelValidations
 
-        updated_count += 1
-      end
+      refresh_other_albums(album, photo_ids)
 
-      updated_count
+      photo_ids.size
+    end
+
+    def non_private_photo_ids(album)
+      Photo.unscoped
+           .where(id: album.albums_photos.select(:photo_id))
+           .where.not(privacy: 'private')
+           .pluck(:id)
+    end
+
+    def refresh_other_albums(album, photo_ids)
+      other_album_ids = AlbumsPhoto.where(photo_id: photo_ids).distinct.pluck(:album_id) - [album.id]
+      Album.unscoped.where(id: other_album_ids).find_each(&:maintenance)
     end
   end
 end

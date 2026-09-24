@@ -239,6 +239,30 @@ describe 'album Query' do
   end
 end
 
+# Guards against the frontend (album-management.vue) needing a field that
+# the shared query string doesn't actually fetch - a hand-written query
+# above wouldn't catch that gap.
+describe 'the shared albums_show query' do
+  include Devise::Test::IntegrationHelpers
+
+  let(:user) { create(:user) }
+  let(:album) { create(:album, user: user) }
+
+  before do
+    create_list(:photo, 2, albums: [album])
+    create(:photo, albums: [album], privacy: :private)
+    album.maintenance
+    sign_in(user)
+  end
+
+  it 'includes photosCount, which the album management modal needs' do
+    query = GraphqlQueryCollection::COLLECTION[:albums_show]
+    post '/graphql', params: { query: query, variables: { id: album.slug, page: 1 }.to_json }
+
+    expect(data_dig(response, 'album', 'photosCount')).to eq(3)
+  end
+end
+
 describe 'unknown album slug' do
   let(:query) do
     <<~GQL

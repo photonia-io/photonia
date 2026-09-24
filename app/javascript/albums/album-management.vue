@@ -102,14 +102,12 @@
           <p class="mt-3">Do you want to continue?</p>
         </div>
         <footer class="modal-card-foot is-justify-content-center">
-          <div class="buttons">
-            <button class="button is-warning" @click="confirmPrivacyChange">
-              Yes, set album and photos to Private
-            </button>
-            <button class="button is-info" @click="cancelPrivacyChange">
-              Cancel
-            </button>
-          </div>
+          <button class="button is-warning" @click="confirmPrivacyChange">
+            Yes, set album and photos to Private
+          </button>
+          <button class="button is-info" @click="cancelPrivacyChange">
+            Cancel
+          </button>
         </footer>
       </div>
     </div>
@@ -149,6 +147,8 @@ const closeConfirmationModal = () => {
 const sortingType = ref("takenAt");
 const sortingOrder = ref("asc");
 const privacy = ref("public");
+// The privacy last confirmed by the server, so Cancel has something to revert to
+const committedPrivacy = ref("public");
 
 // Initialize sorting values from album prop
 watch(
@@ -158,7 +158,8 @@ watch(
       sortingType.value = newAlbum.sortingType || "takenAt";
       sortingOrder.value = newAlbum.sortingOrder || "asc";
       const p = newAlbum.privacy || "public";
-      privacy.value = p === "friend & family" ? "friends_and_family" : p;
+      privacy.value = p;
+      committedPrivacy.value = p;
     }
   },
   { immediate: true },
@@ -173,45 +174,45 @@ const updateSorting = () => {
 };
 
 const privacyModalActive = ref(false);
-const pendingPrivacy = ref(null);
 
 const setPrivacy = () => {
-  const oldPrivacy = props.album.privacy === "friend & family" ? "friends_and_family" : props.album.privacy;
   const newPrivacy = privacy.value;
 
-  // If changing from public to private, show confirmation modal
-  if (oldPrivacy === "public" && newPrivacy === "private") {
-    pendingPrivacy.value = newPrivacy;
+  // Cascading to photos only makes sense when going private and there's
+  // something in the album to cascade to
+  const needsConfirmation =
+    newPrivacy === "private" &&
+    committedPrivacy.value !== "private" &&
+    props.album.photosCount > 0;
+
+  if (needsConfirmation) {
     privacyModalActive.value = true;
     applicationStore.disableNavigationShortcuts();
   } else {
-    // Otherwise, just emit the change without confirmation
     emit("setAlbumPrivacy", {
       id: props.album.id,
       privacy: newPrivacy,
       updatePhotos: false,
     });
+    committedPrivacy.value = newPrivacy;
   }
 };
 
 const confirmPrivacyChange = () => {
   emit("setAlbumPrivacy", {
     id: props.album.id,
-    privacy: pendingPrivacy.value,
+    privacy: privacy.value,
     updatePhotos: true,
   });
+  committedPrivacy.value = privacy.value;
   privacyModalActive.value = false;
   applicationStore.enableNavigationShortcuts();
-  pendingPrivacy.value = null;
 };
 
 const cancelPrivacyChange = () => {
-  // Revert the select back to the original value
-  const oldPrivacy = props.album.privacy === "friend & family" ? "friends_and_family" : props.album.privacy;
-  privacy.value = oldPrivacy;
+  privacy.value = committedPrivacy.value;
   privacyModalActive.value = false;
   applicationStore.enableNavigationShortcuts();
-  pendingPrivacy.value = null;
 };
 
 const sortingOrderAscendingText = computed(() => {
