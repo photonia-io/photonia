@@ -323,6 +323,17 @@ class Photo < ApplicationRecord
     pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
   end
 
+  # Pixel dimensions of a derivative as actually stored, not the original's -
+  # they can disagree when the original carries an EXIF rotation flag, since
+  # derivatives are auto-oriented on generation but the original's stored
+  # metadata is not. Returns nil if the derivative or its metadata is missing.
+  def derivative_dimensions(name)
+    metadata = image_data.dig('derivatives', name.to_s, 'metadata')
+    return nil unless metadata && metadata['width'] && metadata['height']
+
+    { width: metadata['width'], height: metadata['height'] }
+  end
+
   def add_derivatives
     return unless intelligent_thumbnail.present? || user_thumbnail.present?
 

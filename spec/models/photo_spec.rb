@@ -393,6 +393,28 @@ RSpec.describe Photo do
       end
     end
 
+    describe '#derivative_dimensions' do
+      it "returns the derivative's own stored dimensions" do
+        image_data = { 'derivatives' => { 'extralarge' => { 'metadata' => { 'width' => 1371, 'height' => 2048 } } } }
+        photo = build_stubbed(:photo, image_data: image_data)
+
+        expect(photo.derivative_dimensions(:extralarge)).to eq(width: 1371, height: 2048)
+      end
+
+      it 'returns nil when the derivative does not exist' do
+        photo = build_stubbed(:photo, image_data: { 'derivatives' => {} })
+
+        expect(photo.derivative_dimensions(:extralarge)).to be_nil
+      end
+
+      it 'returns nil rather than falling back to the original dimensions when metadata is missing' do
+        image_data = { 'derivatives' => { 'extralarge' => { 'metadata' => {} } } }
+        photo = build_stubbed(:photo, image_data: image_data)
+
+        expect(photo.derivative_dimensions(:extralarge)).to be_nil
+      end
+    end
+
     describe '#add_derivatives' do
       let(:photo) { build_stubbed(:photo) }
       let(:image_attacher) { instance_double(Shrine::Attacher) }
