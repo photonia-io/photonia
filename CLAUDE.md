@@ -18,6 +18,8 @@ Never add Claude attribution to commit messages or PR descriptions — no `Co-Au
 
 When applying a UI change the user requested, do not verify it yourself with Playwright, run any test suite, or write any tests. Do not commit or push. After each changeset, ask the user to verify manually and wait for their feedback before doing anything further.
 
+Once the user confirms the change is right, tests can be written and run as usual. The restriction is about when, not whether — automated checks are not a substitute for the user looking at the UI.
+
 ## Commands
 
 Dev servers (three processes):
