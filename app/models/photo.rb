@@ -19,13 +19,17 @@
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
+#  scanned                  :boolean          default(FALSE), not null
 #  serial_number            :bigint           not null
 #  slug                     :string
 #  taken_at                 :datetime
-#  taken_at_from_exif       :boolean          default(FALSE)
+#  taken_at_approximate     :boolean          default(FALSE), not null
+#  taken_at_precision       :string           default("minute"), not null
+#  taken_at_source          :string           default("unknown"), not null
 #  timezone                 :string           default("UTC"), not null
 #  title                    :string
 #  tsv                      :tsvector
+#  user_thumbnail           :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  user_id                  :bigint
@@ -47,6 +51,21 @@ class Photo < ApplicationRecord
     private: 'private',
     friends_and_family: 'friend & family'
   }, suffix: true
+
+  enum :taken_at_precision, {
+    year: 'year',
+    month: 'month',
+    day: 'day',
+    minute: 'minute'
+  }, prefix: true
+
+  enum :taken_at_source, {
+    exif: 'exif',
+    user: 'user',
+    unknown: 'unknown'
+  }, prefix: true
+
+  MIN_TAKEN_AT_YEAR = 1826
 
   is_impressionable counter_cache: true, unique: :session_hash
 
@@ -204,32 +223,92 @@ class Photo < ApplicationRecord
     exif.keys != ['error']
   end
 
+  # Refreshes taken_at from EXIF, unless the owner has set it manually.
+  # A scanned photo's EXIF date is the digitisation date, not the capture
+  # date, so it is never used here.
   def populate_exif_fields
-    if exif_exists?
-      exif_taken_at = exif['exif']['date_time_original'] || exif['ifd0']['date_time']
-      if exif_taken_at
-        exif_date_format = '%Y:%m:%d %H:%M:%S'
-        Time.zone = timezone
-        begin
-          parsed_taken_at = Time.zone.strptime(exif_taken_at, exif_date_format)
-        rescue ArgumentError
-          Rails.logger.error "Invalid date format #{exif_taken_at} for slug = #{slug}"
-        end
-      else
-        Rails.logger.error "No date taken for slug = #{slug}"
-      end
-    end
+    return self if taken_at_source_user?
+
+    parsed_taken_at = exif_taken_at unless scanned?
 
     if parsed_taken_at
-      self.taken_at_from_exif = true
+      self.taken_at_source = 'exif'
       self.taken_at = parsed_taken_at
     else
-      self.taken_at_from_exif = false
-      Time.zone = timezone
-      self.taken_at ||= Time.zone.now
+      self.taken_at_source = 'unknown'
+      self.taken_at ||= posted_at || Time.zone.now
     end
 
+    self.taken_at_precision = 'minute'
+    self.taken_at_approximate = false
+
     self
+  end
+
+  # year is required; month/day/hour/minute nil means "unknown at this
+  # granularity" and derives taken_at_precision. Returns false and populates
+  # errors[:taken_at] on invalid input, without touching persisted state.
+  def assign_taken_at(year:, month: nil, day: nil, hour: nil, minute: nil, approximate: false, scanned: false)
+    error = taken_at_validation_error(year:, month:, day:, hour:, minute:)
+    if error
+      errors.add(:taken_at, error)
+      return false
+    end
+
+    date_month = month.presence || 1
+    date_day = day.presence || 1
+
+    self.taken_at = ActiveSupport::TimeZone[timezone].local(year, date_month, date_day, hour.presence || 0, minute.presence || 0)
+    self.taken_at_precision = taken_at_precision_for(month:, day:, hour:, minute:)
+    self.taken_at_source = 'user'
+    self.taken_at_approximate = approximate
+    self.scanned = scanned
+
+    true
+  end
+
+  # Clears the manual date and re-derives taken_at from EXIF (or the upload
+  # time). Does not change scanned - resetting the date doesn't un-scan it.
+  def reset_taken_at
+    self.taken_at_source = 'unknown'
+    self.taken_at = nil
+    populate_exif_fields
+  end
+
+  # Broken out into year/month/day/hour/minute so the client never has to
+  # parse a datetime string in a timezone it can't derive.
+  def taken_at_info
+    return nil unless taken_at
+
+    local = taken_at.in_time_zone(timezone)
+    show_month = !taken_at_precision_year?
+    show_day = show_month && !taken_at_precision_month?
+    show_time = taken_at_precision_minute?
+
+    {
+      year: local.year,
+      month: show_month ? local.month : nil,
+      day: show_day ? local.day : nil,
+      hour: show_time ? local.hour : nil,
+      minute: show_time ? local.min : nil,
+      precision: taken_at_precision,
+      source: taken_at_source,
+      approximate: taken_at_approximate,
+      exif_available: !scanned? && exif_taken_at.present?
+    }
+  end
+
+  def taken_at_text
+    return '' unless taken_at
+
+    local = taken_at.in_time_zone(timezone)
+
+    case taken_at_precision
+    when 'year' then local.strftime('%Y')
+    when 'month' then local.strftime('%B %Y')
+    when 'day' then local.strftime('%B %e, %Y')
+    else local.strftime('%B %e, %Y, %H:%M')
+    end
   end
 
   def pixel_width
@@ -244,34 +323,57 @@ class Photo < ApplicationRecord
     pixel_width > pixel_height ? pixel_width.to_f / pixel_height : pixel_height.to_f / pixel_width
   end
 
-  def add_intelligent_derivatives
-    # Log Intelligent Derivatives Attempt
+  # Pixel dimensions of a derivative as actually stored, not the original's -
+  # they can disagree when the original carries an EXIF rotation flag, since
+  # derivatives are auto-oriented on generation but the original's stored
+  # metadata is not. Returns nil if the derivative or its metadata is missing.
+  def derivative_dimensions(name)
+    metadata = image_data.dig('derivatives', name.to_s, 'metadata')
+    return nil unless metadata && metadata['width'] && metadata['height']
 
-    if labels.blank?
-      # Log Error: No Label Instances
-      return
+    { width: metadata['width'], height: metadata['height'] }
+  end
+
+  def add_derivatives
+    return unless intelligent_thumbnail.present? || user_thumbnail.present?
+
+    original = image_attacher.file.download
+
+    if intelligent_thumbnail.present?
+      pipeline = custom_crop(intelligent_thumbnail, original)
+      image_attacher.add_derivative(
+        :medium_intelligent,
+        pipeline.resize_to_fill!(
+          ENV.fetch('MEDIUM_SIDE', nil),
+          ENV.fetch('MEDIUM_SIDE', nil)
+        )
+      )
+      image_attacher.add_derivative(
+        :thumbnail_intelligent,
+        pipeline.resize_to_fill!(
+          ENV.fetch('THUMBNAIL_SIDE', nil),
+          ENV.fetch('THUMBNAIL_SIDE', nil)
+        )
+      )
     end
 
-    unless intelligent_thumbnail
-      # Log Error: No Thumbnail (Probably square)
-      return
+    if user_thumbnail.present?
+      pipeline = custom_crop(user_thumbnail, original)
+      image_attacher.add_derivative(
+        :medium_user,
+        pipeline.resize_to_fill!(
+          ENV.fetch('MEDIUM_SIDE', nil),
+          ENV.fetch('MEDIUM_SIDE', nil)
+        )
+      )
+      image_attacher.add_derivative(
+        :thumbnail_user,
+        pipeline.resize_to_fill!(
+          ENV.fetch('THUMBNAIL_SIDE', nil),
+          ENV.fetch('THUMBNAIL_SIDE', nil)
+        )
+      )
     end
-
-    image_attacher.add_derivative(
-      :medium_intelligent,
-      intelligent_crop.resize_to_fill!(
-        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil),
-        ENV.fetch('PHOTONIA_MEDIUM_SIDE', nil)
-      )
-    )
-
-    image_attacher.add_derivative(
-      :thumbnail_intelligent,
-      intelligent_crop.resize_to_fill!(
-        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil),
-        ENV.fetch('PHOTONIA_THUMBNAIL_SIDE', nil)
-      )
-    )
 
     image_attacher.atomic_promote
   end
@@ -292,7 +394,7 @@ class Photo < ApplicationRecord
     }
     # closest_pole, min_distance = distances.min_by { |_, distance| distance }
     _, min_distance = distances.min_by { |_, distance| distance }
-    # if(min_distance >= ENV['PHOTONIA_MEDIUM_SIDE'])
+    # if(min_distance >= ENV['MEDIUM_SIDE'])
     {
       x: x = cog_x - min_distance,
       y: y = cog_y - min_distance,
@@ -314,16 +416,67 @@ class Photo < ApplicationRecord
 
   private
 
-  def intelligent_crop
-    original = image_attacher.file.download
+  def exif_taken_at
+    return nil unless exif_exists?
+
+    # exif_exists? only rules out the {'error' => ...} shape - a real EXIF
+    # payload can still be missing the exif/ifd0 sections entirely.
+    data = exif
+    exif_section = data['exif'].is_a?(Hash) ? data['exif'] : {}
+    ifd0_section = data['ifd0'].is_a?(Hash) ? data['ifd0'] : {}
+    raw = exif_section['date_time_original'] || ifd0_section['date_time']
+    unless raw
+      Rails.logger.error "No date taken for slug = #{slug}"
+      return nil
+    end
+
+    Time.use_zone(timezone) { Time.zone.strptime(raw, '%Y:%m:%d %H:%M:%S') }
+  rescue ArgumentError
+    Rails.logger.error "Invalid date format #{raw} for slug = #{slug}"
+    nil
+  end
+
+  def taken_at_validation_error(year:, month:, day:, hour:, minute:)
+    max_year = Date.current.year + 1
+    return "year must be between #{MIN_TAKEN_AT_YEAR} and #{max_year}" unless year.is_a?(Integer) && year.between?(MIN_TAKEN_AT_YEAR, max_year)
+    return 'day cannot be set without month' if day.present? && month.blank?
+    return 'time of day requires a full date' if (hour.present? || minute.present?) && (month.blank? || day.blank?)
+    return 'is not a valid date' unless Date.valid_date?(year, month.presence || 1, day.presence || 1)
+    return 'hour must be between 0 and 23' if hour.present? && !hour.between?(0, 23)
+    return 'minute must be between 0 and 59' if minute.present? && !minute.between?(0, 59)
+
+    nil
+  end
+
+  def taken_at_precision_for(month:, day:, hour:, minute:)
+    return 'year' if month.blank?
+    return 'month' if day.blank?
+    return 'day' if hour.blank? && minute.blank?
+
+    'minute'
+  end
+
+  def custom_crop(thumbnail, original = nil)
+    original ||= image_attacher.file.download
+
+    # Compute pixel coordinates from axis-relative percentages
+    # Handle both symbol and string keys (user_thumbnail uses strings from JSONB, intelligent_thumbnail uses symbols)
+    top = thumbnail[:top] || thumbnail['top']
+    left = thumbnail[:left] || thumbnail['left']
+    width_percent = thumbnail[:width] || thumbnail['width']
+    height_percent = thumbnail[:height] || thumbnail['height']
+
+    x = (pixel_width * left).to_i
+    y = (pixel_height * top).to_i
+    width_px = (pixel_width * width_percent).to_i
+    height_px = (pixel_height * height_percent).to_i
+
+    # Use the smaller dimension to ensure the crop is square
+    square_size = [width_px, height_px].min
+
     ImageProcessing::MiniMagick
       .source(original)
-      .crop(
-        intelligent_thumbnail[:x],
-        intelligent_thumbnail[:y],
-        intelligent_thumbnail[:pixel_width],
-        intelligent_thumbnail[:pixel_height]
-      )
+      .crop(x, y, square_size, square_size)
   end
 
   def set_fields

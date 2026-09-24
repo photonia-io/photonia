@@ -15,7 +15,7 @@ RSpec.describe FlickrAPIService do
   end
 
   before do
-    allow(ENV).to receive(:[]).with('PHOTONIA_FLICKR_API_KEY').and_return(api_key)
+    allow(ENV).to receive(:[]).with('FLICKR_API_KEY').and_return(api_key)
   end
 
   describe '#people_get_info' do

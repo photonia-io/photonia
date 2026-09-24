@@ -5,7 +5,7 @@ class ContinueWithFacebookService
   class InvalidSignatureError < StandardError; end
   class InvalidUserInfoError < StandardError; end
 
-  def initialize(access_token, signed_request, app_secret: ENV.fetch('PHOTONIA_FACEBOOK_APP_SECRET'), http_client: Net::HTTP)
+  def initialize(access_token, signed_request, app_secret: ENV.fetch('FACEBOOK_APP_SECRET'), http_client: Net::HTTP)
     @access_token = access_token
     @signed_request = signed_request
     @app_secret = app_secret

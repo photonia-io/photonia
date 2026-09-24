@@ -1,11 +1,15 @@
-import { ref } from "vue";
-
 const noDescription = "(no description)";
 
-const descriptionHelper = (object, loading = ref(false)) =>
-  loading.value ? "Loading..." : object.value.description || noDescription;
+const descriptionHelper = (object) => {
+  const value = object.value;
+  if (!value?.id) return "";
+  return value.description || noDescription;
+};
 
-const descriptionHtmlHelper = (object, loading = ref(false)) =>
-  loading.value ? "Loading..." : object.value.descriptionHtml || noDescription;
+const descriptionHtmlHelper = (object) => {
+  const value = object.value;
+  if (!value?.id) return "";
+  return value.descriptionHtml || noDescription;
+};
 
 export { descriptionHelper, descriptionHtmlHelper };

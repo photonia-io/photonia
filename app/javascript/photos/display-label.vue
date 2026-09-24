@@ -1,29 +1,21 @@
 <template>
-  <div
-    class="label"
-    :style="
-      '\
-      top: ' +
-      label.boundingBox.top * 100 +
-      '%; \
-      left: ' +
-      label.boundingBox.left * 100 +
-      '%; \
-      width: ' +
-      label.boundingBox.width * 100 +
-      '%; \
-      height: ' +
-      label.boundingBox.height * 100 +
-      '%;'
-    "
-  >
-    <p>{{ label.name }}</p>
-  </div>
+  <Transition name="fade">
+    <div
+      v-if="highlighted"
+      class="label"
+      :style="`
+        top: ${label.boundingBox.top * 100}%;
+        left: ${label.boundingBox.left * 100}%;
+        width: ${label.boundingBox.width * 100}%;
+        height: ${label.boundingBox.height * 100}%;
+      `"
+    >
+      <p>{{ label.name }}</p>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
-import { ref, toRef, watch } from "vue";
-
 const props = defineProps({
   label: {
     type: Object,
@@ -34,26 +26,36 @@ const props = defineProps({
     required: false,
   },
 });
-
-const opacity = ref(0);
-watch(toRef(props, "highlighted"), (newHighlighted) => {
-  opacity.value = newHighlighted ? 1 : 0;
-});
 </script>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+
 .label {
   border: 1px solid black;
   position: absolute;
   outline: 1px solid rgba(255, 255, 255, 0.9);
-  transition: 0.3s;
-  opacity: v-bind(opacity);
   z-index: 30;
 }
 .label > p {
   position: absolute;
   font-size: 10px;
   background: rgba(255, 255, 255, 0.9);
+  /* Sits on a fixed white chip over the photo, so the text colour is fixed too
+     rather than themed -- without it the caption inherits the dark hero's light
+     text and comes out white on white. */
+  color: hsl(221, 14%, 21%);
   padding: 4px;
   margin: -26px 0 0 0;
   white-space: nowrap;

@@ -104,7 +104,7 @@ class FacebookDataDeletionController < ActionController::Base
   end
 
   def verify_signature(encoded_signature, encoded_payload)
-    app_secret = ENV.fetch('PHOTONIA_FACEBOOK_APP_SECRET')
+    app_secret = ENV.fetch('FACEBOOK_APP_SECRET')
     digested_encoded_payload = OpenSSL::HMAC.digest('sha256', app_secret, encoded_payload)
     expected_signature = Base64.urlsafe_encode64(digested_encoded_payload).gsub('=', '')
 

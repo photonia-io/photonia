@@ -19,13 +19,17 @@
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  rekognition_response     :jsonb
+#  scanned                  :boolean          default(FALSE), not null
 #  serial_number            :bigint           not null
 #  slug                     :string
 #  taken_at                 :datetime
-#  taken_at_from_exif       :boolean          default(FALSE)
+#  taken_at_approximate     :boolean          default(FALSE), not null
+#  taken_at_precision       :string           default("minute"), not null
+#  taken_at_source          :string           default("unknown"), not null
 #  timezone                 :string           default("UTC"), not null
 #  title                    :string
 #  tsv                      :tsvector
+#  user_thumbnail           :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  user_id                  :bigint
@@ -99,8 +103,9 @@ RSpec.describe Photo do
   describe 'callbacks' do
     it 'calls set_fields before validation' do
       photo = build(:photo)
-      expect(photo).to receive(:set_fields)
+      allow(photo).to receive(:set_fields)
       photo.valid?
+      expect(photo).to have_received(:set_fields)
     end
   end
 
@@ -122,158 +127,464 @@ RSpec.describe Photo do
     end
 
     describe '#exif_from_file' do
-      subject { photo.exif_from_file }
+      let(:photo_with_exif) { build_stubbed(:photo, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
+      let(:photo_without_exif) { build_stubbed(:photo, image: File.open('spec/support/images/zell-am-see-without-exif.jpg')) }
 
-      let(:photo) { build_stubbed(:photo, image: File.open(filename)) }
-
-      context 'when the file has EXIF data' do
-        let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }
-
-        it 'returns some exif data from the file' do
-          expect(subject).to be_present
-        end
-
-        it 'returns the correct image width from the exif data' do
-          expect(subject.image_width).to eq 1620
-        end
+      it 'returns exif data when the file has EXIF data' do
+        exif_data = photo_with_exif.exif_from_file
+        expect(exif_data).to be_present
+        expect(exif_data.image_width).to eq 1620
       end
 
-      context 'when the file has no EXIF data' do
-        let(:filename) { 'spec/support/images/zell-am-see-without-exif.jpg' }
-
-        it 'returns nil' do
-          expect(subject).to be_nil
-        end
+      it 'returns nil when the file has no EXIF data' do
+        expect(photo_without_exif.exif_from_file).to be_nil
       end
     end
 
     describe '#exif' do
-      subject { photo.exif }
-
       let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
       let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
+      let(:photo_with_nil_exif) { build_stubbed(:photo, exif: nil) }
+      let(:photo_with_exif) { build_stubbed(:photo, exif: exif_data.to_json) }
 
-      context 'when the exif field is nil in the beginning' do
-        let(:photo) { build_stubbed(:photo, exif: nil) }
-
-        before do
-          allow(photo).to receive(:exif_from_file).and_return(exif_data)
-          allow(photo).to receive(:save)
-        end
-
-        it 'calls #exif_from_file' do
-          expect(photo).to receive(:exif_from_file)
-          subject
-        end
-
-        it 'calls #save' do
-          expect(photo).to receive(:save)
-          subject
-        end
-
-        context 'when #exif_from_file returns some exif data' do
-          it 'sets the field to the exif data' do
-            expect { subject }.to change { photo.read_attribute(:exif) }.from(nil).to(exif_data.to_json)
-          end
-
-          it 'returns the exif data' do
-            expect(subject).to eq(exif_data)
-          end
-        end
-
-        context 'when #exif_from_file returns nil' do
-          before do
-            allow(photo).to receive(:exif_from_file).and_return(nil)
-          end
-
-          it 'sets the field to an error hash' do
-            expect { subject }.to change { photo.read_attribute(:exif) }.from(nil).to(error_hash.to_json)
-          end
-
-          it 'returns the error hash' do
-            expect(subject).to eq(error_hash)
-          end
-        end
+      before do
+        allow(photo_with_nil_exif).to receive(:save)
       end
 
-      context 'when the exif field has already been set' do
-        let(:photo) { build_stubbed(:photo, exif: exif_data.to_json) }
+      it 'calls #exif_from_file and #save when exif field is nil' do
+        allow(photo_with_nil_exif).to receive(:exif_from_file)
+        photo_with_nil_exif.exif
+        expect(photo_with_nil_exif).to have_received(:exif_from_file)
+        expect(photo_with_nil_exif).to have_received(:save)
+      end
 
-        it 'does not call #exif_from_file' do
-          expect(photo).not_to receive(:exif_from_file)
-          subject
-        end
+      it 'sets and returns exif data when #exif_from_file returns data' do
+        allow(photo_with_nil_exif).to receive(:exif_from_file).and_return(exif_data)
 
-        it 'does not call #save' do
-          expect(photo).not_to receive(:save)
-          subject
-        end
+        expect { photo_with_nil_exif.exif }.to change { photo_with_nil_exif.read_attribute(:exif) }.from(nil).to(exif_data.to_json)
+        expect(photo_with_nil_exif.exif).to eq(exif_data)
+      end
 
-        it 'returns the exif data' do
-          expect(subject).to eq(exif_data)
-        end
+      it 'sets and returns error hash when #exif_from_file returns nil' do
+        allow(photo_with_nil_exif).to receive(:exif_from_file).and_return(nil)
+
+        expect { photo_with_nil_exif.exif }.to change { photo_with_nil_exif.read_attribute(:exif) }.from(nil).to(error_hash.to_json)
+        expect(photo_with_nil_exif.exif).to eq(error_hash)
+      end
+
+      it 'does not call #exif_from_file or #save when exif field is already set' do
+        allow(photo_with_exif).to receive(:exif_from_file)
+        allow(photo_with_exif).to receive(:save)
+        photo_with_exif.exif
+        expect(photo_with_exif).not_to have_received(:exif_from_file)
+        expect(photo_with_exif).not_to have_received(:save)
+      end
+
+      it 'returns the existing exif data when already set' do
+        expect(photo_with_exif.exif).to eq(exif_data)
       end
     end
 
     describe '#exif_exists?' do
-      subject { photo.exif_exists? }
-
       let(:photo) { build_stubbed(:photo) }
       let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
       let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
 
-      context 'when #exif returns some exif data' do
-        before do
-          allow(photo).to receive(:exif).and_return(exif_data)
-        end
-
-        it 'returns true' do
-          expect(subject).to be true
-        end
+      it 'returns true when #exif returns valid data' do
+        allow(photo).to receive(:exif).and_return(exif_data)
+        expect(photo.exif_exists?).to be true
       end
 
-      context 'when #exif returns an error hash' do
-        before do
-          allow(photo).to receive(:exif).and_return(error_hash)
-        end
-
-        it 'returns false' do
-          expect(subject).to be false
-        end
+      it 'returns false when #exif returns an error hash' do
+        allow(photo).to receive(:exif).and_return(error_hash)
+        expect(photo.exif_exists?).to be false
       end
     end
 
     describe '#populate_exif_fields' do
-      subject(:populate_exif_fields) { photo.populate_exif_fields }
-
       let(:timezone) { 'Bucharest' }
       let(:user) { create(:user, timezone: timezone) }
-      let(:photo) { create(:photo, user: user, timezone: user.timezone, image: File.open(filename)) }
+      let(:photo_with_exif) { create(:photo, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
+      let(:photo_without_exif) { create(:photo, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-without-exif.jpg')) }
 
-      context 'when the file has EXIF data' do
-        let(:filename) { 'spec/support/images/zell-am-see-with-exif.jpg' }
-
-        it 'sets taken_at from the exif data' do
-          Time.use_zone(timezone) do
-            expect { populate_exif_fields }.to change(photo, :taken_at).from(nil).to(Time.zone.parse('2014-08-31 17:25:34'))
-          end
+      it 'sets taken_at from the exif data when the file has EXIF data' do
+        Time.use_zone(timezone) do
+          expect { photo_with_exif.populate_exif_fields }.to change(photo_with_exif, :taken_at).from(nil).to(Time.zone.parse('2014-08-31 17:25:34'))
         end
       end
 
-      context 'when the file has no EXIF data' do
-        let(:filename) { 'spec/support/images/zell-am-see-without-exif.jpg' }
+      it 'sets taken_at_source to exif when the file has EXIF data' do
+        photo_with_exif.populate_exif_fields
+        expect(photo_with_exif.taken_at_source).to eq('exif')
+      end
 
-        before do
-          Timecop.freeze
+      it 'sets taken_at to the current time when the file has no EXIF data' do
+        Timecop.freeze do
+          expect { photo_without_exif.populate_exif_fields }.to change(photo_without_exif, :taken_at).from(nil).to(Time.zone.now)
         end
+      end
 
-        after do
-          Timecop.return
-        end
+      it 'sets taken_at_source to unknown when the file has no EXIF data' do
+        photo_without_exif.populate_exif_fields
+        expect(photo_without_exif.taken_at_source).to eq('unknown')
+      end
 
-        it 'sets taken_at to the current time' do
-          expect { populate_exif_fields }.to change(photo, :taken_at).from(nil).to(Time.zone.now)
-        end
+      it 'ignores EXIF data on a scanned photo, falling back to posted_at' do
+        photo_with_exif.scanned = true
+        photo_with_exif.populate_exif_fields
+        expect(photo_with_exif.taken_at_source).to eq('unknown')
+        expect(photo_with_exif.taken_at).to eq(photo_with_exif.posted_at)
+      end
+
+      it 'does not overwrite a manually-set date' do
+        photo_with_exif.assign_taken_at(year: 1950)
+        expect { photo_with_exif.populate_exif_fields }.not_to change(photo_with_exif, :taken_at)
+        expect(photo_with_exif.taken_at_source).to eq('user')
+      end
+
+      it 'logs and falls back when EXIF data exists but has no date field' do
+        photo = build_stubbed(:photo, exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+
+      it 'logs and falls back, rather than raising, when the exif or ifd0 section is entirely missing' do
+        photo = build_stubbed(:photo, exif: { 'gps' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        expect { photo.populate_exif_fields }.not_to raise_error
+
+        expect(Rails.logger).to have_received(:error).with("No date taken for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+
+      it 'logs and falls back when the EXIF date is not parseable' do
+        photo = build_stubbed(:photo, exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
+        allow(Rails.logger).to receive(:error)
+
+        photo.populate_exif_fields
+
+        expect(Rails.logger).to have_received(:error).with("Invalid date format not-a-real-date for slug = #{photo.slug}")
+        expect(photo.taken_at_source).to eq('unknown')
+      end
+    end
+
+    describe '#taken_at_text' do
+      let(:photo) { build_stubbed(:photo, timezone: 'Bucharest') }
+
+      it 'returns an empty string when taken_at is not set' do
+        expect(photo.taken_at_text).to eq('')
+      end
+
+      it 'formats a year-precision date' do
+        photo.assign_taken_at(year: 1985)
+        expect(photo.taken_at_text).to eq('1985')
+      end
+
+      it 'formats a month-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8)
+        expect(photo.taken_at_text).to eq('August 1985')
+      end
+
+      it 'formats a day-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31)
+        expect(photo.taken_at_text).to eq(photo.taken_at.in_time_zone(photo.timezone).strftime('%B %e, %Y'))
+      end
+
+      it 'formats a minute-precision date' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at_text).to eq(photo.taken_at.in_time_zone(photo.timezone).strftime('%B %e, %Y, %H:%M'))
+      end
+    end
+
+    describe '#assign_taken_at' do
+      let(:photo) { build_stubbed(:photo, timezone: 'Bucharest') }
+
+      it 'accepts a year only and derives year precision' do
+        expect(photo.assign_taken_at(year: 1985)).to be true
+        expect(photo.taken_at_precision).to eq('year')
+        expect(photo.taken_at_source).to eq('user')
+        expect(photo.taken_at.in_time_zone(photo.timezone)).to have_attributes(year: 1985, month: 1, day: 1)
+      end
+
+      it 'accepts year and month and derives month precision' do
+        photo.assign_taken_at(year: 1985, month: 8)
+        expect(photo.taken_at_precision).to eq('month')
+        expect(photo.taken_at.in_time_zone(photo.timezone).month).to eq(8)
+      end
+
+      it 'accepts a full date and derives day precision' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31)
+        expect(photo.taken_at_precision).to eq('day')
+      end
+
+      it 'accepts a full date and time and derives minute precision' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at_precision).to eq('minute')
+        local = photo.taken_at.in_time_zone(photo.timezone)
+        expect(local).to have_attributes(year: 1985, month: 8, day: 31, hour: 17, min: 25)
+      end
+
+      it 'round-trips through the timezone' do
+        photo.assign_taken_at(year: 1985, month: 8, day: 31, hour: 17, minute: 25)
+        expect(photo.taken_at).to eq(ActiveSupport::TimeZone['Bucharest'].local(1985, 8, 31, 17, 25))
+      end
+
+      it 'sets approximate and scanned' do
+        photo.assign_taken_at(year: 1985, approximate: true, scanned: true)
+        expect(photo.taken_at_approximate).to be true
+        expect(photo.scanned).to be true
+      end
+
+      it 'rejects a day without a month' do
+        expect(photo.assign_taken_at(year: 1985, day: 5)).to be false
+        expect(photo.errors[:taken_at]).to be_present
+      end
+
+      it 'rejects a time without a full date' do
+        expect(photo.assign_taken_at(year: 1985, month: 8, hour: 17, minute: 0)).to be false
+      end
+
+      it 'rejects an invalid calendar date' do
+        expect(photo.assign_taken_at(year: 1985, month: 2, day: 30)).to be false
+      end
+
+      it 'rejects a year outside the valid range' do
+        expect(photo.assign_taken_at(year: 1800)).to be false
+        expect(photo.assign_taken_at(year: Date.current.year + 5)).to be false
+      end
+
+      it 'rejects an out-of-range hour or minute' do
+        expect(photo.assign_taken_at(year: 1985, month: 1, day: 1, hour: 24, minute: 0)).to be false
+        expect(photo.assign_taken_at(year: 1985, month: 1, day: 1, hour: 0, minute: 60)).to be false
+      end
+    end
+
+    describe '#reset_taken_at' do
+      let(:user) { create(:user, timezone: 'Bucharest') }
+      let(:photo_with_exif) { create(:photo, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
+      let(:photo_without_exif) { create(:photo, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-without-exif.jpg')) }
+      let(:scanned_photo) { create(:photo, :scanned, user: user, timezone: user.timezone, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
+
+      it 're-derives taken_at from EXIF for a photo with EXIF data' do
+        photo_with_exif.assign_taken_at(year: 1950)
+        photo_with_exif.reset_taken_at
+        expect(photo_with_exif.taken_at_source).to eq('exif')
+        expect(photo_with_exif.taken_at.year).to eq(2014)
+      end
+
+      it 'falls back to posted_at for a photo without EXIF data' do
+        photo_without_exif.assign_taken_at(year: 1950)
+        photo_without_exif.reset_taken_at
+        expect(photo_without_exif.taken_at_source).to eq('unknown')
+        expect(photo_without_exif.taken_at).to eq(photo_without_exif.posted_at)
+      end
+
+      it 'ignores EXIF data and stays scanned for a scanned photo' do
+        scanned_photo.assign_taken_at(year: 1950, scanned: true)
+        scanned_photo.reset_taken_at
+        expect(scanned_photo.taken_at_source).to eq('unknown')
+        expect(scanned_photo.taken_at).to eq(scanned_photo.posted_at)
+        expect(scanned_photo.scanned).to be true
+      end
+    end
+
+    describe '#derivative_dimensions' do
+      it "returns the derivative's own stored dimensions" do
+        image_data = { 'derivatives' => { 'extralarge' => { 'metadata' => { 'width' => 1371, 'height' => 2048 } } } }
+        photo = build_stubbed(:photo, image_data: image_data)
+
+        expect(photo.derivative_dimensions(:extralarge)).to eq(width: 1371, height: 2048)
+      end
+
+      it 'returns nil when the derivative does not exist' do
+        photo = build_stubbed(:photo, image_data: { 'derivatives' => {} })
+
+        expect(photo.derivative_dimensions(:extralarge)).to be_nil
+      end
+
+      it 'returns nil rather than falling back to the original dimensions when metadata is missing' do
+        image_data = { 'derivatives' => { 'extralarge' => { 'metadata' => {} } } }
+        photo = build_stubbed(:photo, image_data: image_data)
+
+        expect(photo.derivative_dimensions(:extralarge)).to be_nil
+      end
+    end
+
+    describe '#add_derivatives' do
+      let(:photo) { build_stubbed(:photo) }
+      let(:image_attacher) { instance_double(Shrine::Attacher) }
+
+      # We could do instance_double(ImageProcessing::MiniMagick::Processor) below,
+      # but since ImageProcessing has a complex chainable API it would then fail
+      # saying that resize_to_fill! is not defined on the double. That's because
+      # bang methods are defined via method_missing in ImageProcessing::Chainable
+      # https://github.com/janko/image_processing/blob/master/lib/image_processing/chainable.rb#L84
+
+      # rubocop:disable-next RSpec/VerifiedDoubles
+      let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+
+      let(:medium_side) { 800 }
+      let(:thumbnail_side) { 300 }
+      let(:intelligent_thumbnail) do
+        {
+          x: 100,
+          y: 100,
+          pixel_width: 400,
+          pixel_height: 400,
+          top: 0.25,
+          left: 0.25,
+          width: 0.5,
+          height: 0.5
+        }
+      end
+      let(:user_thumbnail) do
+        {
+          'x' => 50,
+          'y' => 50,
+          'pixel_width' => 200,
+          'pixel_height' => 200,
+          'top' => 0.125,
+          'left' => 0.125,
+          'width' => 0.25,
+          'height' => 0.25
+        }
+      end
+
+      before do
+        allow(photo).to receive(:image_attacher).and_return(image_attacher)
+        allow(ENV).to receive(:fetch).with('MEDIUM_SIDE', nil).and_return(medium_side)
+        allow(ENV).to receive(:fetch).with('THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
+        allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
+        allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
+        allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
+      end
+
+      it 'adds intelligent derivatives when intelligent_thumbnail is present' do
+        allow(photo).to receive(:intelligent_thumbnail).and_return(intelligent_thumbnail)
+        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail, 'image_data').and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
+
+        photo.add_derivatives
+
+        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail, 'image_data')
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:atomic_promote)
+      end
+
+      it 'adds user derivatives when user_thumbnail is present' do
+        allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: user_thumbnail)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail, 'image_data').and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
+
+        photo.add_derivatives
+
+        expect(photo).to have_received(:custom_crop).with(user_thumbnail, 'image_data')
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_user, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_user, 'processed_image')
+        expect(image_attacher).to have_received(:atomic_promote)
+      end
+
+      it 'adds all four derivatives when both thumbnails are present' do
+        allow(photo).to receive_messages(intelligent_thumbnail: intelligent_thumbnail, user_thumbnail: user_thumbnail)
+        allow(photo).to receive(:custom_crop).with(intelligent_thumbnail, 'image_data').and_return(mock_image_processing)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail, 'image_data').and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
+
+        photo.add_derivatives
+
+        expect(photo).to have_received(:custom_crop).with(intelligent_thumbnail, 'image_data')
+        expect(photo).to have_received(:custom_crop).with(user_thumbnail, 'image_data')
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_intelligent, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:medium_user, 'processed_image')
+        expect(image_attacher).to have_received(:add_derivative).with(:thumbnail_user, 'processed_image')
+        expect(image_attacher).to have_received(:atomic_promote)
+      end
+
+      it 'does not add any derivatives when no thumbnails are present' do
+        allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: nil)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
+
+        photo.add_derivatives
+
+        expect(image_attacher).not_to have_received(:add_derivative)
+        expect(image_attacher).not_to have_received(:atomic_promote)
+      end
+    end
+
+    describe '#custom_crop' do
+      let(:photo) { build_stubbed(:photo) }
+      let(:image_attacher) { instance_double(Shrine::Attacher) }
+      # See the comment in the #add_derivatives spec for why we don't use instance_double here
+      # rubocop:disable-next RSpec/VerifiedDoubles
+      let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      let(:pixel_width) { 1600 }
+      let(:pixel_height) { 1200 }
+      let(:thumbnail) do
+        {
+          top: 0.25,
+          left: 0.125,
+          width: 0.5,
+          height: 0.666667
+        }
+      end
+
+      before do
+        allow(photo).to receive_messages(image_attacher: image_attacher, pixel_width: pixel_width, pixel_height: pixel_height)
+        allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
+        allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
+        allow(mock_image_processing).to receive(:crop).and_return('cropped_image')
+      end
+
+      it 'calls ImageProcessing::MiniMagick.source with the downloaded image' do
+        photo.send(:custom_crop, thumbnail)
+        expect(ImageProcessing::MiniMagick).to have_received(:source).with('image_data')
+      end
+
+      it 'computes pixel coordinates from percentages and calls crop with square size' do
+        photo.send(:custom_crop, thumbnail)
+        # Expected: x=200 (1600*0.125), y=300 (1200*0.25), square_size=800 (min of 1600*0.5=800, 1200*0.666667=800)
+        expect(mock_image_processing).to have_received(:crop).with(200, 300, 800, 800)
+      end
+
+      it 'handles string keys from JSONB (user_thumbnail)' do
+        string_key_thumbnail = {
+          'top' => 0.125,
+          'left' => 0.125,
+          'width' => 0.25,
+          'height' => 0.333333
+        }
+        photo.send(:custom_crop, string_key_thumbnail)
+        # Expected: x=200 (1600*0.125), y=150 (1200*0.125), square_size=399 (min of 1600*0.25=400, 1200*0.333333=399.9996→399)
+        expect(mock_image_processing).to have_received(:crop).with(200, 150, 399, 399)
+      end
+
+      it 'returns the cropped image' do
+        result = photo.send(:custom_crop, thumbnail)
+        expect(result).to eq('cropped_image')
+      end
+
+      it 'uses the smaller dimension to ensure square crop' do
+        # Width percentage produces smaller pixel size
+        asymmetric_thumbnail = {
+          top: 0.0,
+          left: 0.0,
+          width: 0.5,   # 1600 * 0.5 = 800px
+          height: 0.8   # 1200 * 0.8 = 960px
+        }
+        photo.send(:custom_crop, asymmetric_thumbnail)
+        # Should use 800x800 (smaller of the two)
+        expect(mock_image_processing).to have_received(:crop).with(0, 0, 800, 800)
       end
     end
   end

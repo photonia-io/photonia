@@ -9,12 +9,16 @@ class GraphqlQueryCollection
           id
           title
           extralargeImageUrl: imageUrl(type: "extralarge")
+          extralargeDimensions: imageDimensions(type: "extralarge") {
+            width
+            height
+          }
         }
         randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
           collection {
             id
             title
-            intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
         mostUsedTags: tags(type: "user", order: "most_used", limit: 60) {
@@ -32,7 +36,7 @@ class GraphqlQueryCollection
             title
             photosCount
             coverPhoto {
-              intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
             }
           }
           metadata {
@@ -55,7 +59,7 @@ class GraphqlQueryCollection
             collection {
               id
               title
-              intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
               isCoverPhoto
               canEdit
             }
@@ -110,7 +114,7 @@ class GraphqlQueryCollection
             collection {
               id
               title
-              intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
             }
             metadata {
               totalPages
@@ -128,7 +132,7 @@ class GraphqlQueryCollection
           collection {
             id
             title
-            intelligentOrSquareMediumImageUrl: imageUrl(type: "intelligent_or_square_medium")
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
             canEdit
           }
           metadata {
@@ -149,9 +153,24 @@ class GraphqlQueryCollection
           descriptionHtml
           largeImageUrl: imageUrl(type: "large")
           extralargeImageUrl: imageUrl(type: "extralarge")
+          extralargeDimensions: imageDimensions(type: "extralarge") {
+            width
+            height
+          }
           takenAt
           license
-          isTakenAtFromExif
+          takenAtInfo {
+            year
+            month
+            day
+            hour
+            minute
+            precision
+            source
+            approximate
+            exifAvailable
+          }
+          scanned
           exifExists
           exifCameraFriendlyName
           exifFNumber
@@ -160,15 +179,16 @@ class GraphqlQueryCollection
           exifIso
           postedAt
           impressionsCount
+          privacy
           previousPhoto {
             id
             title
-            intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
+            intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
           }
           nextPhoto {
             id
             title
-            intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
+            intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
           }
           comments {
             id
@@ -192,12 +212,17 @@ class GraphqlQueryCollection
             previousPhotoInAlbum(photoId: $id) {
               id
               title
-              intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
+              intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
             }
             nextPhotoInAlbum(photoId: $id) {
               id
               title
-              intelligentOrSquareThumbnailImageUrl: imageUrl(type: "intelligent_or_square_thumbnail")
+              intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
+            }
+            photoPositionInAlbum(photoId: $id) {
+              position
+              total
+              page
             }
           }
           userTags {
@@ -218,6 +243,20 @@ class GraphqlQueryCollection
               width
               height
             }
+          }
+          intelligentThumbnail {
+            boundingBox {
+              top
+              left
+              width
+              height
+            }
+          }
+          userThumbnail {
+            top
+            left
+            width
+            height
           }
           rekognitionLabelModelVersion
           canEdit

@@ -9,10 +9,19 @@
         themselves.
       </p>
       <PhotoLicenseEditable :photo="photo" @updateLicense="handleUpdateLicense" />
-      <!-- delete photo button -->
-      <button class="button is-danger mt-3" @click="showConfirmationModal">
-        Delete Photo
-      </button>
+      <div class="buttons mb-2">
+        <!-- edit thumbnail button -->
+        <button class="button is-info" @click="editThumbnail">
+          <span class="icon">
+            <i class="fas fa-crop"></i>
+          </span>
+          <span>Edit Thumbnail</span>
+        </button>
+        <!-- delete photo button -->
+        <button class="button is-danger" @click="showConfirmationModal">
+          Delete Photo
+        </button>
+      </div>
     </div>
   </div>
   <teleport to="#modal-root">
@@ -50,7 +59,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deletePhoto", "updateLicense"]);
+const emit = defineEmits(["deletePhoto", "editThumbnail", "updateLicense"]);
 const applicationStore = useApplicationStore();
 
 const handleUpdateLicense = (payload) => {
@@ -58,6 +67,10 @@ const handleUpdateLicense = (payload) => {
 };
 
 const modalActive = ref(false);
+
+const editThumbnail = () => {
+  emit("editThumbnail");
+};
 
 const showConfirmationModal = () => {
   modalActive.value = true;

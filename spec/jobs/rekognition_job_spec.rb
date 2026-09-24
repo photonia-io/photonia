@@ -28,8 +28,8 @@ RSpec.describe RekognitionJob do
     subject
   end
 
-  it 'calls AddIntelligentDerivativesJob' do
-    expect(AddIntelligentDerivativesJob).to receive(:perform_later).with(photo.id)
+  it 'calls AddDerivativesJob' do
+    expect(AddDerivativesJob).to receive(:perform_later).with(photo.id)
     subject
   end
 end

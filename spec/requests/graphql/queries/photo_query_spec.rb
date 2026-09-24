@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 describe 'photo Query' do
+  include Devise::Test::IntegrationHelpers
+
   subject(:post_query) { post '/graphql', params: { query: query } }
 
   let(:photo) { create(:photo, image_data: TestData.image_data) }
@@ -24,7 +26,18 @@ describe 'photo Query' do
             largeImageUrl: imageUrl(type: "large")
             extralargeImageUrl: imageUrl(type: "extralarge")
             takenAt
-            isTakenAtFromExif
+            takenAtInfo {
+              year
+              month
+              day
+              hour
+              minute
+              precision
+              source
+              approximate
+              exifAvailable
+            }
+            scanned
             exifExists
             exifCameraFriendlyName
             exifFNumber
@@ -33,6 +46,7 @@ describe 'photo Query' do
             exifIso
             postedAt
             impressionsCount
+            privacy
             comments {
               id
               body
@@ -72,7 +86,8 @@ describe 'photo Query' do
       expect(response_photo['extralargeImageUrl']).to eq photo.image_url(:extralarge)
 
       expect(response_photo['takenAt']).to eq photo.taken_at.iso8601
-      expect(response_photo['isTakenAtFromExif']).to eq photo.taken_at_from_exif
+      expect(response_photo['takenAtInfo']).to eq(photo.taken_at_info.deep_transform_keys { |key| key.to_s.camelize(:lower) })
+      expect(response_photo['scanned']).to eq photo.scanned
 
       expect(response_photo['exifExists']).to eq photo.exif_exists?
       expect(response_photo['exifCameraFriendlyName']).to eq photo.exif_camera_friendly_name
@@ -83,6 +98,7 @@ describe 'photo Query' do
 
       expect(response_photo['postedAt']).to eq photo.posted_at.iso8601
       expect(response_photo['impressionsCount']).to eq photo.impressions_count
+      expect(response_photo['privacy']).to eq 'public'
 
       expect(response_photo['comments'].count).to eq 3
 
@@ -106,7 +122,32 @@ describe 'photo Query' do
         end
       end
 
-      expect(response_photo['canEdit']).to eq false
+      expect(response_photo['canEdit']).to be false
+    end
+  end
+
+  context 'when getting a private photo as its owner' do
+    let(:photo) { create(:photo, privacy: :private, image_data: TestData.image_data) }
+    let(:query) do
+      <<~GQL
+        query {
+          photo(id: #{photo.slug}) {
+            id
+            privacy
+          }
+        }
+      GQL
+    end
+
+    before do
+      sign_in(photo.user)
+    end
+
+    it 'returns the private privacy value' do
+      post_query
+      response_photo = response.parsed_body['data']['photo']
+
+      expect(response_photo['privacy']).to eq 'private'
     end
   end
 

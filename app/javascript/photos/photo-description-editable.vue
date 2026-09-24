@@ -3,59 +3,13 @@
     <div class="editable" v-html="marked.parse(description)"></div>
   </div>
   <div v-else class="mb-4">
-    <div
-      class="content"
-      v-if="showPreview"
-      v-html="marked.parse(localDescription)"
-    ></div>
-    <div v-else class="field">
-      <div class="control is-expanded">
-        <textarea
-          v-model="localDescription"
-          class="textarea"
-          placeholder="Enter a description for this photo"
-          ref="textarea"
-        ></textarea>
-      </div>
-    </div>
-    <div class="level">
-      <div class="level-left">
-        <div class="level-item">
-          <div class="field has-addons">
-            <p class="control">
-              <button
-                class="button"
-                @click="showPreview = false"
-                :class="{ 'is-dark': !showPreview }"
-              >
-                <span class="icon is-small">
-                  <i class="fas fa-edit"></i>
-                </span>
-                <span>Editor</span>
-              </button>
-            </p>
-            <p class="control">
-              <button
-                class="button"
-                @click="showPreview = true"
-                :class="{ 'is-dark': showPreview }"
-              >
-                <span class="icon is-small">
-                  <i class="fas fa-eye"></i>
-                </span>
-                <span>Preview</span>
-              </button>
-            </p>
-          </div>
-          <!-- <span class="icon-text">
-            <span class="icon mr-1">
-              <i class="fab fa-markdown"></i>
-            </span>
-            <span>Markdown is enabled</span>
-          </span> -->
-        </div>
-      </div>
-      <div class="level-right">
+    <MarkdownEditor
+      v-model="localDescription"
+      placeholder="Enter a description for this photo"
+      :start-in-preview="false"
+      ref="markdownEditor"
+    >
+      <template #actions>
         <div class="level-item">
           <div class="field is-grouped is-grouped-right">
             <p class="control">
@@ -68,18 +22,19 @@
             </p>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </MarkdownEditor>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, toRefs, watch, nextTick } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 import { useApplicationStore } from "../stores/application";
 import { storeToRefs } from "pinia";
 import { marked } from "marked";
 import toaster from "../mixins/toaster";
 import { descriptionHelper } from "../mixins/description-helper";
+import MarkdownEditor from "../shared/markdown-editor.vue";
 
 const props = defineProps({
   photo: {
@@ -98,9 +53,8 @@ const applicationStore = useApplicationStore();
 const { editing: storeEditing } = storeToRefs(applicationStore);
 
 const editing = ref(false);
-const showPreview = ref(true);
 const localDescription = ref(photo.value.description);
-const textarea = ref(null);
+const markdownEditor = ref(null);
 var savedDescription = "";
 
 watch(photo, (newPhoto) => {
@@ -114,14 +68,13 @@ watch(storeEditing, (newEditing) => {
 });
 
 const focusTextarea = () => {
-  nextTick(() => {
-    textarea.value.focus();
-  });
+  if (markdownEditor.value) {
+    markdownEditor.value.focusTextarea();
+  }
 };
 
 const startEditing = () => {
   savedDescription = localDescription.value;
-  showPreview.value = false;
   editing.value = true;
   applicationStore.startEditing();
   focusTextarea();
@@ -152,3 +105,4 @@ const updateDescription = () => {
   applicationStore.stopEditing();
 };
 </script>
+
