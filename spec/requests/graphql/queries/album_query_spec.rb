@@ -135,6 +135,106 @@ describe 'album Query' do
           expect(response_album['allPhotos'][1]['ordering']).to eq(200_000)
         end
       end
+
+      describe 'photoPositionInAlbum field' do
+        # Owned by the signed-in user, so unlike the other private photos in
+        # this album it is inside their policy scope.
+        let!(:own_private_photo) { create(:photo, albums: [album], privacy: :private, user: user) }
+
+        let(:query) do
+          <<~GQL
+            query {
+              album(id: "#{album.slug}") {
+                photoPositionInAlbum(photoId: "#{own_private_photo.slug}") {
+                  position
+                  total
+                  page
+                }
+              }
+            }
+          GQL
+        end
+
+        it 'counts the private photos the owner can see' do
+          post_query
+
+          expect(data_dig(response, 'album', 'photoPositionInAlbum')).to eq(
+            'position' => public_photo_count + 1, 'total' => public_photo_count + 1, 'page' => 1
+          )
+        end
+      end
+    end
+  end
+
+  describe 'photoPositionInAlbum field' do
+    before { album.maintenance }
+
+    let(:query) do
+      <<~GQL
+        query {
+          album(id: "#{album.slug}") {
+            photoPositionInAlbum(photoId: "#{photo_id}") {
+              position
+              total
+              page
+            }
+          }
+        }
+      GQL
+    end
+
+    context 'with the first photo in the album' do
+      let(:photo_id) { first_public_photo.slug }
+
+      it 'returns a one-based position on the first page' do
+        post_query
+
+        expect(data_dig(response, 'album', 'photoPositionInAlbum')).to eq(
+          'position' => 1, 'total' => public_photo_count, 'page' => 1
+        )
+      end
+    end
+
+    context 'with a later photo in the album' do
+      let(:photo_id) { last_public_photo.slug }
+
+      it 'counts only the photos the visitor may see' do
+        post_query
+
+        expect(data_dig(response, 'album', 'photoPositionInAlbum')).to eq(
+          'position' => public_photo_count, 'total' => public_photo_count, 'page' => 1
+        )
+      end
+    end
+
+    context 'with a photo that is not in the album' do
+      let(:photo_id) { create(:photo).slug }
+
+      it 'returns null rather than erroring' do
+        post_query
+
+        expect(data_dig(response, 'album', 'photoPositionInAlbum')).to be_nil
+        expect(response.parsed_body['errors']).to be_nil
+      end
+    end
+
+    # A second albums_photos row per photo used to multiply the count
+    context 'when the album\'s photos are also in another album' do
+      let(:other_album) { create(:album, user: user) }
+      let(:photo_id) { last_public_photo.slug }
+
+      before do
+        public_photos.each { |photo| other_album.photos << photo }
+        other_album.maintenance
+      end
+
+      it 'counts each photo once' do
+        post_query
+
+        expect(data_dig(response, 'album', 'photoPositionInAlbum')).to eq(
+          'position' => public_photo_count, 'total' => public_photo_count, 'page' => 1
+        )
+      end
     end
   end
 end

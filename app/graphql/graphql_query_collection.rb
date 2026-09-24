@@ -218,6 +218,11 @@ class GraphqlQueryCollection
               title
               intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
             }
+            photoPositionInAlbum(photoId: $id) {
+              position
+              total
+              page
+            }
           }
           userTags {
             id

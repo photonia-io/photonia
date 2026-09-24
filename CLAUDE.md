@@ -16,9 +16,11 @@ Never add Claude attribution to commit messages or PR descriptions — no `Co-Au
 
 ## UI changes
 
-When applying a UI change the user requested, do not verify it yourself with Playwright, run any test suite, or write any tests. Do not commit or push. After each changeset, ask the user to verify manually and wait for their feedback before doing anything further.
+On the **first** implementation of a UI change, write the tests and run them as usual, then hand over for manual verification. Never verify a UI change yourself with Playwright, and do not commit or push.
 
-Once the user confirms the change is right, tests can be written and run as usual. The restriction is about when, not whether — automated checks are not a substitute for the user looking at the UI.
+Once the user comes back **requesting changes**, apply them and then stop: wait for their manual check and their OK before writing or updating any tests. Repeat that for every further round of changes.
+
+The point is that automated checks are not a substitute for the user looking at the UI — so tests never get rewritten against behaviour the user has not yet signed off on.
 
 ## Commands
 
@@ -114,7 +116,7 @@ Frontend lives in `app/javascript` with a single entrypoint (`entrypoints/applic
 - User-defined thumbnails take priority over intelligent ones, must stay square, and regenerate derivatives asynchronously. Only relative percentages are stored in `user_thumbnail`; pixels are recomputed in `Photo#custom_crop`.
 - `Photo#exif` is lazily computed from S3 on first read and written back with `save(validate: false)`.
 - Bulma 1.x's modal-card shares one padding variable between the head and the foot, and sizes the title at `--bulma-size-4` — both oversized for this app's short modal titles, and the footer gets no gap between its action buttons by default. `app/javascript/styles/application.scss` overrides `--bulma-modal-card-head-padding` / `--bulma-modal-card-title-size` and adds `gap` to `.modal-card-foot` globally, so new modals don't need per-instance spacing hacks or a `.buttons` wrapper just to space their footer buttons.
-- Always wrap an icon next to text in Bulma's `.icon-text`, never a bare `.icon` span beside plain text — without it the icon and text have mismatched line-heights and misalign vertically.
+- Always wrap an icon next to text in Bulma's `.icon-text`, never a bare `.icon` span beside plain text — without it the icon and text have mismatched line-heights and misalign vertically. **Not inside a `.button`**, though: a button is already `inline-flex` + `align-items: center` and spaces its own `.icon` children, so there `.icon` and the label go in side by side. Nesting `.icon-text` in a button re-misaligns it, because `.icon-text` is `align-items: flex-start` — visible as soon as the label wraps to a second line.
 
 ## Testing
 
