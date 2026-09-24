@@ -12,13 +12,13 @@ module Types
     field :reset_photo_taken_at, mutation: Mutations::ResetPhotoTakenAt, description: 'Reset photo date taken to the EXIF or upload date'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'
+    field :set_photo_license, mutation: Mutations::SetPhotoLicense, description: 'Set photo license'
     field :set_photo_privacy, mutation: Mutations::SetPhotoPrivacy, description: 'Set photo privacy'
     field :set_photo_taken_at, mutation: Mutations::SetPhotoTakenAt, description: 'Set photo date taken'
     field :update_album_description, mutation: Mutations::UpdateAlbumDescription, description: 'Update album description'
     field :update_album_photo_order, mutation: Mutations::UpdateAlbumPhotoOrder, description: 'Update the order of photos in an album'
     field :update_album_title, mutation: Mutations::UpdateAlbumTitle, description: 'Update album title'
     field :update_photo_description, mutation: Mutations::UpdatePhotoDescription, description: 'Update photo description'
-    field :update_photo_license, mutation: Mutations::UpdatePhotoLicense, description: 'Update photo license'
     field :update_photo_thumbnail, mutation: Mutations::UpdatePhotoThumbnail, description: 'Update photo user-defined thumbnail'
     field :update_photo_title, mutation: Mutations::UpdatePhotoTitle, description: 'Update photo title'
 
@@ -123,7 +123,7 @@ module Types
       }
     end
 
-    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:, default_license: nil)
+    def update_user_settings(email:, first_name:, last_name:, display_name:, timezone:, **optional)
       user = context[:current_user]
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
 
@@ -135,7 +135,7 @@ module Types
       user.update(last_name: last_name)
       user.update(display_name: display_name)
       user.update(timezone: timezone)
-      user.update(default_license: default_license)
+      update_default_license(user, optional)
       user
     end
 
@@ -147,6 +147,18 @@ module Types
       Setting.continue_with_google_enabled = continue_with_google_enabled
       Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
       Setting
+    end
+
+    private
+
+    # Only touches default_license when the caller actually sent it - an
+    # omitted argument must not silently wipe the user's existing default.
+    def update_default_license(user, optional)
+      return unless optional.key?(:default_license)
+
+      normalized = optional[:default_license].presence
+      raise GraphQL::ExecutionError, 'Invalid license value' if normalized && License::VALUES.exclude?(normalized)
+      raise GraphQL::ExecutionError, user.errors.full_messages.join(', ') unless user.update(default_license: normalized)
     end
   end
 end
