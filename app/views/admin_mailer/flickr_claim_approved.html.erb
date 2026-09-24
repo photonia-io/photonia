@@ -1,0 +1,33 @@
+<h1>Flickr User Claim Approved</h1>
+
+<p>
+  A user has successfully verified their Flickr account automatically.
+</p>
+
+<h2>Details</h2>
+
+<p>
+  <ul>
+    <li><strong>Photonia User:</strong> <%= h @user.email %> (#<%= h @user.serial_number %>)</li>
+    <li><strong>Flickr Username:</strong> <%= h @flickr_user.username %></li>
+    <li><strong>Flickr NSID:</strong> <%= h @flickr_user.nsid %></li>
+    <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
+    <li><strong>Claim Type:</strong> Automatic</li>
+    <li><strong>Status:</strong> Approved</li>
+    <li><strong>Verified At:</strong> <%= @claim.verified_at.strftime('%B %d, %Y at %I:%M %p %Z') %></li>
+  </ul>
+</p>
+
+<h2>User Details</h2>
+
+<p>
+  You can view the user's details here:
+</p>
+
+<p>
+  <a href="<%= @user_admin_url %>">View User in Admin Panel</a>
+</p>
+
+<p>
+  Your friendly Photonia bot.
+</p>

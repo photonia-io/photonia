@@ -116,4 +116,84 @@ RSpec.describe FlickrAPIService do
       expect(result).to eq(is_deleted: true)
     end
   end
+
+  describe '#profile_get_profile' do
+    let(:service) { described_class.new }
+    let(:response_body) do
+      {
+        'stat' => 'ok',
+        'profile' => {
+          'profile_description' => {
+            '_content' => 'This is my profile description'
+          }
+        }
+      }.to_json
+    end
+    let(:response) { instance_double(Net::HTTPResponse, body: response_body) }
+
+    before do
+      allow(Net::HTTP).to receive(:get_response).and_return(response)
+    end
+
+    it 'sets the correct query parameters' do
+      expect(URI).to receive(:encode_www_form).with(default_params.merge(method: 'flickr.profile.getProfile', user_id: user_id)).and_call_original
+      service.profile_get_profile(user_id)
+    end
+
+    it 'returns parsed JSON response' do
+      result = service.profile_get_profile(user_id)
+      expect(result).to eq(JSON.parse(response_body))
+    end
+  end
+
+  describe '.profile_get_profile_description' do
+    let(:profile_description) { 'This is my profile description with code ABC123' }
+    let(:response_body) do
+      {
+        'stat' => 'ok',
+        'profile' => {
+          'profile_description' => {
+            '_content' => profile_description
+          }
+        }
+      }.to_json
+    end
+    let(:response) { instance_double(Net::HTTPResponse, body: response_body) }
+
+    before do
+      allow(Net::HTTP).to receive(:get_response).and_return(response)
+    end
+
+    it 'returns the profile description text' do
+      result = described_class.profile_get_profile_description(user_id)
+      expect(result).to eq(profile_description)
+    end
+
+    context 'when the description is a plain string' do
+      let(:response_body) { { 'stat' => 'ok', 'profile' => { 'profile_description' => profile_description } }.to_json }
+
+      it 'returns it as is' do
+        result = described_class.profile_get_profile_description(user_id)
+        expect(result).to eq(profile_description)
+      end
+    end
+
+    context 'when the profile has no description' do
+      let(:response_body) { { 'stat' => 'ok', 'profile' => { 'id' => user_id } }.to_json }
+
+      it 'returns nil' do
+        result = described_class.profile_get_profile_description(user_id)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when the response is not ok' do
+      let(:response_body) { { 'stat' => 'fail' }.to_json }
+
+      it 'returns nil' do
+        result = described_class.profile_get_profile_description(user_id)
+        expect(result).to be_nil
+      end
+    end
+  end
 end

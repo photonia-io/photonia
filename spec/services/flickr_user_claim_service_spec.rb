@@ -1,0 +1,323 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe FlickrUserClaimService do
+  let(:user) { create(:user) }
+  let(:flickr_user) { create(:flickr_user) }
+  let(:service) { described_class.new(user, flickr_user) }
+
+  describe '#request_automatic_claim' do
+    it 'creates a new automatic claim with verification code' do
+      claim = service.request_automatic_claim
+
+      expect(claim).to be_persisted
+      expect(claim.user).to eq(user)
+      expect(claim.flickr_user).to eq(flickr_user)
+      expect(claim.claim_type).to eq('automatic')
+      expect(claim.status).to eq('pending')
+      expect(claim.verification_code).to be_present
+      expect(claim.verification_code.length).to eq(10)
+    end
+  end
+
+  describe '#verify_automatic_claim' do
+    let(:claim) { create(:flickr_user_claim, :automatic, user: user, flickr_user: flickr_user) }
+
+    context 'when claim is valid and code is found in profile' do
+      let(:admin) { create(:user, admin: true) }
+
+      before do
+        allow(FlickrAPIService).to receive(:profile_get_profile_description)
+          .with(flickr_user.nsid)
+          .and_return("My profile description with code #{claim.verification_code} here")
+      end
+
+      it 'approves the claim and marks it as verified' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(true)
+        expect(result[:claim].reload.status).to eq('approved')
+        expect(result[:claim].verified_at).to be_present
+        expect(result[:claim].approved_at).to be_present
+        expect(flickr_user.reload.claimed_by_user).to eq(user)
+      end
+
+      it 'sends email to admins' do
+        admin # ensure admin exists
+
+        # Set ActiveJob queue adapter to test only for this test
+        original_adapter = ActiveJob::Base.queue_adapter
+        ActiveJob::Base.queue_adapter = :test
+
+        begin
+          expect do
+            service.verify_automatic_claim(claim)
+          end.to have_enqueued_job(ActionMailer::MailDeliveryJob)
+            .with('AdminMailer', 'flickr_claim_approved', 'deliver_now', any_args)
+        ensure
+          # Restore the original adapter
+          ActiveJob::Base.queue_adapter = original_adapter
+        end
+      end
+
+      it 'sends email to the user who made the claim' do
+        # Set ActiveJob queue adapter to test only for this test
+        original_adapter = ActiveJob::Base.queue_adapter
+        ActiveJob::Base.queue_adapter = :test
+
+        begin
+          expect do
+            service.verify_automatic_claim(claim)
+          end.to have_enqueued_job(ActionMailer::MailDeliveryJob)
+            .with('UserMailer', 'flickr_claim_approved', 'deliver_now', any_args)
+        ensure
+          # Restore the original adapter
+          ActiveJob::Base.queue_adapter = original_adapter
+        end
+      end
+    end
+
+    context 'when code is not found in profile' do
+      before do
+        allow(FlickrAPIService).to receive(:profile_get_profile_description)
+          .with(flickr_user.nsid)
+          .and_return('My profile description without the code')
+      end
+
+      it 'returns error' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to include('Verification code not found')
+        expect(claim.reload.status).to eq('pending')
+      end
+    end
+
+    context 'when profile cannot be fetched' do
+      before do
+        allow(FlickrAPIService).to receive(:profile_get_profile_description)
+          .with(flickr_user.nsid)
+          .and_return(nil)
+      end
+
+      it 'returns error' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to include('Unable to fetch Flickr profile')
+      end
+    end
+
+    context 'when claim is not pending' do
+      let(:claim) { create(:flickr_user_claim, :approved, user: user, flickr_user: flickr_user) }
+
+      it 'returns error' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('Claim is not pending')
+      end
+    end
+
+    context 'when claim is not automatic' do
+      let(:claim) { create(:flickr_user_claim, :manual, user: user, flickr_user: flickr_user) }
+
+      it 'returns error' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('Invalid claim type')
+      end
+    end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(FlickrAPIService).to receive(:profile_get_profile_description)
+          .with(flickr_user.nsid)
+          .and_raise(StandardError, 'boom')
+      end
+
+      it 'returns a failure result with the error message' do
+        result = service.verify_automatic_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('boom')
+      end
+    end
+  end
+
+  describe '#request_manual_claim' do
+    let(:admin) { create(:user, admin: true) }
+    let(:reason) { 'Lost access to my Flickr account' }
+
+    before do
+      allow(AdminMailer).to receive_message_chain(:with, :flickr_claim_request, :deliver_later)
+    end
+
+    it 'creates a manual claim and sends email to admins' do
+      claim = service.request_manual_claim(reason: reason)
+
+      expect(claim).to be_persisted
+      expect(claim.user).to eq(user)
+      expect(claim.flickr_user).to eq(flickr_user)
+      expect(claim.claim_type).to eq('manual')
+      expect(claim.status).to eq('pending')
+      expect(claim.reason).to eq(reason)
+    end
+
+    it 'sends email to admins' do
+      admin # ensure admin exists
+      expect(AdminMailer).to receive(:with).with(
+        admin_emails: [admin.email],
+        user: user,
+        flickr_user: flickr_user,
+        claim: instance_of(FlickrUserClaim),
+        reason: reason
+      ).and_return(double(flickr_claim_request: double(deliver_later: true)))
+
+      service.request_manual_claim(reason: reason)
+    end
+
+    context 'when the user already has a pending automatic claim on this flickr user' do
+      let!(:automatic_claim) { create(:flickr_user_claim, :automatic, user: user, flickr_user: flickr_user) }
+
+      it 'converts it into a manual claim instead of creating a new one' do
+        claim = nil
+        expect { claim = service.request_manual_claim(reason: reason) }.not_to change(FlickrUserClaim, :count)
+
+        expect(claim).to eq(automatic_claim)
+        expect(claim.reload).to be_manual
+        expect(claim).to be_pending
+        expect(claim.verification_code).to be_nil
+        expect(claim.reason).to eq(reason)
+      end
+
+      it 'still sends email to admins' do
+        admin # ensure admin exists
+        expect(AdminMailer).to receive(:with).with(hash_including(claim: automatic_claim))
+                                             .and_return(double(flickr_claim_request: double(deliver_later: true)))
+
+        service.request_manual_claim(reason: reason)
+      end
+    end
+  end
+
+  describe '#approve_claim' do
+    let(:claim) { create(:flickr_user_claim, user: user, flickr_user: flickr_user) }
+
+    before do
+      allow(UserMailer).to receive_message_chain(:with, :flickr_claim_approved, :deliver_later)
+    end
+
+    context 'when claim is valid' do
+      it 'approves the claim' do
+        result = service.approve_claim(claim)
+
+        expect(result[:success]).to be(true)
+        expect(result[:claim].reload.status).to eq('approved')
+        expect(result[:claim].approved_at).to be_present
+        expect(flickr_user.reload.claimed_by_user).to eq(user)
+      end
+
+      it 'sends email to user' do
+        expect(UserMailer).to receive(:with).with(
+          user: user,
+          flickr_user: flickr_user,
+          claim: claim
+        ).and_return(double(flickr_claim_approved: double(deliver_later: true)))
+
+        service.approve_claim(claim)
+      end
+    end
+
+    context 'when claim is not pending' do
+      let(:claim) { create(:flickr_user_claim, :approved, user: user, flickr_user: flickr_user) }
+
+      it 'returns error' do
+        result = service.approve_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('Claim is not pending')
+      end
+    end
+
+    context 'when the flickr user was already claimed by someone else' do
+      before { flickr_user.update!(claimed_by_user: create(:user)) }
+
+      it 'returns error, leaves the claim pending and sends no email' do
+        expect(UserMailer).not_to receive(:with)
+
+        result = service.approve_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('This Flickr user has already been claimed by another user')
+        expect(claim.reload).to be_pending
+      end
+    end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(claim).to receive(:approve!).and_raise(StandardError, 'boom')
+      end
+
+      it 'returns a failure result with the error message' do
+        result = service.approve_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('boom')
+      end
+    end
+  end
+
+  describe '#deny_claim' do
+    let(:claim) { create(:flickr_user_claim, user: user, flickr_user: flickr_user) }
+
+    before do
+      allow(UserMailer).to receive_message_chain(:with, :flickr_claim_denied, :deliver_later)
+    end
+
+    context 'when claim is valid' do
+      it 'denies the claim' do
+        result = service.deny_claim(claim)
+
+        expect(result[:success]).to be(true)
+        expect(result[:claim].reload.status).to eq('denied')
+        expect(result[:claim].denied_at).to be_present
+      end
+
+      it 'sends email to user' do
+        expect(UserMailer).to receive(:with).with(
+          user: user,
+          flickr_user: flickr_user
+        ).and_return(double(flickr_claim_denied: double(deliver_later: true)))
+
+        service.deny_claim(claim)
+      end
+    end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(claim).to receive(:deny!).and_raise(StandardError, 'boom')
+      end
+
+      it 'returns a failure result with the error message' do
+        result = service.deny_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('boom')
+      end
+    end
+
+    context 'when claim is not pending' do
+      let(:claim) { create(:flickr_user_claim, :denied, user: user, flickr_user: flickr_user) }
+
+      it 'returns error' do
+        result = service.deny_claim(claim)
+
+        expect(result[:success]).to be(false)
+        expect(result[:error]).to eq('Claim is not pending')
+      end
+    end
+  end
+end

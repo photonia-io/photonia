@@ -1,0 +1,12 @@
+Your Flickr User Claim Has Been Approved!
+
+Good news! Your request to claim the Flickr user <%= @flickr_user.username %> has been approved.
+
+Flickr Username: <%= @flickr_user.username %>
+Flickr Profile: <%= @flickr_user.profileurl %>
+
+<% if @claim&.automatic? %>
+You can now remove the verification code from your Flickr profile description.
+<% end %>
+
+Your friendly Photonia bot.
