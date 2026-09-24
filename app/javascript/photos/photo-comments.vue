@@ -71,7 +71,7 @@
 <script setup>
 import { ref } from "vue";
 import { marked } from "marked";
-import moment from "moment/min/moment-with-locales";
+import moment from "moment";
 import { useUserStore } from "@/stores/user";
 
 // components
