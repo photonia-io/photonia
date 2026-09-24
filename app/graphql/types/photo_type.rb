@@ -29,6 +29,7 @@ module Types
     field :posted_at, GraphQL::Types::ISO8601DateTime, 'Datetime the photo was posted', null: true
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :privacy, String, 'Privacy level of the photo', null: false
+    field :processed, Boolean, 'Whether the upload pipeline (tagging, derivatives) has finished', null: false
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
     field :scanned, Boolean, 'Whether the photo is a scan of a print or negative', null: false
@@ -119,6 +120,10 @@ module Types
 
     def rekognition_label_model_version
       (@object.rekognition_response && @object.rekognition_response['label_model_version'].presence) || ''
+    end
+
+    def processed
+      @object.processed_at.present?
     end
 
     def width

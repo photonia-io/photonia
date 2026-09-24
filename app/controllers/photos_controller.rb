@@ -48,10 +48,10 @@ class PhotosController < ApplicationController
     @photo.license = current_user.default_license if current_user.default_license.present?
     @photo.populate_exif_fields
 
-    if @photo.valid?
-      @photo.save
+    if @photo.save
+      render json: { photo: { id: @photo.slug } }, status: :created
     else
-      render json: { errors: @photo.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: @photo.errors.full_messages }, status: :unprocessable_content
     end
   end
 

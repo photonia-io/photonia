@@ -2226,7 +2226,6 @@ __metadata:
     vue-draggable-plus: "npm:^0.6.1"
     vue-page-title: "npm:^2.2.3"
     vue-router: "npm:4.6.3"
-    vue-upload-component: "npm:^3.1.17"
   languageName: unknown
   linkType: soft
 
@@ -2990,13 +2989,6 @@ __metadata:
   peerDependencies:
     vue: ^3.5.0
   checksum: 10c0/4528f4fded4b45b07d4e096116e9b5fd602af463e735f7e5133b1a258ce325ebc894dd7bc962a937556615fd42d06b0fb290dfae90e96f237862b7f74baa22a0
-  languageName: node
-  linkType: hard
-
-"vue-upload-component@npm:^3.1.17":
-  version: 3.1.17
-  resolution: "vue-upload-component@npm:3.1.17"
-  checksum: 10c0/3d6f30f814cceac2b1969c324051432103f706d038ebb19c1eb3aa652099f16bfb44e9c19c4b8db13168e133ff04103ef9bf67f03856c439759c4c48b2eccaa4
   languageName: node
   linkType: hard
 

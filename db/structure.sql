@@ -411,7 +411,8 @@ CREATE TABLE public.photos (
     taken_at_precision character varying DEFAULT 'minute'::character varying NOT NULL,
     taken_at_source character varying DEFAULT 'unknown'::character varying NOT NULL,
     taken_at_approximate boolean DEFAULT false NOT NULL,
-    scanned boolean DEFAULT false NOT NULL
+    scanned boolean DEFAULT false NOT NULL,
+    processed_at timestamp(6) without time zone
 );
 
 
@@ -1493,6 +1494,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260924165700'),
 ('20260924150000'),
 ('20260922131026'),
 ('20251108131127'),

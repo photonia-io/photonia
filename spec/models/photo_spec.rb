@@ -18,6 +18,7 @@
 #  license                  :string
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
+#  processed_at             :datetime
 #  rekognition_response     :jsonb
 #  scanned                  :boolean          default(FALSE), not null
 #  serial_number            :bigint           not null

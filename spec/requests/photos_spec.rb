@@ -99,5 +99,25 @@ RSpec.describe 'Photos' do
         expect(Photo.unscoped.order(:id).last.license).to be_nil
       end
     end
+
+    context 'when the upload succeeds' do
+      let(:user) { create(:user, :uploader) }
+
+      it "returns 201 with the new photo's slug" do
+        post '/photos', params: { photo: { title: 'Upload Test', image: image } }
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body.dig('photo', 'id')).to eq(Photo.unscoped.order(:id).last.slug)
+      end
+    end
+
+    context 'when the upload is invalid' do
+      let(:user) { create(:user, :uploader) }
+
+      it 'returns 422 with the validation errors' do
+        post '/photos', params: { photo: { title: '', description: '', image: image } }
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body['errors']).to be_present
+      end
+    end
   end
 end

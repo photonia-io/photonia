@@ -15,6 +15,7 @@ module Types
     field :page, resolver: Queries::PageQuery, description: 'Find a page by ID'
     field :photo, resolver: Queries::PhotoQuery, description: 'Find a photo by ID'
     field :photos, resolver: Queries::PhotosQuery, description: 'Find a list of photos'
+    field :photos_by_ids, resolver: Queries::PhotosByIdsQuery, description: 'Find photos by ID (slug), skipping unknown or inaccessible ones'
     field :related_tags, resolver: Queries::RelatedTagsQuery, description: 'Suggest related tags based on co-occurrence'
     field :tag, resolver: Queries::TagQuery, description: 'Find a tag by ID'
     field :tags, resolver: Queries::TagsQuery, description: 'Find tags'

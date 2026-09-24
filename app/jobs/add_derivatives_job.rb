@@ -7,5 +7,6 @@ class AddDerivativesJob < ApplicationJob
   def perform(photo_id)
     photo = Photo.unscoped.find(photo_id)
     photo.add_derivatives
+    photo.update_columns(processed_at: Time.current)
   end
 end
