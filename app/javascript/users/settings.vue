@@ -239,6 +239,8 @@ const timezone = computed({
   get: () => result.value?.currentUser.timezone.name,
   set: (value) => (newTimezone.value = value),
 });
+// A null default displays as All Rights Reserved, but is only sent once the
+// select is actually changed, so saving other settings keeps it null.
 const defaultLicense = computed({
   get: () => result.value?.currentUser.defaultLicense || ALL_RIGHTS_RESERVED,
   set: (value) => (newDefaultLicense.value = value),
@@ -285,7 +287,9 @@ const {
       lastName: newLastName.value || lastName.value,
       displayName: newDisplayName.value || displayName.value,
       timezone: newTimezone.value || timezone.value,
-      defaultLicense: newDefaultLicense.value !== null ? newDefaultLicense.value : defaultLicense.value,
+      ...(newDefaultLicense.value !== null && {
+        defaultLicense: newDefaultLicense.value,
+      }),
     },
   }),
 );
