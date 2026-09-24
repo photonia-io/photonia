@@ -24,7 +24,7 @@ const baseAlbum = {
   privacy: "public",
   sortingType: "takenAt",
   sortingOrder: "asc",
-  photosCount: 3,
+  privatizablePhotosCount: 3,
 };
 
 let mountedWrapper;
@@ -83,9 +83,9 @@ describe("AlbumManagement", () => {
       expect(privacyModal().classes()).toContain("is-active");
     });
 
-    it("does not appear for an empty album", async () => {
+    it("does not appear for an album with nothing left to privatize", async () => {
       const { wrapper } = mountAlbumManagement({
-        album: { ...baseAlbum, privacy: "public", photosCount: 0 },
+        album: { ...baseAlbum, privacy: "public", privatizablePhotosCount: 0 },
       });
 
       await wrapper.find("#album-privacy").setValue("private");
@@ -125,6 +125,22 @@ describe("AlbumManagement", () => {
         updatePhotos: true,
       });
       expect(privacyModal().classes()).not.toContain("is-active");
+    });
+
+    it("does not commit the new privacy locally on confirm, leaving it to the album prop", async () => {
+      const { wrapper } = mountAlbumManagement();
+
+      await wrapper.find("#album-privacy").setValue("private");
+      await privacyModal().find(".is-warning").trigger("click");
+
+      // Simulate the parent reverting after a failed mutation, as show.vue
+      // does via the exposed revertPrivacy() - if confirming had optimistically
+      // committed "private", this would be a no-op and the assertion below
+      // would still show "private".
+      wrapper.vm.revertPrivacy();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("#album-privacy").element.value).toBe("public");
     });
 
     it("reverts the select and emits nothing on cancel", async () => {

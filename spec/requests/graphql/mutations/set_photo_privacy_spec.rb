@@ -26,15 +26,17 @@ RSpec.describe 'setPhotoPrivacy Mutation', type: :request do
 
   context 'when the photo is not found' do
     before do
+      sign_in(photo.user)
       photo.destroy
     end
 
-    it 'returns an error' do
+    it 'returns the same NOT_FOUND error as an unauthorized photo' do
       post_mutation
       json = response.parsed_body
-      errors = json['errors'].first
+      err = json['errors']&.first
 
-      expect(errors['message']).to eq('Photo not found')
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(json.dig('data', 'setPhotoPrivacy')).to be_nil
     end
   end
 
@@ -110,6 +112,25 @@ RSpec.describe 'setPhotoPrivacy Mutation', type: :request do
         errors = json['errors'].first
 
         expect(errors['message']).to eq('Invalid privacy value')
+      end
+    end
+
+    context 'when the photo belongs to an album' do
+      let!(:album) { create(:album, privacy: 'public') }
+
+      before do
+        album.photos << photo
+        album.maintenance
+      end
+
+      it "refreshes the album's public photo count and cover" do
+        expect(album.reload.public_photos_count).to eq(1)
+        expect(album.public_cover_photo_id).to eq(photo.id)
+
+        post_mutation
+
+        expect(album.reload.public_photos_count).to eq(0)
+        expect(album.public_cover_photo_id).to be_nil
       end
     end
 

@@ -1,3 +1,5 @@
+App model: the admin (site owner) shares photos with the world. Visitors can sign up for an account today (self-service via "Continue with Google"/"Continue with Facebook", gated by a `Setting` toggle - there's no local email/password registration) but that only grants the unused `registered_user` role; only the admin can upload photos, edit them, or create/manage albums, gated by `has_role?(:uploader)` in `PhotoPolicy`/`AlbumPolicy` (`ApplicationPolicy` denies everything by default). Commenting and favoriting are the intended reason for letting people sign up, but neither exists yet - `Comment` records today are read-only, imported from Flickr, with no mutation to create one, and there's no favorites feature at all.
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

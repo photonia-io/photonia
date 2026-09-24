@@ -94,10 +94,10 @@
         </header>
         <div class="modal-card-body">
           <p>
-            When you set this album to Private, all
-            <strong>{{ album.photosCount }}</strong>
-            {{ album.photosCount === 1 ? "photo" : "photos" }} contained in
-            this album will also be set to Private.
+            When you set this album to Private,
+            <strong>{{ album.privatizablePhotosCount }}</strong>
+            {{ album.privatizablePhotosCount === 1 ? "photo" : "photos" }}
+            contained in this album will also be set to Private.
           </p>
           <p class="mt-3">Do you want to continue?</p>
         </div>
@@ -183,7 +183,7 @@ const setPrivacy = () => {
   const needsConfirmation =
     newPrivacy === "private" &&
     committedPrivacy.value !== "private" &&
-    props.album.photosCount > 0;
+    (props.album.privatizablePhotosCount ?? 0) > 0;
 
   if (needsConfirmation) {
     privacyModalActive.value = true;
@@ -194,7 +194,6 @@ const setPrivacy = () => {
       privacy: newPrivacy,
       updatePhotos: false,
     });
-    committedPrivacy.value = newPrivacy;
   }
 };
 
@@ -204,13 +203,16 @@ const confirmPrivacyChange = () => {
     privacy: privacy.value,
     updatePhotos: true,
   });
-  committedPrivacy.value = privacy.value;
   privacyModalActive.value = false;
   applicationStore.enableNavigationShortcuts();
 };
 
-const cancelPrivacyChange = () => {
+const revertPrivacy = () => {
   privacy.value = committedPrivacy.value;
+};
+
+const cancelPrivacyChange = () => {
+  revertPrivacy();
   privacyModalActive.value = false;
   applicationStore.enableNavigationShortcuts();
 };
@@ -234,6 +236,8 @@ const performDelete = () => {
   emit("deleteAlbum", { id: props.album.id });
   closeConfirmationModal();
 };
+
+defineExpose({ revertPrivacy });
 </script>
 
 <style scoped>

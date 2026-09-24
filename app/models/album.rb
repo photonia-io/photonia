@@ -99,6 +99,19 @@ class Album < ApplicationRecord
     self
   end
 
+  def non_private_photos
+    Photo.unscoped
+         .where(id: albums_photos.select(:photo_id))
+         .where.not(privacy: 'private')
+  end
+
+  # Re-runs maintenance on every album (other than `except`) containing any of `photo_ids`,
+  # so their public_photos_count / public_cover_photo_id stay in sync after a photo's privacy changes.
+  def self.maintain_containing(photo_ids, except: nil)
+    album_ids = AlbumsPhoto.where(photo_id: photo_ids).distinct.pluck(:album_id) - Array(except)
+    unscoped.where(id: album_ids).find_each(&:maintenance)
+  end
+
   def all_photos(refetch: false, unordered: false, select: true)
     return @all_photos if @all_photos && !refetch
 

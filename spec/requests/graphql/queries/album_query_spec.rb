@@ -249,17 +249,17 @@ describe 'the shared albums_show query' do
   let(:album) { create(:album, user: user) }
 
   before do
-    create_list(:photo, 2, albums: [album])
-    create(:photo, albums: [album], privacy: :private)
+    create_list(:photo, 2, user: user, albums: [album])
+    create(:photo, user: user, albums: [album], privacy: :private)
     album.maintenance
     sign_in(user)
   end
 
-  it 'includes photosCount, which the album management modal needs' do
+  it 'includes privatizablePhotosCount, which the album management modal needs' do
     query = GraphqlQueryCollection::COLLECTION[:albums_show]
     post '/graphql', params: { query: query, variables: { id: album.slug, page: 1 }.to_json }
 
-    expect(data_dig(response, 'album', 'photosCount')).to eq(3)
+    expect(data_dig(response, 'album', 'privatizablePhotosCount')).to eq(2)
   end
 end
 
@@ -312,6 +312,61 @@ describe 'coverPhoto field' do
 
       expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(public_photo.slug)
     end
+  end
+
+  context "when every photo is private and one belongs to another user" do
+    include_context 'with auth actors'
+
+    let!(:foreign_photo) { create(:photo, user: stranger, albums: [album], privacy: :private) }
+
+    before do
+      album.update(user: owner)
+      album.maintenance
+    end
+
+    it "falls back to it for the owner too - any editor may see any photo in the album" do
+      sign_in(owner)
+      post_query
+
+      expect(data_dig(response, 'album', 'coverPhoto', 'id')).to eq(foreign_photo.slug)
+    end
+  end
+end
+
+describe 'privatizablePhotosCount field' do
+  include Devise::Test::IntegrationHelpers
+  include_context 'with auth actors'
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
+  let(:album) { create(:album, user: owner) }
+  let!(:owned_public_photo) { create(:photo, user: owner, albums: [album], privacy: :public) }
+  let!(:owned_private_photo) { create(:photo, user: owner, albums: [album], privacy: :private) }
+  let!(:foreign_public_photo) { create(:photo, user: stranger, albums: [album], privacy: :public) }
+
+  let(:query) do
+    <<~GQL
+      query {
+        album(id: "#{album.slug}") {
+          privatizablePhotosCount
+        }
+      }
+    GQL
+  end
+
+  before { album.maintenance }
+
+  it 'counts every non-private photo in the album, regardless of who owns it' do
+    sign_in(owner)
+    post_query
+
+    expect(data_dig(response, 'album', 'privatizablePhotosCount')).to eq(2)
+  end
+
+  it 'is null for a visitor who cannot edit the album' do
+    post_query
+
+    expect(data_dig(response, 'album', 'privatizablePhotosCount')).to be_nil
   end
 end
 

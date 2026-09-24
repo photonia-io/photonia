@@ -74,7 +74,7 @@ class GraphqlQueryCollection
           sortingOrder
           canEdit
           privacy
-          photosCount
+          privatizablePhotosCount
         }
       }
     GQL

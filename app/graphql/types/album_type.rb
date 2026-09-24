@@ -26,6 +26,7 @@ module Types
     field :description, String, 'Description of the album', null: true
     field :description_html, String, 'HTML description of the album', null: true
     field :photos_count, Integer, 'Number of photos in the album', null: false
+    field :privatizable_photos_count, Integer, 'Number of non-private photos the current user may set to private (editors only)', null: true
 
     field :privacy, String, 'Privacy level of the album', null: false
 
@@ -80,21 +81,16 @@ module Types
 
     def cover_photo
       # For editors (owner/admin), prefer the user-set cover if present,
-      if Pundit.policy(context[:current_user], @object)&.update?
-        # we can't unscope belongs_to associations, so we need to do it manually
-        association_scope = @object.association(:user_cover_photo).scope
-        unscoped_association = association_scope.unscope(where: :privacy)
-        user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
-        return user_cover if user_cover
-
-        # Editors can see every photo in the album, so when there's no
-        # user-set cover and no public one (e.g. every photo is private),
-        # fall back to any photo rather than showing none at all.
-        return @object.public_cover_photo || @object.all_photos(select: false, refetch: true).first
-      end
+      return editor_cover_photo if Pundit.policy(context[:current_user], @object)&.update?
 
       # Fallback to the public cover (what visitors/non-owners see)
       @object.public_cover_photo
+    end
+
+    def privatizable_photos_count
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.non_private_photos.count
     end
 
     def previous_photo_in_album(photo_id:)
@@ -139,6 +135,27 @@ module Types
     end
 
     private
+
+    def editor_cover_photo
+      # we can't unscope belongs_to associations, so we need to do it manually
+      association_scope = @object.association(:user_cover_photo).scope
+      unscoped_association = association_scope.unscope(where: :privacy)
+      user_cover = Pundit.policy_scope(context[:current_user], unscoped_association).first
+      return user_cover if user_cover
+
+      return @object.public_cover_photo if @object.public_cover_photo
+
+      fallback_cover_photo
+    end
+
+    # Editors can see every photo in the album, so when there's no
+    # user-set cover and no public one (e.g. every photo is private),
+    # fall back to any photo rather than showing none at all.
+    def fallback_cover_photo
+      return nil if @object.photos_count.zero?
+
+      @object.all_photos(select: false, refetch: true).first
+    end
 
     def scoped_photo_ordering(photo_id)
       base = Pundit.policy_scope(context[:current_user], Photo.unscoped)

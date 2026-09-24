@@ -32,15 +32,17 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
 
   context 'when the album is not found' do
     before do
+      sign_in(album.user)
       album.destroy
     end
 
-    it 'returns an error' do
+    it 'returns the same NOT_FOUND error as an unauthorized album' do
       post_mutation
       json = response.parsed_body
-      errors = json['errors'].first
+      err = json['errors']&.first
 
-      expect(errors['message']).to eq('Album not found')
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+      expect(json.dig('data', 'setAlbumPrivacy')).to be_nil
     end
   end
 
@@ -176,6 +178,52 @@ RSpec.describe 'setAlbumPrivacy Mutation', type: :request do
 
         expect(photo1.reload.privacy).to eq('private')
         expect(photo2.reload.privacy).to eq('private')
+      end
+    end
+
+    context "when the album contains another user's photo" do
+      include_context 'with auth actors'
+
+      let(:update_photos) { true }
+      let(:new_privacy) { 'private' }
+      let!(:owned_photo) { create(:photo, user: owner, privacy: 'public') }
+      let!(:foreign_photo) { create(:photo, user: stranger, privacy: 'public') }
+
+      before do
+        album.update(user: owner, privacy: 'public')
+        album.photos << owned_photo
+        album.photos << foreign_photo
+        sign_in(owner)
+      end
+
+      it "sets every non-private photo in the album to private, including the other user's" do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['photosUpdatedCount']).to eq(2)
+        expect(owned_photo.reload.privacy).to eq('private')
+        expect(foreign_photo.reload.privacy).to eq('private')
+      end
+    end
+
+    context 'when the album is already private and gains a new public photo' do
+      let(:update_photos) { true }
+      let(:new_privacy) { 'private' }
+      let!(:photo1) { create(:photo, user: album.user, privacy: 'public') }
+
+      before do
+        album.update(privacy: 'private')
+        album.photos << photo1
+      end
+
+      it 're-cascades and privatizes the newly added photo' do
+        post_mutation
+        json = response.parsed_body
+        data = json['data']['setAlbumPrivacy']
+
+        expect(data['photosUpdatedCount']).to eq(1)
+        expect(photo1.reload.privacy).to eq('private')
       end
     end
 

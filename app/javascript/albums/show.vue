@@ -53,6 +53,7 @@
           album.canEdit &&
           applicationStore.managingAlbum
         "
+        ref="albumManagementRef"
         :album="album"
         @delete-album="deleteAlbum"
         @update-sorting="updateAlbumSorting"
@@ -178,6 +179,7 @@ import Pagination from "@/shared/pagination.vue";
 // route
 const route = useRoute();
 const router = useRouter();
+const albumManagementRef = ref(null);
 
 const applicationStore = useApplicationStore();
 const userStore = useUserStore();
@@ -383,6 +385,7 @@ const {
       album {
         id
         privacy
+        privatizablePhotosCount
       }
       photosUpdatedCount
     }
@@ -416,6 +419,7 @@ onSetAlbumPrivacyError((error) => {
     "An error occurred while updating album privacy: " + error.message,
     "is-danger",
   );
+  albumManagementRef.value?.revertPrivacy();
 });
 
 const updateAlbumSorting = (sortingData) => {
