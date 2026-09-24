@@ -152,6 +152,7 @@ describe 'updateUserSettings Mutation', type: :request do
     end
 
     context 'when defaultLicense is invalid' do
+      let!(:user) { create(:user, email: email, first_name: first_name, last_name: last_name, display_name: display_name, timezone: timezone, default_license: 'CC BY 4.0') }
       let(:default_license_arg) { '"Whatever I Want"' }
       let(:query) do
         <<~GQL
@@ -171,13 +172,16 @@ describe 'updateUserSettings Mutation', type: :request do
         GQL
       end
 
-      it 'returns a validation error and leaves the default license unchanged' do
+      it 'returns a validation error and saves none of the settings' do
         post_mutation
         json = response.parsed_body
         errors = json['errors'].first
 
         expect(errors['message']).to eq('Invalid license value')
-        expect(user.reload.default_license).to be_nil
+        user.reload
+        expect(user.default_license).to eq('CC BY 4.0')
+        expect(user.first_name).to eq(first_name)
+        expect(user.timezone).to eq(timezone)
       end
     end
   end

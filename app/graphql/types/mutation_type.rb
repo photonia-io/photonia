@@ -128,6 +128,7 @@ module Types
       raise Pundit::NotAuthorizedError, 'User not signed in' unless user
 
       context[:authorize].call(user, :update?)
+      default_license = validated_default_license(optional)
       # for now we don't allow users to change their email
       # as that should trigger Devise's confirmation email
       # user.update(email: email)
@@ -135,7 +136,8 @@ module Types
       user.update(last_name: last_name)
       user.update(display_name: display_name)
       user.update(timezone: timezone)
-      update_default_license(user, optional)
+      # An omitted argument must not wipe the user's existing default
+      user.update(default_license:) if optional.key?(:default_license)
       user
     end
 
@@ -151,14 +153,12 @@ module Types
 
     private
 
-    # Only touches default_license when the caller actually sent it - an
-    # omitted argument must not silently wipe the user's existing default.
-    def update_default_license(user, optional)
-      return unless optional.key?(:default_license)
-
+    # Checked before any write so an invalid value can't leave the other settings half-saved
+    def validated_default_license(optional)
       normalized = optional[:default_license].presence
       raise GraphQL::ExecutionError, 'Invalid license value' if normalized && License::VALUES.exclude?(normalized)
-      raise GraphQL::ExecutionError, user.errors.full_messages.join(', ') unless user.update(default_license: normalized)
+
+      normalized
     end
   end
 end
