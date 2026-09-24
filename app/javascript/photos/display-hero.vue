@@ -15,8 +15,12 @@
       <div
         id="image-wrapper"
         :class="{ 'is-animated': animated }"
-        :style="{ '--photo-ratio': ratio, '--photo-width': nativeWidth }"
-        @transitionend="onBoxTransitionEnd"
+        :style="{
+          '--photo-ratio': ratio,
+          '--photo-width': nativeWidth,
+          '--target-ratio': ratio,
+          '--target-width': nativeWidth,
+        }"
       >
         <!-- Loading spinner -->
         <div v-if="showSpinner" class="loading-spinner">
@@ -140,36 +144,6 @@ const nativeWidth = ref(1200);
 const animated = ref(false);
 let animationEnabled = false;
 
-// Slightly longer than #image-wrapper.is-animated's transition-duration
-// below - only a safety net for when transitionend doesn't fire (e.g. the
-// incoming photo happens to share the outgoing one's exact ratio and native
-// width, so nothing actually animates), never the primary signal.
-const BOX_TRANSITION_FALLBACK_MS = 500;
-
-// True once the box has finished animating to the incoming photo's shape.
-// A cached image can fire "load" almost instantly - far faster than the box
-// transition - so gating the reveal on imageLoading alone would show the
-// image while the box is still resizing under it, making the photo itself
-// look like it's growing or shrinking. Starts true: there's nothing to wait
-// for until a navigation actually starts an animated transition.
-const boxSettled = ref(true);
-let boxSettleFallbackTimer = null;
-
-const settleBox = () => {
-  clearTimeout(boxSettleFallbackTimer);
-  boxSettled.value = true;
-};
-
-// Real signal that the box has reached its new shape, rather than a guessed
-// duration that has to be kept in sync with the CSS by hand.
-const onBoxTransitionEnd = (event) => {
-  if (event.target !== event.currentTarget) return; // ignore the img's own opacity transition bubbling up
-  if (event.propertyName !== "--photo-ratio" && event.propertyName !== "--photo-width") return;
-  settleBox();
-};
-
-onBeforeUnmount(() => clearTimeout(boxSettleFallbackTimer));
-
 watch(
   () => props.photo.extralargeDimensions,
   (dimensions) => {
@@ -195,14 +169,6 @@ watch(
   () => props.photo.id,
   () => {
     imageLoading.value = true;
-
-    // Only an actual navigation (not the first-ever load, which never
-    // animates) needs the reveal gated on the box settling.
-    if (animated.value) {
-      boxSettled.value = false;
-      clearTimeout(boxSettleFallbackTimer);
-      boxSettleFallbackTimer = setTimeout(settleBox, BOX_TRANSITION_FALLBACK_MS);
-    }
   },
 );
 
@@ -222,30 +188,53 @@ const onImageError = () => {
   imageLoading.value = false;
 };
 
-// 0 while the new image is downloading or the box is still resizing to its
-// shape, 0.6 while the previous photo is being held on screen during a
-// navigation, 1 otherwise.
+// 0 while the new image is downloading, 0.6 while the previous photo is
+// being held on screen during a navigation, 1 otherwise. It no longer waits
+// on the box: the photo is sized from --target-*, which never animates, so
+// it can fade in over the morph without ever being scaled by it.
 const heroOpacity = computed(() => {
-  if (imageLoading.value || !boxSettled.value) return 0;
+  if (imageLoading.value) return 0;
   if (props.loading) return 0.6;
   return 1;
 });
 
-// The hide (triggered by imageLoading going true at the start of a
-// navigation) must be instant, not a fade: #image-wrapper's resize starts
-// at that exact moment, and a 300ms fade-out would stay visible - and
-// visibly resize - throughout it. Only the later reveal should be smooth.
+// The hide must be instant, not a fade: --target-* snaps to the incoming
+// photo's dimensions the moment its data arrives, so the outgoing bitmap
+// would visibly jump to the new size if it were still fading out.
 const imageStyle = computed(() => ({
   opacity: heroOpacity.value,
   transition: imageLoading.value ? "none" : "opacity 300ms ease-in-out",
 }));
 
-// Covers the same span as heroOpacity's hidden state, plus the initial
-// "a navigation has started but the new photo hasn't arrived yet" moment
-// (props.loading, when the old image is only dimmed rather than hidden).
-const showSpinner = computed(() => {
-  return props.loading || imageLoading.value || !boxSettled.value;
+// Genuine waiting only - the query in flight or the image still
+// downloading. The morph deliberately doesn't count: it's a cosmetic
+// animation we chose to run, not something being waited on.
+const isBusy = computed(() => {
+  return props.loading || imageLoading.value;
 });
+
+// There's no way to ask the browser whether the image is cached, but the
+// same problem is better solved by not caring: don't show the spinner
+// until isBusy has stayed true for a bit. A cached image (or anything else
+// that resolves fast - a warm CDN, a quick LAN round trip) settles within
+// that window and never shows a spinner at all, rather than flashing one
+// for something too fast to mean anything.
+const SPINNER_DELAY_MS = 150;
+const showSpinner = ref(false);
+let spinnerDelayTimer = null;
+
+watch(isBusy, (busy) => {
+  clearTimeout(spinnerDelayTimer);
+  if (busy) {
+    spinnerDelayTimer = setTimeout(() => {
+      showSpinner.value = true;
+    }, SPINNER_DELAY_MS);
+  } else {
+    showSpinner.value = false;
+  }
+});
+
+onBeforeUnmount(() => clearTimeout(spinnerDelayTimer));
 
 const showLabels = computed(() => {
   return (
@@ -257,55 +246,98 @@ const showLabels = computed(() => {
 </script>
 
 <style scoped lang="scss">
+// --photo-* are eased (they drive the animating height); --target-* are the
+// same values applied instantly, so anything sized from them never scales
+// mid-animation. Both must inherit: ::before and the image read them.
 @property --photo-ratio {
   syntax: "<number>";
-  inherits: false;
+  inherits: true;
   initial-value: 1.5;
 }
 
 @property --photo-width {
   syntax: "<number>";
-  inherits: false;
+  inherits: true;
   initial-value: 1200;
 }
 
+@property --target-ratio {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1.5;
+}
+
+@property --target-width {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1200;
+}
+
+// Never upscale past the displayed derivative's own resolution: whichever
+// constraint is smallest wins - the container's width, the derivative's
+// native pixel width, or the width implied by the height ceiling. Small
+// photos display small; the hero's height genuinely varies per photo
+// rather than always filling to the ceiling.
+@mixin photo-box($ratio, $width) {
+  width: min(
+    100%,
+    calc(#{$width} * 1px),
+    calc(var(--hero-max-height) * #{$ratio})
+  );
+}
+
+// Deliberately full-width and not animated, so it stays a stable sizing
+// reference: everything inside resolves its own `100%` against the hero
+// body's width rather than against a box that's mid-morph.
 #image-wrapper {
   --hero-max-height: calc(100vh - 150px);
 
   position: relative;
   display: block;
-  margin: 0 auto;
-  aspect-ratio: var(--photo-ratio);
-  // Never upscale past the displayed derivative's own resolution: whichever
-  // constraint is smallest wins - the container's width, the derivative's
-  // native pixel width, or the width implied by the height ceiling. Small
-  // photos display small; the hero's height genuinely varies per photo
-  // rather than always filling to the ceiling.
-  width: min(
-    100%,
-    calc(var(--photo-width) * 1px),
-    calc(var(--hero-max-height) * var(--photo-ratio))
-  );
+  width: 100%;
+  overflow: hidden;
+
+  // The morph. Invisible - it exists only to give the wrapper its height,
+  // which is what drives the hero's height and the page layout below it.
+  &::before {
+    content: "";
+    display: block;
+    margin: 0 auto;
+    aspect-ratio: var(--photo-ratio);
+    @include photo-box(var(--photo-ratio), var(--photo-width));
+  }
 
   &.is-animated {
     transition: --photo-ratio 350ms ease, --photo-width 350ms ease;
   }
 }
 
-#image-wrapper > a {
-  display: block;
-  width: 100%;
-  height: 100%;
+// Sized from --target-*, so the photo is at its final size from the first
+// frame and the morph happens around it, never to it. While the wrapper is
+// shorter than the photo (a growing morph) overflow: hidden above crops it,
+// so it's uncovered rather than stretched.
+#image-wrapper > a,
+#image-wrapper > img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: auto;
+  aspect-ratio: var(--target-ratio);
+  @include photo-box(var(--target-ratio), var(--target-width));
 }
 
 #image-wrapper img {
   display: block;
-  width: 100%;
-  height: 100%;
   object-fit: contain;
   border-radius: 2px;
   // transition itself is set inline (imageStyle) - the hide must be instant,
   // only the reveal fades, so it can't be a single static rule here.
+}
+
+#image-wrapper > a img {
+  width: 100%;
+  height: 100%;
 }
 
 /* remove padding from hero-body when on mobile */
@@ -315,12 +347,28 @@ const showLabels = computed(() => {
   }
 }
 
+// Both of these used to inherit the photo's box for free, back when the
+// wrapper was the photo box. It's full-width now, so they have to take the
+// photo's geometry themselves to stay aligned to the image.
 .overlay {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.5);
+  @include photo-box(var(--target-ratio), var(--target-width));
+}
+
+// Positioned so the Rekognition label boxes inside, which are placed in
+// percentages, resolve against the photo rather than the full-width wrapper.
+.labels {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: auto;
+  aspect-ratio: var(--target-ratio);
+  @include photo-box(var(--target-ratio), var(--target-width));
 }
 
 .hero {
