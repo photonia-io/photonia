@@ -36,27 +36,9 @@ In separate terminals:
 
 Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procfile.dev`
 
-### Starting Docker containers for system specs
+### System specs
 
-     docker network create grid
-
-    docker run -d \
-        --name selenium-hub \
-        -p 4442-4444:4442-4444 \
-        --net grid \
-        selenium/hub:latest
-
-    docker run -d \
-        --net grid \
-        --shm-size="2g" \
-        -e SE_EVENT_BUS_HOST=selenium-hub \
-        -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-        -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-        selenium/node-chrome:latest
-
-Selenium Grid becomes available at http://localhost:4444/ui
-
-**Note:** For the moment system specs are configured not to run from the [.rspec config file](.rspec).
+System specs (`spec/system`) drive a headless Chrome through [Cuprite](https://github.com/rubycdp/cuprite) and run with the rest of the suite locally; CI runs them in a separate `system` job. They need Chrome or Chromium installed locally (`sudo apt install chromium`); set `BROWSER_PATH` if it isn't on the `PATH`.
 
 ## Versioning & Releases
 

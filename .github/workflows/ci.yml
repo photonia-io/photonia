@@ -104,11 +104,64 @@ jobs:
         run: bin/rails db:schema:load
       # Add or replace test runners here
       - name: Run rspec
-        run: bundle exec rspec
+        run: bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
         with:
           slug: photonia-io/photonia
+
+  # Browser specs via Cuprite; ubuntu-latest ships Chrome.
+  system:
+    needs: changes
+    if: needs.changes.outputs.rspec == 'true' || needs.changes.outputs.vitest == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_DB: photonia_test
+          POSTGRES_USER: rails
+          POSTGRES_PASSWORD: password
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: "postgres://rails:password@localhost:5432/photonia_test"
+      DEVISE_JWT_SECRET_KEY: ci-test-jwt-secret-key
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install OS packages (from cache)
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libpq-dev libexif-dev imagemagick
+          version: 1.0
+      - name: "Symlink imagemagick's identify command"
+        run: sudo ln -sf /usr/bin/identify-im6.q16 /usr/bin/identify
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "yarn"
+      - name: Install Node packages
+        run: yarn install --immutable
+      - name: Set up database schema
+        run: bin/rails db:schema:load
+      - name: Run system specs
+        run: bundle exec rspec spec/system
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capybara-screenshots
+          path: tmp/capybara/
+          if-no-files-found: ignore
 
   vitest:
     needs: changes
