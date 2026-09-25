@@ -8,7 +8,56 @@ on:
   pull_request:
     branches: ["main"]
 jobs:
+  # Skips test jobs for changes that can't affect them (docs, deploy config, ...).
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      rspec: ${{ steps.filter.outputs.rspec }}
+      vitest: ${{ steps.filter.outputs.vitest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            workflow: &workflow
+              - .github/workflows/ci.yml
+            js_build: &js_build
+              - package.json
+              - yarn.lock
+              - .yarnrc.yml
+              - vite.config.js
+            rspec:
+              - *workflow
+              - *js_build
+              - app/**
+              - bin/**
+              - "config/!(deploy*)"
+              - config/*/**
+              - db/**
+              - lib/**
+              - public/**
+              - spec/**
+              - vendor/**
+              - Gemfile
+              - Gemfile.lock
+              - .ruby-version
+              - .rspec
+              - .browserslistrc
+              - Rakefile
+              - config.ru
+            vitest:
+              - *workflow
+              - *js_build
+              - app/javascript/**
+
   rspec:
+    needs: changes
+    if: needs.changes.outputs.rspec == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -61,6 +110,8 @@ jobs:
           slug: photonia-io/photonia
 
   vitest:
+    needs: changes
+    if: needs.changes.outputs.vitest == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
