@@ -75,12 +75,14 @@ export function useProcessingPoller({
       currentInterval = interval;
       lastProgressAt = Date.now();
       onCompleted?.(completedCount);
-    } else if (Date.now() - lastProgressAt >= stallTimeout) {
-      // Flag the stall, but keep tracking - a slow backlog can still finish later.
-      tracked.forEach((item) => {
-        item.processingTimedOut = true;
-      });
     } else {
+      const now = Date.now();
+      // Per item, not batch-wide, or one tracked long after another already
+      // stalled would be flagged on its very first tick.
+      tracked.forEach((item) => {
+        const since = Math.max(item.trackedAt, lastProgressAt);
+        if (now - since >= stallTimeout) item.processingTimedOut = true;
+      });
       currentInterval = Math.min(currentInterval * 2, MAX_INTERVAL);
     }
 
@@ -91,6 +93,7 @@ export function useProcessingPoller({
     if (!item.response?.photo?.id) return;
 
     item.slug = item.response.photo.id;
+    item.trackedAt = Date.now();
     item.labeled = false;
     item.processed = false;
     item.processingFailed = false;

@@ -231,6 +231,28 @@ describe("useProcessingPoller", () => {
       // showing "still processing" beside its Complete badge.
       expect(item.processingTimedOut).toBe(false);
     });
+
+    it("gives a newly tracked item its own clock, not the whole batch's", async () => {
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      // A stall timeout well past the (10s-capped) poll interval, so there's
+      // room to observe a tick without "fresh" stalling on its own merits.
+      const bigStallTimeout = 20000;
+      const { track } = setup({ fetchStatus, stallTimeout: bigStallTimeout });
+
+      const stale = successItem("stale");
+      track(stale);
+      await vi.advanceTimersByTimeAsync(bigStallTimeout * 3);
+      expect(stale.processingTimedOut).toBe(true);
+
+      // Tracked well after that stall - shouldn't inherit it on the next
+      // tick just because the shared "last progress" clock is old.
+      const fresh = successItem("fresh");
+      track(fresh);
+      await vi.advanceTimersByTimeAsync(12000); // one tick, short of its own stall
+
+      expect(fresh.processingTimedOut).toBe(false);
+      expect(stale.processingTimedOut).toBe(true); // still flagged, unaffected
+    });
   });
 
   describe("untrack", () => {

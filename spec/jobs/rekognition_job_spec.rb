@@ -47,9 +47,8 @@ RSpec.describe RekognitionJob do
       allow(Sentry).to receive(:capture_exception)
     end
 
-    # retry_on tracks attempts per job instance (exception_executions); preset
-    # it past the configured attempts so perform_now hits the exhausted
-    # branch immediately instead of actually retrying.
+    # Preset attempts past the configured limit so perform_now hits the
+    # exhausted branch immediately, instead of actually retrying.
     def job_with_exhausted_attempts
       job = described_class.new(photo.id)
       job.exception_executions['[StandardError]'] = 20

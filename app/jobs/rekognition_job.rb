@@ -4,9 +4,7 @@
 class RekognitionJob < ApplicationJob
   queue_as :default
 
-  # Once ActiveJob gives up retrying, record it as a terminal failure instead
-  # of leaving the photo to poll as "processing" forever - AddDerivativesJob
-  # (and therefore processed_at) never runs without this job succeeding first.
+  # Once retries are exhausted, mark it failed instead of leaving it to poll forever.
   retry_on StandardError, wait: :polynomially_longer, attempts: 10 do |job, error|
     Sentry.capture_exception(error)
     Photo.unscoped.where(id: job.arguments.first).update_all(processing_failed_at: Time.current)
