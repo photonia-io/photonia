@@ -11,7 +11,7 @@ describe 'updateAlbumTitle Mutation', type: :request do
   let(:description) { 'Test description' }
   let(:album) { create(:album, title: title, description: description) }
 
-  let(:new_title) { 'New test title' }
+  let(:new_title) { 'Zanzibar test title' }
 
   let(:query) do
     <<~GQL
@@ -70,6 +70,17 @@ describe 'updateAlbumTitle Mutation', type: :request do
         'title' => new_title,
         'description' => description
       )
+    end
+
+    it 'refreshes the search vector of the album photos' do
+      photo = create(:photo, user: album.user)
+      album.photos << photo
+
+      expect(Photo.search('zanzibar')).not_to include(photo)
+
+      post_mutation
+
+      expect(Photo.search('zanzibar')).to include(photo)
     end
 
     context 'when updating to an empty title' do

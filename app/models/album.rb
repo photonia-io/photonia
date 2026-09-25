@@ -69,6 +69,7 @@ class Album < ApplicationRecord
 
   after_create :maintenance
   after_update :maintenance
+  after_commit :refresh_photos_tsv, if: :saved_change_to_title?
 
   default_scope { where(privacy: 'public') }
 
@@ -97,6 +98,13 @@ class Album < ApplicationRecord
                        user_cover_photo_id: ucpi)
 
     self
+  end
+
+  # The tsv trigger reads the album title through photos.albums_photos, so
+  # renaming an album leaves its photos' tsv stale until they're touched.
+  def refresh_photos_tsv
+    # rubocop:disable-next Rails/SkipsModelValidations
+    Photo.unscoped.where(id: albums_photos.select(:photo_id)).touch_all
   end
 
   def non_private_photos
