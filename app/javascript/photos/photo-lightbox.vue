@@ -214,12 +214,18 @@ const showControls = () => {
   }, 3000);
 };
 
-// The overlay is a full-viewport fixed box, so this is known before mount -
-// sizing the frame from it keeps the first paint correct.
-const viewportSize = ref({ width: window.innerWidth, height: window.innerHeight });
+// The overlay fills the viewport, so this is known before mount - sizing the
+// frame from it keeps the first paint correct. clientWidth, not innerWidth:
+// Bulma forces a root scrollbar, which the overlay doesn't cover.
+const readViewport = () => ({
+  width: document.documentElement.clientWidth || window.innerWidth,
+  height: document.documentElement.clientHeight || window.innerHeight,
+});
+
+const viewportSize = ref(readViewport());
 
 const handleResize = () => {
-  viewportSize.value = { width: window.innerWidth, height: window.innerHeight };
+  viewportSize.value = readViewport();
   updateContainerDimensions();
   constrainPosition();
 };
@@ -631,10 +637,8 @@ watch(
 
 .lightbox-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  // Not 100vw/100vh: those can include the scrollbar, off-centering the frame.
+  inset: 0;
   background: rgba(0, 0, 0, 0.95);
   z-index: 9999;
   display: flex;

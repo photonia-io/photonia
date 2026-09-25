@@ -260,6 +260,19 @@ describe("PhotoLightbox variants and animation", () => {
       expect(frameStyle().transition).toBe("transform 350ms ease");
     });
 
+    it("sizes the frame from the viewport excluding the scrollbar", async () => {
+      // Bulma forces a root scrollbar; innerWidth still counts it.
+      vi.spyOn(document.documentElement, "clientWidth", "get").mockReturnValue(
+        1009,
+      );
+      vi.spyOn(document.documentElement, "clientHeight", "get").mockReturnValue(
+        768,
+      );
+      await openLightbox();
+
+      expect(frameStyle().width).toBe("1009px");
+    });
+
     it("opens without animating when reduced motion is preferred", async () => {
       vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true });
       await openLightbox({ getOriginRect: () => originRect });
