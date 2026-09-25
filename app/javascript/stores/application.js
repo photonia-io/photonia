@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 
+import { useSelectionStore } from "@/stores/selection";
+
 export const useApplicationStore = defineStore("application", () => {
   const navigationShortcutsEnabled = ref(true);
   // we are editing either photo details or album details, details = title or description
   const editing = ref(false);
-  const managingAlbum = ref(false);
-  const selectionMode = ref(localStorage.getItem("selectionMode") === "true");
 
   const systemColorScheme =
     window.matchMedia &&
@@ -40,30 +40,6 @@ export const useApplicationStore = defineStore("application", () => {
     enableNavigationShortcuts();
   }
 
-  function startManagingAlbum() {
-    managingAlbum.value = true;
-  }
-
-  function stopManagingAlbum() {
-    managingAlbum.value = false;
-  }
-
-  watch(selectionMode, (newValue) => {
-    localStorage.setItem("selectionMode", newValue);
-  });
-
-  function enterSelectionMode() {
-    selectionMode.value = true;
-  }
-
-  function exitSelectionMode() {
-    selectionMode.value = false;
-  }
-
-  function toggleSelectionMode() {
-    selectionMode.value = !selectionMode.value;
-  }
-
   watch(userColorScheme, (newValue) => {
     localStorage.setItem("userColorScheme", newValue);
   });
@@ -77,14 +53,15 @@ export const useApplicationStore = defineStore("application", () => {
   });
 
   function signOut() {
-    exitSelectionMode();
+    const selectionStore = useSelectionStore();
+    selectionStore.clearAll();
   }
 
   // Global navigation confirmation modal state
   const navModalActive = ref(false);
   const navModalMessage = ref("");
   const navNavigateTo = ref(null);
-  const navAction = ref(null); // "stopEditing" | "clearAlbumSelection"
+  const navAction = ref(null); // "stopEditing"
 
   function openNavigationModal(to, message, action) {
     navNavigateTo.value = to;
@@ -106,15 +83,8 @@ export const useApplicationStore = defineStore("application", () => {
     editing,
     startEditing,
     stopEditing,
-    managingAlbum,
-    startManagingAlbum,
-    stopManagingAlbum,
-    selectionMode,
     colorScheme,
     setUserColorScheme,
-    enterSelectionMode,
-    exitSelectionMode,
-    toggleSelectionMode,
     showLabelsOnHero,
     signOut,
 

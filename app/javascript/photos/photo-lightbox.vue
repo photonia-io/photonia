@@ -106,6 +106,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import ZoomInSVG from "../shared/svg/zoom-in.vue";
 import ZoomOutSVG from "../shared/svg/zoom-out.vue";
 import CloseSVG from "../shared/svg/close.vue";
+import { useApplicationStore } from "@/stores/application";
 
 const props = defineProps({
   photo: {
@@ -230,12 +231,31 @@ const handleResize = () => {
   constrainPosition();
 };
 
+const applicationStore = useApplicationStore();
+
+// The component itself is always mounted (its parent toggles `isOpen`, not
+// whether it exists), so open/close is this watcher, not onMounted/onUnmounted.
+// Suspends the global Escape-clears-selection handler (app.vue) and photo
+// navigation shortcuts while the lightbox owns Escape and the arrow keys.
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      applicationStore.disableNavigationShortcuts();
+    } else {
+      applicationStore.enableNavigationShortcuts();
+    }
+  },
+  { immediate: true },
+);
+
 onMounted(() => {
   window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
+  if (props.isOpen) applicationStore.enableNavigationShortcuts();
 });
 
 // No zoom reset here: this also fires on the hi-res swap, mid-zoom.

@@ -2,7 +2,7 @@
   <button
     class="button is-danger"
     :disabled="props.photos.length === 0"
-    @click="modalActive = true"
+    @click="openModal"
   >
     <span class="icon-text">
       <span class="icon"><i class="fas fa-trash"></i></span>
@@ -12,7 +12,7 @@
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
-      <div class="modal-card">
+      <div class="modal-card" ref="modalCard" tabindex="-1">
         <header class="modal-card-head">
           <p class="modal-card-title has-text-centered">Delete Photos</p>
         </header>
@@ -25,7 +25,7 @@
           <button class="button is-danger" @click="performDelete">
             Delete
           </button>
-          <button class="button is-info" @click="modalActive = false">
+          <button class="button is-info" @click="closeModal">
             Cancel
           </button>
         </footer>
@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useModal } from "@/mixins/use-modal";
 
 const props = defineProps({
   photos: {
@@ -46,10 +46,10 @@ const props = defineProps({
 
 const emit = defineEmits(["deletePhotos"]);
 
-const modalActive = ref(false);
+const { active: modalActive, modalCard, open: openModal, close: closeModal } = useModal();
 
 const performDelete = () => {
   emit("deletePhotos", { ids: props.photos.map((p) => p.id) });
-  modalActive.value = false;
+  closeModal();
 };
 </script>

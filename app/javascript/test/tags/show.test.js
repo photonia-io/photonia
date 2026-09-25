@@ -47,9 +47,15 @@ vi.mock("vue-page-title", () => ({
 import TagsShow from "@/tags/show.vue";
 import { shallowMount } from "@vue/test-utils";
 import { useTitle } from "vue-page-title";
+import { createPinia, setActivePinia } from "pinia";
 
 test("it sets the correct page title", () => {
-  shallowMount(TagsShow, { global: { stubs: { "router-link": true } } });
+  const pinia = createPinia();
+  setActivePinia(pinia);
+
+  shallowMount(TagsShow, {
+    global: { plugins: [pinia], stubs: { "router-link": true } },
+  });
   expect(useTitle).toHaveBeenCalled();
   expect(useTitle).toHaveReturnedWith("Tag: " + testTagName);
 });

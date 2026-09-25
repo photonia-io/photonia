@@ -12,7 +12,7 @@
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
-      <div class="modal-card">
+      <div class="modal-card" ref="modalCard" tabindex="-1">
         <header class="modal-card-head">
           <p class="modal-card-title has-text-centered">Remove From Album</p>
         </header>
@@ -26,7 +26,7 @@
           <button class="button is-primary" @click="removeFromAlbum()">
             Remove
           </button>
-          <button class="button is-info" @click="modalActive = false">
+          <button class="button is-info" @click="closeModal">
             Cancel
           </button>
         </footer>
@@ -36,8 +36,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import RemoveFromAlbumSelect from "@/albums/remove-from-album-select.vue";
+import { useModal } from "@/mixins/use-modal";
 
 const props = defineProps({
   photos: {
@@ -48,20 +49,12 @@ const props = defineProps({
 
 const emit = defineEmits(["removePhotosFromAlbum"]);
 
-const modalActive = ref(false);
 const removeFromAlbumSelect = ref();
-
-onMounted(() => {
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      modalActive.value = false;
-    }
-  });
-});
+const { active: modalActive, modalCard, open: openModal, close: closeModal } = useModal();
 
 const showModal = () => {
   removeFromAlbumSelect.value.reset();
-  modalActive.value = true;
+  openModal();
 };
 
 const removeFromAlbum = () => {
@@ -79,6 +72,6 @@ const removeFromAlbum = () => {
     photoIds: photoIds,
   });
 
-  modalActive.value = false;
+  closeModal();
 };
 </script>

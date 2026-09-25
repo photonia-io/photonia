@@ -172,3 +172,22 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   display: flex;
   align-items: center;
 }
+
+// Keeps the last grid row clear of the fixed-bottom selection bar
+// (shared/selection-bar.vue) while it's visible.
+.has-selection-bar {
+  padding-bottom: 4.5rem;
+}
+
+// Long-press-to-select isn't discoverable on its own, so list views show a
+// "Select" button as a touch-only hint. Hidden wherever a mouse (hover) is
+// available, since hovering a card already reveals its checkbox there.
+.touch-only {
+  display: none;
+}
+
+@media (hover: none) {
+  .touch-only {
+    display: inline-flex;
+  }
+}

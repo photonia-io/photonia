@@ -2,7 +2,7 @@
   <button
     class="button is-danger"
     :disabled="disabled"
-    @click="modalActive = true"
+    @click="openModal"
   >
     <span class="icon">
       <i class="fas fa-times"></i>
@@ -12,7 +12,7 @@
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
-      <div class="modal-card">
+      <div class="modal-card" ref="modalCard" tabindex="-1">
         <header class="modal-card-head">
           <p class="modal-card-title has-text-centered">Clear Selection</p>
         </header>
@@ -23,7 +23,7 @@
           <button class="button is-danger" @click="performClearSelection">
             Clear
           </button>
-          <button class="button is-info" @click="modalActive = false">
+          <button class="button is-info" @click="closeModal">
             Cancel
           </button>
         </footer>
@@ -33,9 +33,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-
 import { useSelectionStore } from "@/stores/selection";
+import { useModal } from "@/mixins/use-modal";
 
 const props = defineProps({
   disabled: {
@@ -47,10 +46,10 @@ const props = defineProps({
 
 const selectionStore = useSelectionStore();
 
-const modalActive = ref(false);
+const { active: modalActive, modalCard, open: openModal, close: closeModal } = useModal();
 
 const performClearSelection = () => {
-  modalActive.value = false;
-  selectionStore.clearPhotoSelection();
+  closeModal();
+  selectionStore.clear();
 };
 </script>
