@@ -86,6 +86,17 @@ RSpec.describe 'removePhotosFromAlbum Mutation', type: :request do
       expect(album_data['id']).to eq(album.slug)
     end
 
+    it 'refreshes the photos search vector so the album title is no longer matched' do
+      album.update!(title: 'Zanzibar Album')
+      # rubocop:disable-next Rails/SkipsModelValidations
+      Photo.unscoped.where(id: [first_photo.id, second_photo.id]).touch_all # rebuild tsv with the new title
+      expect(Photo.search('zanzibar')).to include(first_photo, second_photo)
+
+      post_mutation
+
+      expect(Photo.search('zanzibar')).not_to include(first_photo, second_photo)
+    end
+
     context 'when one or more photos are not found' do
       let(:variables) do
         {

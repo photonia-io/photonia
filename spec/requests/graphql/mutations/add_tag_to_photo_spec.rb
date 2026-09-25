@@ -84,6 +84,11 @@ RSpec.describe 'addTagToPhoto Mutation', type: :request do
       )
     end
 
+    it 'refreshes the photo search vector so the new tag is findable' do
+      post_mutation
+      expect(Photo.search(normalized_tag_name)).to include(photo)
+    end
+
     it 'does not add duplicate tags' do
       photo.tag_list.add(normalized_tag_name)
       photo.save!
