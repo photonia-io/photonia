@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
 
 import DisplayHero from "../../photos/display-hero.vue";
+import PhotoLightbox from "../../photos/photo-lightbox.vue";
 
 const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
@@ -137,6 +138,63 @@ describe("DisplayHero", () => {
       expect(
         wrapper.findComponent(RouterLinkStub).find("img").exists(),
       ).toBe(true);
+    });
+  });
+
+  describe("variant selection", () => {
+    const photoWithLarge = {
+      ...landscapePhoto,
+      largeImageUrl: "https://example.com/landscape-large.jpg",
+      largeDimensions: { width: 1024, height: 512 },
+    };
+
+    it("offers large and extralarge, letting the browser pick", () => {
+      const wrapper = mountDisplayHero({ photo: photoWithLarge });
+      expect(wrapper.find("img").attributes("srcset")).toBe(
+        "https://example.com/landscape-large.jpg 1024w, https://example.com/landscape.jpg 2000w",
+      );
+    });
+
+    it("sizes the choice from the photo's own box", async () => {
+      const wrapper = mountDisplayHero({ photo: photoWithLarge });
+      await nextTick();
+      expect(wrapper.find("img").attributes("sizes")).toBe(
+        "min(100vw, 2000px, calc((100vh - 150px) * 2))",
+      );
+    });
+
+    it("falls back to plain extralarge without large data", () => {
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+      expect(wrapper.find("img").attributes("srcset")).toBeUndefined();
+      expect(wrapper.find("img").attributes("src")).toBe(
+        landscapePhoto.extralargeImageUrl,
+      );
+    });
+  });
+
+  describe("lightbox handoff", () => {
+    it("hands the lightbox the clicked image's rect and src, hiding the hero meanwhile", async () => {
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+      const img = wrapper.find("img");
+      const rect = { left: 10, top: 20, width: 500, height: 250 };
+      vi.spyOn(img.element, "getBoundingClientRect").mockReturnValue(rect);
+      Object.defineProperty(img.element, "currentSrc", {
+        value: "https://example.com/landscape-large.jpg",
+      });
+
+      await img.trigger("click");
+
+      const lightbox = wrapper.findComponent(PhotoLightbox);
+      expect(lightbox.props("isOpen")).toBe(true);
+      expect(lightbox.props("getOriginRect")()).toEqual(rect);
+      expect(lightbox.props("initialSrc")).toBe(
+        "https://example.com/landscape-large.jpg",
+      );
+      expect(img.element.style.visibility).toBe("hidden");
+
+      lightbox.vm.$emit("close");
+      await nextTick();
+      expect(img.element.style.visibility).toBe("visible");
     });
   });
 

@@ -15,6 +15,7 @@ RSpec.describe 'photo imageDimensions', type: :request do
         photo(id: "#{photo.slug}") {
           thumbnail: imageDimensions(type: "thumbnail") { width height }
           medium: imageDimensions(type: "medium") { width height }
+          large: imageDimensions(type: "large") { width height }
           extralarge: imageDimensions(type: "extralarge") { width height }
         }
       }
@@ -44,6 +45,7 @@ RSpec.describe 'photo imageDimensions', type: :request do
         derivatives: {
           thumbnail_square: { width: 150, height: 150 },
           medium_square: { width: 1371, height: 2048 },
+          large: { width: 687, height: 1024 },
           extralarge: { width: 1371, height: 2048 }
         }
       ))
@@ -54,6 +56,7 @@ RSpec.describe 'photo imageDimensions', type: :request do
       data = response.parsed_body['data']['photo']
 
       expect(data['extralarge']).to eq('width' => 1371, 'height' => 2048)
+      expect(data['large']).to eq('width' => 687, 'height' => 1024)
       expect(data['medium']).to eq('width' => 1371, 'height' => 2048)
     end
   end

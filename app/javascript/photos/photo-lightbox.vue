@@ -2,6 +2,7 @@
   <div
     v-if="isOpen"
     class="lightbox-overlay"
+    :class="{ closing }"
     @click="handleOverlayClick"
     role="dialog"
     aria-modal="true"
@@ -62,15 +63,34 @@
           <div class="spinner"></div>
         </div>
 
-        <img
-          ref="lightboxImage"
-          :src="photo.extralargeImageUrl"
-          :style="{ ...imageStyle, opacity: imageLoading ? 0 : 1 }"
-          :alt="photo.title"
-          @load="handleImageLoad"
-          @error="handleImageError"
-          draggable="false"
-        />
+        <!-- Hi-res upgrade badge -->
+        <div v-if="hiResLoading" class="hires-badge">
+          <div class="hires-spinner"></div>
+          <span>Loading higher resolution image...</span>
+        </div>
+
+        <div ref="frame" class="image-frame" :style="frameStyle">
+          <img
+            ref="lightboxImage"
+            :src="displaySrc"
+            :style="{ ...imageStyle, opacity: imageLoading ? 0 : 1 }"
+            :alt="photo.title"
+            @load="handleImageLoad"
+            @error="handleImageError"
+            draggable="false"
+          />
+
+          <!-- Hidden preload: swaps displaySrc in once it lands -->
+          <img
+            v-if="hiResLoading"
+            :key="photo.extralargeImageUrl"
+            :src="photo.extralargeImageUrl"
+            class="hires-preload"
+            alt=""
+            @load="handleHiResLoad"
+            @error="handleHiResError"
+          />
+        </div>
       </div>
 
       <!-- Title bar -->
@@ -100,6 +120,17 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  // Returns the hero image's current rect; called on open and on close, so
+  // closing after next/prev targets the hero as it is now.
+  getOriginRect: {
+    type: Function,
+    default: null,
+  },
+  // The src the hero was showing when clicked, so opening starts from it.
+  initialSrc: {
+    type: String,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["close"]);
@@ -112,9 +143,21 @@ const isDragging = ref(false);
 const dragStart = ref({ x: 0, y: 0 });
 const imageContainer = ref(null);
 const lightboxImage = ref(null);
+const frame = ref(null);
 
 // Image loading state
 const imageLoading = ref(true);
+
+const initialDisplaySrc = () =>
+  props.photo.largeImageUrl || props.photo.extralargeImageUrl || "";
+
+const displaySrc = ref(props.initialSrc || initialDisplaySrc());
+
+// True while extralarge preloads behind the displayed image.
+const hiResLoading = ref(false);
+
+// True while the close (shrink) animation is playing.
+const closing = ref(false);
 
 // Touch handling
 const lastTouchDistance = ref(0);
@@ -134,8 +177,9 @@ const imageStyle = computed(() => ({
 }));
 
 // Methods
-const close = () => {
+const close = async () => {
   resetZoom();
+  await playCloseAnimation();
   emit("close");
 };
 
@@ -170,7 +214,18 @@ const showControls = () => {
   }, 3000);
 };
 
+// The overlay fills the viewport, so this is known before mount - sizing the
+// frame from it keeps the first paint correct. clientWidth, not innerWidth:
+// Bulma forces a root scrollbar, which the overlay doesn't cover.
+const readViewport = () => ({
+  width: document.documentElement.clientWidth || window.innerWidth,
+  height: document.documentElement.clientHeight || window.innerHeight,
+});
+
+const viewportSize = ref(readViewport());
+
 const handleResize = () => {
+  viewportSize.value = readViewport();
   updateContainerDimensions();
   constrainPosition();
 };
@@ -183,12 +238,10 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
 
+// No zoom reset here: this also fires on the hi-res swap, mid-zoom.
 const handleImageLoad = () => {
   imageLoading.value = false;
-  nextTick(() => {
-    updateContainerDimensions();
-    resetZoom();
-  });
+  nextTick(updateContainerDimensions);
 };
 
 const handleImageError = () => {
@@ -208,6 +261,160 @@ const updateContainerDimensions = () => {
   const rect = imageContainer.value.getBoundingClientRect();
   containerDimensions.value = { width: rect.width, height: rect.height };
 };
+
+// Extralarge's ratio, contained in the viewport and capped at its native
+// size - independent of displaySrc, so the hi-res swap never shifts layout.
+const frameSize = computed(() => {
+  const dims = props.photo.extralargeDimensions;
+  const { width: containerWidth, height: containerHeight } = viewportSize.value;
+  if (!dims?.width || !dims?.height || !containerWidth || !containerHeight) {
+    return null;
+  }
+
+  const ratio = dims.width / dims.height;
+  const width = Math.min(containerWidth, dims.width, containerHeight * ratio);
+  return { width, height: width / ratio };
+});
+
+// Open/close animation transform, applied through the bound style: Vue
+// re-applies every frameStyle key on each render, undoing direct writes.
+const frameTransformOverride = ref(null);
+
+const frameStyle = computed(() => {
+  if (!frameSize.value) return {};
+  return {
+    width: `${frameSize.value.width}px`,
+    height: `${frameSize.value.height}px`,
+    ...frameTransformOverride.value,
+  };
+});
+
+// The frame is flex-centered in the viewport, so no measuring needed.
+const finalFrameRect = computed(() => {
+  if (!frameSize.value) return null;
+  const { width: vw, height: vh } = viewportSize.value;
+  return {
+    left: (vw - frameSize.value.width) / 2,
+    top: (vh - frameSize.value.height) / 2,
+    width: frameSize.value.width,
+    height: frameSize.value.height,
+  };
+});
+
+// Accounts for zoom, so zooming into `large` can trigger the upgrade too.
+const needsExtralarge = computed(() => {
+  const extralargeUrl = props.photo.extralargeImageUrl;
+  const largeWidth = props.photo.largeDimensions?.width;
+  if (!extralargeUrl || !largeWidth || !frameSize.value) return false;
+  if (displaySrc.value === extralargeUrl) return false;
+
+  const requiredWidth =
+    frameSize.value.width * (window.devicePixelRatio || 1) * scale.value;
+  return requiredWidth > largeWidth;
+});
+
+// "post" so it runs after the open/photo watchers reset hiResLoading.
+watch(
+  () => [needsExtralarge.value, props.isOpen, props.photo.extralargeImageUrl],
+  ([needed, open]) => {
+    if (needed && open) hiResLoading.value = true;
+  },
+  { immediate: true, flush: "post" },
+);
+
+// Ignores a load that belongs to a photo we've since navigated away from.
+const handleHiResLoad = (event) => {
+  if (event.target.getAttribute("src") !== props.photo.extralargeImageUrl) {
+    return;
+  }
+  displaySrc.value = props.photo.extralargeImageUrl;
+  hiResLoading.value = false;
+};
+
+const handleHiResError = () => {
+  hiResLoading.value = false;
+};
+
+const prefersReducedMotion = () =>
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+const heroRect = () => props.getOriginRect?.() ?? null;
+
+// Translate/scale that maps rect onto origin.
+const transformToRect = (rect, origin) => {
+  if (!rect?.width || !rect?.height || !origin?.width) return null;
+
+  const scaleFactor = origin.width / rect.width;
+  const dx = origin.left + origin.width / 2 - (rect.left + rect.width / 2);
+  const dy = origin.top + origin.height / 2 - (rect.top + rect.height / 2);
+
+  return `translate(${dx}px, ${dy}px) scale(${scaleFactor})`;
+};
+
+// Sets the start transform in the same render that mounts the frame;
+// correcting it after mount let the full-size frame paint once (a flash).
+const startOpenAnimation = () => {
+  const startTransform =
+    !prefersReducedMotion() && transformToRect(finalFrameRect.value, heroRect());
+  frameTransformOverride.value = startTransform
+    ? { transform: startTransform, transition: "none" }
+    : null;
+  return Boolean(startTransform);
+};
+
+// Double rAF so the start state has painted before the grow begins.
+const settleOpenAnimation = () => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (closing.value) return;
+      frameTransformOverride.value = {
+        transform: "none",
+        transition: "transform 350ms ease",
+      };
+    });
+  });
+};
+
+// Shrinks the frame back onto the hero; resolves when done, or at once if
+// there's nothing to animate.
+const playCloseAnimation = () =>
+  new Promise((resolve) => {
+    const frameEl = frame.value;
+    const endTransform =
+      frameEl &&
+      !prefersReducedMotion() &&
+      transformToRect(frameEl.getBoundingClientRect(), heroRect());
+    if (!endTransform) {
+      resolve();
+      return;
+    }
+
+    closing.value = true;
+
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      frameEl.removeEventListener("transitionend", onTransitionEnd);
+      closing.value = false;
+      resolve();
+    };
+    // The image's own zoom-reset transition bubbles up here too.
+    const onTransitionEnd = (event) => {
+      if (event.target === frameEl && event.propertyName === "transform") {
+        finish();
+      }
+    };
+
+    frameEl.addEventListener("transitionend", onTransitionEnd);
+    // Fallback in case transitionend never fires.
+    setTimeout(finish, 400);
+
+    frameTransformOverride.value = {
+      transform: endTransform,
+      transition: "transform 350ms ease",
+    };
+  });
 
 const constrainPosition = () => {
   if (!lightboxImage.value || !imageContainer.value) return;
@@ -350,6 +557,9 @@ watch(
   () => props.photo,
   () => {
     if (props.isOpen) {
+      // initialSrc belongs to the photo that was clicked, not this one.
+      displaySrc.value = initialDisplaySrc();
+      hiResLoading.value = false;
       imageLoading.value = true;
       nextTick(() => {
         resetZoom();
@@ -364,14 +574,21 @@ watch(
   () => props.isOpen,
   (newValue) => {
     if (newValue) {
-      imageLoading.value = true;
+      displaySrc.value = props.initialSrc || initialDisplaySrc();
+      hiResLoading.value = false;
+      // The hero's src is already loaded; hiding it until load blanked it.
+      imageLoading.value = !props.initialSrc;
+      // Not in nextTick: must land in the frame's first render.
+      const animating = startOpenAnimation();
       nextTick(() => {
         updateContainerDimensions();
         resetZoom();
         showControls();
+        if (animating) settleOpenAnimation();
       });
     } else {
       clearTimeout(hideControlsTimeout.value);
+      hiResLoading.value = false;
     }
   },
 );
@@ -411,17 +628,40 @@ watch(
 </script>
 
 <style scoped lang="scss">
+// Backdrop only - fading the whole overlay blinked the photo out.
+@keyframes lightbox-fade-in {
+  from {
+    background-color: rgba(0, 0, 0, 0);
+  }
+}
+
 .lightbox-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  // Not 100vw/100vh: those can include the scrollbar, off-centering the frame.
+  inset: 0;
   background: rgba(0, 0, 0, 0.95);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: lightbox-fade-in 300ms ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+
+  // Backdrop and chrome only, so the photo stays visible as it shrinks.
+  &.closing {
+    animation: none;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color 350ms ease;
+
+    .lightbox-controls,
+    .title-bar,
+    .hires-badge {
+      opacity: 0;
+    }
+  }
 }
 
 .lightbox-container {
@@ -484,6 +724,11 @@ watch(
   position: relative;
 }
 
+// Sized inline via frameStyle; also the open/close animation target.
+.image-frame {
+  position: relative;
+}
+
 .image-container img {
   max-width: 100%;
   max-height: 100%;
@@ -493,6 +738,45 @@ watch(
   -moz-user-select: none;
   -ms-user-select: none;
   transition: opacity 0.3s ease-in-out;
+}
+
+.image-frame img {
+  width: 100%;
+  height: 100%;
+}
+
+// Kept in the DOM (not display: none) so the browser actually fetches it.
+.hires-preload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hires-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+.hires-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
 }
 
 .loading-spinner {

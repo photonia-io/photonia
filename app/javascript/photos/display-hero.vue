@@ -34,6 +34,8 @@
           >
             <img
               :src="photo.extralargeImageUrl"
+              :srcset="imageSrcset"
+              :sizes="imageSizes"
               @load="onImageLoad"
               @error="onImageError"
               :style="imageStyle"
@@ -41,12 +43,19 @@
           </router-link>
           <img
             v-else
+            ref="heroImage"
             :src="photo.extralargeImageUrl"
+            :srcset="imageSrcset"
+            :sizes="imageSizes"
             :alt="photo.title"
             @click="openLightbox"
             @load="onImageLoad"
             @error="onImageError"
-            :style="{ cursor: 'pointer', ...imageStyle }"
+            :style="{
+              cursor: 'pointer',
+              ...imageStyle,
+              visibility: lightboxOpen ? 'hidden' : 'visible',
+            }"
           />
         </template>
         <div v-if="showLabels" class="labels">
@@ -84,6 +93,8 @@
       :photo="photo"
       :loading="loading"
       :is-open="lightboxOpen"
+      :get-origin-rect="heroImageRect"
+      :initial-src="lightboxInitialSrc"
       @close="closeLightbox"
     />
   </div>
@@ -124,6 +135,11 @@ const applicationStore = useApplicationStore();
 
 // Lightbox state
 const lightboxOpen = ref(false);
+const lightboxInitialSrc = ref(null);
+const heroImage = ref(null);
+
+// Measured live, so closing after next/prev targets the current photo.
+const heroImageRect = () => heroImage.value?.getBoundingClientRect() ?? null;
 
 // Image loading state
 const imageLoading = ref(true);
@@ -172,7 +188,27 @@ watch(
   },
 );
 
-const openLightbox = () => {
+// Lets the browser pick large when it covers the displayed size; plain src
+// (extralarge) when large data is missing.
+const imageSrcset = computed(() => {
+  const candidates = [
+    { url: props.photo.largeImageUrl, width: props.photo.largeDimensions?.width },
+    { url: props.photo.extralargeImageUrl, width: props.photo.extralargeDimensions?.width },
+  ].filter((candidate) => candidate.url && candidate.width > 0);
+
+  if (candidates.length < 2) return undefined;
+
+  return candidates.map((candidate) => `${candidate.url} ${candidate.width}w`).join(", ");
+});
+
+// Mirrors the photo-box mixin; 100vw overestimates slightly, erring sharp.
+const imageSizes = computed(
+  () =>
+    `min(100vw, ${nativeWidth.value}px, calc((100vh - 150px) * ${ratio.value}))`,
+);
+
+const openLightbox = (event) => {
+  lightboxInitialSrc.value = event.currentTarget.currentSrc || null;
   lightboxOpen.value = true;
 };
 
