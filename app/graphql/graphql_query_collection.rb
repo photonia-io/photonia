@@ -145,7 +145,7 @@ class GraphqlQueryCollection
         }
       }
     GQL
-    photos_show: <<-GQL.squish
+    photos_show: <<-GQL.squish,
       query PhotosShowQuery($id: ID!) {
         photo(id: $id) {
           id
@@ -262,6 +262,16 @@ class GraphqlQueryCollection
           }
           rekognitionLabelModelVersion
           canEdit
+        }
+      }
+    GQL
+    photos_processing: <<-GQL.squish
+      query PhotosProcessingQuery($ids: [ID!]!) {
+        photosByIds(ids: $ids) {
+          id
+          labeled
+          processed
+          processingFailed
         }
       }
     GQL
