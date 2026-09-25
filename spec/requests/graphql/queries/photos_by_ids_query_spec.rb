@@ -14,16 +14,19 @@ describe 'photosByIds Query' do
       query {
         photosByIds(ids: #{ids_literal}) {
           id
+          labeled
           processed
+          processingFailed
         }
       }
     GQL
   end
 
-  let(:public_photo) { create(:photo, privacy: :public, processed_at: Time.current) }
+  let(:public_photo) { create(:photo, privacy: :public, labeled_at: Time.current, processed_at: Time.current) }
   let(:owner_private_photo) { create(:photo, user: owner, privacy: :private) }
   let(:stranger_private_photo) { create(:photo, user: stranger, privacy: :private) }
-  let(:unprocessed_photo) { create(:photo, privacy: :public, processed_at: nil) }
+  let(:unprocessed_photo) { create(:photo, privacy: :public, labeled_at: nil, processed_at: nil) }
+  let(:failed_photo) { create(:photo, privacy: :public, processing_failed_at: Time.current) }
 
   let(:ids_literal) do
     [public_photo, owner_private_photo, stranger_private_photo, unprocessed_photo]
@@ -82,6 +85,28 @@ describe 'photosByIds Query' do
     by_id = data_dig(response, 'photosByIds').index_by { |p| p['id'] }
     expect(by_id[public_photo.slug]['processed']).to be(true)
     expect(by_id[unprocessed_photo.slug]['processed']).to be(false)
+  end
+
+  it 'reports the labeled flag per photo' do
+    sign_in(admin)
+    post_query
+
+    by_id = data_dig(response, 'photosByIds').index_by { |p| p['id'] }
+    expect(by_id[public_photo.slug]['labeled']).to be(true)
+    expect(by_id[unprocessed_photo.slug]['labeled']).to be(false)
+  end
+
+  context 'with a photo whose Rekognition tagging permanently failed' do
+    let(:ids_literal) { "[\"#{failed_photo.slug}\"]" }
+
+    it 'reports processingFailed true, and processed/labeled false' do
+      post_query
+
+      photo = data_dig(response, 'photosByIds').first
+      expect(photo['processingFailed']).to be(true)
+      expect(photo['processed']).to be(false)
+      expect(photo['labeled']).to be(false)
+    end
   end
 
   it 'does not record an impression' do

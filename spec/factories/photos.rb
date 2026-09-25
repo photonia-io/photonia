@@ -15,10 +15,12 @@
 #  flickr_photopage         :string
 #  image_data               :jsonb
 #  impressions_count        :integer          default(0), not null
+#  labeled_at               :datetime
 #  license                  :string
 #  posted_at                :datetime
 #  privacy                  :enum             default("public")
 #  processed_at             :datetime
+#  processing_failed_at     :datetime
 #  rekognition_response     :jsonb
 #  scanned                  :boolean          default(FALSE), not null
 #  serial_number            :bigint           not null

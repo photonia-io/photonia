@@ -132,11 +132,22 @@
                   {{ item.errors.join(", ") || "Upload failed" }}
                 </p>
                 <p
-                  v-if="item.status === 'success' && item.processingTimedOut"
+                  v-if="
+                    item.status === 'success' &&
+                    item.processingTimedOut &&
+                    !item.processingFailed
+                  "
                   class="has-text-weak is-size-6 mt-1"
                 >
                   This is taking longer than usual. It'll appear once
                   processing finishes.
+                </p>
+                <p
+                  v-if="item.status === 'success' && item.processingFailed"
+                  class="has-text-danger is-size-6 mt-1"
+                >
+                  Automatic tagging failed for this photo. It's uploaded, but
+                  may need a manual look later.
                 </p>
               </div>
 
@@ -151,7 +162,11 @@
                   ]"
                 >
                   <span
-                    v-if="item.status === 'success' && !item.processed"
+                    v-if="
+                      item.status === 'success' &&
+                      !item.processed &&
+                      !item.processingFailed
+                    "
                     class="icon"
                   >
                     <i class="fas fa-spinner fa-pulse"></i>
@@ -356,7 +371,7 @@ useTitle("Upload Photos");
 
 const apolloClient = inject("apolloClient");
 
-async function fetchProcessed(slugs) {
+async function fetchStatus(slugs) {
   const { data } = await apolloClient.query({
     query: gql`
       ${gql_queries.photos_processing}
@@ -364,11 +379,11 @@ async function fetchProcessed(slugs) {
     variables: { ids: slugs },
     fetchPolicy: "network-only",
   });
-  return data.photosByIds.filter((p) => p.processed).map((p) => p.id);
+  return data.photosByIds;
 }
 
 const { track, untrack } = useProcessingPoller({
-  fetchProcessed,
+  fetchStatus,
   onCompleted: () => apolloClient.cache.reset(),
 });
 
@@ -439,11 +454,15 @@ function statusTag(item) {
     return { tagClass: "is-info is-light", text: `Uploading ${item.progress}%` };
   }
   if (item.status === "success") {
+    if (item.processingFailed) {
+      return { tagClass: "is-danger is-light", text: "Processing failed" };
+    }
     if (item.processed) return { tagClass: "is-success is-light", text: "Complete" };
     if (item.processingTimedOut) {
       return { tagClass: "is-warning is-light", text: "Still processing" };
     }
-    return { tagClass: "is-warning is-light", text: "Processing" };
+    if (item.labeled) return { tagClass: "is-info is-light", text: "Creating variants" };
+    return { tagClass: "is-info is-light", text: "Labeling & tagging" };
   }
   return { tagClass: "is-soft", text: "Ready" };
 }
@@ -458,11 +477,16 @@ const successCount = computed(
 );
 const processingCount = computed(
   () =>
-    items.value.filter((item) => item.status === "success" && !item.processed)
-      .length,
+    items.value.filter(
+      (item) =>
+        item.status === "success" && !item.processed && !item.processingFailed,
+    ).length,
 );
 const failedCount = computed(
   () => items.value.filter((item) => item.status === "error").length,
+);
+const processingFailedCount = computed(
+  () => items.value.filter((item) => item.processingFailed).length,
 );
 const pendingCount = computed(
   () => items.value.filter((item) => item.status === "pending").length,
@@ -472,6 +496,9 @@ const summaryText = computed(() => {
   const parts = [`${successCount.value} of ${items.value.length} uploaded`];
   if (processingCount.value) parts.push(`${processingCount.value} processing`);
   if (failedCount.value) parts.push(`${failedCount.value} failed`);
+  if (processingFailedCount.value) {
+    parts.push(`${processingFailedCount.value} tagging failed`);
+  }
   parts.push(formatSize(totalSize.value));
   return parts.join(" · ");
 });

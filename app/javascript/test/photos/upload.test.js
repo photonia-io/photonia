@@ -96,7 +96,9 @@ beforeEach(() => {
       query PhotosProcessingQuery($ids: [ID!]!) {
         photosByIds(ids: $ids) {
           id
+          labeled
           processed
+          processingFailed
         }
       }
     `,
@@ -344,19 +346,39 @@ describe("Upload", () => {
       vi.useFakeTimers();
     });
 
-    it("shows Processing after upload, then polls and shows Complete", async () => {
+    it("shows Labeling & tagging, then Creating variants, then Complete as the pipeline advances", async () => {
       const wrapper = mountUpload();
       await uploadAndRespond(wrapper, "one.jpg", 201, {
         photo: { id: "one" },
       });
 
-      expect(wrapper.text()).toContain("Processing");
+      expect(wrapper.text()).toContain("Labeling & tagging");
       expect(cacheReset).not.toHaveBeenCalled();
 
       apolloQuery.mockResolvedValueOnce({
-        data: { photosByIds: [{ id: "one", processed: true }] },
+        data: {
+          photosByIds: [
+            { id: "one", labeled: true, processed: false, processingFailed: false },
+          ],
+        },
       });
       await vi.advanceTimersByTimeAsync(3000);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(wrapper.text()).toContain("Creating variants");
+      expect(cacheReset).not.toHaveBeenCalled();
+
+      apolloQuery.mockResolvedValueOnce({
+        data: {
+          photosByIds: [
+            { id: "one", labeled: true, processed: true, processingFailed: false },
+          ],
+        },
+      });
+      // Nothing completed on the labeling-only tick, so the interval backed
+      // off to 2x for this one.
+      await vi.advanceTimersByTimeAsync(6000);
       await Promise.resolve();
       await Promise.resolve();
 
@@ -365,6 +387,31 @@ describe("Upload", () => {
       );
       expect(wrapper.text()).toContain("Complete");
       expect(cacheReset).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows Processing failed once Rekognition permanently fails, and stops polling", async () => {
+      const wrapper = mountUpload();
+      await uploadAndRespond(wrapper, "one.jpg", 201, {
+        photo: { id: "one" },
+      });
+
+      apolloQuery.mockResolvedValueOnce({
+        data: {
+          photosByIds: [
+            { id: "one", labeled: true, processed: false, processingFailed: true },
+          ],
+        },
+      });
+      await vi.advanceTimersByTimeAsync(3000);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(wrapper.text()).toContain("Processing failed");
+      expect(wrapper.text()).toContain("Automatic tagging failed");
+
+      const callsSoFar = apolloQuery.mock.calls.length;
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(apolloQuery.mock.calls.length).toBe(callsSoFar); // no more polling
     });
 
     it("does not poll or reset the cache after a failed upload", async () => {
@@ -384,7 +431,11 @@ describe("Upload", () => {
       });
 
       apolloQuery.mockResolvedValueOnce({
-        data: { photosByIds: [{ id: "one", processed: true }] },
+        data: {
+          photosByIds: [
+            { id: "one", labeled: true, processed: true, processingFailed: false },
+          ],
+        },
       });
       await vi.advanceTimersByTimeAsync(3000);
       await Promise.resolve();

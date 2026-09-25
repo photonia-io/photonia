@@ -23,6 +23,11 @@ function successItem(slug) {
   return { response: { photo: { id: slug } } };
 }
 
+// A fetchStatus result for one slug, defaulting to "still labeling".
+function status(id, overrides = {}) {
+  return { id, labeled: false, processed: false, processingFailed: false, ...overrides };
+}
+
 beforeEach(() => {
   vi.useFakeTimers();
 });
@@ -35,136 +40,173 @@ afterEach(() => {
 
 describe("useProcessingPoller", () => {
   describe("track", () => {
-    it("sets slug, processed and processingTimedOut from the item's response", () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track } = setup({ fetchProcessed });
+    it("sets slug, labeled, processed, processingFailed and processingTimedOut from the item's response", () => {
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track } = setup({ fetchStatus });
 
       const item = successItem("one");
       track(item);
 
       expect(item.slug).toBe("one");
+      expect(item.labeled).toBe(false);
       expect(item.processed).toBe(false);
+      expect(item.processingFailed).toBe(false);
       expect(item.processingTimedOut).toBe(false);
     });
 
     it("does nothing for an item with no slug in its response", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track } = setup({ fetchStatus });
 
       track({ response: null });
       await vi.advanceTimersByTimeAsync(INTERVAL);
 
-      expect(fetchProcessed).not.toHaveBeenCalled();
+      expect(fetchStatus).not.toHaveBeenCalled();
     });
 
     it("does not track the same item twice", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track } = setup({ fetchStatus });
 
       const item = successItem("one");
       track(item);
       track(item);
       await vi.advanceTimersByTimeAsync(INTERVAL);
 
-      expect(fetchProcessed).toHaveBeenCalledTimes(1);
-      expect(fetchProcessed).toHaveBeenCalledWith(["one"]);
+      expect(fetchStatus).toHaveBeenCalledTimes(1);
+      expect(fetchStatus).toHaveBeenCalledWith(["one"]);
     });
   });
 
   describe("polling", () => {
     it("polls after the interval and marks a completed item processed", async () => {
       const onCompleted = vi.fn();
-      const fetchProcessed = vi.fn().mockResolvedValue(["one"]);
-      const { track } = setup({ fetchProcessed, onCompleted });
+      const fetchStatus = vi.fn().mockResolvedValue([status("one", { labeled: true, processed: true })]);
+      const { track } = setup({ fetchStatus, onCompleted });
 
       const item = successItem("one");
       track(item);
-      expect(fetchProcessed).not.toHaveBeenCalled();
+      expect(fetchStatus).not.toHaveBeenCalled();
 
       await vi.advanceTimersByTimeAsync(INTERVAL);
 
-      expect(fetchProcessed).toHaveBeenCalledWith(["one"]);
+      expect(fetchStatus).toHaveBeenCalledWith(["one"]);
       expect(item.processed).toBe(true);
       expect(onCompleted).toHaveBeenCalledWith(1);
     });
 
+    it("updates labeled while still polling, without untracking the item", async () => {
+      const fetchStatus = vi.fn().mockResolvedValue([status("one", { labeled: true })]);
+      const { track } = setup({ fetchStatus });
+
+      const item = successItem("one");
+      track(item);
+      await vi.advanceTimersByTimeAsync(INTERVAL);
+
+      expect(item.labeled).toBe(true);
+      expect(item.processed).toBe(false);
+
+      // Nothing completed on that tick, so the interval backed off to 2x.
+      await vi.advanceTimersByTimeAsync(INTERVAL * 2);
+      expect(fetchStatus).toHaveBeenCalledTimes(2); // still being polled
+    });
+
+    it("marks a permanently failed item processingFailed and stops polling it, without marking it processed", async () => {
+      const onCompleted = vi.fn();
+      const fetchStatus = vi
+        .fn()
+        .mockResolvedValue([status("one", { labeled: true, processingFailed: true })]);
+      const { track } = setup({ fetchStatus, onCompleted });
+
+      const item = successItem("one");
+      track(item);
+      await vi.advanceTimersByTimeAsync(INTERVAL);
+
+      expect(item.processingFailed).toBe(true);
+      expect(item.processed).toBe(false);
+      expect(onCompleted).toHaveBeenCalledWith(1);
+
+      await vi.advanceTimersByTimeAsync(INTERVAL * 5);
+      expect(fetchStatus).toHaveBeenCalledTimes(1); // untracked, no more polls
+    });
+
     it("stops polling once every tracked item has completed", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue(["one"]);
-      const { track } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([status("one", { labeled: true, processed: true })]);
+      const { track } = setup({ fetchStatus });
 
       track(successItem("one"));
       await vi.advanceTimersByTimeAsync(INTERVAL);
-      expect(fetchProcessed).toHaveBeenCalledTimes(1);
+      expect(fetchStatus).toHaveBeenCalledTimes(1);
 
       await vi.advanceTimersByTimeAsync(INTERVAL * 5);
-      expect(fetchProcessed).toHaveBeenCalledTimes(1);
+      expect(fetchStatus).toHaveBeenCalledTimes(1);
     });
 
     it("backs off (doubling, capped) while nothing completes, and resets on a completion", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
+      const fetchStatus = vi.fn().mockResolvedValue([]);
       // A stall timeout far beyond this test's timeline, so backoff can be
       // observed for a few ticks without the stall wiping tracked items out.
-      const { track } = setup({ fetchProcessed, stallTimeout: 1000000 });
+      const { track } = setup({ fetchStatus, stallTimeout: 1000000 });
 
       const item = successItem("one");
       track(item);
 
       await vi.advanceTimersByTimeAsync(INTERVAL); // tick 1: at 1000
-      expect(fetchProcessed).toHaveBeenCalledTimes(1);
+      expect(fetchStatus).toHaveBeenCalledTimes(1);
 
       await vi.advanceTimersByTimeAsync(INTERVAL * 2); // tick 2: backed off to 2000
-      expect(fetchProcessed).toHaveBeenCalledTimes(2);
+      expect(fetchStatus).toHaveBeenCalledTimes(2);
 
       await vi.advanceTimersByTimeAsync(INTERVAL * 4); // tick 3: backed off to 4000
-      expect(fetchProcessed).toHaveBeenCalledTimes(3);
+      expect(fetchStatus).toHaveBeenCalledTimes(3);
 
       // Tick 3 already scheduled tick 4 at +8000 (its own backoff, doubled
       // from 4000); the mocked resolution only takes effect once that tick
       // actually runs.
-      fetchProcessed.mockResolvedValueOnce(["one"]);
+      fetchStatus.mockResolvedValueOnce([status("one", { labeled: true, processed: true })]);
       await vi.advanceTimersByTimeAsync(INTERVAL * 8);
-      expect(fetchProcessed).toHaveBeenCalledTimes(4);
+      expect(fetchStatus).toHaveBeenCalledTimes(4);
       expect(item.processed).toBe(true);
     });
 
     it("chunks requests at 100 slugs per call", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track } = setup({ fetchStatus });
 
       const items = Array.from({ length: 150 }, (_, i) => successItem(`p${i}`));
       items.forEach(track);
 
       await vi.advanceTimersByTimeAsync(INTERVAL);
 
-      expect(fetchProcessed).toHaveBeenCalledTimes(2);
-      expect(fetchProcessed.mock.calls[0][0]).toHaveLength(100);
-      expect(fetchProcessed.mock.calls[1][0]).toHaveLength(50);
+      expect(fetchStatus).toHaveBeenCalledTimes(2);
+      expect(fetchStatus.mock.calls[0][0]).toHaveLength(100);
+      expect(fetchStatus.mock.calls[1][0]).toHaveLength(50);
     });
 
     it("survives a fetch rejection and retries on the next tick", async () => {
-      const fetchProcessed = vi
+      const fetchStatus = vi
         .fn()
         .mockRejectedValueOnce(new Error("network"))
-        .mockResolvedValueOnce(["one"]);
-      const { track } = setup({ fetchProcessed });
+        .mockResolvedValueOnce([status("one", { labeled: true, processed: true })]);
+      const { track } = setup({ fetchStatus });
 
       const item = successItem("one");
       track(item);
 
       await vi.advanceTimersByTimeAsync(INTERVAL);
-      expect(fetchProcessed).toHaveBeenCalledTimes(1);
+      expect(fetchStatus).toHaveBeenCalledTimes(1);
       expect(item.processed).toBe(false);
 
       await vi.advanceTimersByTimeAsync(INTERVAL);
-      expect(fetchProcessed).toHaveBeenCalledTimes(2);
+      expect(fetchStatus).toHaveBeenCalledTimes(2);
       expect(item.processed).toBe(true);
     });
   });
 
   describe("stall timeout", () => {
     it("marks remaining items timed out but keeps polling them", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track } = setup({ fetchStatus });
 
       const item = successItem("one");
       track(item);
@@ -175,15 +217,15 @@ describe("useProcessingPoller", () => {
       await vi.advanceTimersByTimeAsync(STALL_TIMEOUT * 3);
 
       expect(item.processingTimedOut).toBe(true);
-      const callsAtTimeout = fetchProcessed.mock.calls.length;
+      const callsAtTimeout = fetchStatus.mock.calls.length;
       expect(callsAtTimeout).toBeGreaterThan(0);
 
       // A slow Sidekiq backlog can still finish after the stall warning -
       // polling shouldn't have stopped, so a later completion still lands.
-      fetchProcessed.mockResolvedValueOnce(["one"]);
+      fetchStatus.mockResolvedValueOnce([status("one", { labeled: true, processed: true })]);
       await vi.advanceTimersByTimeAsync(INTERVAL * 10);
 
-      expect(fetchProcessed.mock.calls.length).toBeGreaterThan(callsAtTimeout);
+      expect(fetchStatus.mock.calls.length).toBeGreaterThan(callsAtTimeout);
       expect(item.processed).toBe(true);
       // Completing clears the stall flag too, or the row would keep
       // showing "still processing" beside its Complete badge.
@@ -193,20 +235,20 @@ describe("useProcessingPoller", () => {
 
   describe("untrack", () => {
     it("stops polling for that item", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track, untrack } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track, untrack } = setup({ fetchStatus });
 
       const item = successItem("one");
       track(item);
       untrack(item);
 
       await vi.advanceTimersByTimeAsync(INTERVAL * 3);
-      expect(fetchProcessed).not.toHaveBeenCalled();
+      expect(fetchStatus).not.toHaveBeenCalled();
     });
 
     it("leaves other tracked items polling", async () => {
-      const fetchProcessed = vi.fn().mockResolvedValue([]);
-      const { track, untrack } = setup({ fetchProcessed });
+      const fetchStatus = vi.fn().mockResolvedValue([]);
+      const { track, untrack } = setup({ fetchStatus });
 
       const one = successItem("one");
       const two = successItem("two");
@@ -215,23 +257,23 @@ describe("useProcessingPoller", () => {
       untrack(one);
 
       await vi.advanceTimersByTimeAsync(INTERVAL);
-      expect(fetchProcessed).toHaveBeenCalledWith(["two"]);
+      expect(fetchStatus).toHaveBeenCalledWith(["two"]);
     });
 
     it("does nothing for an item that isn't tracked", () => {
-      const { untrack } = setup({ fetchProcessed: vi.fn() });
+      const { untrack } = setup({ fetchStatus: vi.fn() });
       expect(() => untrack(successItem("ghost"))).not.toThrow();
     });
   });
 
   it("clears the pending timer when the scope is disposed", async () => {
-    const fetchProcessed = vi.fn().mockResolvedValue([]);
-    const { track } = setup({ fetchProcessed });
+    const fetchStatus = vi.fn().mockResolvedValue([]);
+    const { track } = setup({ fetchStatus });
 
     track(successItem("one"));
     scope.stop();
 
     await vi.advanceTimersByTimeAsync(INTERVAL * 3);
-    expect(fetchProcessed).not.toHaveBeenCalled();
+    expect(fetchStatus).not.toHaveBeenCalled();
   });
 });

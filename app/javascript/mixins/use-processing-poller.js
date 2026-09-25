@@ -12,11 +12,11 @@ function chunk(array, size) {
   return chunks;
 }
 
-// Polls the server for photos whose upload pipeline (Rekognition tagging,
-// then derivatives) has finished. Not ActionCable - a single batched GraphQL
+// Polls the server for each photo's upload-pipeline stage (Rekognition
+// tagging, then derivatives). Not ActionCable - a single batched GraphQL
 // query on a timer, so there's no websocket/channel infrastructure to add.
 export function useProcessingPoller({
-  fetchProcessed,
+  fetchStatus,
   interval = BASE_INTERVAL,
   stallTimeout = 300000,
   onCompleted,
@@ -36,25 +36,36 @@ export function useProcessingPoller({
     if (tracked.length === 0) return;
 
     const slugs = tracked.map((item) => item.slug);
-    let processedSlugs = [];
+    let results = [];
     try {
-      const results = await Promise.all(
-        chunk(slugs, CHUNK_SIZE).map((batch) => fetchProcessed(batch)),
+      const batches = await Promise.all(
+        chunk(slugs, CHUNK_SIZE).map((batch) => fetchStatus(batch)),
       );
-      processedSlugs = results.flat();
+      results = batches.flat();
     } catch {
       // Network hiccup: try again next tick, no state change.
       scheduleNext();
       return;
     }
 
-    const processedSet = new Set(processedSlugs);
+    const statusBySlug = new Map(results.map((status) => [status.id, status]));
     let completedCount = 0;
 
     for (let i = tracked.length - 1; i >= 0; i--) {
-      if (processedSet.has(tracked[i].slug)) {
-        tracked[i].processed = true;
-        tracked[i].processingTimedOut = false;
+      const item = tracked[i];
+      const status = statusBySlug.get(item.slug);
+      if (!status) continue;
+
+      item.labeled = status.labeled;
+
+      if (status.processingFailed) {
+        item.processingFailed = true;
+        item.processingTimedOut = false;
+        tracked.splice(i, 1);
+        completedCount++;
+      } else if (status.processed) {
+        item.processed = true;
+        item.processingTimedOut = false;
         tracked.splice(i, 1);
         completedCount++;
       }
@@ -80,7 +91,9 @@ export function useProcessingPoller({
     if (!item.response?.photo?.id) return;
 
     item.slug = item.response.photo.id;
+    item.labeled = false;
     item.processed = false;
+    item.processingFailed = false;
     item.processingTimedOut = false;
 
     if (tracked.includes(item)) return;

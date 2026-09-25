@@ -269,7 +269,9 @@ class GraphqlQueryCollection
       query PhotosProcessingQuery($ids: [ID!]!) {
         photosByIds(ids: $ids) {
           id
+          labeled
           processed
+          processingFailed
         }
       }
     GQL

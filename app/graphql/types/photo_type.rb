@@ -21,6 +21,7 @@ module Types
     field :impressions_count, Integer, 'Number of impressions', null: true
     field :intelligent_thumbnail, IntelligentThumbnailType, 'Intelligent thumbnail', null: true
     field :is_cover_photo, Boolean, 'Whether the photo is a cover photo', null: true
+    field :labeled, Boolean, 'Whether Rekognition tagging/labeling has finished', null: false
     field :labels, [LabelType], 'Labels', null: true
     field :license, String, 'License type of the photo', null: true
     field :machine_tags, [TagType], 'Machine (Rekognition) tags', null: true
@@ -30,6 +31,7 @@ module Types
     field :previous_photo, PhotoType, 'Previous photo', null: true
     field :privacy, String, 'Privacy level of the photo', null: false
     field :processed, Boolean, 'Whether the upload pipeline (tagging, derivatives) has finished', null: false
+    field :processing_failed, Boolean, 'Whether Rekognition tagging permanently failed', null: false
     field :ratio, Float, 'Ratio of the photo', null: true
     field :rekognition_label_model_version, String, 'Rekognition label model version', null: true
     field :scanned, Boolean, 'Whether the photo is a scan of a print or negative', null: false
@@ -124,6 +126,14 @@ module Types
 
     def processed
       @object.processed_at.present?
+    end
+
+    def labeled
+      @object.labeled_at.present?
+    end
+
+    def processing_failed
+      @object.processing_failed_at.present?
     end
 
     def width
