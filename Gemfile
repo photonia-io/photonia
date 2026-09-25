@@ -6,9 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.4.11'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 7.0'
-# json 3.0 dropped the `quirks_mode` keyword that Rails 7.2's ActiveSupport::JSON encoder still passes to JSON.generate
-gem 'json', '< 3'
+gem 'rails', '~> 8.1.0'
 # Use postgresql as the database for Active Record
 gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
@@ -26,7 +24,7 @@ gem 'jbuilder', '~> 2.11', '>= 2.11.5'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
-gem 'acts-as-taggable-on', '~> 12.0'
+gem 'acts-as-taggable-on', '~> 13.0'
 gem 'aws-sdk-rekognition'
 gem 'aws-sdk-s3', '~> 1.14'
 gem 'devise'
@@ -71,7 +69,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'annotate'
+  gem 'annotaterb'
   gem 'bullet'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen'
