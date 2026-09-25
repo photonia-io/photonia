@@ -1,10 +1,10 @@
 # CLAUDE.md
 
+Only globally relevant guidance goes here, tersely; anything specific to files or directories goes in a path-scoped rule in `.claude/rules/`. When a change makes a note here or in a rule wrong, update it in the same change.
+
 Photonia: self-hosted photo sharing. Rails 7 (Ruby 3.4.7) API + Vue 3 SPA, Postgres, Sidekiq/Redis, Shrine on S3, AWS Rekognition auto-tagging. Most photos were imported from a Flickr export.
 
 App model: the admin shares photos with the world. Visitors can sign up (Google/Facebook only, gated by a `Setting` toggle; no email/password), but that grants only the unused `registered_user` role. Uploading, editing and album management need `has_role?(:uploader)`. Commenting and favoriting are the intended reasons to sign up but don't exist yet — `Comment` records are read-only Flickr imports.
-
-File-specific guidance lives in `.claude/rules/` and loads when matching files are read.
 
 ## Code style
 
