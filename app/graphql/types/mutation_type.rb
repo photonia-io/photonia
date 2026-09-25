@@ -7,7 +7,9 @@ module Types
 
     field :add_photos_to_album, mutation: Mutations::AddPhotosToAlbum, description: 'Add photos to album'
     field :add_tag_to_photo, mutation: Mutations::AddTagToPhoto, description: 'Add a tag to a photo'
+    field :create_album_with_photos, mutation: Mutations::CreateAlbumWithPhotos, description: 'Create album with photos'
     field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
+    field :delete_photos, mutation: Mutations::DeletePhotos, description: 'Delete photos'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
     field :reset_photo_taken_at, mutation: Mutations::ResetPhotoTakenAt, description: 'Reset photo date taken to the EXIF or upload date'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
@@ -32,20 +34,9 @@ module Types
     field :approve_flickr_claim, mutation: Mutations::ApproveFlickrClaim, description: 'Approve a Flickr user claim (admin only)'
     field :deny_flickr_claim, mutation: Mutations::DenyFlickrClaim, description: 'Deny a Flickr user claim (admin only)'
 
-    field :create_album_with_photos, AlbumType, null: false do
-      description 'Create album with photos'
-      argument :photo_ids, [String], 'Photo Ids', required: true
-      argument :title, String, 'Album title', required: true
-    end
-
     field :delete_photo, PhotoType, null: false do
       description 'Delete photo'
       argument :id, String, 'Photo Id', required: true
-    end
-
-    field :delete_photos, [PhotoType], null: false do
-      description 'Delete photos'
-      argument :ids, [String], 'Photo Ids', required: true
     end
 
     field :sign_in, UserType, null: true do
@@ -72,18 +63,6 @@ module Types
 
     field :update_admin_settings, mutation: Mutations::UpdateAdminSettings, description: 'Update admin settings'
 
-    def create_album_with_photos(title:, photo_ids:)
-      album = Album.new(title: title, user: context[:current_user])
-      context[:authorize].call(album, :create?)
-      album.save
-      photo_ids.each do |photo_id|
-        photo = find_photo(photo_id)
-        context[:authorize].call(photo, :update?)
-        album.photos << photo
-      end
-      album.maintenance
-    end
-
     def delete_photo(id:)
       photo = find_photo(id)
       context[:authorize].call(photo, :destroy?)
@@ -91,20 +70,6 @@ module Types
       photo.destroy
       Album.unscoped.where(id: album_ids).find_each(&:maintenance)
       photo
-    end
-
-    def delete_photos(ids:)
-      deleted_photos = []
-      album_ids = []
-      ids.each do |id|
-        photo = find_photo(id)
-        context[:authorize].call(photo, :destroy?)
-        album_ids |= AlbumsPhoto.where(photo_id: photo.id).pluck(:album_id)
-        photo.destroy
-        deleted_photos << photo
-      end
-      Album.unscoped.where(id: album_ids).find_each(&:maintenance)
-      deleted_photos
     end
 
     def sign_in(email:, password:)
