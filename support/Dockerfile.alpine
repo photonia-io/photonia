@@ -10,7 +10,7 @@ FROM ruby:3.4.2-alpine AS base
 WORKDIR /rails
 
 # Install base packages
-RUN apk add curl file libpq-dev libexif-dev imagemagick
+RUN apk add curl file libpq-dev libexif-dev vips
 
 # Set production environment
 ENV RAILS_ENV="production" \

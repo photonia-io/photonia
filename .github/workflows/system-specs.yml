@@ -24,10 +24,8 @@ jobs:
       - name: Install OS packages (from cache)
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libpq-dev libexif-dev imagemagick
+          packages: libpq-dev libexif-dev libvips42t64
           version: 1.0
-      - name: "Symlink imagemagick's identify command"
-        run: sudo ln -sf /usr/bin/identify-im6.q16 /usr/bin/identify
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@v1
         with:

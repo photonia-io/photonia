@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'image_processing/mini_magick'
+require 'image_processing/vips'
 require 'exif'
 
 # Our friendly image uploader
@@ -9,8 +9,17 @@ class ImageUploader < Shrine
   plugin :pretty_location
   plugin :determine_mime_type
   plugin :cached_attachment_data
-  plugin :store_dimensions, analyzer: :mini_magick
+  plugin :store_dimensions, analyzer: :ruby_vips
   plugin :tempfile
+
+  # JPEG quality per derivative size; EXIF is stripped (the private original keeps it)
+  QUALITY = { extralarge: 90, large: 90, medium: 85, thumbnail: 80 }.freeze
+  # libvips < 8.15 can't keep just the colour profile, so it strips everything
+  METADATA = Vips.at_least_libvips?(8, 15) ? { keep: 'icc' } : { strip: true }
+
+  def self.saver_options(size)
+    { quality: QUALITY.fetch(size), **METADATA }
+  end
 
   plugin :upload_options, store: lambda { |_io, options|
     if options[:derivative]
@@ -30,21 +39,21 @@ class ImageUploader < Shrine
   }
 
   Attacher.derivatives do |original|
-    magick = ImageProcessing::MiniMagick.source(original)
+    vips = ImageProcessing::Vips.source(original)
     {
-      extralarge: magick.resize_to_limit!(2048, 2048),
-      large: magick.resize_to_limit!(1024, 1024),
-      medium: magick.resize_to_limit!(
-        ENV.fetch('MEDIUM_SIDE', nil),
-        ENV.fetch('MEDIUM_SIDE', nil)
+      extralarge: vips.saver(**ImageUploader.saver_options(:extralarge)).resize_to_limit!(2048, 2048),
+      large: vips.saver(**ImageUploader.saver_options(:large)).resize_to_limit!(1024, 1024),
+      medium: vips.saver(**ImageUploader.saver_options(:medium)).resize_to_limit!(
+        ENV.fetch('MEDIUM_SIDE', nil).to_i,
+        ENV.fetch('MEDIUM_SIDE', nil).to_i
       ),
-      medium_square: magick.resize_to_fill!(
-        ENV.fetch('MEDIUM_SIDE', nil),
-        ENV.fetch('MEDIUM_SIDE', nil)
+      medium_square: vips.saver(**ImageUploader.saver_options(:medium)).resize_to_fill!(
+        ENV.fetch('MEDIUM_SIDE', nil).to_i,
+        ENV.fetch('MEDIUM_SIDE', nil).to_i
       ),
-      thumbnail_square: magick.resize_to_fill!(
-        ENV.fetch('THUMBNAIL_SIDE', nil),
-        ENV.fetch('THUMBNAIL_SIDE', nil)
+      thumbnail_square: vips.saver(**ImageUploader.saver_options(:thumbnail)).resize_to_fill!(
+        ENV.fetch('THUMBNAIL_SIDE', nil).to_i,
+        ENV.fetch('THUMBNAIL_SIDE', nil).to_i
       )
     }
   end

@@ -24,7 +24,7 @@ A self hosted photo sharing webapp.
 
 ### Setup
 
-    sudo apt install libpq-dev libexif-dev imagemagick
+    sudo apt install libpq-dev libexif-dev libvips
 
 ### Running the dev servers
 
