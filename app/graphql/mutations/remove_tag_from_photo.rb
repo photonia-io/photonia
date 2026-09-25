@@ -12,7 +12,7 @@ module Mutations
 
     def resolve(id:, tag_name:)
       begin
-        photo = Photo.friendly.find(id)
+        photo = find_photo(id)
       rescue ActiveRecord::RecordNotFound
         raise GraphQL::ExecutionError, 'Photo not found'
       end

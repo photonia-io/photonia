@@ -95,4 +95,30 @@ describe 'updateAlbumTitle Mutation', type: :request do
       end
     end
   end
+
+  context 'when the album is private' do
+    include_context 'with auth actors'
+
+    let(:album) { create(:album, title: title, description: description, user: owner, privacy: :private) }
+
+    it 'lets the owner update it' do
+      sign_in(owner)
+      post_mutation
+      data = response.parsed_body['data']['updateAlbumTitle']
+      expect(data).to include('id' => album.slug, 'title' => new_title)
+    end
+
+    it 'lets an admin update it' do
+      sign_in(admin)
+      post_mutation
+      data = response.parsed_body['data']['updateAlbumTitle']
+      expect(data).to include('id' => album.slug, 'title' => new_title)
+    end
+
+    it 'returns an error for a stranger' do
+      sign_in(stranger)
+      post_mutation
+      expect(response.parsed_body['errors'].first['message']).to eq('Album not found')
+    end
+  end
 end

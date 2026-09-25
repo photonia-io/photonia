@@ -12,7 +12,7 @@ module Mutations
 
     def resolve(id:, title:)
       begin
-        album = Album.friendly.find(id)
+        album = find_album(id)
       rescue ActiveRecord::RecordNotFound
         raise GraphQL::ExecutionError, 'Album not found'
       end

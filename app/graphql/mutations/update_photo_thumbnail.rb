@@ -8,7 +8,7 @@ module Mutations
     type Types::PhotoType, null: false
 
     def resolve(id:, thumbnail:)
-      photo = Photo.friendly.find(id)
+      photo = find_photo(id)
       context[:authorize].call(photo, :update?)
 
       # Validate thumbnail percentages
