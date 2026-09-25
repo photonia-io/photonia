@@ -186,7 +186,7 @@ describe("DisplayHero", () => {
 
       const lightbox = wrapper.findComponent(PhotoLightbox);
       expect(lightbox.props("isOpen")).toBe(true);
-      expect(lightbox.props("originRect")).toEqual(rect);
+      expect(lightbox.props("getOriginRect")()).toEqual(rect);
       expect(lightbox.props("initialSrc")).toBe(
         "https://example.com/landscape-large.jpg",
       );

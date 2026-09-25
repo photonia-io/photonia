@@ -190,6 +190,21 @@ describe("PhotoLightbox variants and animation", () => {
       expect(badge().exists()).toBe(true);
     });
 
+    it("keeps the zoom when the sharper image swaps in", async () => {
+      await openLightbox({ initialSrc: "https://example.com/a-large.jpg" });
+      await wrapper.find('[data-testid="zoom-in-button"]').trigger("click");
+      await nextTick();
+
+      await preload().trigger("load");
+      await mainImage().trigger("load");
+      await nextTick();
+
+      expect(mainImage().attributes("src")).toBe(
+        "https://example.com/a-extralarge.jpg",
+      );
+      expect(mainImage().element.style.transform).toContain("scale(1.5)");
+    });
+
     it("ignores a late load from the previous photo's extralarge", async () => {
       setDevicePixelRatio(2);
       await openLightbox({ initialSrc: "https://example.com/a-large.jpg" });
@@ -221,9 +236,18 @@ describe("PhotoLightbox variants and animation", () => {
     // Half the frame's 1024px width.
     const originRect = { left: 100, top: 50, width: 512, height: 341 };
     const frameStyle = () => wrapper.find(".image-frame").element.style;
+    const transformEnd = () =>
+      Object.assign(new Event("transitionend", { bubbles: true }), {
+        propertyName: "transform",
+      });
+    // happy-dom has no layout; close measures the frame's live rect.
+    const stubFrameRect = () =>
+      vi
+        .spyOn(wrapper.find(".image-frame").element, "getBoundingClientRect")
+        .mockReturnValue({ left: 0, top: 43, width: 1024, height: 683 });
 
     it("mounts the frame already shrunk onto the hero's rect, then grows it", async () => {
-      await openLightbox({ originRect });
+      await openLightbox({ getOriginRect: () => originRect });
 
       expect(frameStyle().transform).toContain("scale(0.5)");
       expect(frameStyle().transition).toBe("none");
@@ -238,20 +262,16 @@ describe("PhotoLightbox variants and animation", () => {
 
     it("opens without animating when reduced motion is preferred", async () => {
       vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true });
-      await openLightbox({ originRect });
+      await openLightbox({ getOriginRect: () => originRect });
 
       expect(frameStyle().transform).toBe("");
     });
 
     it("shrinks back onto the hero's rect before emitting close", async () => {
-      await openLightbox({ originRect });
+      await openLightbox({ getOriginRect: () => originRect });
       await nextFrame();
       await nextFrame();
-      // happy-dom has no layout; close measures the frame's live rect.
-      vi.spyOn(
-        wrapper.find(".image-frame").element,
-        "getBoundingClientRect",
-      ).mockReturnValue({ left: 0, top: 43, width: 1024, height: 683 });
+      stubFrameRect();
 
       await wrapper.find('[data-testid="close-button"]').trigger("click");
 
@@ -260,10 +280,49 @@ describe("PhotoLightbox variants and animation", () => {
       expect(wrapper.find(".lightbox-overlay").classes()).toContain("closing");
       expect(wrapper.emitted().close).toBeFalsy();
 
-      wrapper.find(".image-frame").element.dispatchEvent(new Event("transitionend"));
+      wrapper.find(".image-frame").element.dispatchEvent(transformEnd());
       await nextTick();
 
       expect(wrapper.emitted().close).toBeTruthy();
+    });
+
+    it("keeps shrinking when closed before the grow has started", async () => {
+      await openLightbox({ getOriginRect: () => originRect });
+      stubFrameRect();
+
+      await wrapper.find('[data-testid="close-button"]').trigger("click");
+      await nextFrame();
+      await nextFrame();
+      await nextTick();
+
+      expect(frameStyle().transform).toContain("scale(0.5)");
+    });
+
+    it("waits for the frame's own shrink, not the image's zoom reset", async () => {
+      await openLightbox({ getOriginRect: () => originRect });
+      await nextFrame();
+      await nextFrame();
+      stubFrameRect();
+      await wrapper.find('[data-testid="zoom-in-button"]').trigger("click");
+
+      await wrapper.find('[data-testid="close-button"]').trigger("click");
+      mainImage().element.dispatchEvent(transformEnd());
+      await nextTick();
+
+      expect(wrapper.emitted().close).toBeFalsy();
+    });
+
+    it("shrinks onto where the hero is at close time, after next/prev", async () => {
+      let heroRect = originRect;
+      await openLightbox({ getOriginRect: () => heroRect });
+      await nextFrame();
+      await nextFrame();
+      stubFrameRect();
+
+      heroRect = { left: 200, top: 50, width: 256, height: 171 };
+      await wrapper.find('[data-testid="close-button"]').trigger("click");
+
+      expect(frameStyle().transform).toContain("scale(0.25)");
     });
   });
 });

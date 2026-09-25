@@ -43,6 +43,7 @@
           </router-link>
           <img
             v-else
+            ref="heroImage"
             :src="photo.extralargeImageUrl"
             :srcset="imageSrcset"
             :sizes="imageSizes"
@@ -92,7 +93,7 @@
       :photo="photo"
       :loading="loading"
       :is-open="lightboxOpen"
-      :origin-rect="lightboxOriginRect"
+      :get-origin-rect="heroImageRect"
       :initial-src="lightboxInitialSrc"
       @close="closeLightbox"
     />
@@ -134,8 +135,11 @@ const applicationStore = useApplicationStore();
 
 // Lightbox state
 const lightboxOpen = ref(false);
-const lightboxOriginRect = ref(null);
 const lightboxInitialSrc = ref(null);
+const heroImage = ref(null);
+
+// Measured live, so closing after next/prev targets the current photo.
+const heroImageRect = () => heroImage.value?.getBoundingClientRect() ?? null;
 
 // Image loading state
 const imageLoading = ref(true);
@@ -184,9 +188,8 @@ watch(
   },
 );
 
-// Lets the browser pick large over extralarge whenever the displayed size
-// doesn't call for the bigger one. Falls back to plain src (extralarge) when
-// large data is missing, rather than offering a single-candidate srcset.
+// Lets the browser pick large when it covers the displayed size; plain src
+// (extralarge) when large data is missing.
 const imageSrcset = computed(() => {
   const candidates = [
     { url: props.photo.largeImageUrl, width: props.photo.largeDimensions?.width },
@@ -198,16 +201,13 @@ const imageSrcset = computed(() => {
   return candidates.map((candidate) => `${candidate.url} ${candidate.width}w`).join(", ");
 });
 
-// Mirrors the photo-box mixin's width so the browser's srcset choice matches
-// what will actually render. 100vw slightly overestimates the hero body's
-// width, so the error always leans toward the sharper candidate.
+// Mirrors the photo-box mixin; 100vw overestimates slightly, erring sharp.
 const imageSizes = computed(
   () =>
     `min(100vw, ${nativeWidth.value}px, calc((100vh - 150px) * ${ratio.value}))`,
 );
 
 const openLightbox = (event) => {
-  lightboxOriginRect.value = event.currentTarget.getBoundingClientRect();
   lightboxInitialSrc.value = event.currentTarget.currentSrc || null;
   lightboxOpen.value = true;
 };
