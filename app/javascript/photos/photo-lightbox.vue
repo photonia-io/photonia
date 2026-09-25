@@ -83,6 +83,7 @@
           <!-- Hidden preload: swaps displaySrc in once it lands -->
           <img
             v-if="hiResLoading"
+            :key="photo.extralargeImageUrl"
             :src="photo.extralargeImageUrl"
             class="hires-preload"
             alt=""
@@ -325,15 +326,21 @@ const needsExtralarge = computed(() => {
   return requiredWidth > largeWidth;
 });
 
+// Re-checked on open and photo change, and flushed "post" so it runs after
+// the open/photo watchers have reset hiResLoading.
 watch(
-  needsExtralarge,
-  (needed) => {
-    if (needed) hiResLoading.value = true;
+  () => [needsExtralarge.value, props.isOpen, props.photo.extralargeImageUrl],
+  ([needed, open]) => {
+    if (needed && open) hiResLoading.value = true;
   },
-  { immediate: true },
+  { immediate: true, flush: "post" },
 );
 
-const handleHiResLoad = () => {
+// Ignores a load that belongs to a photo we've since navigated away from.
+const handleHiResLoad = (event) => {
+  if (event.target.getAttribute("src") !== props.photo.extralargeImageUrl) {
+    return;
+  }
   displaySrc.value = props.photo.extralargeImageUrl;
   hiResLoading.value = false;
 };
