@@ -32,7 +32,7 @@ yarn test:run                   # Vitest (Yarn 4 via Corepack, not npm)
 bundle exec rubocop             # not enforced in CI (lint job commented out)
 ```
 
-System specs run with the suite through Cuprite and need a local Chrome/Chromium (`sudo apt install chromium`); CI runs them in a separate `system` job.
+System specs run with the suite through Cuprite and need a local Chrome/Chromium (`sudo apt install chromium`); the CI `system` job for them is commented out in `ci.yml`.
 
 **Test runs must be warning-free.** A new warning is a defect to fix at its source (a dependency bump if needed) — never silence it with `--no-warnings` or by opting out of a runtime feature.
 
