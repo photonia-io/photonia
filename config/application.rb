@@ -25,6 +25,8 @@ module Photonia
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.active_record.schema_format = :sql
+    # Images go through Shrine + ImageMagick; production has no libvips for the vips default
+    config.active_storage.variant_processor = :mini_magick
     config.active_job.queue_adapter = :sidekiq
 
     # for sidekiq
