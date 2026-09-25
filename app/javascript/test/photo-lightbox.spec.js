@@ -256,6 +256,8 @@ describe("PhotoLightbox variants and animation", () => {
       await wrapper.find('[data-testid="close-button"]').trigger("click");
 
       expect(frameStyle().transform).toContain("scale(0.5)");
+      // Fades the backdrop and chrome while the photo shrinks.
+      expect(wrapper.find(".lightbox-overlay").classes()).toContain("closing");
       expect(wrapper.emitted().close).toBeFalsy();
 
       wrapper.find(".image-frame").element.dispatchEvent(new Event("transitionend"));

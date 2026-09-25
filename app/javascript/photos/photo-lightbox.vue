@@ -689,6 +689,20 @@ watch(
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+
+  // Only the backdrop and chrome fade while the frame shrinks - fading the
+  // whole overlay would fade the photo too.
+  &.closing {
+    animation: none;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color 350ms ease;
+
+    .lightbox-controls,
+    .title-bar,
+    .hires-badge {
+      opacity: 0;
+    }
+  }
 }
 
 .lightbox-container {
