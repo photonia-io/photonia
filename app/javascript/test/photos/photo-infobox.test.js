@@ -39,6 +39,27 @@ describe("PhotoInfobox", () => {
       expect(wrapper.find(".infobox-toggle").exists()).toBe(false);
       expect(wrapper.find(".message-header").attributes("role")).toBeUndefined();
     });
+
+    it("doesn't swallow Enter/Space on a focusable header-slot element", () => {
+      const wrapper = mount(PhotoInfobox, {
+        attachTo: document.body,
+        slots: {
+          header: '<button type="button">Action</button>',
+          default: "<p>Body content</p>",
+        },
+      });
+      mountedWrapper = wrapper;
+
+      const button = wrapper.find("button").element;
+      const event = new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+      });
+      button.dispatchEvent(event);
+
+      expect(event.defaultPrevented).toBe(false);
+    });
   });
 
   describe("when collapsible", () => {

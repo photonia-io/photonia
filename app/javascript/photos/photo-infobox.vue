@@ -10,8 +10,8 @@
       :tabindex="collapsible ? 0 : undefined"
       :aria-expanded="collapsible ? expanded : undefined"
       @click="collapsible && toggle()"
-      @keydown.enter.prevent="collapsible && toggle()"
-      @keydown.space.prevent="collapsible && toggle()"
+      @keydown.enter="handleKeydown"
+      @keydown.space="handleKeydown"
     >
       <slot name="header"></slot>
       <span v-if="collapsible" class="icon infobox-toggle" :class="{ 'is-collapsed': !expanded }">
@@ -42,6 +42,14 @@ const expanded = ref(props.defaultOpen);
 
 const toggle = () => {
   expanded.value = !expanded.value;
+};
+
+// .prevent alone would swallow Enter/Space on a header-slot element even
+// when not collapsible, since it fires before this check does.
+const handleKeydown = (event) => {
+  if (!props.collapsible) return;
+  event.preventDefault();
+  toggle();
 };
 </script>
 
