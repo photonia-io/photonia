@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.4.11'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 7.0'
+gem 'rails', '~> 8.0.0'
 # json 3.0 dropped the `quirks_mode` keyword that Rails 7.2's ActiveSupport::JSON encoder still passes to JSON.generate
 gem 'json', '< 3'
 # Use postgresql as the database for Active Record
@@ -71,7 +71,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'annotate'
+  gem 'annotaterb'
   gem 'bullet'
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'listen'
