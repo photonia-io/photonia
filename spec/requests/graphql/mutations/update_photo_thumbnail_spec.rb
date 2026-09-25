@@ -228,4 +228,31 @@ describe 'updatePhotoThumbnail Mutation', type: :request do
       end
     end
   end
+
+  context 'when the photo is private' do
+    include_context 'with auth actors'
+
+    let(:photo) { create(:photo, :with_image, user: owner, privacy: :private) }
+
+    it 'lets the owner update it' do
+      sign_in(owner)
+      post_mutation
+      data = response.parsed_body['data']['updatePhotoThumbnail']
+      expect(data['id']).to eq(photo.slug)
+    end
+
+    it 'lets an admin update it' do
+      sign_in(admin)
+      post_mutation
+      data = response.parsed_body['data']['updatePhotoThumbnail']
+      expect(data['id']).to eq(photo.slug)
+    end
+
+    it 'returns NOT_FOUND for a stranger' do
+      sign_in(stranger)
+      post_mutation
+      err = response.parsed_body['errors']&.first
+      expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
+    end
+  end
 end

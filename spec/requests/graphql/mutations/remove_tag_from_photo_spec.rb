@@ -123,4 +123,35 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
       end
     end
   end
+
+  context 'when the photo is private' do
+    include_context 'with auth actors'
+
+    let(:photo) { create(:photo, user: owner, privacy: :private) }
+
+    before do
+      photo.tag_list.add(normalized_tag_name)
+      photo.save!
+    end
+
+    it 'lets the owner remove the tag' do
+      sign_in(owner)
+      post_mutation
+      response_photo = data_dig(response, 'removeTagFromPhoto', 'photo')
+      expect(response_photo['id']).to eq(photo.slug)
+    end
+
+    it 'lets an admin remove the tag' do
+      sign_in(admin)
+      post_mutation
+      response_photo = data_dig(response, 'removeTagFromPhoto', 'photo')
+      expect(response_photo['id']).to eq(photo.slug)
+    end
+
+    it 'returns an error for a stranger' do
+      sign_in(stranger)
+      post_mutation
+      expect(first_error_message(response)).to eq('Photo not found')
+    end
+  end
 end

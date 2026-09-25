@@ -73,11 +73,11 @@ module Types
     field :update_admin_settings, mutation: Mutations::UpdateAdminSettings, description: 'Update admin settings'
 
     def create_album_with_photos(title:, photo_ids:)
-      album = Album.new(title: title)
+      album = Album.new(title: title, user: context[:current_user])
       context[:authorize].call(album, :create?)
       album.save
       photo_ids.each do |photo_id|
-        photo = Photo.friendly.find(photo_id)
+        photo = find_photo(photo_id)
         context[:authorize].call(photo, :update?)
         album.photos << photo
       end
@@ -85,11 +85,11 @@ module Types
     end
 
     def delete_photo(id:)
-      photo = Photo.includes(:albums).friendly.find(id)
+      photo = find_photo(id)
       context[:authorize].call(photo, :destroy?)
-      album_ids = photo.albums.pluck(:id)
+      album_ids = AlbumsPhoto.where(photo_id: photo.id).pluck(:album_id)
       photo.destroy
-      Album.where(id: album_ids).each(&:maintenance)
+      Album.unscoped.where(id: album_ids).find_each(&:maintenance)
       photo
     end
 
@@ -97,13 +97,13 @@ module Types
       deleted_photos = []
       album_ids = []
       ids.each do |id|
-        photo = Photo.includes(:albums).friendly.find(id)
+        photo = find_photo(id)
         context[:authorize].call(photo, :destroy?)
-        album_ids |= photo.albums.pluck(:id)
+        album_ids |= AlbumsPhoto.where(photo_id: photo.id).pluck(:album_id)
         photo.destroy
         deleted_photos << photo
       end
-      Album.where(id: album_ids).each(&:maintenance)
+      Album.unscoped.where(id: album_ids).find_each(&:maintenance)
       deleted_photos
     end
 
@@ -142,6 +142,12 @@ module Types
     end
 
     private
+
+    # Photo default-scopes to public records, so a plain friendly.find can't
+    # see the current user's own private/friends-only photos.
+    def find_photo(id)
+      Pundit.policy_scope(context[:current_user], Photo.unscoped).friendly.find(id)
+    end
 
     # Checked before any write so an invalid value can't leave the other settings half-saved
     def validated_default_license(optional)

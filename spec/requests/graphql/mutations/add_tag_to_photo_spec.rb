@@ -109,4 +109,30 @@ RSpec.describe 'addTagToPhoto Mutation', type: :request do
       end
     end
   end
+
+  context 'when the photo is private' do
+    include_context 'with auth actors'
+
+    let(:photo) { create(:photo, user: owner, privacy: :private) }
+
+    it 'lets the owner tag it' do
+      sign_in(owner)
+      post_mutation
+      response_photo = data_dig(response, 'addTagToPhoto', 'photo')
+      expect(response_photo['id']).to eq(photo.slug)
+    end
+
+    it 'lets an admin tag it' do
+      sign_in(admin)
+      post_mutation
+      response_photo = data_dig(response, 'addTagToPhoto', 'photo')
+      expect(response_photo['id']).to eq(photo.slug)
+    end
+
+    it 'returns an error for a stranger' do
+      sign_in(stranger)
+      post_mutation
+      expect(first_error_message(response)).to eq('Photo not found')
+    end
+  end
 end

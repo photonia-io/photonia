@@ -8,7 +8,7 @@ module Mutations
     type Types::PhotoType, null: false
 
     def resolve(id:, description:)
-      photo = Photo.friendly.find(id)
+      photo = find_photo(id)
       context[:authorize].call(photo, :update?)
       if photo.update(description: description)
         photo
