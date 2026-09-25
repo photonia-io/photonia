@@ -251,6 +251,76 @@ describe("useUploadQueue", () => {
     });
   });
 
+  describe("retryOne", () => {
+    it("sends only the retried item, leaving other pending items untouched", async () => {
+      const queue = setup();
+      queue.add([makeFile("one.jpg")]);
+
+      const startPromise = queue.start();
+      await Promise.resolve();
+      await Promise.resolve();
+      FakeXHR.instances[0].respond(422, { errors: ["bad"] });
+      await startPromise;
+
+      // Added after the batch finished - never sent, still pending.
+      queue.add([makeFile("two.jpg"), makeFile("three.jpg")]);
+
+      queue.retryOne(queue.items.value[0]);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // Only the retried item went out - not the other pending ones, which
+      // uploadAll()'s full loop would have swept up too.
+      expect(FakeXHR.instances).toHaveLength(2);
+      expect(queue.items.value[1].status).toBe("pending");
+      expect(queue.items.value[2].status).toBe("pending");
+
+      FakeXHR.instances[1].respond(201, { photo: { id: "one" } });
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(queue.items.value[0].status).toBe("success");
+      expect(queue.uploading.value).toBe(false);
+      expect(FakeXHR.instances).toHaveLength(2); // still nothing else sent
+    });
+
+    it("just re-queues the item if something else is already uploading", async () => {
+      const queue = setup();
+      queue.add([makeFile("one.jpg"), makeFile("two.jpg")]);
+
+      const startPromise = queue.start();
+      await Promise.resolve();
+      await Promise.resolve();
+      FakeXHR.instances[0].respond(422, { errors: ["bad"] });
+      await Promise.resolve();
+      await Promise.resolve();
+      // one.jpg failed; the loop moved straight on to two.jpg.
+      expect(queue.items.value[1].status).toBe("uploading");
+
+      queue.retryOne(queue.items.value[0]);
+      expect(queue.items.value[0].status).toBe("pending");
+      expect(FakeXHR.instances).toHaveLength(2); // no extra request fired
+
+      FakeXHR.instances[1].respond(201, { photo: { id: "two" } });
+      await Promise.resolve();
+      await Promise.resolve();
+      // one.jpg was re-queued as pending, so the still-running loop picks
+      // it up next, on its own, once two.jpg is done.
+      expect(FakeXHR.instances).toHaveLength(3);
+      FakeXHR.instances[2].respond(201, { photo: { id: "one" } });
+
+      await startPromise;
+      expect(queue.items.value[0].status).toBe("success");
+    });
+
+    it("does nothing for a non-error item", async () => {
+      const queue = setup();
+      queue.add([makeFile("one.jpg")]);
+      await queue.retryOne(queue.items.value[0]);
+      expect(FakeXHR.instances).toHaveLength(0);
+    });
+  });
+
   describe("revoking preview URLs", () => {
     it("revokes on remove", () => {
       const queue = setup();

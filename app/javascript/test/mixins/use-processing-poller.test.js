@@ -162,7 +162,7 @@ describe("useProcessingPoller", () => {
   });
 
   describe("stall timeout", () => {
-    it("marks remaining items timed out and stops polling after the stall timeout", async () => {
+    it("marks remaining items timed out but keeps polling them", async () => {
       const fetchProcessed = vi.fn().mockResolvedValue([]);
       const { track } = setup({ fetchProcessed });
 
@@ -175,10 +175,16 @@ describe("useProcessingPoller", () => {
       await vi.advanceTimersByTimeAsync(STALL_TIMEOUT * 3);
 
       expect(item.processingTimedOut).toBe(true);
-
       const callsAtTimeout = fetchProcessed.mock.calls.length;
+      expect(callsAtTimeout).toBeGreaterThan(0);
+
+      // A slow Sidekiq backlog can still finish after the stall warning -
+      // polling shouldn't have stopped, so a later completion still lands.
+      fetchProcessed.mockResolvedValueOnce(["one"]);
       await vi.advanceTimersByTimeAsync(INTERVAL * 10);
-      expect(fetchProcessed).toHaveBeenCalledTimes(callsAtTimeout);
+
+      expect(fetchProcessed.mock.calls.length).toBeGreaterThan(callsAtTimeout);
+      expect(item.processed).toBe(true);
     });
   });
 

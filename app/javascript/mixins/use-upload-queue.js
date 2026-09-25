@@ -97,6 +97,20 @@ export function useUploadQueue({
     item.response = null;
   }
 
+  // Used by the Retry button: sends just this one item, rather than going
+  // through start()'s loop over every pending item, which would also submit
+  // unrelated photos the user hasn't finished editing yet.
+  async function retryOne(item) {
+    if (item.status !== "error") return;
+    retry(item);
+    if (uploading.value) return;
+
+    uploading.value = true;
+    stopRequested = false;
+    await send(item);
+    uploading.value = false;
+  }
+
   function buildFormData(item) {
     const formData = new FormData();
     formData.append("photo[title]", item.title);
@@ -220,5 +234,6 @@ export function useUploadQueue({
     start,
     stop,
     retry,
+    retryOne,
   };
 }

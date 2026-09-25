@@ -383,7 +383,7 @@ const {
   clearAll,
   start,
   stop,
-  retry,
+  retryOne,
 } = useUploadQueue({
   onSuccess: track,
   onRemove: untrack,
@@ -400,10 +400,7 @@ const onFileInputChange = (event) => {
 
 const editable = (item) => item.status === "pending" || item.status === "error";
 
-const retryItem = (item) => {
-  retry(item);
-  if (!uploading.value) uploadAll();
-};
+const retryItem = (item) => retryOne(item);
 
 const uploadAll = () => start();
 
@@ -411,10 +408,18 @@ const showClearCompleted = computed(
   () => hasSuccess.value && items.value.some((item) => item.status !== "success"),
 );
 
+// Pending and error items are both unfinished work: a pending file never
+// got tried, an error one hasn't been retried. Shared by Clear list's
+// confirmation and the leave-page guard below.
+const unfinishedCount = computed(
+  () =>
+    items.value.filter(
+      (item) => item.status === "pending" || item.status === "error",
+    ).length,
+);
+
 const clearList = () => {
-  const unfinished = items.value.filter(
-    (item) => item.status === "pending" || item.status === "error",
-  ).length;
+  const unfinished = unfinishedCount.value;
   if (
     unfinished > 0 &&
     !window.confirm(
@@ -504,15 +509,20 @@ let dragDepth = 0;
 const isFileDrag = (event) =>
   Array.from(event.dataTransfer?.types ?? []).includes("Files");
 
+// preventDefault runs whenever the drag carries files, uploading or not -
+// skip it and the browser's own drop handling takes over instead (typically
+// navigating the tab to the dropped file), which would abandon this page
+// without the leave guard ever getting a say.
 const onDragEnter = (event) => {
-  if (uploading.value || !isFileDrag(event)) return;
+  if (!isFileDrag(event)) return;
   event.preventDefault();
+  if (uploading.value) return;
   dragDepth++;
   dropActive.value = true;
 };
 
 const onDragOver = (event) => {
-  if (uploading.value || !isFileDrag(event)) return;
+  if (!isFileDrag(event)) return;
   event.preventDefault();
 };
 
@@ -523,16 +533,18 @@ const onDragLeave = (event) => {
 };
 
 const onDrop = (event) => {
-  if (uploading.value || !isFileDrag(event)) return;
+  if (!isFileDrag(event)) return;
   event.preventDefault();
+  if (uploading.value) return;
   dragDepth = 0;
   dropActive.value = false;
   add(event.dataTransfer.files);
 };
 
 // Warn before leaving with unfinished work: a pending file never got tried,
-// an uploading one would be aborted.
-const hasUnfinishedWork = () => uploading.value || hasPending.value;
+// an uploading one would be aborted, and a failed one would be silently
+// discarded along with whatever title/description was typed for it.
+const hasUnfinishedWork = () => uploading.value || unfinishedCount.value > 0;
 const LEAVE_WARNING =
   "Uploads are still in progress or waiting. Leave anyway?";
 

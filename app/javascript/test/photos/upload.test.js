@@ -182,6 +182,25 @@ describe("Upload", () => {
     ).toBe("dropped.jpg");
   });
 
+  it("still preventDefaults a file drag while uploading, so the browser doesn't navigate away", async () => {
+    const wrapper = mountUpload();
+    await addFile(wrapper);
+    await findUploadButton(wrapper).trigger("click");
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const enterEvent = dragEvent("dragenter");
+    window.dispatchEvent(enterEvent);
+    expect(enterEvent.defaultPrevented).toBe(true);
+    // Ignored otherwise - no overlay while uploading.
+    expect(document.querySelector(".drop-active").style.display).toBe("none");
+
+    const dropEvent = dragEvent("drop", [makeFile("ignored.jpg")]);
+    window.dispatchEvent(dropEvent);
+    expect(dropEvent.defaultPrevented).toBe(true);
+    expect(wrapper.findAll(".upload-item")).toHaveLength(1); // not added
+  });
+
   it("uploads a second batch after the first finishes, without reloading", async () => {
     const wrapper = mountUpload();
     await uploadAndRespond(wrapper, "one.jpg", 201, { photo: { id: "one" } });
@@ -395,9 +414,19 @@ describe("Upload", () => {
       window.confirm.mockReturnValue(true);
       expect(guard()).toBe(true);
     });
+
+    it("also confirms when only a failed upload remains, not just pending ones", async () => {
+      const wrapper = mountUpload();
+      await uploadAndRespond(wrapper, "one.jpg", 422, { errors: ["bad"] });
+      const guard = onBeforeRouteLeaveMock.mock.calls[0][0];
+
+      window.confirm = vi.fn().mockReturnValue(true);
+      expect(guard()).toBe(true);
+      expect(window.confirm).toHaveBeenCalled();
+    });
   });
 
-  it("warns on beforeunload only while something is pending or uploading", async () => {
+  it("warns on beforeunload only while something is pending, failed or uploading", async () => {
     const wrapper = mountUpload();
 
     const emptyEvent = new Event("beforeunload", { cancelable: true });
@@ -408,5 +437,14 @@ describe("Upload", () => {
     const pendingEvent = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(pendingEvent);
     expect(pendingEvent.defaultPrevented).toBe(true);
+  });
+
+  it("warns on beforeunload when only a failed upload remains", async () => {
+    const wrapper = mountUpload();
+    await uploadAndRespond(wrapper, "one.jpg", 422, { errors: ["bad"] });
+
+    const event = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
   });
 });

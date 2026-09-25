@@ -64,10 +64,13 @@ export function useProcessingPoller({
       lastProgressAt = Date.now();
       onCompleted?.(completedCount);
     } else if (Date.now() - lastProgressAt >= stallTimeout) {
+      // Flag the stall, but keep polling (at the backed-off interval below)
+      // rather than giving up on these items - a slow Sidekiq backlog can
+      // still finish, and the row should be able to reach "Complete"
+      // without the user having to reload the page.
       tracked.forEach((item) => {
         item.processingTimedOut = true;
       });
-      tracked.length = 0;
     } else {
       currentInterval = Math.min(currentInterval * 2, MAX_INTERVAL);
     }
