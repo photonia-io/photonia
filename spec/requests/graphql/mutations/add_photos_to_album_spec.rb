@@ -84,6 +84,14 @@ RSpec.describe 'addPhotosToAlbum Mutation', type: :request do
       expect(collection_ids).to include(first_photo.slug, second_photo.slug)
     end
 
+    it 'refreshes the photos search vector so the album title is findable' do
+      album.update!(title: 'Zanzibar Album')
+
+      post_mutation
+
+      expect(Photo.search('zanzibar')).to include(first_photo, second_photo)
+    end
+
     it 'does not duplicate photos if mutation is called twice' do
       post_mutation
       expect { post_mutation }.not_to raise_error

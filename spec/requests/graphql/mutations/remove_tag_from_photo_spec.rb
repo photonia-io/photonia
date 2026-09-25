@@ -88,6 +88,15 @@ RSpec.describe 'removeTagFromPhoto Mutation', type: :request do
           hash_including('name' => normalized_tag_name)
         )
       end
+
+      it 'refreshes the photo search vector so the removed tag is no longer findable' do
+        # rubocop:disable-next Rails/SkipsModelValidations
+        photo.touch # rebuild tsv, independent of the tagging callback under test
+        expect(Photo.search(normalized_tag_name)).to include(photo)
+
+        post_mutation
+        expect(Photo.search(normalized_tag_name)).not_to include(photo)
+      end
     end
 
     context 'when the owned tag exists on the photo' do

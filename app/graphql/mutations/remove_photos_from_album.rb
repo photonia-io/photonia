@@ -38,6 +38,10 @@ module Mutations
         end
       end
 
+      # Album membership doesn't update photos, so the tsv trigger never fires
+      # rubocop:disable-next Rails/SkipsModelValidations
+      Photo.unscoped.where(id: photos.map(&:id)).touch_all
+
       album.maintenance
 
       { album: album, errors: [] }
