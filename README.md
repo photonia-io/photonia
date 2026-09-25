@@ -38,7 +38,7 @@ Or use [overmind](https://github.com/DarthSim/overmind): `overmind s -N -f Procf
 
 ### System specs
 
-System specs (`spec/system`) drive a headless Chrome through [Cuprite](https://github.com/rubycdp/cuprite) and run with the rest of the suite locally. CI doesn't run them: the `system` job in `.github/workflows/ci.yml` is commented out. They need Chrome or Chromium installed locally (`sudo apt install chromium`); set `BROWSER_PATH` if it isn't on the `PATH`.
+System specs (`spec/system`) drive a headless Chrome through [Cuprite](https://github.com/rubycdp/cuprite) and run with the rest of the suite locally. On GitHub they run only on demand: Actions → "System specs" → Run workflow. They need Chrome or Chromium installed locally (`sudo apt install chromium`); set `BROWSER_PATH` if it isn't on the `PATH`.
 
 ## Versioning & Releases
 
