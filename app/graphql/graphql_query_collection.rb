@@ -8,6 +8,11 @@ class GraphqlQueryCollection
         latestPhoto: photo(fetchType: "latest") {
           id
           title
+          largeImageUrl: imageUrl(type: "large")
+          largeDimensions: imageDimensions(type: "large") {
+            width
+            height
+          }
           extralargeImageUrl: imageUrl(type: "extralarge")
           extralargeDimensions: imageDimensions(type: "extralarge") {
             width
@@ -153,6 +158,10 @@ class GraphqlQueryCollection
           description
           descriptionHtml
           largeImageUrl: imageUrl(type: "large")
+          largeDimensions: imageDimensions(type: "large") {
+            width
+            height
+          }
           extralargeImageUrl: imageUrl(type: "extralarge")
           extralargeDimensions: imageDimensions(type: "extralarge") {
             width

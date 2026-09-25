@@ -2,6 +2,7 @@
   <div
     v-if="isOpen"
     class="lightbox-overlay"
+    :class="{ closing }"
     @click="handleOverlayClick"
     role="dialog"
     aria-modal="true"
@@ -62,15 +63,33 @@
           <div class="spinner"></div>
         </div>
 
-        <img
-          ref="lightboxImage"
-          :src="photo.extralargeImageUrl"
-          :style="{ ...imageStyle, opacity: imageLoading ? 0 : 1 }"
-          :alt="photo.title"
-          @load="handleImageLoad"
-          @error="handleImageError"
-          draggable="false"
-        />
+        <!-- Hi-res upgrade badge -->
+        <div v-if="hiResLoading" class="hires-badge">
+          <div class="hires-spinner"></div>
+          <span>Loading higher resolution image...</span>
+        </div>
+
+        <div ref="frame" class="image-frame" :style="frameStyle">
+          <img
+            ref="lightboxImage"
+            :src="displaySrc"
+            :style="{ ...imageStyle, opacity: imageLoading ? 0 : 1 }"
+            :alt="photo.title"
+            @load="handleImageLoad"
+            @error="handleImageError"
+            draggable="false"
+          />
+
+          <!-- Hidden preload: swaps displaySrc in once it lands -->
+          <img
+            v-if="hiResLoading"
+            :src="photo.extralargeImageUrl"
+            class="hires-preload"
+            alt=""
+            @load="handleHiResLoad"
+            @error="handleHiResError"
+          />
+        </div>
       </div>
 
       <!-- Title bar -->
@@ -100,6 +119,18 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  // The hero image's rect and currently-rendered src at the moment it was
+  // clicked - lets the lightbox open by growing from there instead of
+  // popping in, and start from whichever derivative the hero already had
+  // on screen instead of a blank spinner.
+  originRect: {
+    type: Object,
+    default: null,
+  },
+  initialSrc: {
+    type: String,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["close"]);
@@ -112,9 +143,25 @@ const isDragging = ref(false);
 const dragStart = ref({ x: 0, y: 0 });
 const imageContainer = ref(null);
 const lightboxImage = ref(null);
+const frame = ref(null);
 
 // Image loading state
 const imageLoading = ref(true);
+
+// Prefer whatever the hero already had on screen, then the large derivative
+// - both are usually cached already, so the spinner rarely shows.
+const initialDisplaySrc = () =>
+  props.photo.largeImageUrl || props.photo.extralargeImageUrl || "";
+
+const displaySrc = ref(props.initialSrc || initialDisplaySrc());
+
+// Set once the frame turns out to need more resolution than the currently
+// displayed derivative offers; cleared once the extralarge swap lands (or
+// fails) or the photo/lightbox changes underneath it.
+const hiResLoading = ref(false);
+
+// True while the close (shrink) animation is playing.
+const closing = ref(false);
 
 // Touch handling
 const lastTouchDistance = ref(0);
@@ -134,8 +181,9 @@ const imageStyle = computed(() => ({
 }));
 
 // Methods
-const close = () => {
+const close = async () => {
   resetZoom();
+  await playCloseAnimation();
   emit("close");
 };
 
@@ -170,7 +218,15 @@ const showControls = () => {
   }, 3000);
 };
 
+// Tracked separately from containerDimensions (which needs a DOM measurement
+// after mount) because the overlay is always a full-viewport fixed box, so
+// this is known synchronously - the frame is sized correctly from its very
+// first paint instead of flashing at an unconstrained size for one frame
+// before a later measurement corrects it.
+const viewportSize = ref({ width: window.innerWidth, height: window.innerHeight });
+
 const handleResize = () => {
+  viewportSize.value = { width: window.innerWidth, height: window.innerHeight };
   updateContainerDimensions();
   constrainPosition();
 };
@@ -208,6 +264,183 @@ const updateContainerDimensions = () => {
   const rect = imageContainer.value.getBoundingClientRect();
   containerDimensions.value = { width: rect.width, height: rect.height };
 };
+
+// The frame's own size: extralarge's aspect ratio, contained within the
+// available space, capped at extralarge's native pixel size so a low-res
+// photo is never stretched to fill the screen. Fixed independently of
+// displaySrc, so swapping large for extralarge never shifts the layout.
+// Sized from the viewport rather than a measured containerDimensions so it's
+// correct on the very first render - see viewportSize above.
+const frameSize = computed(() => {
+  const dims = props.photo.extralargeDimensions;
+  const { width: containerWidth, height: containerHeight } = viewportSize.value;
+  if (!dims?.width || !dims?.height || !containerWidth || !containerHeight) {
+    return null;
+  }
+
+  const ratio = dims.width / dims.height;
+  const width = Math.min(containerWidth, dims.width, containerHeight * ratio);
+  return { width, height: width / ratio };
+});
+
+// Set synchronously, in the same reactive update as the frame's first
+// mount, so its very first render already carries the starting transform -
+// see startOpenAnimation below for why that timing matters.
+const frameTransformOverride = ref(null);
+
+const frameStyle = computed(() => {
+  if (!frameSize.value) return {};
+  return {
+    width: `${frameSize.value.width}px`,
+    height: `${frameSize.value.height}px`,
+    ...frameTransformOverride.value,
+  };
+});
+
+// The frame is always centered in the full-viewport overlay (flex-centered,
+// nothing else in flow), so its final position is knowable without ever
+// measuring the DOM.
+const finalFrameRect = computed(() => {
+  if (!frameSize.value) return null;
+  const { width: vw, height: vh } = viewportSize.value;
+  return {
+    left: (vw - frameSize.value.width) / 2,
+    top: (vh - frameSize.value.height) / 2,
+    width: frameSize.value.width,
+    height: frameSize.value.height,
+  };
+});
+
+// True once the frame, at the current zoom and pixel ratio, actually needs
+// more detail than the displayed derivative offers - so zooming into a
+// `large` image can trigger the upgrade too.
+const needsExtralarge = computed(() => {
+  const extralargeUrl = props.photo.extralargeImageUrl;
+  const largeWidth = props.photo.largeDimensions?.width;
+  if (!extralargeUrl || !largeWidth || !frameSize.value) return false;
+  if (displaySrc.value === extralargeUrl) return false;
+
+  const requiredWidth =
+    frameSize.value.width * (window.devicePixelRatio || 1) * scale.value;
+  return requiredWidth > largeWidth;
+});
+
+watch(
+  needsExtralarge,
+  (needed) => {
+    if (needed) hiResLoading.value = true;
+  },
+  { immediate: true },
+);
+
+const handleHiResLoad = () => {
+  displaySrc.value = props.photo.extralargeImageUrl;
+  hiResLoading.value = false;
+};
+
+const handleHiResError = () => {
+  hiResLoading.value = false;
+};
+
+const prefersReducedMotion = () =>
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+// dx/dy/scale to take a rect down to the origin rect - shared by open
+// (origin <- finalFrameRect, no DOM measurement needed) and close
+// (origin <- the frame's live rect).
+const transformToRect = (rect, origin) => {
+  if (!rect || !rect.width || !rect.height) return null;
+
+  const scaleFactor = origin.width / rect.width;
+  const dx = origin.left + origin.width / 2 - (rect.left + rect.width / 2);
+  const dy = origin.top + origin.height / 2 - (rect.top + rect.height / 2);
+
+  return `translate(${dx}px, ${dy}px) scale(${scaleFactor})`;
+};
+
+// FLIP, but the starting transform is set as part of the same reactive
+// update that first mounts the frame (via frameTransformOverride, computed
+// from finalFrameRect rather than measured), not after. Measuring the DOM
+// and correcting it afterwards - even from a nextTick callback - leaves a
+// window where the frame can paint once at its full target size before the
+// correction lands, which flashes. Baking the start state into the initial
+// render removes that window entirely.
+const startOpenAnimation = () => {
+  if (!props.originRect || prefersReducedMotion()) {
+    frameTransformOverride.value = null;
+    return false;
+  }
+
+  const startTransform = transformToRect(finalFrameRect.value, props.originRect);
+  if (!startTransform) {
+    frameTransformOverride.value = null;
+    return false;
+  }
+
+  frameTransformOverride.value = { transform: startTransform, transition: "none" };
+  return true;
+};
+
+// Called once the frame (with its starting transform already applied) has
+// actually mounted - the double rAF makes sure that first paint has landed
+// before switching to the transition that grows it to full size.
+const settleOpenAnimation = () => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      frameTransformOverride.value = {
+        transform: "none",
+        transition: "transform 350ms ease",
+      };
+    });
+  });
+};
+
+// The reverse: shrink the frame back down to the hero's rect before actually
+// closing, so the lightbox and the hero image trade places smoothly instead
+// of the lightbox just vanishing. Resolves once the shrink has finished (or
+// immediately, if there's nothing to animate) so `close` can wait for it.
+// Unlike open, this measures the frame's live rect - it's already mounted
+// and visible, so there's no flash window to worry about.
+const playCloseAnimation = () =>
+  new Promise((resolve) => {
+    const frameEl = frame.value;
+    if (!props.originRect || prefersReducedMotion() || !frameEl) {
+      resolve();
+      return;
+    }
+
+    const endTransform = transformToRect(
+      frameEl.getBoundingClientRect(),
+      props.originRect,
+    );
+    if (!endTransform) {
+      resolve();
+      return;
+    }
+
+    closing.value = true;
+
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      frameEl.removeEventListener("transitionend", finish);
+      closing.value = false;
+      resolve();
+    };
+
+    frameEl.addEventListener("transitionend", finish);
+    // transitionend can fail to fire (element removed, style pre-empted) -
+    // this is the fallback so closing never gets stuck true.
+    setTimeout(finish, 400);
+
+    // Through the bound style, not frameEl.style: Vue re-applies every key
+    // of frameStyle on each render, which would snap an imperative write back.
+    frameTransformOverride.value = {
+      transform: endTransform,
+      transition: "transform 350ms ease",
+    };
+  });
 
 const constrainPosition = () => {
   if (!lightboxImage.value || !imageContainer.value) return;
@@ -350,6 +583,11 @@ watch(
   () => props.photo,
   () => {
     if (props.isOpen) {
+      // originRect/initialSrc belong to whichever photo was clicked to open
+      // the lightbox - a photo swap while it's already open (e.g. next/prev)
+      // has no hero rect to speak of, so it always starts from `large`.
+      displaySrc.value = initialDisplaySrc();
+      hiResLoading.value = false;
       imageLoading.value = true;
       nextTick(() => {
         resetZoom();
@@ -364,14 +602,23 @@ watch(
   () => props.isOpen,
   (newValue) => {
     if (newValue) {
-      imageLoading.value = true;
+      displaySrc.value = props.initialSrc || initialDisplaySrc();
+      hiResLoading.value = false;
+      // The hero's own src is already on screen, so don't hide it until a
+      // load event - that blanked the photo for a frame on open.
+      imageLoading.value = !props.initialSrc;
+      // Set here, not inside nextTick below - it needs to land in the same
+      // render as the frame's first mount (see startOpenAnimation).
+      const animating = startOpenAnimation();
       nextTick(() => {
         updateContainerDimensions();
         resetZoom();
         showControls();
+        if (animating) settleOpenAnimation();
       });
     } else {
       clearTimeout(hideControlsTimeout.value);
+      hiResLoading.value = false;
     }
   },
 );
@@ -411,6 +658,14 @@ watch(
 </script>
 
 <style scoped lang="scss">
+// Only the backdrop fades in - fading the whole overlay also faded the photo,
+// which blinked out while the hero underneath was already hidden.
+@keyframes lightbox-fade-in {
+  from {
+    background-color: rgba(0, 0, 0, 0);
+  }
+}
+
 .lightbox-overlay {
   position: fixed;
   top: 0;
@@ -422,6 +677,11 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: lightbox-fade-in 300ms ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 .lightbox-container {
@@ -484,6 +744,15 @@ watch(
   position: relative;
 }
 
+// A fixed-size box: extralarge's aspect ratio contained within the
+// available space and capped at its native pixel size (set inline via
+// frameStyle). Its size never depends on which derivative is displayed, so
+// swapping large for extralarge never shifts the layout - and it's the
+// target of the open animation.
+.image-frame {
+  position: relative;
+}
+
 .image-container img {
   max-width: 100%;
   max-height: 100%;
@@ -493,6 +762,45 @@ watch(
   -moz-user-select: none;
   -ms-user-select: none;
   transition: opacity 0.3s ease-in-out;
+}
+
+.image-frame img {
+  width: 100%;
+  height: 100%;
+}
+
+// Kept in the DOM (not display: none) so the browser actually fetches it.
+.hires-preload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hires-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+.hires-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
 }
 
 .loading-spinner {

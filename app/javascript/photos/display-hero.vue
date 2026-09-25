@@ -34,6 +34,8 @@
           >
             <img
               :src="photo.extralargeImageUrl"
+              :srcset="imageSrcset"
+              :sizes="imageSizes"
               @load="onImageLoad"
               @error="onImageError"
               :style="imageStyle"
@@ -42,11 +44,17 @@
           <img
             v-else
             :src="photo.extralargeImageUrl"
+            :srcset="imageSrcset"
+            :sizes="imageSizes"
             :alt="photo.title"
             @click="openLightbox"
             @load="onImageLoad"
             @error="onImageError"
-            :style="{ cursor: 'pointer', ...imageStyle }"
+            :style="{
+              cursor: 'pointer',
+              ...imageStyle,
+              visibility: lightboxOpen ? 'hidden' : 'visible',
+            }"
           />
         </template>
         <div v-if="showLabels" class="labels">
@@ -84,6 +92,8 @@
       :photo="photo"
       :loading="loading"
       :is-open="lightboxOpen"
+      :origin-rect="lightboxOriginRect"
+      :initial-src="lightboxInitialSrc"
       @close="closeLightbox"
     />
   </div>
@@ -124,6 +134,8 @@ const applicationStore = useApplicationStore();
 
 // Lightbox state
 const lightboxOpen = ref(false);
+const lightboxOriginRect = ref(null);
+const lightboxInitialSrc = ref(null);
 
 // Image loading state
 const imageLoading = ref(true);
@@ -172,7 +184,31 @@ watch(
   },
 );
 
-const openLightbox = () => {
+// Lets the browser pick large over extralarge whenever the displayed size
+// doesn't call for the bigger one. Falls back to plain src (extralarge) when
+// large data is missing, rather than offering a single-candidate srcset.
+const imageSrcset = computed(() => {
+  const candidates = [
+    { url: props.photo.largeImageUrl, width: props.photo.largeDimensions?.width },
+    { url: props.photo.extralargeImageUrl, width: props.photo.extralargeDimensions?.width },
+  ].filter((candidate) => candidate.url && candidate.width > 0);
+
+  if (candidates.length < 2) return undefined;
+
+  return candidates.map((candidate) => `${candidate.url} ${candidate.width}w`).join(", ");
+});
+
+// Mirrors the photo-box mixin's width so the browser's srcset choice matches
+// what will actually render. 100vw slightly overestimates the hero body's
+// width, so the error always leans toward the sharper candidate.
+const imageSizes = computed(
+  () =>
+    `min(100vw, ${nativeWidth.value}px, calc((100vh - 150px) * ${ratio.value}))`,
+);
+
+const openLightbox = (event) => {
+  lightboxOriginRect.value = event.currentTarget.getBoundingClientRect();
+  lightboxInitialSrc.value = event.currentTarget.currentSrc || null;
   lightboxOpen.value = true;
 };
 
