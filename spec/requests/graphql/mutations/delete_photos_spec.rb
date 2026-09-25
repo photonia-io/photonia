@@ -81,4 +81,19 @@ describe 'deletePhotos Mutation', type: :request do
       expect(Photo.unscoped).to include(first_photo)
     end
   end
+
+  context 'when the selection mixes an owned photo and one belonging to someone else' do
+    let(:first_photo) { create(:photo, user: owner) }
+    let(:second_photo) { create(:photo, user: stranger, privacy: :private) }
+
+    before do
+      sign_in(owner)
+      [first_photo, second_photo] # force creation before the mutation runs, or the expected count delta is masked
+    end
+
+    it 'deletes neither photo' do
+      expect { post_mutation }.not_to change(Photo.unscoped, :count)
+      expect(Photo.unscoped).to include(first_photo, second_photo)
+    end
+  end
 end

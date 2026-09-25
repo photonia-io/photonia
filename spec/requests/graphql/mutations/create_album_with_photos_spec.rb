@@ -82,5 +82,31 @@ describe 'createAlbumWithPhotos Mutation', type: :request do
       expect(err.dig('extensions', 'code')).to eq('NOT_FOUND')
       expect(json.dig('data', 'createAlbumWithPhotos')).to be_nil
     end
+
+    it 'does not create the album' do
+      expect { post_mutation }.not_to change(Album, :count)
+    end
+  end
+
+  context 'when the selection mixes an owned photo and one belonging to someone else' do
+    let(:owner) { create(:user, :uploader) }
+    let(:other_photo) { create(:photo, user: stranger, privacy: :private) }
+
+    let(:query) do
+      <<~GQL
+        mutation {
+          createAlbumWithPhotos(title: "#{title}", photoIds: ["#{photo.slug}", "#{other_photo.slug}"]) {
+            id
+          }
+        }
+      GQL
+    end
+
+    before { sign_in(owner) }
+
+    it 'creates no album and adds neither photo' do
+      expect { post_mutation }.not_to change(Album, :count)
+      expect(photo.albums).to be_empty
+    end
   end
 end
