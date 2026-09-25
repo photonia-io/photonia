@@ -10,8 +10,6 @@ module Photonia
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.2
-    # 8.0 default, set here because new_framework_defaults_8_0.rb loads too late to avoid a deprecation
-    config.active_support.to_time_preserves_timezone = :zone
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
