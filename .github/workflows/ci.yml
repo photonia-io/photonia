@@ -23,7 +23,6 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          predicate-quantifier: "some-with-excludes"
           filters: |
             workflow: &workflow
               - .github/workflows/ci.yml
