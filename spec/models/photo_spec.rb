@@ -432,14 +432,14 @@ RSpec.describe Photo do
       let(:photo) { build_stubbed(:photo) }
       let(:image_attacher) { instance_double(Shrine::Attacher) }
 
-      # We could do instance_double(ImageProcessing::MiniMagick::Processor) below,
+      # We could do instance_double(ImageProcessing::Vips::Processor) below,
       # but since ImageProcessing has a complex chainable API it would then fail
       # saying that resize_to_fill! is not defined on the double. That's because
       # bang methods are defined via method_missing in ImageProcessing::Chainable
       # https://github.com/janko/image_processing/blob/master/lib/image_processing/chainable.rb#L84
 
       # rubocop:disable-next RSpec/VerifiedDoubles
-      let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      let(:mock_image_processing) { double('ImageProcessing::Vips') }
 
       let(:medium_side) { 800 }
       let(:thumbnail_side) { 300 }
@@ -472,9 +472,10 @@ RSpec.describe Photo do
         allow(photo).to receive(:image_attacher).and_return(image_attacher)
         allow(ENV).to receive(:fetch).with('MEDIUM_SIDE', nil).and_return(medium_side)
         allow(ENV).to receive(:fetch).with('THUMBNAIL_SIDE', nil).and_return(thumbnail_side)
-        allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
+        allow(ImageProcessing::Vips).to receive(:source).and_return(mock_image_processing)
         allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
-        allow(mock_image_processing).to receive_messages(crop: mock_image_processing, resize_to_fill!: 'processed_image')
+        allow(mock_image_processing).to receive_messages(crop: mock_image_processing, saver: mock_image_processing,
+                                                         resize_to_fill!: 'processed_image')
       end
 
       it 'adds intelligent derivatives when intelligent_thumbnail is present' do
@@ -523,6 +524,18 @@ RSpec.describe Photo do
         expect(image_attacher).to have_received(:atomic_promote)
       end
 
+      it 'saves medium crops at medium quality and thumbnails at thumbnail quality' do
+        allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: user_thumbnail)
+        allow(photo).to receive(:custom_crop).with(user_thumbnail, 'image_data').and_return(mock_image_processing)
+        allow(image_attacher).to receive(:add_derivative)
+        allow(image_attacher).to receive(:atomic_promote)
+
+        photo.add_derivatives
+
+        expect(mock_image_processing).to have_received(:saver).with(ImageUploader.saver_options(:medium)).ordered
+        expect(mock_image_processing).to have_received(:saver).with(ImageUploader.saver_options(:thumbnail)).ordered
+      end
+
       it 'does not add any derivatives when no thumbnails are present' do
         allow(photo).to receive_messages(intelligent_thumbnail: nil, user_thumbnail: nil)
         allow(image_attacher).to receive(:add_derivative)
@@ -540,7 +553,7 @@ RSpec.describe Photo do
       let(:image_attacher) { instance_double(Shrine::Attacher) }
       # See the comment in the #add_derivatives spec for why we don't use instance_double here
       # rubocop:disable-next RSpec/VerifiedDoubles
-      let(:mock_image_processing) { double('ImageProcessing::MiniMagick') }
+      let(:mock_image_processing) { double('ImageProcessing::Vips') }
       let(:pixel_width) { 1600 }
       let(:pixel_height) { 1200 }
       let(:thumbnail) do
@@ -555,13 +568,13 @@ RSpec.describe Photo do
       before do
         allow(photo).to receive_messages(image_attacher: image_attacher, pixel_width: pixel_width, pixel_height: pixel_height)
         allow(image_attacher).to receive(:file).and_return(instance_double(Shrine::UploadedFile, download: 'image_data'))
-        allow(ImageProcessing::MiniMagick).to receive(:source).and_return(mock_image_processing)
+        allow(ImageProcessing::Vips).to receive(:source).and_return(mock_image_processing)
         allow(mock_image_processing).to receive(:crop).and_return('cropped_image')
       end
 
-      it 'calls ImageProcessing::MiniMagick.source with the downloaded image' do
+      it 'calls ImageProcessing::Vips.source with the downloaded image' do
         photo.send(:custom_crop, thumbnail)
-        expect(ImageProcessing::MiniMagick).to have_received(:source).with('image_data')
+        expect(ImageProcessing::Vips).to have_received(:source).with('image_data')
       end
 
       it 'computes pixel coordinates from percentages and calls crop with square size' do

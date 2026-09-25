@@ -349,16 +349,16 @@ class Photo < ApplicationRecord
       pipeline = custom_crop(intelligent_thumbnail, original)
       image_attacher.add_derivative(
         :medium_intelligent,
-        pipeline.resize_to_fill!(
-          ENV.fetch('MEDIUM_SIDE', nil),
-          ENV.fetch('MEDIUM_SIDE', nil)
+        pipeline.saver(**ImageUploader.saver_options(:medium)).resize_to_fill!(
+          ENV.fetch('MEDIUM_SIDE', nil).to_i,
+          ENV.fetch('MEDIUM_SIDE', nil).to_i
         )
       )
       image_attacher.add_derivative(
         :thumbnail_intelligent,
-        pipeline.resize_to_fill!(
-          ENV.fetch('THUMBNAIL_SIDE', nil),
-          ENV.fetch('THUMBNAIL_SIDE', nil)
+        pipeline.saver(**ImageUploader.saver_options(:thumbnail)).resize_to_fill!(
+          ENV.fetch('THUMBNAIL_SIDE', nil).to_i,
+          ENV.fetch('THUMBNAIL_SIDE', nil).to_i
         )
       )
     end
@@ -367,16 +367,16 @@ class Photo < ApplicationRecord
       pipeline = custom_crop(user_thumbnail, original)
       image_attacher.add_derivative(
         :medium_user,
-        pipeline.resize_to_fill!(
-          ENV.fetch('MEDIUM_SIDE', nil),
-          ENV.fetch('MEDIUM_SIDE', nil)
+        pipeline.saver(**ImageUploader.saver_options(:medium)).resize_to_fill!(
+          ENV.fetch('MEDIUM_SIDE', nil).to_i,
+          ENV.fetch('MEDIUM_SIDE', nil).to_i
         )
       )
       image_attacher.add_derivative(
         :thumbnail_user,
-        pipeline.resize_to_fill!(
-          ENV.fetch('THUMBNAIL_SIDE', nil),
-          ENV.fetch('THUMBNAIL_SIDE', nil)
+        pipeline.saver(**ImageUploader.saver_options(:thumbnail)).resize_to_fill!(
+          ENV.fetch('THUMBNAIL_SIDE', nil).to_i,
+          ENV.fetch('THUMBNAIL_SIDE', nil).to_i
         )
       )
     end
@@ -485,7 +485,7 @@ class Photo < ApplicationRecord
     # Use the smaller dimension to ensure the crop is square
     square_size = [width_px, height_px].min
 
-    ImageProcessing::MiniMagick
+    ImageProcessing::Vips
       .source(original)
       .crop(x, y, square_size, square_size)
   end

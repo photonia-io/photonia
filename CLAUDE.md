@@ -36,7 +36,7 @@ System specs run with the suite through Cuprite and need a local Chrome/Chromium
 
 **Test runs must be warning-free.** A new warning is a defect to fix at its source (a dependency bump if needed) — never silence it with `--no-warnings` or by opting out of a runtime feature.
 
-Fresh setup: `sudo apt install libpq-dev libexif-dev imagemagick`, `bundle install && yarn install`, `bin/rails db:schema:load`, then `bin/rails db:seed` (**required**: seeds Roles + TaggingSources). No registration UI — create the admin with `bin/rails users:create\[me@example.com,password\]` and `users:make_admin\[me@example.com\]` (escape brackets in zsh).
+Fresh setup: `sudo apt install libpq-dev libexif-dev libvips`, `bundle install && yarn install`, `bin/rails db:schema:load`, then `bin/rails db:seed` (**required**: seeds Roles + TaggingSources). No registration UI — create the admin with `bin/rails users:create\[me@example.com,password\]` and `users:make_admin\[me@example.com\]` (escape brackets in zsh).
 
 `lib/tasks/` is the ops surface: `flickr:import*`, `photos:add_derivatives`, `albums:maintenance`, `rekognition:tag_batch`, `related_tags:precompute`, `users:*`.
 
