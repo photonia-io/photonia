@@ -14,4 +14,5 @@ paths:
   - shared context `'with auth actors'` — `owner` / `stranger` / `admin`
   - shared examples in `spec/support/` (authorization, trackable title/description)
   - existing FactoryBot factories — check before adding one
+- System specs (`spec/system`) use Cuprite (headless Chrome, no Selenium); helpers in `spec/support/system_specs_helper.rb`.
 - Style (rubocop): `RSpec/ImplicitExpect: should` (`it { should permit_only_actions(...) }`); `ExampleLength` and `MultipleExpectations` disabled.

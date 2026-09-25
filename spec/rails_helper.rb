@@ -7,6 +7,7 @@ require File.expand_path('../config/environment', __dir__)
 # Prevent database truncation if the environment is production
 abort('The Rails environment is running in production mode!') if Rails.env.production?
 require 'rspec/rails'
+require 'capybara/cuprite'
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -67,7 +68,9 @@ RSpec.configure do |config|
   config.include GraphQLResponseHelpers, type: :request
   config.include SystemSpecsHelper, type: :system
   config.before(:each, type: :system) do
-    driven_by :remote_chrome
+    # First visit waits on Vite's test autoBuild; CI containers need no-sandbox
+    driven_by :cuprite, screen_size: [1280, 800],
+                        options: { timeout: 30, browser_options: ENV['CI'] ? { 'no-sandbox' => nil } : {} }
   end
 
   # Seed the database before the test suite runs
@@ -82,23 +85,3 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
-
-Capybara.register_driver :remote_chrome do |app|
-  options = Selenium::WebDriver::Chrome::Options.new
-
-  Capybara::Selenium::Driver.new(
-    app,
-    url: 'http://localhost:4444/wd/hub',
-    browser: :remote,
-    options: options
-  )
-end
-
-Capybara.server_port = 3020
-
-# The host will be different depending on the environment you are running the tests in
-# For Docker on Mac, Windows and Docker Desktop on Linux use host.docker.internal
-# I couldn't get the following to work yet:
-# For Docker on Linux (without Docker Desktop), use the IP address of the host machine
-# Or get the IP address by doing `ip addr show docker0`, it is usually something like 172.17.0.1
-Capybara.app_host = 'http://host.docker.internal:3020'

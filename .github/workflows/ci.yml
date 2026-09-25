@@ -103,8 +103,9 @@ jobs:
       - name: Set up database schema
         run: bin/rails db:schema:load
       # Add or replace test runners here
+      # System specs run from the manual system-specs.yml workflow
       - name: Run rspec
-        run: bundle exec rspec
+        run: bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
         with:

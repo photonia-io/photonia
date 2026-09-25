@@ -82,10 +82,10 @@ group :development do
 end
 
 group :test do
-  # Adds support for Capybara system testing and selenium driver
+  # System specs: Capybara driving local Chrome via Cuprite
   gem 'capybara', '>= 3.38.0'
+  gem 'cuprite'
   gem 'pundit-matchers', '~> 4.0'
-  gem 'selenium-webdriver'
   gem 'shoulda-matchers', '~> 6.1'
   gem 'simplecov', require: false
   gem 'simplecov-cobertura', require: false
