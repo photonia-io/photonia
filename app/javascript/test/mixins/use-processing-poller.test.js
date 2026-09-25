@@ -185,6 +185,9 @@ describe("useProcessingPoller", () => {
 
       expect(fetchProcessed.mock.calls.length).toBeGreaterThan(callsAtTimeout);
       expect(item.processed).toBe(true);
+      // Completing clears the stall flag too, or the row would keep
+      // showing "still processing" beside its Complete badge.
+      expect(item.processingTimedOut).toBe(false);
     });
   });
 

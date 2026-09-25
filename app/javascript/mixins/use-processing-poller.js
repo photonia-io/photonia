@@ -54,6 +54,7 @@ export function useProcessingPoller({
     for (let i = tracked.length - 1; i >= 0; i--) {
       if (processedSet.has(tracked[i].slug)) {
         tracked[i].processed = true;
+        tracked[i].processingTimedOut = false;
         tracked.splice(i, 1);
         completedCount++;
       }
@@ -64,10 +65,7 @@ export function useProcessingPoller({
       lastProgressAt = Date.now();
       onCompleted?.(completedCount);
     } else if (Date.now() - lastProgressAt >= stallTimeout) {
-      // Flag the stall, but keep polling (at the backed-off interval below)
-      // rather than giving up on these items - a slow Sidekiq backlog can
-      // still finish, and the row should be able to reach "Complete"
-      // without the user having to reload the page.
+      // Flag the stall, but keep tracking - a slow backlog can still finish later.
       tracked.forEach((item) => {
         item.processingTimedOut = true;
       });

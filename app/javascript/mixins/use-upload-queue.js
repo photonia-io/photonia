@@ -97,17 +97,26 @@ export function useUploadQueue({
     item.response = null;
   }
 
-  // Used by the Retry button: sends just this one item, rather than going
-  // through start()'s loop over every pending item, which would also submit
-  // unrelated photos the user hasn't finished editing yet.
+  // Used by the Retry button: sends just this item (and any other retried
+  // while that's in flight), rather than going through start()'s loop over
+  // every pending item, which would also submit unrelated photos the user
+  // hasn't finished editing yet.
+  const retryQueue = [];
+
   async function retryOne(item) {
     if (item.status !== "error") return;
     retry(item);
+    retryQueue.push(item);
     if (uploading.value) return;
 
     uploading.value = true;
     stopRequested = false;
-    await send(item);
+    while (retryQueue.length && !stopRequested) {
+      const next = retryQueue.shift();
+      if (next.status === "pending" && items.value.includes(next)) {
+        await send(next);
+      }
+    }
     uploading.value = false;
   }
 

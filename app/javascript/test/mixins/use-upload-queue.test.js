@@ -313,6 +313,45 @@ describe("useUploadQueue", () => {
       expect(queue.items.value[0].status).toBe("success");
     });
 
+    it("also sends a second item retried while the first retry is still in flight", async () => {
+      const queue = setup();
+      queue.add([makeFile("one.jpg"), makeFile("two.jpg")]);
+
+      const startPromise = queue.start();
+      await Promise.resolve();
+      await Promise.resolve();
+      FakeXHR.instances[0].respond(422, { errors: ["bad"] });
+      await Promise.resolve();
+      await Promise.resolve();
+      FakeXHR.instances[1].respond(422, { errors: ["bad"] });
+      await startPromise;
+      expect(queue.items.value[0].status).toBe("error");
+      expect(queue.items.value[1].status).toBe("error");
+
+      queue.retryOne(queue.items.value[0]); // starts a standalone retry
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(FakeXHR.instances).toHaveLength(3);
+
+      queue.retryOne(queue.items.value[1]); // clicked while the above is in flight
+      expect(queue.items.value[1].status).toBe("pending");
+      expect(FakeXHR.instances).toHaveLength(3); // not sent yet
+
+      FakeXHR.instances[2].respond(201, { photo: { id: "one" } });
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // The still-running retry keeps going rather than stopping at one.
+      expect(FakeXHR.instances).toHaveLength(4);
+      FakeXHR.instances[3].respond(201, { photo: { id: "two" } });
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(queue.items.value[0].status).toBe("success");
+      expect(queue.items.value[1].status).toBe("success");
+      expect(queue.uploading.value).toBe(false);
+    });
+
     it("does nothing for a non-error item", async () => {
       const queue = setup();
       queue.add([makeFile("one.jpg")]);
