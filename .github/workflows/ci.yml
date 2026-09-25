@@ -35,6 +35,7 @@ jobs:
               - *workflow
               - *js_build
               - app/**
+              - "!app/javascript/**"
               - bin/**
               - "config/!(deploy*)"
               - config/*/**

@@ -374,6 +374,8 @@ const showLabels = computed(() => {
 
 // Positioned so the Rekognition label boxes inside, which are placed in
 // percentages, resolve against the photo rather than the full-width wrapper.
+// pointer-events: none so the overlay (which covers the whole photo, not just
+// the individual label boxes) doesn't block clicks on the photo underneath.
 .labels {
   position: absolute;
   top: 50%;
@@ -381,6 +383,7 @@ const showLabels = computed(() => {
   transform: translate(-50%, -50%);
   height: auto;
   aspect-ratio: var(--target-ratio);
+  pointer-events: none;
   @include photo-box(var(--target-ratio), var(--target-width));
 }
 
