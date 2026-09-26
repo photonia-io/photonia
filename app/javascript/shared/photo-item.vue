@@ -228,18 +228,27 @@ const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMen
   transition: opacity 0.12s ease;
 }
 
-.photo-card:hover .item-checkbox-container,
-.photo-card:focus-within .item-checkbox-container,
-.photo-card:hover .cover-photo-icon-container,
-.photo-card:focus-within .cover-photo-icon-container,
 .photo-card.is-selecting .item-checkbox-container,
 .photo-card.is-selecting .cover-photo-icon-container {
   opacity: 1;
   pointer-events: auto;
 }
 
-.photo-card:hover .item-checkbox,
-.photo-card:focus-within .item-checkbox {
-  border-color: #00d1b2;
+/* Hover and focus reveal only where there is a real pointer. On touch they
+   stick after a tap, which would leave a visible checkbox on a card that has
+   just been deselected — and a tap there navigates rather than reselecting. */
+@media (hover: hover) {
+  .photo-card:hover .item-checkbox-container,
+  .photo-card:focus-within .item-checkbox-container,
+  .photo-card:hover .cover-photo-icon-container,
+  .photo-card:focus-within .cover-photo-icon-container {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .photo-card:hover .item-checkbox,
+  .photo-card:focus-within .item-checkbox {
+    border-color: #00d1b2;
+  }
 }
 </style>
