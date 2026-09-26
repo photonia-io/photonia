@@ -26,7 +26,7 @@
 <style>
   .item-checkbox-container {
     position: absolute;
-    top: 1.25em;
+    top: 0.75em;
     right: 0.75em;
   }
 
@@ -36,11 +36,18 @@
     height: 1.5em;
     background-color: #fff;
     border-radius: 3px;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
   }
 
+  /* Hovering the box itself tints it, so it reads as the thing being clicked
+     rather than the card. Not when checked: a pale fill would swallow the
+     white checkmark. */
   .item-checkbox:hover {
     border-color: #00d1b2;
+  }
+
+  .item-checkbox:not(.checked):hover {
+    background-color: #d7f9f4;
   }
 
   .item-checkmark {

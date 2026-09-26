@@ -12,34 +12,14 @@
           v-if="userStore.signedIn && userStore.uploader"
         >
           <div class="level-item">
-            <button
-              class="button is-small"
-              v-if="userStore.signedIn && !applicationStore.selectionMode"
-              @click="applicationStore.enterSelectionMode()"
-            >
-              Enter Selection Mode
-            </button>
-            <button
-              class="button is-small"
-              v-if="userStore.signedIn && applicationStore.selectionMode"
-              @click="applicationStore.exitSelectionMode()"
-            >
-              <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-              <span>Exit Selection Mode</span>
-            </button>
+            <p class="selection-hint touch-only">
+              <span class="icon"><i class="far fa-hand-pointer"></i></span>
+              <span>Long press a photo to start selecting</span>
+            </p>
           </div>
         </div>
       </div>
       <hr class="mt-2 mb-4" />
-      <SelectionOptions
-        v-if="
-          result &&
-          result.photos &&
-          userStore.signedIn &&
-          applicationStore.selectionMode
-        "
-        :photos="result.photos.collection"
-      />
       <div class="columns is-1 is-multiline">
         <PhotoItem
           v-if="result && result.photos"
@@ -60,16 +40,16 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import gql from "graphql-tag";
 import { useTitle } from "vue-page-title";
 import { useQuery } from "@vue/apollo-composable";
-import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "@/stores/user";
+import { useSelectionStore } from "@/stores/selection";
+import { useSelectionContext } from "@/mixins/use-selection-context";
 
 // components
-import SelectionOptions from "./selection-options.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 
@@ -82,13 +62,20 @@ const additionalQueryParams = computed(() =>
   query.value !== null ? { q: query.value } : {},
 );
 
-const applicationStore = useApplicationStore();
 const userStore = useUserStore();
+const selectionStore = useSelectionStore();
+useSelectionContext();
 
 const { result } = useQuery(
   gql`
     ${gql_queries.photos_index}
   `,
   { page: page, query: query },
+);
+
+watch(
+  () => result.value?.photos?.collection,
+  (photos) => selectionStore.setPageCollection(photos || []),
+  { immediate: true },
 );
 </script>

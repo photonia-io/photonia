@@ -1,7 +1,24 @@
 <template>
   <section class="section-pt-pb-0">
     <div class="container">
-      <h1 class="title mt-5 mb-0">Tag: {{ tag.name }}</h1>
+      <div class="level mb-0 mt-5">
+        <div class="level-left">
+          <div class="level-item">
+            <h1 class="title">Tag: {{ tag.name }}</h1>
+          </div>
+        </div>
+        <div
+          class="level-right"
+          v-if="userStore.signedIn && userStore.uploader"
+        >
+          <div class="level-item">
+            <p class="selection-hint touch-only">
+              <span class="icon"><i class="far fa-hand-pointer"></i></span>
+              <span>Long press a photo to start selecting</span>
+            </p>
+          </div>
+        </div>
+      </div>
       <hr class="mt-2 mb-4" />
       <div class="tags mb-4 is-size-6" v-if="tag.relatedTags.length > 0">
         Related Tags:
@@ -33,11 +50,14 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
+import { useUserStore } from "@/stores/user";
+import { useSelectionStore } from "@/stores/selection";
+import { useSelectionContext } from "@/mixins/use-selection-context";
 
 // components
 import PhotoItem from "@/shared/photo-item.vue";
@@ -66,6 +86,16 @@ const tag = computed(() => result.value?.tag ?? emptyTag);
 const title = computed(() => `Tag: ${tag.value.name}`);
 
 useTitle(title);
+
+const userStore = useUserStore();
+const selectionStore = useSelectionStore();
+useSelectionContext();
+
+watch(
+  () => tag.value.photos?.collection,
+  (photos) => selectionStore.setPageCollection(photos || []),
+  { immediate: true },
+);
 </script>
 
 <style></style>

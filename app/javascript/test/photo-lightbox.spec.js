@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { createPinia, setActivePinia } from "pinia";
 import PhotoLightbox from "../photos/photo-lightbox.vue";
+import { useApplicationStore } from "../stores/application";
 
 const mockPhoto = {
   title: "Test Photo",
@@ -13,7 +15,11 @@ describe("PhotoLightbox", () => {
   const closeHandler = vi.fn();
 
   beforeEach(() => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
     wrapper = mount(PhotoLightbox, {
+      global: { plugins: [pinia] },
       props: {
         photo: mockPhoto,
         isOpen: true,
@@ -69,6 +75,31 @@ describe("PhotoLightbox", () => {
     expect(img.attributes("src")).toBe(mockPhoto.extralargeImageUrl);
     expect(img.attributes("alt")).toBe(mockPhoto.title);
   });
+
+  // The component itself is always mounted by display-hero.vue (only its
+  // `isOpen` prop toggles), so this has to track the prop, not
+  // onMounted/onUnmounted, or it would suspend shortcuts sitewide forever.
+  describe("navigation shortcuts", () => {
+    it("suspends them while open and restores them on close", async () => {
+      const applicationStore = useApplicationStore();
+      expect(applicationStore.navigationShortcutsEnabled).toBe(false);
+
+      await wrapper.setProps({ isOpen: false });
+      expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+
+      await wrapper.setProps({ isOpen: true });
+      expect(applicationStore.navigationShortcutsEnabled).toBe(false);
+    });
+
+    it("restores them if the component unmounts while still open", () => {
+      const applicationStore = useApplicationStore();
+      expect(applicationStore.navigationShortcutsEnabled).toBe(false);
+
+      wrapper.unmount();
+
+      expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+    });
+  });
 });
 
 // 3:2, like most photos: in happy-dom's 1024x768 viewport the frame is
@@ -99,7 +130,11 @@ describe("PhotoLightbox variants and animation", () => {
   // Mounted closed, then opened - the same sequence as the hero click, since
   // the open-time setup lives in the isOpen watcher.
   const openLightbox = async (props = {}) => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
     wrapper = mount(PhotoLightbox, {
+      global: { plugins: [pinia] },
       props: { photo: photoWithVariants("a"), isOpen: false, ...props },
     });
     await wrapper.setProps({ isOpen: true });

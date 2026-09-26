@@ -121,6 +121,7 @@ class GraphqlQueryCollection
               id
               title
               intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+              canEdit
             }
             metadata {
               totalPages

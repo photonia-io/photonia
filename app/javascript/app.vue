@@ -1,9 +1,10 @@
 <template>
-  <div>
+  <div :class="{ 'has-selection-bar': selectionStore.count > 0 }">
     <Navigation></Navigation>
     <RouterView></RouterView>
     <Footer></Footer>
   </div>
+  <SelectionBar />
   <teleport to="#modal-root">
     <div
       :class="['modal', applicationStore.navModalActive ? 'is-active' : null]"
@@ -32,10 +33,11 @@
 <script setup>
 import Navigation from "./navigation.vue";
 import Footer from "./footer.vue";
+import SelectionBar from "@/shared/selection-bar.vue";
 
 import { useApplicationStore } from "@/stores/application";
 import { useSelectionStore } from "@/stores/selection";
-import { watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
@@ -63,10 +65,6 @@ const navigateAway = () => {
   if (applicationStore.navAction === "stopEditing") {
     // we arrived here while editing a photo or album's details
     applicationStore.stopEditing();
-  } else if (applicationStore.navAction === "clearAlbumSelection") {
-    // we arrived here while managing an album and having selected photos
-    selectionStore.clearSelectedAlbumPhotos();
-    applicationStore.stopManagingAlbum && applicationStore.stopManagingAlbum();
   }
   const target = applicationStore.navNavigateTo;
   applicationStore.closeNavigationModal();
@@ -74,4 +72,15 @@ const navigateAway = () => {
     router.push(target);
   }
 };
+
+// Escape clears the selection, but only when nothing else (a modal, inline
+// editing) has already claimed it via disableNavigationShortcuts.
+const handleGlobalKeydown = (event) => {
+  if (event.key !== "Escape") return;
+  if (!applicationStore.navigationShortcutsEnabled) return;
+  if (selectionStore.count > 0) selectionStore.clear();
+};
+
+onMounted(() => document.addEventListener("keydown", handleGlobalKeydown));
+onUnmounted(() => document.removeEventListener("keydown", handleGlobalKeydown));
 </script>

@@ -1,44 +1,6 @@
 <template>
   <div class="column is-one-quarter is-relative">
-    <div
-      v-if="applicationStore.selectionMode || applicationStore.managingAlbum"
-    >
-      <div class="selectable-item is-clickable" @click="toggleSelection()">
-        <ItemImage :photo="photo" />
-
-        <!-- Set Cover Photo icon (to the left of the checkbox) -->
-        <div
-          class="cover-photo-icon-container"
-          v-if="canSetCover"
-          :title="
-            photo.isCoverPhoto
-              ? 'This is the cover photo'
-              : 'Set as cover photo'
-          "
-          @click.stop="!photo.isCoverPhoto && emit('set-cover-photo', photo)"
-        >
-          <div :class="['cover-photo-icon', { disabled: photo.isCoverPhoto }]">
-            <span class="icon is-small">
-              <i class="fas fa-star"></i>
-            </span>
-          </div>
-        </div>
-
-        <ItemCheckbox
-          v-if="userStore.signedIn && userStore.uploader && photo.canEdit"
-          :checked="selected"
-        />
-
-        <!-- Cover Photo tag -->
-        <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
-          <span class="tag is-info is-light is-small">Cover Photo</span>
-        </div>
-      </div>
-      <router-link :to="photoRoute">
-        {{ photo.title }}
-      </router-link>
-    </div>
-    <router-link v-else :to="photoRoute">
+    <router-link v-if="!canSelect" :to="photoRoute">
       <div class="image-wrapper">
         <ItemImage :photo="photo" />
         <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
@@ -47,6 +9,54 @@
       </div>
       {{ photo.title }}
     </router-link>
+    <template v-else>
+      <div
+        class="photo-card is-clickable"
+        :class="{ 'is-selecting': selectionStore.isSelecting }"
+        role="button"
+        tabindex="0"
+        @click="handleCardClick"
+        @keydown.enter="handleCardClick"
+        @keydown.space.prevent="handleCardClick"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerCancel"
+        @contextmenu="onContextMenu"
+      >
+        <div class="image-wrapper">
+          <ItemImage :photo="photo" />
+
+          <!-- Set Cover Photo icon (to the left of the checkbox) -->
+          <div
+            class="cover-photo-icon-container"
+            v-if="canSetCover"
+            :title="
+              photo.isCoverPhoto
+                ? 'This is the cover photo'
+                : 'Set as cover photo'
+            "
+            @click.stop="!photo.isCoverPhoto && emit('set-cover-photo', photo)"
+          >
+            <div :class="['cover-photo-icon', { disabled: photo.isCoverPhoto }]">
+              <span class="icon is-small">
+                <i class="fas fa-star"></i>
+              </span>
+            </div>
+          </div>
+
+          <ItemCheckbox :checked="isPhotoSelected" @click.stop="handleCheckboxClick" />
+
+          <!-- Cover Photo tag -->
+          <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
+            <span class="tag is-info is-light is-small">Cover Photo</span>
+          </div>
+        </div>
+      </div>
+      <router-link :to="photoRoute">
+        {{ photo.title }}
+      </router-link>
+    </template>
   </div>
 </template>
 
@@ -54,61 +64,34 @@
 /**
  * PhotoItem Component
  * -------------------
- * This component represents a single photo item in a grid.
+ * A single photo in a grid.
  *
- * Features:
- * - Displays a photo with its title.
- * - Supports selection mode for batch operations.
- * - Includes a clickable checkbox for selecting photos (if the user has permissions).
+ * Selection is implicit: an editable card reveals a checkbox on hover (or
+ * long-press on touch); a plain click toggles it once anything is selected,
+ * otherwise it navigates. Ctrl/Cmd-click always toggles; shift-click selects
+ * a range within the current page.
+ * Enter and Space on a focused card do the same as a click.
  *
  * Props:
- * - `photo` (Object, required): The photo object to display.
- * - `inAlbum` (Boolean, optional): Indicates if the photo is displayed in an album. If true, selection is managed via an album-specific selection store.
+ * - `photo` (Object, required)
+ * - `inAlbum` (Boolean): whether this card is shown inside an album's photo
+ *   grid — controls the cover-photo star/tag, not selection.
+ * - `canEditAlbum` (Boolean): whether the current user can edit that album.
+ * - `albumId` (String): slug of the album this grid belongs to. Distinct
+ *   from `inAlbum` — when set, the photo link starts album (J/K) navigation.
  *
- * Dependencies:
- * - Uses `ItemImage` to display the photo.
- * - Uses `ItemCheckbox` for selection functionality.
- *
- * Usage:
- * - Used in photo grids or album views.
- * - Example: `<PhotoItem :photo="photo" :inAlbum="true" />`
+ * Emits: `set-cover-photo`.
  */
 
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 import { useUserStore } from "@/stores/user";
-import { useApplicationStore } from "@/stores/application";
 import { useSelectionStore } from "@/stores/selection";
+import { useLongPress } from "@/mixins/use-long-press";
 
 import ItemImage from "@/shared/item-image.vue";
 import ItemCheckbox from "@/shared/item-checkbox.vue";
-
-const userStore = useUserStore();
-const applicationStore = useApplicationStore();
-const selectionStore = useSelectionStore();
-
-const emit = defineEmits(["set-cover-photo"]);
-
-const canSetCover = computed(() => {
-  return (
-    props.inAlbum &&
-    applicationStore.managingAlbum &&
-    userStore.signedIn &&
-    userStore.uploader &&
-    props.photo.canEdit
-  );
-});
-
-const showCoverTag = computed(() => {
-  // Show the tag when photo is cover AND either:
-  // - managing the album, or
-  // - user is signed in and can edit the album (even if not managing)
-  return (
-    !!props.photo.isCoverPhoto &&
-    (applicationStore.managingAlbum ||
-      (userStore.signedIn && props.canEditAlbum))
-  );
-});
 
 const props = defineProps({
   photo: {
@@ -125,8 +108,6 @@ const props = defineProps({
     default: false,
     required: false,
   },
-  // Slug of the album this grid belongs to. Distinct from `inAlbum`, which only
-  // picks the selection store. When set, photo links start album navigation.
   albumId: {
     type: String,
     default: null,
@@ -134,43 +115,64 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["set-cover-photo"]);
+
+const router = useRouter();
+const userStore = useUserStore();
+const selectionStore = useSelectionStore();
+
 const photoRoute = computed(() => ({
   name: "photos-show",
   params: { id: props.photo.id },
   ...(props.albumId ? { query: { inAlbum: props.albumId } } : {}),
 }));
 
-const selected = computed(() => {
-  if (props.inAlbum) {
-    return selectionStore.selectedAlbumPhotos.some(
-      (photo) => photo.id === props.photo.id,
-    );
-  } else {
-    return selectionStore.selectedPhotos.some(
-      (photo) => photo.id === props.photo.id,
-    );
-  }
-});
+const canSelect = computed(
+  () => userStore.signedIn && userStore.uploader && !!props.photo.canEdit,
+);
 
-const toggleSelection = () => {
-  if (selected.value) {
-    props.inAlbum
-      ? selectionStore.removeAlbumPhoto(props.photo)
-      : selectionStore.removePhoto(props.photo);
+const canSetCover = computed(
+  () =>
+    props.inAlbum &&
+    props.canEditAlbum &&
+    userStore.signedIn &&
+    userStore.uploader &&
+    !!props.photo.canEdit,
+);
+
+const showCoverTag = computed(
+  () => !!props.photo.isCoverPhoto && userStore.signedIn && props.canEditAlbum,
+);
+
+const isPhotoSelected = computed(() => selectionStore.isSelected(props.photo.id));
+
+const handleCardClick = (event) => {
+  if (event.shiftKey) {
+    selectionStore.selectRange(props.photo.id);
+    return;
+  }
+  if (event.metaKey || event.ctrlKey || selectionStore.isSelecting) {
+    selectionStore.toggle(props.photo);
+    return;
+  }
+  router.push(photoRoute.value);
+};
+
+const handleCheckboxClick = (event) => {
+  if (event.shiftKey) {
+    selectionStore.selectRange(props.photo.id);
   } else {
-    props.inAlbum
-      ? selectionStore.addAlbumPhoto(props.photo)
-      : selectionStore.addPhoto(props.photo);
+    selectionStore.toggle(props.photo);
   }
 };
+
+const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMenu } =
+  useLongPress(() => selectionStore.toggle(props.photo));
 </script>
 
 <style>
-.selectable-item {
+.photo-card {
   position: relative;
-}
-.selectable-item:hover .item-checkbox {
-  border-color: #00d1b2;
 }
 
 .image-wrapper {
@@ -179,9 +181,12 @@ const toggleSelection = () => {
 
 .cover-photo-icon-container {
   position: absolute;
-  top: 1.25em;
+  top: 0.75em;
   /* place to the left of the checkbox (checkbox right offset is 0.75em and width is 1.5em) */
   right: 3em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease-in-out;
 }
 
 .cover-photo-icon {
@@ -192,7 +197,7 @@ const toggleSelection = () => {
   height: 1.5em;
   background-color: #fff;
   border-radius: 3px;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   color: #ffdd57; /* Bulma warning yellow for star */
 }
 
@@ -212,5 +217,38 @@ const toggleSelection = () => {
   right: 0.75em;
   bottom: 0.75em;
   pointer-events: none; /* do not trigger selection toggle */
+}
+
+/* The checkbox (and, in an album, the cover star) only fade in on hover,
+   keyboard focus, or while a selection is active — so browsing a grid with
+   nothing selected shows a clean image. */
+.photo-card .item-checkbox-container {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease-in-out;
+}
+
+.photo-card.is-selecting .item-checkbox-container,
+.photo-card.is-selecting .cover-photo-icon-container {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hover and focus reveal only where there is a real pointer. On touch they
+   stick after a tap, which would leave a visible checkbox on a card that has
+   just been deselected — and a tap there navigates rather than reselecting. */
+@media (hover: hover) {
+  .photo-card:hover .item-checkbox-container,
+  .photo-card:focus-within .item-checkbox-container,
+  .photo-card:hover .cover-photo-icon-container,
+  .photo-card:focus-within .cover-photo-icon-container {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .photo-card:hover .item-checkbox,
+  .photo-card:focus-within .item-checkbox {
+    border-color: #00d1b2;
+  }
 }
 </style>

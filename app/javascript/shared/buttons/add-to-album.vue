@@ -12,7 +12,7 @@
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
       <div class="modal-background"></div>
-      <div class="modal-card">
+      <div class="modal-card" ref="modalCard" tabindex="-1">
         <header class="modal-card-head">
           <p class="modal-card-title has-text-centered">Add To Album</p>
         </header>
@@ -25,7 +25,7 @@
         <footer class="modal-card-foot is-justify-content-center">
           <div class="buttons">
             <button class="button is-primary" @click="addToAlbum()">Add</button>
-            <button class="button is-info" @click="modalActive = false">
+            <button class="button is-info" @click="closeModal">
               Cancel
             </button>
           </div>
@@ -36,8 +36,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import SelectOrCreateAlbum from "@/albums/select-or-create-album.vue";
+import { useModal } from "@/mixins/use-modal";
 
 const props = defineProps({
   photos: {
@@ -53,20 +54,12 @@ const props = defineProps({
 
 const emit = defineEmits(["addPhotosToAlbum", "createAlbumWithPhotos"]);
 
-const modalActive = ref(false);
 const selectOrCreateAlbum = ref();
-
-onMounted(() => {
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      modalActive.value = false;
-    }
-  });
-});
+const { active: modalActive, modalCard, open: openModal, close: closeModal } = useModal();
 
 const showModal = () => {
   selectOrCreateAlbum.value.reset();
-  modalActive.value = true;
+  openModal();
 };
 
 const addToAlbum = () => {
@@ -89,6 +82,6 @@ const addToAlbum = () => {
     emit("createAlbumWithPhotos", { title: newAlbumTitle, photoIds: photoIds });
   }
 
-  modalActive.value = false;
+  closeModal();
 };
 </script>

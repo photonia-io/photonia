@@ -3,12 +3,10 @@ import settings from "../mixins/settings";
 import toaster from "../mixins/toaster";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "../stores/application";
-import { useSelectionStore } from "../stores/selection";
 
 export function createAppRouter(pinia) {
   const userStore = useUserStore(pinia);
   const applicationStore = useApplicationStore(pinia);
-  const selectionStore = useSelectionStore(pinia);
 
   const redirectIfNotSignedIn = (to, from) => {
     if (!userStore.signedIn) {
@@ -113,18 +111,6 @@ export function createAppRouter(pinia) {
       beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("uploader")],
     },
     {
-      path: settings.photos_path + "/organizer",
-      name: "photos-organizer",
-      component: () => import("../photos/organizer.vue"),
-      beforeEnter: redirectIfNotSignedIn,
-    },
-    {
-      path: settings.photos_path + "/deselected",
-      name: "photos-deselected",
-      component: () => import("../photos/deselected.vue"),
-      beforeEnter: redirectIfNotSignedIn,
-    },
-    {
       path: settings.stats_path,
       name: "stats-index",
       component: () => import("../stats/index.vue"),
@@ -174,26 +160,6 @@ export function createAppRouter(pinia) {
         to,
         "You are modifying something. Are you sure you want to navigate away?",
         "stopEditing",
-      );
-      return false;
-    }
-
-    // Will trigger when leaving an album that has management panel open and there are selected photos
-    // Will not trigger if we are going to another page within the same album
-    const leavingAlbum =
-      from?.name === "albums-show" && applicationStore.managingAlbum;
-    const stayingOnTheSameAlbum =
-      to?.name === "albums-show" &&
-      from?.name === "albums-show" &&
-      to.params?.id === from.params?.id;
-    const hasAlbumSelection =
-      (selectionStore.selectedAlbumPhotos || []).length > 0;
-
-    if (leavingAlbum && !stayingOnTheSameAlbum && hasAlbumSelection) {
-      applicationStore.openNavigationModal(
-        to,
-        "You have selected photos in this album. Navigating away will clear your selection. Continue?",
-        "clearAlbumSelection",
       );
       return false;
     }

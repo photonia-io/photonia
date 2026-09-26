@@ -14,20 +14,16 @@
             </h1>
           </div>
         </div>
-        <div
-          class="level-right"
-          v-if="userStore.signedIn && userStore.uploader"
-        >
-          <div class="level-item">
-            <button
-              class="button is-small"
-              v-if="!applicationStore.managingAlbum"
-              @click="applicationStore.startManagingAlbum()"
-            >
-              Manage
-            </button>
-            <button class="button is-small" v-else @click="stopManaging">
-              Stop Managing
+        <div class="level-right" v-if="userStore.signedIn">
+          <div class="level-item" v-if="userStore.uploader">
+            <p class="selection-hint touch-only">
+              <span class="icon"><i class="far fa-hand-pointer"></i></span>
+              <span>Long press a photo to start selecting</span>
+            </p>
+          </div>
+          <div class="level-item" v-if="canEditAlbum">
+            <button class="button is-small" @click="showAlbumSettings = !showAlbumSettings">
+              {{ showAlbumSettings ? "Hide Album Settings" : "Album Settings" }}
             </button>
           </div>
         </div>
@@ -47,29 +43,12 @@
       />
 
       <AlbumManagement
-        v-if="
-          !loading &&
-          userStore.signedIn &&
-          album.canEdit &&
-          applicationStore.managingAlbum
-        "
+        v-if="!loading && userStore.signedIn && album.canEdit && showAlbumSettings"
         ref="albumManagementRef"
         :album="album"
         @delete-album="deleteAlbum"
         @update-sorting="updateAlbumSorting"
         @set-album-privacy="handleSetAlbumPrivacy"
-      />
-
-      <SelectionOptions
-        v-if="
-          !loading &&
-          userStore.signedIn &&
-          album.canEdit &&
-          applicationStore.managingAlbum
-        "
-        :photos="album.photos?.collection"
-        :album-id="id"
-        @request-remove-from-album="openRemoveFromAlbumModal"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
@@ -92,78 +71,17 @@
       />
     </div>
   </section>
-
-  <!-- Stop Managing confirmation modal -->
-  <teleport to="#modal-root">
-    <div :class="['modal', stopManagingModalActive ? 'is-active' : null]">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title has-text-centered">Stop Managing Album</p>
-        </header>
-        <div class="modal-card-body">
-          <p>
-            You have selected photos in this album. Stopping album management
-            will clear the selection. Continue?
-          </p>
-        </div>
-        <footer class="modal-card-foot is-justify-content-center">
-          <div class="buttons">
-            <button class="button is-danger" @click="confirmStopManaging">
-              Yes, clear selection
-            </button>
-            <button class="button is-info" @click="cancelStopManaging">
-              Cancel
-            </button>
-          </div>
-        </footer>
-      </div>
-    </div>
-  </teleport>
-  <!-- Remove From Album confirmation modal -->
-  <teleport to="#modal-root">
-    <div :class="['modal', removeFromAlbumModalActive ? 'is-active' : null]">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title has-text-centered">Remove From Album</p>
-        </header>
-        <div class="modal-card-body">
-          <p>
-            You are about to remove
-            <strong>{{ selectionStore.selectedAlbumPhotos.length }}</strong>
-            {{
-              selectionStore.selectedAlbumPhotos.length === 1
-                ? "photo"
-                : "photos"
-            }}
-            from this album. Continue?
-          </p>
-        </div>
-        <footer class="modal-card-foot is-justify-content-center">
-          <div class="buttons">
-            <button class="button is-danger" @click="confirmRemoveFromAlbum">
-              Yes, remove
-            </button>
-            <button class="button is-info" @click="cancelRemoveFromAlbum">
-              Cancel
-            </button>
-          </div>
-        </footer>
-      </div>
-    </div>
-  </teleport>
 </template>
 
 <script setup>
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
-import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "../stores/user";
 import { useSelectionStore } from "../stores/selection";
+import { useSelectionContext } from "../mixins/use-selection-context";
 import toaster from "../mixins/toaster";
 import titleHelper from "../mixins/title-helper";
 import { descriptionHtmlHelper } from "../mixins/description-helper";
@@ -172,7 +90,6 @@ import { descriptionHtmlHelper } from "../mixins/description-helper";
 import AlbumTitleEditable from "./album-title-editable.vue";
 import AlbumDescriptionEditable from "./album-description-editable.vue";
 import AlbumManagement from "./album-management.vue";
-import SelectionOptions from "./selection-options.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
 
@@ -181,38 +98,14 @@ const route = useRoute();
 const router = useRouter();
 const albumManagementRef = ref(null);
 
-const applicationStore = useApplicationStore();
 const userStore = useUserStore();
 const selectionStore = useSelectionStore();
+useSelectionContext();
 
 const id = computed(() => route.params.id);
 const page = computed(() => parseInt(route.query.page) || 1);
 
-const stopManagingModalActive = ref(false);
-const removeFromAlbumModalActive = ref(false);
-
-const stopManaging = () => {
-  const hasSelection = (selectionStore.selectedAlbumPhotos || []).length > 0;
-
-  if (hasSelection) {
-    stopManagingModalActive.value = true;
-    applicationStore.disableNavigationShortcuts();
-  } else {
-    applicationStore.stopManagingAlbum();
-  }
-};
-
-const confirmStopManaging = () => {
-  selectionStore.clearSelectedAlbumPhotos();
-  applicationStore.stopManagingAlbum();
-  stopManagingModalActive.value = false;
-  applicationStore.enableNavigationShortcuts();
-};
-
-const cancelStopManaging = () => {
-  stopManagingModalActive.value = false;
-  applicationStore.enableNavigationShortcuts();
-};
+const showAlbumSettings = ref(false);
 
 const apolloClient = inject("apolloClient");
 
@@ -238,6 +131,12 @@ const canEditAlbum = computed(
 );
 
 const descriptionHtml = computed(() => descriptionHtmlHelper(album));
+
+watch(
+  () => album.value.photos?.collection,
+  (photos) => selectionStore.setPageCollection(photos || []),
+  { immediate: true },
+);
 
 const {
   mutate: updateAlbumTitle,
@@ -358,7 +257,6 @@ onDeleteAlbumDone(({ data }) => {
   }
 
   toaster("The album has been deleted");
-  applicationStore.stopManagingAlbum();
   apolloClient.cache.evict({
     id: apolloClient.cache.identify({ __typename: "Album", id: id.value }),
   });
@@ -456,112 +354,9 @@ onUpdateAlbumPhotoOrderError((error) => {
     "is-danger",
   );
 });
-/* Remove photos from album mutation */
-const {
-  mutate: removePhotosFromAlbum,
-  onDone: onRemovePhotosFromAlbumDone,
-  onError: onRemovePhotosFromAlbumError,
-} = useMutation(gql`
-  mutation RemovePhotosFromAlbum(
-    $albumId: String!
-    $photoIds: [String!]!
-    $page: Int
-  ) {
-    removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
-      errors
-      album {
-        id
-        title
-        photos(page: $page) {
-          collection {
-            id
-            title
-            intelligentOrSquareMediumImageUrl: imageUrl(
-              type: "intelligent_or_square_medium"
-            )
-            canEdit
-          }
-          metadata {
-            totalPages
-            totalCount
-            currentPage
-            limitValue
-          }
-        }
-      }
-    }
-  }
-`);
 
-const openRemoveFromAlbumModal = () => {
-  const hasSelection = (selectionStore.selectedAlbumPhotos || []).length > 0;
-  if (hasSelection) {
-    removeFromAlbumModalActive.value = true;
-    applicationStore.disableNavigationShortcuts();
-  }
-};
-
-const confirmRemoveFromAlbum = () => {
-  const photoIds = (selectionStore.selectedAlbumPhotos || []).map((p) => p.id);
-  if (photoIds.length === 0) return;
-
-  removePhotosFromAlbum({
-    albumId: id.value,
-    photoIds,
-    page: page.value,
-  });
-};
-
-const cancelRemoveFromAlbum = () => {
-  removeFromAlbumModalActive.value = false;
-  applicationStore.enableNavigationShortcuts();
-};
-
-onRemovePhotosFromAlbumDone(({ data }) => {
-  const payload = data?.removePhotosFromAlbum;
-
-  if (!payload || (payload.errors && payload.errors.length > 0)) {
-    const msg =
-      (payload && payload.errors && payload.errors.join(", ")) ||
-      "Unknown error";
-    toaster("Error removing photos from album: " + msg, "is-danger");
-    removeFromAlbumModalActive.value = false;
-    applicationStore.enableNavigationShortcuts();
-    return;
-  }
-
-  selectionStore.clearSelectedAlbumPhotos();
-
-  toaster(
-    "The photos were removed from the album '" +
-      (payload.album?.title || "") +
-      "'",
-    "is-success",
-  );
-
-  const albumCacheId = apolloClient.cache.identify({
-    __typename: "Album",
-    id: id.value,
-  });
-
-  // Evict album photos so the list reloads with updated content
-  apolloClient.cache.evict({ id: albumCacheId, fieldName: "photos" });
-  apolloClient.cache.gc();
-
-  removeFromAlbumModalActive.value = false;
-  applicationStore.enableNavigationShortcuts();
-});
-
-onRemovePhotosFromAlbumError((error) => {
-  toaster(
-    "An error occurred while removing photos from the album: " + error.message,
-    "is-danger",
-  );
-  removeFromAlbumModalActive.value = false;
-  applicationStore.enableNavigationShortcuts();
-});
-
-/* Cover photo mutation */
+/* Cover photo mutation (per-card star, independent of the selection bar's
+   own "Set As Cover" action) */
 const {
   mutate: setAlbumCoverPhotoMutation,
   onDone: onSetAlbumCoverPhotoDone,
