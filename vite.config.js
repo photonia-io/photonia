@@ -7,6 +7,13 @@ export default defineConfig({
     RubyPlugin(),
     vue()
   ],
+  build: {
+    rolldownOptions: {
+      // Rolldown prints a plugin-timing breakdown on every build. It is
+      // profiling output, not a problem to act on, so keep the log clean.
+      checks: { bundlerTimings: false }
+    }
+  },
   server: {
     // Allow the dev server to be reached by any Host header (e.g. accessing
     // it over the LAN by hostname instead of localhost) - otherwise Vite's
