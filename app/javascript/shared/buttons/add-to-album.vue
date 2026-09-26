@@ -16,11 +16,7 @@
           <p class="modal-card-title has-text-centered">Add To Album</p>
         </header>
         <div class="modal-card-body">
-          <SelectOrCreateAlbum
-            ref="selectOrCreateAlbum"
-            :photos="props.photos"
-            :hide-album-id="props.hideAlbumId"
-          />
+          <SelectOrCreateAlbum ref="selectOrCreateAlbum" :photos="props.photos" />
         </div>
         <footer class="modal-card-foot is-justify-content-center">
           <div class="buttons">
@@ -44,11 +40,6 @@ const props = defineProps({
   photos: {
     type: Array,
     required: true,
-  },
-  hideAlbumId: {
-    type: String,
-    required: false,
-    default: "",
   },
   // The component has two roots (button + teleport), so attributes don't fall
   // through to the button on their own.

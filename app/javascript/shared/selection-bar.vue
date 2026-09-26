@@ -9,7 +9,6 @@
         <div class="buttons selection-bar-actions">
           <AddToAlbumButton
             :photos="selectionStore.selected"
-            :hide-album-id="context.type === 'albums-show' ? context.param : ''"
             @add-photos-to-album="addPhotosToAlbum"
             @create-album-with-photos="createAlbumWithPhotos"
           />

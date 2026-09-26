@@ -53,11 +53,6 @@ const props = defineProps({
     required: false,
     default: () => [],
   },
-  hideAlbumId: {
-    type: String,
-    required: false,
-    default: "",
-  },
 });
 
 const photoIds = computed(() => props.photos.map((photo) => photo.id));
@@ -92,7 +87,7 @@ const { result } = useQuery(
 );
 
 // Offer an album only while at least one of the photos is still missing from
-// it, plus the explicit hideAlbumId opt-out.
+// it.
 const albumsFiltered = computed(() => {
   const albums = result.value?.currentUser?.albums || [];
   const alreadyHasAll = new Set(
@@ -101,8 +96,6 @@ const albumsFiltered = computed(() => {
       .map((album) => album.id),
   );
 
-  return albums.filter(
-    (album) => !alreadyHasAll.has(album.id) && album.id !== props.hideAlbumId,
-  );
+  return albums.filter((album) => !alreadyHasAll.has(album.id));
 });
 </script>
