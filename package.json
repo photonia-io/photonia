@@ -28,10 +28,11 @@
   "version": "0.1.0",
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.9",
+    "@vue/compiler-dom": "^3.5.43",
     "@vue/test-utils": "^2.5.1",
     "happy-dom": "^20.14.5",
     "prettier": "3.6.2",
-    "vite": "^7.3.6",
+    "vite": "^8.3.1",
     "vite-plugin-ruby": "^5.2.4",
     "vitest": "^5.0.1"
   },
