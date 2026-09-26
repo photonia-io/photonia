@@ -2,7 +2,7 @@
   <div class="field" v-if="newAlbumTitle === ''">
     <label class="label">Pick an album</label>
     <div class="control">
-      <div class="select">
+      <div class="select is-fullwidth">
         <select v-model="selectedAlbumId">
           <option selected></option>
           <option
@@ -48,12 +48,19 @@ import gql from "graphql-tag";
 import { useQuery } from "@vue/apollo-composable";
 
 const props = defineProps({
+  photos: {
+    type: Array,
+    required: false,
+    default: () => [],
+  },
   hideAlbumId: {
     type: String,
     required: false,
     default: "",
   },
 });
+
+const photoIds = computed(() => props.photos.map((photo) => photo.id));
 
 const selectedAlbumId = ref("");
 const newAlbumTitle = ref("");
@@ -65,22 +72,37 @@ const reset = () => {
 
 defineExpose({ selectedAlbumId, newAlbumTitle, reset });
 
-const { result } = useQuery(gql`
-  query CurrentUserAlbumsQuery {
-    currentUser {
-      albums {
-        id
-        title
-        photosCount
+const { result } = useQuery(
+  gql`
+    query CurrentUserAlbumsQuery($photoIds: [String!]!) {
+      currentUser {
+        albums {
+          id
+          title
+          photosCount
+        }
+        albumsWithPhotos(photoIds: $photoIds) {
+          id
+          containedPhotosCount
+        }
       }
     }
-  }
-`);
+  `,
+  { photoIds: photoIds },
+);
 
-// Exclude the current album (when provided) from the dropdown
+// Offer an album only while at least one of the photos is still missing from
+// it, plus the explicit hideAlbumId opt-out.
 const albumsFiltered = computed(() => {
   const albums = result.value?.currentUser?.albums || [];
-  if (!props.hideAlbumId) return albums;
-  return albums.filter((a) => a.id !== props.hideAlbumId);
+  const alreadyHasAll = new Set(
+    (result.value?.currentUser?.albumsWithPhotos || [])
+      .filter((album) => album.containedPhotosCount >= photoIds.value.length)
+      .map((album) => album.id),
+  );
+
+  return albums.filter(
+    (album) => !alreadyHasAll.has(album.id) && album.id !== props.hideAlbumId,
+  );
 });
 </script>

@@ -19,6 +19,7 @@
         <div class="modal-card-body">
           <SelectOrCreateAlbum
             ref="selectOrCreateAlbum"
+            :photos="props.photos"
             :hide-album-id="props.hideAlbumId"
           />
         </div>

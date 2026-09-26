@@ -62,6 +62,8 @@
                 :photo="photo"
                 @delete-photo="deletePhoto"
                 @edit-thumbnail="startThumbnailEdit"
+                @add-photos-to-album="addPhotosToAlbum"
+                @create-album-with-photos="createAlbumWithPhotos"
               />
 
               <PhotoComments :photo="photo" :loading="loading" @refresh="refreshPhoto" />
@@ -228,6 +230,14 @@
                       {{ album.photoPositionInAlbum.position }} /
                       {{ album.photoPositionInAlbum.total }}
                     </span>
+                    <button
+                      v-if="canEditPhoto"
+                      class="album-remove is-size-7 is-flex-shrink-0 ml-2"
+                      :title="`Remove this photo from ${album.title}`"
+                      @click="confirmRemoveFromAlbum(album)"
+                    >
+                      <i class="fas fa-folder-minus"></i>
+                    </button>
                   </h4>
                   <div class="columns is-1 is-mobile">
                     <div class="column is-half">
@@ -346,6 +356,35 @@
         </div>
       </div>
     </section>
+
+    <!-- Remove from album confirmation -->
+    <teleport to="#modal-root">
+      <div :class="['modal', removeFromAlbumModalActive ? 'is-active' : null]">
+        <div class="modal-background"></div>
+        <div class="modal-card" ref="removeFromAlbumModalCard" tabindex="-1">
+          <header class="modal-card-head">
+            <p class="modal-card-title has-text-centered">Remove From Album</p>
+          </header>
+          <div class="modal-card-body">
+            <p>
+              Remove this photo from
+              <strong>{{ albumToRemoveFrom?.title }}</strong>? The photo itself
+              is not deleted.
+            </p>
+          </div>
+          <footer class="modal-card-foot is-justify-content-center">
+            <div class="buttons">
+              <button class="button is-danger" @click="performRemoveFromAlbum">
+                Yes, remove
+              </button>
+              <button class="button is-info" @click="closeRemoveFromAlbumModal">
+                Cancel
+              </button>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -364,6 +403,7 @@ import {
   isTypingTarget,
   useAlbumNavigation,
 } from "../mixins/use-album-navigation";
+import { useModal } from "@/mixins/use-modal";
 
 // components
 import PhotoTitleEditable from "./photo-title-editable.vue";
@@ -569,6 +609,51 @@ const {
   }
 `);
 
+const {
+  mutate: addPhotosToAlbum,
+  onDone: onAddPhotosToAlbumDone,
+  onError: onAddPhotosToAlbumError,
+} = useMutation(gql`
+  mutation ($albumId: String!, $photoIds: [String!]!) {
+    addPhotosToAlbum(albumId: $albumId, photoIds: $photoIds) {
+      errors
+      album {
+        id
+        title
+      }
+    }
+  }
+`);
+
+const {
+  mutate: createAlbumWithPhotos,
+  onDone: onCreateAlbumWithPhotosDone,
+  onError: onCreateAlbumWithPhotosError,
+} = useMutation(gql`
+  mutation ($title: String!, $photoIds: [String!]!) {
+    createAlbumWithPhotos(title: $title, photoIds: $photoIds) {
+      id
+      title
+    }
+  }
+`);
+
+const {
+  mutate: removePhotosFromAlbum,
+  onDone: onRemovePhotosFromAlbumDone,
+  onError: onRemovePhotosFromAlbumError,
+} = useMutation(gql`
+  mutation ($albumId: String!, $photoIds: [String!]!) {
+    removePhotosFromAlbum(albumId: $albumId, photoIds: $photoIds) {
+      errors
+      album {
+        id
+        title
+      }
+    }
+  }
+`);
+
 onUpdateTitleDone(({ data }) => {
   toaster("The title has been updated");
 });
@@ -712,6 +797,81 @@ const handleAddTag = async (tagName) => {
   });
 };
 
+// Album membership shows up outside this page too (album pages, the photo
+// counts on /albums), so drop the cache and pull this photo's albums again.
+const albumsChanged = (message) => {
+  apolloClient.cache.reset();
+  refetch();
+  toaster(message, "is-success");
+};
+
+const albumError = (action, errors) => {
+  toaster(
+    `An error occurred while ${action}: ` + (errors?.join(", ") || "Unknown error"),
+    "is-danger",
+  );
+};
+
+onAddPhotosToAlbumDone(({ data }) => {
+  const payload = data?.addPhotosToAlbum;
+  if (!payload || payload.errors?.length > 0) {
+    albumError("adding the photo to the album", payload?.errors);
+    return;
+  }
+  albumsChanged(`The photo was added to '${payload.album?.title || ""}'`);
+});
+
+onAddPhotosToAlbumError((error) => {
+  albumError("adding the photo to the album", [error.message]);
+});
+
+onCreateAlbumWithPhotosDone(({ data }) => {
+  albumsChanged(
+    `The album '${data?.createAlbumWithPhotos?.title || ""}' was created with this photo`,
+  );
+});
+
+onCreateAlbumWithPhotosError((error) => {
+  albumError("creating the album", [error.message]);
+});
+
+const albumToRemoveFrom = ref(null);
+
+const {
+  active: removeFromAlbumModalActive,
+  modalCard: removeFromAlbumModalCard,
+  open: openRemoveFromAlbumModal,
+  close: closeRemoveFromAlbumModal,
+} = useModal();
+
+const confirmRemoveFromAlbum = (album) => {
+  albumToRemoveFrom.value = album;
+  openRemoveFromAlbumModal();
+};
+
+const performRemoveFromAlbum = () => {
+  removePhotosFromAlbum({
+    albumId: albumToRemoveFrom.value.id,
+    photoIds: [photo.value.id],
+  });
+  closeRemoveFromAlbumModal();
+};
+
+onRemovePhotosFromAlbumDone(({ data }) => {
+  const payload = data?.removePhotosFromAlbum;
+  if (!payload || payload.errors?.length > 0) {
+    albumError("removing the photo from the album", payload?.errors);
+    return;
+  }
+  // The album being navigated with J/K may be the one just left.
+  if (payload.album?.id === inAlbumId.value) stopNavigatingAlbum();
+  albumsChanged(`The photo was removed from '${payload.album?.title || ""}'`);
+});
+
+onRemovePhotosFromAlbumError((error) => {
+  albumError("removing the photo from the album", [error.message]);
+});
+
 const highlightLabel = (label) => {
   labelHighlights.value[label.id] = true;
 };
@@ -846,6 +1006,20 @@ const navigateToPreviousPhoto = () =>
    bottom margin - 1.25rem at is-1, far too much in this narrow sidebar. */
 .block-list li .columns:not(:last-child) {
   margin-bottom: 0.5rem;
+}
+
+/* A bare button, not a .button: the latter's padding and border keep the icon
+   off the text baseline that the album title and counter share. */
+.album-remove {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--bulma-text-weak);
+}
+
+.album-remove:hover {
+  color: var(--bulma-danger);
 }
 
 /* The sidebar is narrow, so let the button labels wrap */
