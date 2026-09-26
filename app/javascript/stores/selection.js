@@ -74,14 +74,12 @@ export const useSelectionStore = defineStore("selection", () => {
     { deep: true },
   );
 
-  // The active context key (set by useSelectionContext as routes change),
+  // The active context key (set by useSelectionContext as routes change) and
   // the current list view's page of photos (for select/deselect-all and
-  // shift-click ranges), and a touch-only hint that reveals checkboxes with
-  // nothing selected yet, so long-press is discoverable.
+  // shift-click ranges).
   const activeContextKey = ref(null);
   const pageCollection = ref([]);
   const lastToggledId = ref(null);
-  const selectingHint = ref(false);
 
   // The page collection belongs to the context it was loaded for. Views keep
   // the outgoing list while the next one loads (keepPreviousResult), so it has
@@ -95,10 +93,6 @@ export const useSelectionStore = defineStore("selection", () => {
 
   function setPageCollection(photos) {
     pageCollection.value = photos || [];
-  }
-
-  function setSelectingHint(value) {
-    selectingHint.value = value;
   }
 
   function touchContext(key) {
@@ -128,7 +122,7 @@ export const useSelectionStore = defineStore("selection", () => {
 
   const count = computed(() => selected.value.length);
 
-  const isSelecting = computed(() => count.value > 0 || selectingHint.value);
+  const isSelecting = computed(() => count.value > 0);
 
   function isSelected(id) {
     return selected.value.some((photo) => photo.id === id);
@@ -228,14 +222,12 @@ export const useSelectionStore = defineStore("selection", () => {
   return {
     activeContextKey,
     pageCollection,
-    selectingHint,
     selected,
     count,
     isSelecting,
     isSelected,
     setContext,
     setPageCollection,
-    setSelectingHint,
     add,
     remove,
     toggle,

@@ -12,15 +12,10 @@
           v-if="userStore.signedIn && userStore.uploader"
         >
           <div class="level-item">
-            <button
-              class="button is-small touch-only"
-              @click="selectionStore.setSelectingHint(!selectionStore.selectingHint)"
-            >
-              <span class="icon-text">
-                <span class="icon"><i class="far fa-check-square"></i></span>
-                <span>Select</span>
-              </span>
-            </button>
+            <p class="selection-hint touch-only">
+              <span class="icon"><i class="far fa-hand-pointer"></i></span>
+              <span>Long press a photo to start selecting</span>
+            </p>
           </div>
         </div>
       </div>

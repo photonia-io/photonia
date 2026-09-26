@@ -67,9 +67,9 @@
  * A single photo in a grid.
  *
  * Selection is implicit: an editable card reveals a checkbox on hover (or
- * long-press on touch); a plain click toggles it once anything is selected
- * or that photo's checkbox is showing, otherwise it navigates. Ctrl/Cmd-click
- * always toggles; shift-click selects a range within the current page.
+ * long-press on touch); a plain click toggles it once anything is selected,
+ * otherwise it navigates. Ctrl/Cmd-click always toggles; shift-click selects
+ * a range within the current page.
  * Enter and Space on a focused card do the same as a click.
  *
  * Props:
@@ -220,8 +220,8 @@ const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMen
 }
 
 /* The checkbox (and, in an album, the cover star) only fade in on hover,
-   keyboard focus, or while a selection is active/hinted — so browsing a
-   grid with nothing selected shows a clean image. */
+   keyboard focus, or while a selection is active — so browsing a grid with
+   nothing selected shows a clean image. */
 .photo-card .item-checkbox-container {
   opacity: 0;
   pointer-events: none;
