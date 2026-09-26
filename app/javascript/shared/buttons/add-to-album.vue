@@ -1,13 +1,12 @@
 <template>
   <button
     class="button"
+    :class="props.buttonClass"
     :disabled="props.photos.length === 0"
     @click="showModal()"
   >
-    <span class="icon-text">
-      <span class="icon"><i class="fas fa-folder-plus"></i></span>
-      <span>Add To Album</span>
-    </span>
+    <span class="icon"><i class="fas fa-folder-plus"></i></span>
+    <span>{{ props.label }}</span>
   </button>
   <teleport to="#modal-root">
     <div :class="['modal', modalActive ? 'is-active' : null]">
@@ -50,6 +49,20 @@ const props = defineProps({
     type: String,
     required: false,
     default: "",
+  },
+  // The component has two roots (button + teleport), so attributes don't fall
+  // through to the button on their own.
+  buttonClass: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  // Defaults to the wording for a selection of any size; single-photo callers
+  // can be more specific.
+  label: {
+    type: String,
+    required: false,
+    default: "Add To Album",
   },
 });
 

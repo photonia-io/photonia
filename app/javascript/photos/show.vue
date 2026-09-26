@@ -62,8 +62,6 @@
                 :photo="photo"
                 @delete-photo="deletePhoto"
                 @edit-thumbnail="startThumbnailEdit"
-                @add-photos-to-album="addPhotosToAlbum"
-                @create-album-with-photos="createAlbumWithPhotos"
               />
 
               <PhotoComments :photo="photo" :loading="loading" @refresh="refreshPhoto" />
@@ -211,8 +209,8 @@
                 title="Albums"
               />
               <ul
-                v-if="showAlbumBrowser"
-                class="block-list is-small has-radius mt-2 pb-4"
+                v-if="photo.albums?.length"
+                class="block-list is-small has-radius mt-2"
               >
                 <li
                   v-for="album in photo.albums"
@@ -351,6 +349,17 @@
                   </div>
                 </li>
               </ul>
+              <p v-else-if="canEditPhoto" class="mt-2 mb-3">
+                <em>This photo is not in an album yet.</em>
+              </p>
+              <AddToAlbumButton
+                v-if="canEditPhoto"
+                :photos="[photo]"
+                button-class="is-fullwidth"
+                label="Add Photo to an Album"
+                @add-photos-to-album="addPhotosToAlbum"
+                @create-album-with-photos="createAlbumWithPhotos"
+              />
             </div>
           </div>
         </div>
@@ -420,6 +429,7 @@ import Tag from "@/tags/tag.vue";
 import RemoveTag from "@/tags/remove-tag.vue";
 import Empty from "@/empty.vue";
 import PhotoTagInput from "./photo-tag-input.vue";
+import AddToAlbumButton from "@/shared/buttons/add-to-album.vue";
 import ThumbnailEditor from "./thumbnail-editor.vue";
 
 // route & router
@@ -893,7 +903,11 @@ const showingCurrentPhoto = computed(() => photo.value.id === id.value);
 
 const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
 
-const showAlbumBrowser = computed(() => photo.value.albums?.length > 0);
+// Editors always get the section, even with no albums, because it holds the
+// Add To Album button.
+const showAlbumBrowser = computed(
+  () => photo.value.albums?.length > 0 || canEditPhoto.value,
+);
 
 const {
   inAlbumId,

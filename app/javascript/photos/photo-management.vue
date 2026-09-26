@@ -9,12 +9,6 @@
         themselves.
       </p>
       <div class="buttons mb-2">
-        <!-- add to album button -->
-        <AddToAlbumButton
-          :photos="[photo]"
-          @add-photos-to-album="emit('addPhotosToAlbum', $event)"
-          @create-album-with-photos="emit('createAlbumWithPhotos', $event)"
-        />
         <!-- edit thumbnail button -->
         <button class="button is-info" @click="editThumbnail">
           <span class="icon">
@@ -56,8 +50,6 @@
 import { ref } from "vue";
 import { useApplicationStore } from "../stores/application";
 
-import AddToAlbumButton from "@/shared/buttons/add-to-album.vue";
-
 const props = defineProps({
   photo: {
     type: Object,
@@ -65,12 +57,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits([
-  "deletePhoto",
-  "editThumbnail",
-  "addPhotosToAlbum",
-  "createAlbumWithPhotos",
-]);
+const emit = defineEmits(["deletePhoto", "editThumbnail"]);
 const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
