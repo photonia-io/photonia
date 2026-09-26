@@ -181,12 +181,12 @@ const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMen
 
 .cover-photo-icon-container {
   position: absolute;
-  top: 1.25em;
+  top: 0.75em;
   /* place to the left of the checkbox (checkbox right offset is 0.75em and width is 1.5em) */
   right: 3em;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.12s ease;
+  transition: opacity 0.35s ease-in-out;
 }
 
 .cover-photo-icon {
@@ -197,7 +197,7 @@ const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMen
   height: 1.5em;
   background-color: #fff;
   border-radius: 3px;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   color: #ffdd57; /* Bulma warning yellow for star */
 }
 
@@ -225,7 +225,7 @@ const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMen
 .photo-card .item-checkbox-container {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.12s ease;
+  transition: opacity 0.35s ease-in-out;
 }
 
 .photo-card.is-selecting .item-checkbox-container,
