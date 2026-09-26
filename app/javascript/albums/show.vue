@@ -18,7 +18,7 @@
           <div class="level-item" v-if="userStore.uploader">
             <p class="selection-hint touch-only">
               <span class="icon"><i class="far fa-hand-pointer"></i></span>
-              <span>Long press a photo to start selecting</span>
+              <span>{{ selectionHint }}</span>
             </p>
           </div>
           <div class="level-item" v-if="canEditAlbum">
@@ -128,6 +128,14 @@ useTitle(title);
 // within one album keeps the same id, so editing stays available there.
 const canEditAlbum = computed(
   () => userStore.signedIn && album.value.canEdit && album.value.id === id.value,
+);
+
+// Long press reveals both the checkbox and the cover-photo star, but only
+// someone who can edit the album gets the latter.
+const selectionHint = computed(() =>
+  canEditAlbum.value
+    ? "Long press a photo to select it or to set the cover photo"
+    : "Long press a photo to start selecting",
 );
 
 const descriptionHtml = computed(() => descriptionHtmlHelper(album));

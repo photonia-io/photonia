@@ -23,7 +23,6 @@ vi.mock("@vue/apollo-composable", () => ({
         "addPhotosToAlbum",
         "createAlbumWithPhotos",
         "removePhotosFromAlbum",
-        "setAlbumCoverPhoto",
         "deletePhotos",
       ].find((operation) => body.includes(`${operation}(`)) ?? "unknown";
 
@@ -92,7 +91,6 @@ describe("SelectionBar", () => {
     expect(wrapper.text()).toContain("1");
     expect(wrapper.text()).toContain("selected");
     expect(wrapper.text()).not.toContain("Remove From This Album");
-    expect(wrapper.text()).not.toContain("Set As Cover");
   });
 
   it("shows album-specific actions only on an album context", async () => {
@@ -105,12 +103,8 @@ describe("SelectionBar", () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.text()).toContain("Remove From This Album");
-    // Only offered with exactly one photo selected.
-    expect(wrapper.text()).toContain("Set As Cover");
-
-    selectionStore.add({ id: "b", title: "B" });
-    await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Set As Cover");
+    // Setting the cover is the grid's own star, not a bar action.
+    expect(wrapper.text()).not.toContain("Cover");
   });
 
   it("selects and deselects everything on the current page", async () => {
