@@ -13,8 +13,11 @@
       <div
         class="photo-card is-clickable"
         :class="{ 'is-selecting': selectionStore.isSelecting }"
+        role="button"
         tabindex="0"
         @click="handleCardClick"
+        @keydown.enter="handleCardClick"
+        @keydown.space.prevent="handleCardClick"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
@@ -67,6 +70,7 @@
  * long-press on touch); a plain click toggles it once anything is selected
  * or that photo's checkbox is showing, otherwise it navigates. Ctrl/Cmd-click
  * always toggles; shift-click selects a range within the current page.
+ * Enter and Space on a focused card do the same as a click.
  *
  * Props:
  * - `photo` (Object, required)

@@ -172,6 +172,20 @@ describe("PhotoItem", () => {
       expect(selectionStore.isSelected("editable-slug")).toBe(true);
     });
 
+    it("activates on Enter and Space, since the card is focusable", async () => {
+      const { wrapper, selectionStore } = mountPhotoItem(
+        { photo: editablePhoto },
+        { signedIn: true, uploader: true },
+      );
+
+      await wrapper.find(".photo-card").trigger("keydown.enter");
+      expect(push).toHaveBeenCalledTimes(1);
+
+      selectionStore.add({ id: "other-slug", title: "Other" });
+      await wrapper.find(".photo-card").trigger("keydown.space");
+      expect(selectionStore.isSelected("editable-slug")).toBe(true);
+    });
+
     it("emits set-cover-photo when the cover star is clicked", async () => {
       const { wrapper } = mountPhotoItem(
         { photo: { ...editablePhoto, isCoverPhoto: false }, inAlbum: true, canEditAlbum: true },

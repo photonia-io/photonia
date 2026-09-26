@@ -117,7 +117,14 @@ const apolloClient = inject("apolloClient");
 
 const drawerOpen = ref(false);
 
-const selectAllOnPage = () => selectionStore.addMany(selectionStore.pageCollection);
+// Set only by "Remove From This Album", so the shared onDone handler can tell
+// which request it is answering before touching the selection.
+const pendingThisAlbumRemoval = ref(null);
+
+// Only editable photos, matching what a card offers a checkbox for — a batch
+// containing one unauthorized photo fails as a whole server-side.
+const selectAllOnPage = () =>
+  selectionStore.addMany(selectionStore.pageCollection.filter((p) => p.canEdit));
 const deselectAllOnPage = () => selectionStore.removeMany(selectionStore.pageCollection);
 
 // Add photos to album / create album with photos
@@ -185,16 +192,30 @@ const { mutate: removePhotosFromAlbum, onDone: onRemovePhotosFromAlbumDone, onEr
 
 onRemovePhotosFromAlbumDone(({ data }) => {
   const payload = data?.removePhotosFromAlbum;
+  const pending = pendingThisAlbumRemoval.value;
+  pendingThisAlbumRemoval.value = null;
+
   if (!payload || (payload.errors && payload.errors.length > 0)) {
     const msg = (payload && payload.errors && payload.errors.join(", ")) || "Unknown error";
     toaster("An error occurred while removing photos from the album: " + msg, "is-danger");
     return;
+  }
+  // Deselect only what a "Remove From This Album" actually removed, and only
+  // while still in the context it was fired from. Removing from some other
+  // album via the dropdown leaves the selection alone.
+  if (
+    pending &&
+    pending.albumId === payload.album?.id &&
+    pending.contextKey === selectionStore.activeContextKey
+  ) {
+    selectionStore.prune(pending.photoIds);
   }
   apolloClient.cache.reset();
   toaster("The photos were removed from the album '" + (payload.album?.title || "") + "'", "is-success");
 });
 
 onRemovePhotosFromAlbumError((error) => {
+  pendingThisAlbumRemoval.value = null;
   toaster("An error occurred while removing photos from the album: " + error.message, "is-danger");
 });
 
@@ -209,10 +230,15 @@ const {
 
 const confirmRemoveFromThisAlbum = () => {
   const photoIds = selectionStore.selected.map((p) => p.id);
-  if (photoIds.length === 0 || !context.value.param) return;
+  const albumId = context.value.param;
+  if (photoIds.length === 0 || !albumId) return;
 
-  removePhotosFromAlbum({ albumId: context.value.param, photoIds });
-  selectionStore.prune(photoIds);
+  pendingThisAlbumRemoval.value = {
+    albumId,
+    photoIds,
+    contextKey: selectionStore.activeContextKey,
+  };
+  removePhotosFromAlbum({ albumId, photoIds });
   closeRemoveFromThisAlbumModal();
 };
 

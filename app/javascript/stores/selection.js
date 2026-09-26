@@ -83,9 +83,13 @@ export const useSelectionStore = defineStore("selection", () => {
   const lastToggledId = ref(null);
   const selectingHint = ref(false);
 
+  // The page collection belongs to the context it was loaded for. Views keep
+  // the outgoing list while the next one loads (keepPreviousResult), so it has
+  // to be dropped here or select-all would reach into the previous context.
   function setContext(key) {
     if (key === activeContextKey.value) return;
     activeContextKey.value = key;
+    pageCollection.value = [];
     lastToggledId.value = null;
   }
 
@@ -207,7 +211,17 @@ export const useSelectionStore = defineStore("selection", () => {
     if (ctx) ctx.photos = ctx.photos.filter((p) => !idSet.has(p.id));
   }
 
+  // Drop the persisted copy too, while storageKey still resolves: the watcher
+  // above only saves on the next tick, by which time sign-out has cleared the
+  // email and the old key would be left behind untouched.
   function clearAll() {
+    if (storageKey.value) {
+      try {
+        localStorage.removeItem(storageKey.value);
+      } catch {
+        // Storage unavailable; the in-memory selection is cleared regardless.
+      }
+    }
     data.value = emptyData();
   }
 

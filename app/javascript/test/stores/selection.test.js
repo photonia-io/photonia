@@ -97,6 +97,18 @@ describe("selection store", () => {
       expect(selectionStore.isSelected("b")).toBe(false);
     });
 
+    it("drops the page collection when the context changes", () => {
+      const { selectionStore } = setUpStores();
+
+      selectionStore.setContext("albums-show:first");
+      selectionStore.setPageCollection([photo("a"), photo("b")]);
+
+      // Views keep the outgoing album's photos until the next one loads, so
+      // the stale page must not follow the context.
+      selectionStore.setContext("albums-show:second");
+      expect(selectionStore.pageCollection).toEqual([]);
+    });
+
     it("remembers up to 3 contexts and evicts the least recently touched", () => {
       const { selectionStore } = setUpStores();
 
@@ -232,6 +244,30 @@ describe("selection store", () => {
       const reloaded = useSelectionStore();
       reloaded.setContext("ctx-a");
       expect(reloaded.isSelected("a")).toBe(true);
+    });
+
+    it("does not leave a stored selection behind after signing out", async () => {
+      const { userStore, selectionStore } = setUpStores();
+      selectionStore.setContext("ctx-a");
+      selectionStore.add(photo("a"));
+      await nextTick();
+
+      // The real order: clearAll() runs first, then the identity goes away, so
+      // the persisting watcher can no longer resolve the key it should erase.
+      selectionStore.clearAll();
+      userStore.signedIn = false;
+      userStore.email = "";
+      await nextTick();
+
+      const pinia = createPinia();
+      setActivePinia(pinia);
+      const returning = useUserStore();
+      returning.signedIn = true;
+      returning.email = "owner@example.com";
+      const reloaded = useSelectionStore();
+      reloaded.setContext("ctx-a");
+
+      expect(reloaded.count).toBe(0);
     });
 
     it("falls back to an empty selection when localStorage throws", () => {
