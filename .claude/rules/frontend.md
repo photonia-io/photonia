@@ -15,6 +15,11 @@ paths:
 - An Apollo afterware link picks the refreshed JWT from the `Authorization` response header. Don't rename the `signIn`/`signOut`/`continueWith*` operations — JWT dispatch matches on them.
 - Node: CI and prod pin **24 LTS**. Stay on Vitest 5+ (older Vitest let Node 25+'s inert `localStorage`/`sessionStorage` shadow happy-dom's).
 
+## Editing .vue files
+
+- Change a template and its `<script setup>` in **one** write. Two writes seconds apart leave `@vitejs/plugin-vue` serving a fresh template welded to the previous script — the new binding compiles to `_ctx.x` instead of `$setup.x` and renders empty. It is server-side and persistent, so reloading cannot fix it: `touch` the file (one coherent write) or restart Vite.
+- To check what the dev server actually serves: `curl -s localhost:3036/vite-dev/<path below app/javascript>.vue`. A `$setup.` prefix means the script and template agree; `_ctx.` on a `<script setup>` binding means they don't.
+
 ## Bulma
 
 - Modals: `styles/application.scss` globally shrinks `--bulma-modal-card-head-padding` / `--bulma-modal-card-title-size` and adds `gap` to `.modal-card-foot`. No per-modal spacing hacks or `.buttons` wrapper needed.
