@@ -5,7 +5,7 @@
   >
     <label class="label">Pick an album</label>
     <div class="control">
-      <div class="select">
+      <div class="select is-fullwidth">
         <select v-model="selectedAlbumId">
           <option selected></option>
           <option

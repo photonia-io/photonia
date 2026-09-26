@@ -9,14 +9,13 @@
         <div class="buttons selection-bar-actions">
           <AddToAlbumButton
             :photos="selectionStore.selected"
-            :hide-album-id="context.type === 'albums-show' ? context.param : ''"
+            :label="context.type === 'albums-show' ? 'Add To Another Album' : 'Add To Album'"
             @add-photos-to-album="addPhotosToAlbum"
             @create-album-with-photos="createAlbumWithPhotos"
           />
-          <RemoveFromAlbumButton
-            :photos="selectionStore.selected"
-            @remove-photos-from-album="removePhotosFromAlbum"
-          />
+          <!-- Inside an album, removing means removing from it: the dropdown
+               would offer some other album under the same label, and Delete
+               destroys the photo rather than taking it out of here. -->
           <button
             v-if="context.type === 'albums-show'"
             class="button"
@@ -24,20 +23,16 @@
           >
             <span class="icon-text">
               <span class="icon"><i class="fas fa-folder-minus"></i></span>
-              <span>Remove From This Album</span>
+              <span>Remove From Album</span>
             </span>
           </button>
-          <button
-            v-if="context.type === 'albums-show' && selectionStore.count === 1"
-            class="button"
-            @click="setAsCover"
-          >
-            <span class="icon-text">
-              <span class="icon"><i class="fas fa-star"></i></span>
-              <span>Set As Cover</span>
-            </span>
-          </button>
-          <DeleteButton :photos="selectionStore.selected" @delete-photos="deletePhotos" />
+          <template v-else>
+            <RemoveFromAlbumButton
+              :photos="selectionStore.selected"
+              @remove-photos-from-album="removePhotosFromAlbum"
+            />
+            <DeleteButton :photos="selectionStore.selected" @delete-photos="deletePhotos" />
+          </template>
           <button class="button" @click="selectAllOnPage">
             <span class="icon-text">
               <span class="icon"><i class="far fa-check-square"></i></span>
@@ -241,42 +236,6 @@ const confirmRemoveFromThisAlbum = () => {
   removePhotosFromAlbum({ albumId, photoIds });
   closeRemoveFromThisAlbumModal();
 };
-
-// Set as cover (only shown while browsing that album, with exactly one selected)
-
-const { mutate: setAlbumCoverPhotoMutation, onDone: onSetAlbumCoverPhotoDone, onError: onSetAlbumCoverPhotoError } =
-  useMutation(gql`
-    mutation ($albumId: String!, $photoId: String!) {
-      setAlbumCoverPhoto(albumId: $albumId, photoId: $photoId) {
-        errors
-        album {
-          id
-        }
-      }
-    }
-  `);
-
-const setAsCover = () => {
-  const photo = selectionStore.selected[0];
-  if (!photo || !context.value.param) return;
-
-  setAlbumCoverPhotoMutation({ albumId: context.value.param, photoId: photo.id });
-};
-
-onSetAlbumCoverPhotoDone(({ data }) => {
-  const payload = data?.setAlbumCoverPhoto;
-  if (!payload || (payload.errors && payload.errors.length > 0)) {
-    const msg = (payload && payload.errors && payload.errors.join(", ")) || "Unknown error";
-    toaster("Error setting cover photo: " + msg, "is-danger");
-    return;
-  }
-  apolloClient.cache.reset();
-  toaster("Cover photo updated", "is-success");
-});
-
-onSetAlbumCoverPhotoError((error) => {
-  toaster("An error occurred while setting the cover photo: " + error.message, "is-danger");
-});
 
 // Delete
 
