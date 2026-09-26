@@ -9,13 +9,13 @@
         <div class="buttons selection-bar-actions">
           <AddToAlbumButton
             :photos="selectionStore.selected"
+            :label="context.type === 'albums-show' ? 'Add To Another Album' : 'Add To Album'"
             @add-photos-to-album="addPhotosToAlbum"
             @create-album-with-photos="createAlbumWithPhotos"
           />
-          <RemoveFromAlbumButton
-            :photos="selectionStore.selected"
-            @remove-photos-from-album="removePhotosFromAlbum"
-          />
+          <!-- Inside an album, removing means removing from it: the dropdown
+               would offer some other album under the same label, and Delete
+               destroys the photo rather than taking it out of here. -->
           <button
             v-if="context.type === 'albums-show'"
             class="button"
@@ -23,10 +23,16 @@
           >
             <span class="icon-text">
               <span class="icon"><i class="fas fa-folder-minus"></i></span>
-              <span>Remove From This Album</span>
+              <span>Remove From Album</span>
             </span>
           </button>
-          <DeleteButton :photos="selectionStore.selected" @delete-photos="deletePhotos" />
+          <template v-else>
+            <RemoveFromAlbumButton
+              :photos="selectionStore.selected"
+              @remove-photos-from-album="removePhotosFromAlbum"
+            />
+            <DeleteButton :photos="selectionStore.selected" @delete-photos="deletePhotos" />
+          </template>
           <button class="button" @click="selectAllOnPage">
             <span class="icon-text">
               <span class="icon"><i class="far fa-check-square"></i></span>

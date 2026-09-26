@@ -90,10 +90,13 @@ describe("SelectionBar", () => {
     expect(wrapper.find(".selection-bar").exists()).toBe(true);
     expect(wrapper.text()).toContain("1");
     expect(wrapper.text()).toContain("selected");
-    expect(wrapper.text()).not.toContain("Remove From This Album");
+    expect(wrapper.text()).toContain("Add To Album");
+    expect(wrapper.text()).toContain("Remove From Album");
+    expect(wrapper.text()).toContain("Delete");
+    expect(wrapper.findComponent({ name: "RemoveFromAlbum" }).exists()).toBe(true);
   });
 
-  it("shows album-specific actions only on an album context", async () => {
+  it("offers only the album-scoped actions on an album context", async () => {
     const { wrapper, selectionStore } = mountBar({
       name: "albums-show",
       params: { id: "sunset-trip" },
@@ -102,7 +105,13 @@ describe("SelectionBar", () => {
     selectionStore.add({ id: "a", title: "A" });
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.text()).toContain("Remove From This Album");
+    expect(wrapper.text()).toContain("Remove From Album");
+    // The wording says which album, since the one being browsed is filtered out.
+    expect(wrapper.text()).toContain("Add To Another Album");
+    // Deleting destroys the photo instead of taking it out of this album, and
+    // the remove-from-album dropdown duplicates the button beside it.
+    expect(wrapper.text()).not.toContain("Delete");
+    expect(wrapper.findComponent({ name: "RemoveFromAlbum" }).exists()).toBe(false);
     // Setting the cover is the grid's own star, not a bar action.
     expect(wrapper.text()).not.toContain("Cover");
   });
@@ -140,11 +149,11 @@ describe("SelectionBar", () => {
     expect(selectionStore.selected.map((p) => p.id)).toEqual(["a"]);
   });
 
-  describe("Remove From This Album", () => {
+  describe("Remove From Album", () => {
     const albumContext = { name: "albums-show", params: { id: "sunset-trip" }, query: {} };
 
     async function confirmRemoval(wrapper) {
-      await wrapper.findAll("button").find((b) => b.text().includes("Remove From This Album")).trigger("click");
+      await wrapper.findAll("button").find((b) => b.text().includes("Remove From Album")).trigger("click");
       await wrapper.findAll("button").find((b) => b.text() === "Yes, remove").trigger("click");
     }
 
