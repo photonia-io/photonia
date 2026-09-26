@@ -810,9 +810,11 @@ const handleAddTag = async (tagName) => {
 // Album membership shows up outside this page too (album pages, the photo
 // counts on /albums), so drop the cache and pull this photo's albums again.
 const albumsChanged = (message) => {
-  apolloClient.cache.reset();
-  refetch();
   toaster(message, "is-success");
+  apolloClient.cache.reset();
+  // The write already succeeded, so a failed refresh only means this page is
+  // behind — say so instead of letting the success toast imply otherwise.
+  refetch()?.catch((error) => albumError("refreshing the photo", [error.message]));
 };
 
 const albumError = (action, errors) => {
