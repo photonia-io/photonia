@@ -18,7 +18,7 @@
   <% (@photos || []).each do |photo| %>
     <div>
       <a href="<%= photo_path(photo) %>">
-        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" alt="<%= photo.title %>" />
+        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" alt="<%= photo.title %>" loading="lazy" />
         <%= photo.title %>
       </a>
     </div>
