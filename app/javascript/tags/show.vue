@@ -19,6 +19,11 @@
           </div>
         </div>
       </div>
+      <p class="mb-4">
+        <router-link :to="{ name: 'photos-search', query: { tags: [tag.name] } }">
+          Search photos with this tag
+        </router-link>
+      </p>
       <hr class="mt-2 mb-4" />
       <div class="tags mb-4 is-size-6" v-if="tag.relatedTags.length > 0">
         Related Tags:
