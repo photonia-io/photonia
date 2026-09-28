@@ -141,6 +141,77 @@ describe("DisplayHero", () => {
     });
   });
 
+  describe("collapsed album on the homepage", () => {
+    const albumPhoto = {
+      ...portraitPhoto,
+      feedAlbum: { id: "race-day", title: "Race Day", photosCount: 312 },
+    };
+
+    it("links the image to the album instead of the photo", () => {
+      const wrapper = mountDisplayHero({
+        photo: albumPhoto,
+        isHomepage: true,
+      });
+
+      const imageLink = wrapper
+        .findAllComponents(RouterLinkStub)
+        .find((link) => link.find("img").exists());
+      expect(imageLink.props("to")).toEqual({
+        name: "albums-show",
+        params: { id: "race-day" },
+      });
+    });
+
+    it("shows the album title, a photo-count badge, and links the title to the album", () => {
+      const wrapper = mountDisplayHero({
+        photo: albumPhoto,
+        isHomepage: true,
+      });
+
+      expect(wrapper.text()).toContain("Latest album:");
+      expect(wrapper.text()).toContain("Race Day");
+      expect(wrapper.text()).toContain("312");
+      expect(wrapper.text()).not.toContain("Latest photo:");
+
+      const titleLink = wrapper
+        .findAllComponents(RouterLinkStub)
+        .find((link) => link.text() === "Race Day");
+      expect(titleLink.props("to")).toEqual({
+        name: "albums-show",
+        params: { id: "race-day" },
+      });
+    });
+
+    it("is unaffected for a plain photo with no feedAlbum", () => {
+      const wrapper = mountDisplayHero({
+        photo: portraitPhoto,
+        isHomepage: true,
+      });
+
+      expect(wrapper.text()).toContain("Latest photo:");
+      expect(wrapper.text()).not.toContain("Latest album:");
+
+      const imageLink = wrapper
+        .findAllComponents(RouterLinkStub)
+        .find((link) => link.find("img").exists());
+      expect(imageLink.props("to")).toEqual({
+        name: "photos-show",
+        params: { id: portraitPhoto.id },
+      });
+    });
+
+    it("ignores feedAlbum off the homepage", () => {
+      const wrapper = mountDisplayHero({
+        photo: albumPhoto,
+        isHomepage: false,
+      });
+
+      // Off the homepage the image is a plain <img>, never router-linked.
+      expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(false);
+      expect(wrapper.text()).not.toContain("Latest album:");
+    });
+  });
+
   describe("variant selection", () => {
     const photoWithLarge = {
       ...landscapePhoto,

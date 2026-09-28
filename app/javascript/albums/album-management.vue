@@ -142,8 +142,9 @@
           </template>
           <template v-else>
             <p>
-              This album will show as a single entry on the photo feed: its
-              cover photo, with the album's photo count.
+              This album will show as a single entry on the photo feed - and
+              on the homepage too, if it's the most recent thing posted -
+              its cover photo, with the album's photo count.
             </p>
             <p class="mt-3">
               Its other photos will leave the photo feed, the homepage's

@@ -35,6 +35,11 @@ module Queries
 
       raise GraphQL::ExecutionError, 'Photo not found' unless photo
 
+      # Only the homepage's "latest" spotlight is feed-like; a direct by_id
+      # lookup (the photo page) never gets a feed_album, even for this same
+      # photo.
+      populate_feed_albums([photo]) if fetch_type == 'latest'
+
       authorize(photo, :show?)
       record_impression(photo)
       photo

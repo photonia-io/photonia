@@ -10,6 +10,7 @@ module HomepageLoader
 
   def load_homepage
     @latest_photo = Photo.where(hidden_from_feed: false).order(posted_at: :desc).first
+    @latest_photo_feed_album = @latest_photo && Album.where(collapsed_in_feed: true, public_cover_photo_id: @latest_photo.id).first
     @random_photo = Photo.order(Arel.sql('RANDOM()')).first
     @most_used_tags = ActsAsTaggableOn::Tag.photonia_most_used(limit: 60)
 

@@ -18,6 +18,11 @@ class GraphqlQueryCollection
             width
             height
           }
+          feedAlbum {
+            id
+            title
+            photosCount
+          }
         }
         randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
           collection {
