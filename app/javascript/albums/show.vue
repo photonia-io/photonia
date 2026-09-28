@@ -2,8 +2,8 @@
   <section class="section-pt-pb-0">
     <div class="container">
       <div class="level mt-5 mb-0">
-        <div class="level-left is-flex-grow-1">
-          <div class="level-item is-flex-grow-1 is-justify-content-flex-start">
+        <div class="level-left is-flex-grow-1 is-flex-shrink-1">
+          <div class="level-item is-flex-grow-1 is-flex-shrink-1 is-justify-content-flex-start">
             <AlbumTitleEditable
               v-if="canEditAlbum"
               :album="album"
@@ -49,6 +49,7 @@
         @delete-album="deleteAlbum"
         @update-sorting="updateAlbumSorting"
         @set-album-privacy="handleSetAlbumPrivacy"
+        @set-album-collapsed-in-feed="handleSetAlbumCollapsedInFeed"
       />
 
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
@@ -439,6 +440,61 @@ onSetAlbumCoverPhotoError((error) => {
     "is-danger",
   );
 });
+
+/* Collapse / uncollapse album on the photo feed */
+const {
+  mutate: setAlbumCollapsedInFeedMutation,
+  onDone: onSetAlbumCollapsedInFeedDone,
+  onError: onSetAlbumCollapsedInFeedError,
+} = useMutation(gql`
+  mutation ($id: String!, $collapsed: Boolean!) {
+    setAlbumCollapsedInFeed(id: $id, collapsed: $collapsed) {
+      album {
+        id
+        collapsedInFeed
+      }
+    }
+  }
+`);
+
+const handleSetAlbumCollapsedInFeed = ({ id, collapsed }) => {
+  setAlbumCollapsedInFeedMutation({ id, collapsed });
+};
+
+onSetAlbumCollapsedInFeedDone(({ data }) => {
+  const collapsed = data?.setAlbumCollapsedInFeed?.album?.collapsedInFeed;
+  toaster(
+    collapsed
+      ? "The album now shows as a single entry on the photo feed"
+      : "The album's photos are back on the photo feed individually",
+  );
+  // The feed's contents and photo-level prev/next both shifted
+  apolloClient.cache.evict({ fieldName: "photos" });
+  apolloClient.cache.evict({ fieldName: "photo" });
+  apolloClient.cache.gc();
+});
+
+onSetAlbumCollapsedInFeedError((error) => {
+  toaster(
+    "An error occurred while updating the photo feed setting: " +
+      error.message,
+    "is-danger",
+  );
+});
 </script>
 
-<style></style>
+<style scoped>
+/* Bulma's .level-left/.level-item both default to flex-shrink: 0, so a long
+   title refuses to shrink and pushes the Album Settings button out of the
+   row on desktop. is-flex-shrink-1 (above) lets them shrink; min-width: 0
+   is needed too, since a flex item's automatic min-width otherwise still
+   blocks it from going below its own content's size. */
+.level-left,
+.level-left .level-item {
+  min-width: 0;
+}
+
+.level-left .title {
+  overflow-wrap: anywhere;
+}
+</style>

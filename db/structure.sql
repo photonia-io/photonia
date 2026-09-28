@@ -74,7 +74,8 @@ CREATE TABLE public.albums (
     privacy public.privacy DEFAULT 'public'::public.privacy,
     description_html text,
     sorting_type character varying DEFAULT 'taken_at'::character varying NOT NULL,
-    sorting_order character varying DEFAULT 'asc'::character varying NOT NULL
+    sorting_order character varying DEFAULT 'asc'::character varying NOT NULL,
+    collapsed_in_feed boolean DEFAULT false NOT NULL
 );
 
 
@@ -414,7 +415,8 @@ CREATE TABLE public.photos (
     scanned boolean DEFAULT false NOT NULL,
     processed_at timestamp(6) without time zone,
     labeled_at timestamp(6) without time zone,
-    processing_failed_at timestamp(6) without time zone
+    processing_failed_at timestamp(6) without time zone,
+    hidden_from_feed boolean DEFAULT false NOT NULL
 );
 
 
@@ -1102,7 +1104,7 @@ CREATE INDEX index_comments_on_user_id ON public.comments USING btree (user_id);
 -- Name: index_flickr_user_claims_on_active_user_and_flickr_user; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_flickr_user_claims_on_active_user_and_flickr_user ON public.flickr_user_claims USING btree (user_id, flickr_user_id) WHERE ((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('approved'::character varying)::text]));
+CREATE UNIQUE INDEX index_flickr_user_claims_on_active_user_and_flickr_user ON public.flickr_user_claims USING btree (user_id, flickr_user_id) WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]));
 
 
 --
@@ -1173,6 +1175,13 @@ CREATE INDEX index_labels_on_photo_id ON public.labels USING btree (photo_id);
 --
 
 CREATE INDEX index_photos_on_exif ON public.photos USING gin (exif);
+
+
+--
+-- Name: index_photos_on_posted_at_and_id_in_feed; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_photos_on_posted_at_and_id_in_feed ON public.photos USING btree (posted_at, id) WHERE (hidden_from_feed = false);
 
 
 --
@@ -1496,6 +1505,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260928074255'),
 ('20260925120000'),
 ('20260925090000'),
 ('20260924165700'),

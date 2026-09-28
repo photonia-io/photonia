@@ -13,6 +13,7 @@
 #  flickr_json              :jsonb
 #  flickr_original          :string
 #  flickr_photopage         :string
+#  hidden_from_feed         :boolean          default(FALSE), not null
 #  image_data               :jsonb
 #  impressions_count        :integer          default(0), not null
 #  labeled_at               :datetime
@@ -39,10 +40,11 @@
 #
 # Indexes
 #
-#  index_photos_on_exif                  (exif) USING gin
-#  index_photos_on_rekognition_response  (rekognition_response) USING gin
-#  index_photos_on_slug                  (slug) UNIQUE
-#  index_photos_on_user_id               (user_id)
+#  index_photos_on_exif                      (exif) USING gin
+#  index_photos_on_posted_at_and_id_in_feed  (posted_at,id) WHERE (hidden_from_feed = false)
+#  index_photos_on_rekognition_response      (rekognition_response) USING gin
+#  index_photos_on_slug                      (slug) UNIQUE
+#  index_photos_on_user_id                   (user_id)
 #
 # Foreign Keys
 #
@@ -159,7 +161,36 @@ class Photo < ApplicationRecord
 
   before_validation :set_fields, prepend: true
 
+  # Recomputes hidden_from_feed for the given photos: hidden if the photo is
+  # in a collapsed album and isn't that album's public cover. A photo can be
+  # in several albums, so this is a set-based query, not a per-album check.
+  # Never write hidden_from_feed directly - it's derived here, called from
+  # Album#maintenance (and wherever album membership changes outside of it).
+  def self.refresh_feed_visibility(photo_ids)
+    return if photo_ids.blank?
+
+    collapsed_albums = Album.unscoped.where(collapsed_in_feed: true, privacy: 'public')
+                             .where.not(public_cover_photo_id: nil)
+    cover_ids = collapsed_albums.pluck(:public_cover_photo_id)
+
+    in_collapsed_album_ids = Photo.unscoped
+                                   .joins(:albums_photos)
+                                   .where(id: photo_ids, albums_photos: { album_id: collapsed_albums.select(:id) })
+                                   .distinct
+                                   .pluck(:id)
+
+    hidden_ids = in_collapsed_album_ids - cover_ids
+    shown_ids = photo_ids - hidden_ids
+
+    # rubocop:disable Rails/SkipsModelValidations
+    Photo.unscoped.where(id: hidden_ids, hidden_from_feed: false).update_all(hidden_from_feed: true)
+    Photo.unscoped.where(id: shown_ids, hidden_from_feed: true).update_all(hidden_from_feed: false)
+    # rubocop:enable Rails/SkipsModelValidations
+  end
+
   # doesn't work with privacy scopes
+  # hidden_from_feed only affects list-type surfaces - see the same note on
+  # Types::PhotoType#next_photo/#previous_photo.
   def next
     Photo.where('posted_at > ? OR (posted_at = ? AND id > ?)', posted_at, posted_at, id)
          .order(:posted_at, :id)

@@ -41,7 +41,7 @@ module Queries
         if query.present?
           base.search(query)
         else
-          base.order(posted_at: :desc)
+          base.where(hidden_from_feed: false).order(posted_at: :desc)
         end
 
       pagy, photos = context[:pagy].call(
@@ -49,6 +49,7 @@ module Queries
         page:
       )
       add_pagination_methods(photos, pagy)
+      set_feed_albums(photos) unless query.present?
       photos
     end
 
@@ -71,6 +72,14 @@ module Queries
     # Determine the effective limit (apply MAX_LIMIT when not specified or when exceeding maximum)
     def effective_limit(limit)
       (limit || SIMPLE_MODE_MAX_LIMIT).clamp(0, SIMPLE_MODE_MAX_LIMIT)
+    end
+
+    # Maps each of this page's photos to the collapsed album it's the public
+    # cover of, so PhotoType#feed_album can render it as a stand-in for the
+    # whole album without an N+1 query.
+    def set_feed_albums(photos)
+      context[:feed_albums] = Album.where(collapsed_in_feed: true, public_cover_photo_id: photos.map(&:id))
+                                    .index_by(&:public_cover_photo_id)
     end
   end
 end

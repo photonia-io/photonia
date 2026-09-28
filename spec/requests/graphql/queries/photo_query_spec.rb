@@ -176,5 +176,24 @@ describe 'photo Query' do
         'extralargeImageUrl' => photo.image_url(:extralarge)
       )
     end
+
+    context 'when the actual latest photo is hidden by a collapsed album' do
+      let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+      let(:cover) { create(:photo, posted_at: photo.posted_at - 1.hour) }
+      let(:hidden_latest) { create(:photo, posted_at: photo.posted_at + 1.hour) }
+
+      before do
+        album.photos << cover
+        album.photos << hidden_latest
+        album.maintenance
+      end
+
+      it 'skips it and returns the latest visible photo' do
+        post_query
+        response_photo = response.parsed_body['data']['photo']
+
+        expect(response_photo['id']).to eq(photo.slug.to_s)
+      end
+    end
   end
 end

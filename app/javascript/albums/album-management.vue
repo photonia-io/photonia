@@ -50,6 +50,18 @@
         Manage Sorting
       </button>
 
+      <label class="label mt-4">Photo Feed:</label>
+      <div class="buttons">
+        <button
+          class="button is-small"
+          :disabled="collapseDisabled"
+          @click="showCollapseModal"
+        >
+          {{ album.collapsedInFeed ? "Uncollapse Album" : "Collapse Album" }}
+        </button>
+      </div>
+      <p class="help" v-if="collapseDisabled">{{ album.collapseBlocker }}</p>
+
       <div class="buttons mt-5">
         <button class="button is-danger" @click="showConfirmationModal">
           Delete Album
@@ -112,6 +124,50 @@
       </div>
     </div>
   </teleport>
+  <teleport to="#modal-root">
+    <div :class="['modal', collapseModalActive ? 'is-active' : null]">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title has-text-centered">
+            {{ album.collapsedInFeed ? "Uncollapse Album" : "Collapse Album" }}
+          </p>
+        </header>
+        <div class="modal-card-body">
+          <template v-if="album.collapsedInFeed">
+            <p>
+              This album's photos will return to the photo feed individually,
+              in their normal date order.
+            </p>
+          </template>
+          <template v-else>
+            <p>
+              This album will show as a single entry on the photo feed: its
+              cover photo, with the album's photo count.
+            </p>
+            <p class="mt-3">
+              Its other photos will leave the photo feed, the homepage's
+              latest photo, and the photos RSS feed. They'll stay visible in
+              the album, on tag pages, in search, and when browsing photo by
+              photo with the Previous/Next buttons.
+            </p>
+            <p class="mt-3" v-if="!isPublic">
+              This album isn't Public, so it won't show in the feed at all
+              until it is.
+            </p>
+          </template>
+        </div>
+        <footer class="modal-card-foot is-justify-content-center">
+          <button class="button is-warning" @click="confirmCollapseChange">
+            {{ album.collapsedInFeed ? "Yes, uncollapse" : "Yes, collapse" }}
+          </button>
+          <button class="button is-info" @click="cancelCollapseChange">
+            Cancel
+          </button>
+        </footer>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -129,7 +185,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["deleteAlbum", "updateSorting", "setAlbumPrivacy"]);
+const emit = defineEmits([
+  "deleteAlbum",
+  "updateSorting",
+  "setAlbumPrivacy",
+  "setAlbumCollapsedInFeed",
+]);
 const applicationStore = useApplicationStore();
 
 const modalActive = ref(false);
@@ -235,6 +296,39 @@ const manageSorting = () => {
 const performDelete = () => {
   emit("deleteAlbum", { id: props.album.id });
   closeConfirmationModal();
+};
+
+const isPublic = computed(() => privacy.value === "public");
+
+// Only ever disables Collapse, never Uncollapse - collapseBlocker describes
+// why an uncollapsed album can't collapse, not anything about an already-
+// collapsed one.
+const collapseDisabled = computed(
+  () => !props.album.collapsedInFeed && !!props.album.collapseBlocker,
+);
+
+const collapseModalActive = ref(false);
+
+const showCollapseModal = () => {
+  collapseModalActive.value = true;
+  applicationStore.disableNavigationShortcuts();
+};
+
+const closeCollapseModal = () => {
+  collapseModalActive.value = false;
+  applicationStore.enableNavigationShortcuts();
+};
+
+const confirmCollapseChange = () => {
+  emit("setAlbumCollapsedInFeed", {
+    id: props.album.id,
+    collapsed: !props.album.collapsedInFeed,
+  });
+  closeCollapseModal();
+};
+
+const cancelCollapseChange = () => {
+  closeCollapseModal();
 };
 
 defineExpose({ revertPrivacy });

@@ -21,6 +21,12 @@ module Mutations
         return error_response('Not authorized to update this album')
       end
 
+      # A collapsed album's photos must have no posted_at gap against any other
+      # photo (see Album#feed_gap_photo) - adding one now could reopen a gap
+      # that can never be re-closed, since posted_at is set once and never
+      # edited. Uncollapse first, add, then re-collapse (re-validating).
+      return error_response('This album is collapsed on the feed - uncollapse it before adding photos') if album.collapsed_in_feed?
+
       photos = Photo.unscoped.where(slug: photo_ids)
       return error_response('One or more photos not found') if photos.size != photo_ids.uniq.size
 

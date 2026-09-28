@@ -48,6 +48,69 @@ describe 'photos Query' do
       end
     end
 
+    describe 'a collapsed album' do
+      subject(:post_query) { post '/graphql', params: { query: } }
+
+      let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+      let!(:cover) { create(:photo, privacy: 'public') }
+      let!(:other) { create(:photo, privacy: 'public') }
+
+      let(:query) do
+        <<~GQL
+          query {
+            photos(page: 1) {
+              collection {
+                id
+                feedAlbum {
+                  id
+                  title
+                  photosCount
+                }
+              }
+            }
+          }
+        GQL
+      end
+
+      before do
+        album.photos << cover
+        album.photos << other
+        album.maintenance
+      end
+
+      it 'excludes the hidden photos and marks the cover with feedAlbum' do
+        post_query
+
+        collection = response.parsed_body['data']['photos']['collection']
+        ids = collection.map { |p| p['id'] }
+
+        expect(ids).to contain_exactly(cover.slug)
+
+        feed_album = collection.first['feedAlbum']
+        expect(feed_album).to include('id' => album.slug, 'photosCount' => 2)
+      end
+
+      it 'still includes the hidden photos when searching' do
+        cover.update!(title: 'Race day cover')
+        other.update!(title: 'Race day bystander')
+
+        post '/graphql', params: {
+          query: <<~GQL
+            query {
+              photos(page: 1, query: "Race day") {
+                collection { id feedAlbum { id } }
+              }
+            }
+          GQL
+        }
+
+        collection = response.parsed_body['data']['photos']['collection']
+        ids = collection.map { |p| p['id'] }
+        expect(ids).to contain_exactly(cover.slug, other.slug)
+        expect(collection.map { |p| p['feedAlbum'] }).to all(be_nil)
+      end
+    end
+
     describe 'search' do
       subject(:post_query) { post '/graphql', params: { query: } }
 

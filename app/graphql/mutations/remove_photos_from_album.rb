@@ -43,6 +43,9 @@ module Mutations
       Photo.unscoped.where(id: photos.map(&:id)).touch_all
 
       album.maintenance
+      # Removed photos are no longer in the album, so maintenance's own
+      # refresh never reaches them.
+      Photo.refresh_feed_visibility(photos.map(&:id))
 
       { album: album, errors: [] }
     rescue StandardError => e

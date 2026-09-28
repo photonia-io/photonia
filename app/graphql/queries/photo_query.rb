@@ -28,7 +28,7 @@ module Queries
 
       photo =
         if fetch_type == 'latest'
-          photo_query.order(posted_at: :desc).first
+          photo_query.where(hidden_from_feed: false).order(posted_at: :desc).first
         else
           photo_query.friendly.find(id)
         end

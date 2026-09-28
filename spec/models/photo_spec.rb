@@ -13,6 +13,7 @@
 #  flickr_json              :jsonb
 #  flickr_original          :string
 #  flickr_photopage         :string
+#  hidden_from_feed         :boolean          default(FALSE), not null
 #  image_data               :jsonb
 #  impressions_count        :integer          default(0), not null
 #  labeled_at               :datetime
@@ -39,10 +40,11 @@
 #
 # Indexes
 #
-#  index_photos_on_exif                  (exif) USING gin
-#  index_photos_on_rekognition_response  (rekognition_response) USING gin
-#  index_photos_on_slug                  (slug) UNIQUE
-#  index_photos_on_user_id               (user_id)
+#  index_photos_on_exif                      (exif) USING gin
+#  index_photos_on_posted_at_and_id_in_feed  (posted_at,id) WHERE (hidden_from_feed = false)
+#  index_photos_on_rekognition_response      (rekognition_response) USING gin
+#  index_photos_on_slug                      (slug) UNIQUE
+#  index_photos_on_user_id                   (user_id)
 #
 # Foreign Keys
 #
@@ -119,11 +121,23 @@ RSpec.describe Photo do
         next_photo = create(:photo, posted_at: photo.posted_at + 1.day)
         expect(photo.next).to eq(next_photo)
       end
+
+      it 'is unaffected by hidden_from_feed - that only governs list-type surfaces' do
+        photo = create(:photo, hidden_from_feed: true)
+        next_photo = create(:photo, posted_at: photo.posted_at + 1.day)
+        expect(photo.next).to eq(next_photo)
+      end
     end
 
     describe '#prev' do
       it 'returns the previous photo' do
         photo = create(:photo)
+        prev_photo = create(:photo, posted_at: photo.posted_at - 1.day)
+        expect(photo.prev).to eq(prev_photo)
+      end
+
+      it 'is unaffected by hidden_from_feed - that only governs list-type surfaces' do
+        photo = create(:photo, hidden_from_feed: true)
         prev_photo = create(:photo, posted_at: photo.posted_at - 1.day)
         expect(photo.prev).to eq(prev_photo)
       end
@@ -649,6 +663,70 @@ RSpec.describe Photo do
 
     it 'does not record a version for untracked changes' do
       expect { photo.update(impressions_count: 5) }.not_to(change { photo.versions.count })
+    end
+  end
+
+  describe '.refresh_feed_visibility' do
+    let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+    let(:cover) { create(:photo, privacy: 'public') }
+    let(:other) { create(:photo, privacy: 'public') }
+
+    before do
+      album.photos << cover
+      album.photos << other
+      album.maintenance
+    end
+
+    it 'hides every photo in the album except the cover' do
+      expect(cover.reload.hidden_from_feed).to be(false)
+      expect(other.reload.hidden_from_feed).to be(true)
+    end
+
+    it 'shows the photos again once the album is uncollapsed' do
+      album.update!(collapsed_in_feed: false)
+
+      expect(other.reload.hidden_from_feed).to be(false)
+    end
+
+    it 'keeps a photo hidden if it also belongs to a plain album' do
+      plain_album = create(:album, sorting_type: 'manual')
+      plain_album.photos << other
+      plain_album.maintenance
+
+      expect(other.reload.hidden_from_feed).to be(true)
+    end
+
+    it 'shows a photo that is the cover of one collapsed album, even if hidden in another' do
+      other_album = create(:album, sorting_type: 'manual', collapsed_in_feed: true)
+      other_album.photos << other
+      other_album.maintenance
+
+      expect(other.reload.hidden_from_feed).to be(false)
+    end
+
+    it 'hides nothing when the collapsed album is private' do
+      album.update!(privacy: 'private')
+
+      expect(other.reload.hidden_from_feed).to be(false)
+    end
+
+    it 'hides nothing when the collapsed album has no public cover' do
+      private_only_album = create(:album, sorting_type: 'manual', collapsed_in_feed: true)
+      private_photo = create(:photo, privacy: 'private')
+      private_only_album.photos << private_photo
+      private_only_album.maintenance
+
+      expect(private_photo.reload.hidden_from_feed).to be(false)
+    end
+
+    it 'unhides the photos when the album is destroyed' do
+      album.destroy
+
+      expect(other.reload.hidden_from_feed).to be(false)
+    end
+
+    it 'does nothing for a blank list of ids' do
+      expect { described_class.refresh_feed_visibility([]) }.not_to raise_error
     end
   end
 end

@@ -5,6 +5,7 @@
 # Table name: albums
 #
 #  id                       :bigint           not null, primary key
+#  collapsed_in_feed        :boolean          default(FALSE), not null
 #  description              :text
 #  description_html         :text
 #  flickr_impressions_count :integer          default(0), not null

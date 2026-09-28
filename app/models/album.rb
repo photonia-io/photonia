@@ -5,6 +5,7 @@
 # Table name: albums
 #
 #  id                       :bigint           not null, primary key
+#  collapsed_in_feed        :boolean          default(FALSE), not null
 #  description              :text
 #  description_html         :text
 #  flickr_impressions_count :integer          default(0), not null
@@ -69,6 +70,10 @@ class Album < ApplicationRecord
 
   after_create :maintenance
   after_update :maintenance
+  # dependent: :destroy on albums_photos runs before this via a before_destroy
+  # callback, so the photo ids must be captured ahead of it.
+  before_destroy :remember_photo_ids_for_feed_refresh, prepend: true
+  after_destroy :refresh_former_photos_feed_visibility
   after_commit :refresh_photos_tsv, if: :saved_change_to_title?
 
   default_scope { where(privacy: 'public') }
@@ -97,6 +102,8 @@ class Album < ApplicationRecord
     maintenance_update(public_photos_count:, photos_count: @photos_count, public_cover_photo_id: pcpi,
                        user_cover_photo_id: ucpi)
 
+    Photo.refresh_feed_visibility(albums_photos.pluck(:photo_id))
+
     self
   end
 
@@ -111,6 +118,43 @@ class Album < ApplicationRecord
     Photo.unscoped
          .where(id: albums_photos.select(:photo_id))
          .where.not(privacy: 'private')
+  end
+
+  # The first photo (any privacy) that isn't a member of this album but was
+  # posted between the earliest and latest photo already in it. Collapsing
+  # only makes sense for an album whose photos are one contiguous block in
+  # posted_at order - a gap here means some of its "hidden" photos wouldn't
+  # actually sit next to each other in the feed. nil means safe to collapse.
+  #
+  # posted_at is set once, at creation, and is never user-editable, so this
+  # only needs checking once, at the moment an album is collapsed: nothing
+  # posted afterward can ever land chronologically between photos already
+  # posted. The only way to reopen a gap is adding a new member with a
+  # different posted_at - which Mutations::AddPhotosToAlbum forbids outright
+  # for an already-collapsed album, so this never needs re-checking later.
+  def feed_gap_photo
+    member_ids = albums_photos.select(:photo_id)
+    min_posted, max_posted = Photo.unscoped
+                                  .where(id: member_ids)
+                                  .pick(Arel.sql('MIN(posted_at)'), Arel.sql('MAX(posted_at)'))
+    return nil unless min_posted
+
+    Photo.unscoped.where(posted_at: min_posted..max_posted)
+         .where.not(id: member_ids)
+         .order(:posted_at)
+         .first
+  end
+
+  # Why this album can't collapse on the feed right now, or nil if it can.
+  # Shared by SetAlbumCollapsedInFeed (to reject) and AlbumType (so the UI can
+  # disable the Collapse button and explain why up front, rather than only
+  # failing after the confirmation modal).
+  def collapse_blocker
+    return 'Add at least one public photo before collapsing this album' if public_photos_count.zero?
+
+    return "Can't collapse: the photos of this album were not posted consecutively" if feed_gap_photo
+
+    nil
   end
 
   # Re-runs maintenance on every album (other than `except`) containing any of `photo_ids`,
@@ -217,6 +261,14 @@ class Album < ApplicationRecord
   end
 
   private
+
+  def remember_photo_ids_for_feed_refresh
+    @photo_ids_for_feed_refresh = albums_photos.pluck(:photo_id)
+  end
+
+  def refresh_former_photos_feed_visibility
+    Photo.refresh_feed_visibility(@photo_ids_for_feed_refresh)
+  end
 
   def public_cover_photo_id_candidate
     @public_photos.first&.id

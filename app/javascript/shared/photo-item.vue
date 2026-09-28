@@ -6,8 +6,14 @@
         <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
           <span class="tag is-info is-light is-small">Cover Photo</span>
         </div>
+        <div v-if="feedAlbum" class="feed-album-tag" @click.stop>
+          <span class="tag is-dark is-small icon-text">
+            <span class="icon"><i class="fas fa-images"></i></span>
+            <span>{{ feedAlbum.photosCount }}</span>
+          </span>
+        </div>
       </div>
-      {{ photo.title }}
+      {{ feedAlbum ? feedAlbum.title : photo.title }}
     </router-link>
     <template v-else>
       <div
@@ -51,10 +57,16 @@
           <div v-if="showCoverTag" class="cover-photo-tag" @click.stop>
             <span class="tag is-info is-light is-small">Cover Photo</span>
           </div>
+          <div v-if="feedAlbum" class="feed-album-tag" @click.stop>
+            <span class="tag is-dark is-small icon-text">
+              <span class="icon"><i class="fas fa-images"></i></span>
+              <span>{{ feedAlbum.photosCount }}</span>
+            </span>
+          </div>
         </div>
       </div>
       <router-link :to="photoRoute">
-        {{ photo.title }}
+        {{ feedAlbum ? feedAlbum.title : photo.title }}
       </router-link>
     </template>
   </div>
@@ -79,6 +91,10 @@
  * - `canEditAlbum` (Boolean): whether the current user can edit that album.
  * - `albumId` (String): slug of the album this grid belongs to. Distinct
  *   from `inAlbum` — when set, the photo link starts album (J/K) navigation.
+ *
+ * `photo.feedAlbum`, when present (only on the main photo feed), means this
+ * card is the cover of a collapsed album: it links to the album instead of
+ * the photo and shows a photo-count badge.
  *
  * Emits: `set-cover-photo`.
  */
@@ -121,11 +137,21 @@ const router = useRouter();
 const userStore = useUserStore();
 const selectionStore = useSelectionStore();
 
-const photoRoute = computed(() => ({
-  name: "photos-show",
-  params: { id: props.photo.id },
-  ...(props.albumId ? { query: { inAlbum: props.albumId } } : {}),
-}));
+// Set only on the feed (photos_index): the collapsed album this photo is
+// the public cover of, standing in for the whole album.
+const feedAlbum = computed(() => props.photo.feedAlbum || null);
+
+const photoRoute = computed(() => {
+  if (feedAlbum.value) {
+    return { name: "albums-show", params: { id: feedAlbum.value.id } };
+  }
+
+  return {
+    name: "photos-show",
+    params: { id: props.photo.id },
+    ...(props.albumId ? { query: { inAlbum: props.albumId } } : {}),
+  };
+});
 
 const canSelect = computed(
   () => userStore.signedIn && userStore.uploader && !!props.photo.canEdit,
@@ -212,7 +238,8 @@ const { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onContextMen
   filter: grayscale(40%);
 }
 
-.cover-photo-tag {
+.cover-photo-tag,
+.feed-album-tag {
   position: absolute;
   right: 0.75em;
   bottom: 0.75em;

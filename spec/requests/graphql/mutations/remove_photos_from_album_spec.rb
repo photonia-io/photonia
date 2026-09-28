@@ -115,6 +115,21 @@ RSpec.describe 'removePhotosFromAlbum Mutation', type: :request do
       end
     end
 
+    context 'when the album is collapsed' do
+      let(:album) { create(:album, user: owner, sorting_type: 'manual', collapsed_in_feed: true) }
+      let(:variables) { { albumId: album.slug, photoIds: [second_photo.slug] } }
+
+      before { album.maintenance }
+
+      it 'unhides a removed photo from the feed even though it is no longer in the album' do
+        expect(second_photo.reload.hidden_from_feed).to be(true)
+
+        post_mutation
+
+        expect(second_photo.reload.hidden_from_feed).to be(false)
+      end
+    end
+
     context 'when trying to remove a photo not authorized for update' do
       let(:stranger) { create(:user) }
       let(:stranger_photo) { create(:photo, user: stranger) }

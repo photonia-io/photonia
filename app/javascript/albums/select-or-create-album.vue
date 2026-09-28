@@ -75,6 +75,7 @@ const { result } = useQuery(
           id
           title
           photosCount
+          collapsedInFeed
         }
         albumsWithPhotos(photoIds: $photoIds) {
           id
@@ -86,8 +87,9 @@ const { result } = useQuery(
   { photoIds: photoIds },
 );
 
-// Offer an album only while at least one of the photos is still missing from
-// it.
+// Offer an album only while it's not collapsed (adding photos to one is
+// rejected server-side, so it isn't a valid destination) and at least one of
+// the photos is still missing from it.
 const albumsFiltered = computed(() => {
   const albums = result.value?.currentUser?.albums || [];
   const alreadyHasAll = new Set(
@@ -96,6 +98,8 @@ const albumsFiltered = computed(() => {
       .map((album) => album.id),
   );
 
-  return albums.filter((album) => !alreadyHasAll.has(album.id));
+  return albums.filter(
+    (album) => !album.collapsedInFeed && !alreadyHasAll.has(album.id),
+  );
 });
 </script>

@@ -120,6 +120,21 @@ RSpec.describe 'addPhotosToAlbum Mutation', type: :request do
       end
     end
 
+    context 'when the album is collapsed on the feed' do
+      before { album.update!(collapsed_in_feed: true) }
+
+      it 'rejects adding photos and does not modify the album' do
+        expect do
+          post_mutation
+        end.not_to(change { album.reload.photos.count })
+
+        expect(data_dig(response, 'addPhotosToAlbum', 'album')).to be_nil
+        expect(data_dig(response, 'addPhotosToAlbum', 'errors')).to(
+          include('This album is collapsed on the feed - uncollapse it before adding photos')
+        )
+      end
+    end
+
     context 'when trying to add a photo not authorized for update' do
       let(:stranger) { create(:user) }
       let(:stranger_photo) { create(:photo, user: stranger) }
