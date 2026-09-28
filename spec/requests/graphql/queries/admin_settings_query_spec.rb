@@ -12,6 +12,7 @@ describe 'adminSettings Query' do
   let(:site_tracking_code) { '<script>some_javascript_code</script>' }
   let(:continue_with_google_enabled) { true }
   let(:continue_with_facebook_enabled) { true }
+  let(:rekognition_enabled) { true }
 
   let(:query) do
     <<~GQL
@@ -23,6 +24,7 @@ describe 'adminSettings Query' do
           siteTrackingCode
           continueWithGoogleEnabled
           continueWithFacebookEnabled
+          rekognitionEnabled
         }
       }
     GQL
@@ -34,6 +36,7 @@ describe 'adminSettings Query' do
     Setting.site_tracking_code = site_tracking_code
     Setting.continue_with_google_enabled = continue_with_google_enabled
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
+    Setting.rekognition_enabled = rekognition_enabled
   end
 
   context 'when the user is not logged in' do
@@ -84,7 +87,8 @@ describe 'adminSettings Query' do
           'siteDescription' => site_description,
           'siteTrackingCode' => site_tracking_code,
           'continueWithGoogleEnabled' => continue_with_google_enabled,
-          'continueWithFacebookEnabled' => continue_with_facebook_enabled
+          'continueWithFacebookEnabled' => continue_with_facebook_enabled,
+          'rekognitionEnabled' => rekognition_enabled
         )
       end
     end

@@ -91,6 +91,7 @@ async function uploadAndRespond(wrapper, name, status, body) {
 
 beforeEach(() => {
   installFakeXHR();
+  globalThis.settings = { rekognition_enabled: true };
   globalThis.gql_queries = {
     photos_processing: `
       query PhotosProcessingQuery($ids: [ID!]!) {
@@ -387,6 +388,30 @@ describe("Upload", () => {
       );
       expect(wrapper.text()).toContain("Complete");
       expect(cacheReset).toHaveBeenCalledTimes(1);
+    });
+
+    it("skips Labeling & tagging and goes straight to Creating variants when Rekognition is disabled", async () => {
+      globalThis.settings = { rekognition_enabled: false };
+      const wrapper = mountUpload();
+      await uploadAndRespond(wrapper, "one.jpg", 201, {
+        photo: { id: "one" },
+      });
+
+      expect(wrapper.text()).not.toContain("Labeling & tagging");
+      expect(wrapper.text()).toContain("Creating variants");
+
+      apolloQuery.mockResolvedValueOnce({
+        data: {
+          photosByIds: [
+            { id: "one", labeled: false, processed: true, processingFailed: false },
+          ],
+        },
+      });
+      await vi.advanceTimersByTimeAsync(3000);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(wrapper.text()).toContain("Complete");
     });
 
     it("shows Processing failed once Rekognition permanently fails, and stops polling", async () => {

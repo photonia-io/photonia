@@ -11,6 +11,11 @@ class RekognitionJob < ApplicationJob
   end
 
   def perform(photo_id)
+    unless Setting.rekognition_enabled
+      AddDerivativesJob.perform_later(photo_id)
+      return
+    end
+
     photo = Photo.find(photo_id)
     RekognitionTagger.new.tag(photo)
     PhotoLabeler.new(photo.reload).add_labels_from_rekognition_response

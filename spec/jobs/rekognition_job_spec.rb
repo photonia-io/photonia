@@ -39,6 +39,20 @@ RSpec.describe RekognitionJob do
     subject
   end
 
+  context 'when Rekognition is disabled' do
+    before { Setting.rekognition_enabled = false }
+
+    it 'does not instantiate a RekognitionTagger' do
+      subject
+      expect(RekognitionTagger).not_to have_received(:new)
+    end
+
+    it 'calls AddDerivativesJob' do
+      expect(AddDerivativesJob).to receive(:perform_later).with(photo.id)
+      subject
+    end
+  end
+
   describe 'when Rekognition tagging keeps failing until attempts are exhausted' do
     let(:photo) { create(:photo) }
 

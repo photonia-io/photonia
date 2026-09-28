@@ -327,10 +327,7 @@
           <div class="icon-text">
             <span class="icon"><i class="fas fa-cogs"></i></span>
             <span class="has-text-weight-semibold">Processing:</span>
-            <span class="ml-1"
-              >thumbnails and tags are generated automatically after upload,
-              and the status updates on its own</span
-            >
+            <span class="ml-1">{{ processingTipText }}</span>
           </div>
           <div class="icon-text">
             <span class="icon"><i class="fas fa-copy"></i></span>
@@ -370,6 +367,11 @@ import SidebarHeader from "./sidebar-header.vue";
 useTitle("Upload Photos");
 
 const apolloClient = inject("apolloClient");
+
+const rekognitionEnabled = window.settings.rekognition_enabled;
+const processingTipText = rekognitionEnabled
+  ? "thumbnails and tags are generated automatically after upload, and the status updates on its own"
+  : "thumbnails are generated automatically after upload, and the status updates on its own";
 
 async function fetchStatus(slugs) {
   const { data } = await apolloClient.query({
@@ -461,7 +463,9 @@ function statusTag(item) {
     if (item.processingTimedOut) {
       return { tagClass: "is-warning is-light", text: "Still processing" };
     }
-    if (item.labeled) return { tagClass: "is-info is-light", text: "Creating variants" };
+    if (item.labeled || !rekognitionEnabled) {
+      return { tagClass: "is-info is-light", text: "Creating variants" };
+    }
     return { tagClass: "is-info is-light", text: "Labeling & tagging" };
   }
   return { tagClass: "is-soft", text: "Ready" };
