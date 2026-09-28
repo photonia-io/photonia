@@ -25,6 +25,7 @@ RSpec.describe PromoteJob do
       allow(attacher).to receive(:atomic_promote)
       allow(attacher).to receive(:stored?).and_return(true)
       allow(RekognitionJob).to receive(:perform_later)
+      allow(AddDerivativesJob).to receive(:perform_later)
     end
 
     it 'calls #retrieve on the attacher class' do
@@ -45,6 +46,21 @@ RSpec.describe PromoteJob do
     it 'calls RekognitionJob.perform_later if the attacher is stored and the record class is Photo' do
       perform
       expect(RekognitionJob).to have_received(:perform_later).with(record_id)
+    end
+
+    it 'does not call AddDerivativesJob.perform_later directly' do
+      perform
+      expect(AddDerivativesJob).not_to have_received(:perform_later)
+    end
+
+    context 'when Rekognition is disabled' do
+      before { Setting.rekognition_enabled = false }
+
+      it 'calls AddDerivativesJob.perform_later instead of RekognitionJob' do
+        perform
+        expect(AddDerivativesJob).to have_received(:perform_later).with(record_id)
+        expect(RekognitionJob).not_to have_received(:perform_later)
+      end
     end
 
     context 'when the attacher is not stored' do

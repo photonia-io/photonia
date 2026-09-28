@@ -10,6 +10,7 @@ module Types
     field :site_tracking_code, String, null: false
     field :continue_with_google_enabled, Boolean, null: false
     field :continue_with_facebook_enabled, Boolean, null: false
+    field :rekognition_enabled, Boolean, null: false
 
     def id
       'admin-settings'

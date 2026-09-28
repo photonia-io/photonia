@@ -12,12 +12,14 @@ describe 'updateAdminSettings Mutation', type: :request do
   let(:site_tracking_code) { '<script>some_javascript_code</script>' }
   let(:continue_with_google_enabled) { false }
   let(:continue_with_facebook_enabled) { false }
+  let(:rekognition_enabled) { true }
 
   let(:new_site_name) { 'New Photonia' }
   let(:new_site_description) { 'A new photo gallery' }
   let(:new_site_tracking_code) { '<script>new_javascript_code</script>' }
   let(:new_continue_with_google_enabled) { true }
   let(:new_continue_with_facebook_enabled) { true }
+  let(:new_rekognition_enabled) { false }
 
   let(:query) do
     <<~GQL
@@ -28,6 +30,7 @@ describe 'updateAdminSettings Mutation', type: :request do
           siteTrackingCode: "#{new_site_tracking_code}"
           continueWithGoogleEnabled: #{new_continue_with_google_enabled}
           continueWithFacebookEnabled: #{new_continue_with_facebook_enabled}
+          rekognitionEnabled: #{new_rekognition_enabled}
         ) {
           id
           siteName
@@ -35,6 +38,7 @@ describe 'updateAdminSettings Mutation', type: :request do
           siteTrackingCode
           continueWithGoogleEnabled
           continueWithFacebookEnabled
+          rekognitionEnabled
         }
       }
     GQL
@@ -46,6 +50,7 @@ describe 'updateAdminSettings Mutation', type: :request do
     Setting.site_tracking_code = site_tracking_code
     Setting.continue_with_google_enabled = continue_with_google_enabled
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
+    Setting.rekognition_enabled = rekognition_enabled
   end
 
   context 'when the user is not logged in' do
@@ -92,6 +97,7 @@ describe 'updateAdminSettings Mutation', type: :request do
         expect(Setting.site_tracking_code).to eq(new_site_tracking_code)
         expect(Setting.continue_with_google_enabled).to eq(new_continue_with_google_enabled)
         expect(Setting.continue_with_facebook_enabled).to eq(new_continue_with_facebook_enabled)
+        expect(Setting.rekognition_enabled).to eq(new_rekognition_enabled)
       end
 
       it 'returns the updated admin settings' do
@@ -106,7 +112,8 @@ describe 'updateAdminSettings Mutation', type: :request do
           'siteDescription' => new_site_description,
           'siteTrackingCode' => new_site_tracking_code,
           'continueWithGoogleEnabled' => new_continue_with_google_enabled,
-          'continueWithFacebookEnabled' => new_continue_with_facebook_enabled
+          'continueWithFacebookEnabled' => new_continue_with_facebook_enabled,
+          'rekognitionEnabled' => new_rekognition_enabled
         )
       end
     end

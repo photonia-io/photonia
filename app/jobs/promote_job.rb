@@ -14,7 +14,13 @@ class PromoteJob < ApplicationJob
     attacher.create_derivatives
     attacher.atomic_promote
 
-    RekognitionJob.perform_later(record_id) if attacher.stored? && record_class == 'Photo'
+    if attacher.stored? && record_class == 'Photo'
+      if Setting.rekognition_enabled
+        RekognitionJob.perform_later(record_id)
+      else
+        AddDerivativesJob.perform_later(record_id)
+      end
+    end
   rescue Shrine::AttachmentChanged, ActiveRecord::RecordNotFound
     # attachment has changed or record has been deleted, nothing to do
   end

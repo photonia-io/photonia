@@ -91,6 +91,26 @@
               </div>
             </div>
           </div>
+          <h3 class="title is-5 mt-5 mb-0">Rekognition</h3>
+          <hr class="mt-2 mb-4" />
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Automatic tagging</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="rekognitionEnabled" />
+                    Enabled
+                  </label>
+                </div>
+                <p class="help">
+                  AWS Rekognition, billed per image. Affects new uploads only.
+                </p>
+              </div>
+            </div>
+          </div>
           <hr />
           <div class="field is-horizontal">
             <div class="field-label">
@@ -138,6 +158,7 @@ const newSiteDescription = ref(null);
 const newSiteTrackingCode = ref(null);
 const newContinueWithGoogleEnabled = ref(null);
 const newContinueWithFacebookEnabled = ref(null);
+const newRekognitionEnabled = ref(null);
 const showReloadButton = ref(false);
 
 const ADMIN_SETTINGS_QUERY = gql`
@@ -149,6 +170,7 @@ const ADMIN_SETTINGS_QUERY = gql`
       siteTrackingCode
       continueWithGoogleEnabled
       continueWithFacebookEnabled
+      rekognitionEnabled
     }
   }
 `;
@@ -185,6 +207,12 @@ const continueWithFacebookEnabled = computed({
     newContinueWithFacebookEnabled.value = value;
   },
 });
+const rekognitionEnabled = computed({
+  get: () => result.value?.adminSettings.rekognitionEnabled,
+  set: (value) => {
+    newRekognitionEnabled.value = value;
+  },
+});
 
 const {
   mutate: submit,
@@ -198,6 +226,7 @@ const {
       $siteTrackingCode: String!
       $continueWithGoogleEnabled: Boolean!
       $continueWithFacebookEnabled: Boolean!
+      $rekognitionEnabled: Boolean!
     ) {
       updateAdminSettings(
         siteName: $siteName
@@ -205,6 +234,7 @@ const {
         siteTrackingCode: $siteTrackingCode
         continueWithGoogleEnabled: $continueWithGoogleEnabled
         continueWithFacebookEnabled: $continueWithFacebookEnabled
+        rekognitionEnabled: $rekognitionEnabled
       ) {
         id
         siteName
@@ -212,6 +242,7 @@ const {
         siteTrackingCode
         continueWithGoogleEnabled
         continueWithFacebookEnabled
+        rekognitionEnabled
       }
     }
   `,
@@ -234,6 +265,10 @@ const {
         newContinueWithFacebookEnabled.value !== null
           ? newContinueWithFacebookEnabled.value
           : continueWithFacebookEnabled.value,
+      rekognitionEnabled:
+        newRekognitionEnabled.value !== null
+          ? newRekognitionEnabled.value
+          : rekognitionEnabled.value,
     },
   }),
 );
