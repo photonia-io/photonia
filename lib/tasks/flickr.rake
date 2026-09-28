@@ -55,6 +55,12 @@ namespace :flickr do
 
   desc 'Sets the privacy of Flickr photos according to the original JSON'
   task import_privacy: :environment do
+    # TODO: this bulk UPDATE bypasses Album.maintain_containing, so a privacy
+    # change here can leave affected albums' public_cover_photo_id,
+    # public_photos_count and hidden_from_feed stale (see #907's collapsed
+    # albums). Low priority while the Flickr importers aren't actively used -
+    # if revisited, collect changed photo ids (e.g. via RETURNING) and call
+    # Album.maintain_containing(changed_ids) after the update.
     affected_rows = ActiveRecord::Base.connection.update("UPDATE photos SET privacy = (flickr_json->>'privacy')::photo_privacy")
     puts "#{affected_rows} photos updated"
   end
