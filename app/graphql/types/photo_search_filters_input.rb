@@ -25,7 +25,6 @@ module Types
     argument :iso_max, Integer, 'Maximum EXIF ISO', required: false
     argument :iso_min, Integer, 'Minimum EXIF ISO', required: false
 
-    argument :label_min_confidence, Float, 'Minimum confidence for the labels filter', required: false
     argument :labels, [String], 'Rekognition label names photo must have at least one of', required: false
 
     argument :album_id, String, 'Album slug photo must belong to', required: false

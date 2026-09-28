@@ -140,8 +140,7 @@ class PhotoSearch
   def apply_labels
     return if filters[:labels].blank?
 
-    min_confidence = filters[:label_min_confidence] || 0
-    photo_ids = Label.where(name: filters[:labels]).where(confidence: min_confidence..).select(:photo_id)
+    photo_ids = Label.where(name: filters[:labels]).select(:photo_id)
     @relation = @relation.where(id: photo_ids)
   end
 

@@ -113,13 +113,12 @@ describe PhotoSearch, type: :service do
   end
 
   describe 'labels' do
-    it 'filters by label name and minimum confidence' do
+    it 'filters by label name' do
       match = create(:photo)
-      create(:label, photo: match, name: 'Dog', confidence: 90.0)
-      low_confidence = create(:photo)
-      create(:label, photo: low_confidence, name: 'Dog', confidence: 10.0)
+      create(:label, photo: match, name: 'Dog')
+      create(:photo)
 
-      expect(search(labels: ['Dog'], label_min_confidence: 50.0)).to contain_exactly(match)
+      expect(search(labels: ['Dog'])).to contain_exactly(match)
     end
   end
 
