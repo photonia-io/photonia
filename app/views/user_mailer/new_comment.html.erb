@@ -1,0 +1,17 @@
+<h1>New Comment</h1>
+
+<p>
+  <strong><%= h @author_name %></strong> commented on your <%= @commentable_kind %> <strong><%= h @commentable_title %></strong>:
+</p>
+
+<blockquote>
+  <%= @comment.body_html.html_safe %>
+</blockquote>
+
+<p>
+  <a href="<%= h @url %>">View it on Photonia</a>
+</p>
+
+<p>
+  Your friendly Photonia bot.
+</p>

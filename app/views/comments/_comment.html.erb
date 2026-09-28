@@ -1,0 +1,20 @@
+<li>
+  <div>
+    <% if comment.flickr_user %>
+      <a href="<%= comment.flickr_user.profileurl %>"><%= comment.flickr_user.realname || comment.flickr_user.username || comment.flickr_user.nsid %></a>
+    <% else %>
+      <span><%= comment.user&.public_name || 'Deleted user' %></span>
+    <% end %>
+    <span><%= comment.created_at.strftime('%B %e, %Y %l:%M %p') %></span>
+  </div>
+  <div>
+    <%= comment.body_html.html_safe %>
+  </div>
+  <% if comment.replies.any? %>
+    <ul>
+      <% comment.replies.each do |reply| %>
+        <%= render 'comments/comment', comment: reply %>
+      <% end %>
+    </ul>
+  <% end %>
+</li>

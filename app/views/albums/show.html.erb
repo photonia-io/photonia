@@ -28,3 +28,15 @@
 <hr>
 
 <%== pagy_bulma_nav(@pagy) if @pagy.present? %>
+
+<h3>Comments</h3>
+<% top_level_comments = @album.comments.select(&:top_level?) %>
+<% if top_level_comments.any? %>
+  <ul>
+    <% top_level_comments.each do |comment| %>
+      <%= render 'comments/comment', comment: comment %>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No comments yet.</p>
+<% end %>

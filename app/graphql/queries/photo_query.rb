@@ -18,13 +18,7 @@ module Queries
       # - admin: all photos
       base = Pundit.policy_scope(current_user, Photo.unscoped)
 
-      photo_query = base
-      photo_query = photo_query.includes(comments: %i[flickr_user versions]) if lookahead.selects?(:comments)
-
-      if lookahead.selection(:comments).selection(:flickr_user).selects?(:claimable)
-        context[:user_has_claim] =
-          current_user ? FlickrUserClaim.exists?(user_id: current_user.id, status: %w[pending approved]) : false
-      end
+      photo_query = with_comments(base, lookahead)
 
       photo =
         if fetch_type == 'latest'

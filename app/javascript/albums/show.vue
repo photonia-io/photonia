@@ -70,6 +70,15 @@
         :routeParams="{ id: id }"
         routeName="albums-show"
       />
+
+      <hr class="mt-1 mb-4" />
+      <h2 class="title is-5">Comments</h2>
+      <CommentsSection
+        :commentable="album"
+        commentable-type="Album"
+        :loading="loading"
+        @refresh="refetchAlbum"
+      />
     </div>
   </section>
 </template>
@@ -93,6 +102,7 @@ import AlbumDescriptionEditable from "./album-description-editable.vue";
 import AlbumManagement from "./album-management.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
+import CommentsSection from "@/shared/comments/comments-section.vue";
 
 // route
 const route = useRoute();
@@ -110,13 +120,15 @@ const showAlbumSettings = ref(false);
 
 const apolloClient = inject("apolloClient");
 
-const { result, loading } = useQuery(
+const { result, loading, refetch } = useQuery(
   gql`
     ${gql_queries.albums_show}
   `,
   { id: id, page: page },
   { keepPreviousResult: true },
 );
+
+const refetchAlbum = () => refetch();
 
 const album = computed(() => result.value?.album ?? {});
 

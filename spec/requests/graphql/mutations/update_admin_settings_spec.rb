@@ -13,6 +13,7 @@ describe 'updateAdminSettings Mutation', type: :request do
   let(:continue_with_google_enabled) { false }
   let(:continue_with_facebook_enabled) { false }
   let(:rekognition_enabled) { true }
+  let(:commenting_enabled) { true }
 
   let(:new_site_name) { 'New Photonia' }
   let(:new_site_description) { 'A new photo gallery' }
@@ -20,6 +21,7 @@ describe 'updateAdminSettings Mutation', type: :request do
   let(:new_continue_with_google_enabled) { true }
   let(:new_continue_with_facebook_enabled) { true }
   let(:new_rekognition_enabled) { false }
+  let(:new_commenting_enabled) { false }
 
   let(:query) do
     <<~GQL
@@ -31,6 +33,7 @@ describe 'updateAdminSettings Mutation', type: :request do
           continueWithGoogleEnabled: #{new_continue_with_google_enabled}
           continueWithFacebookEnabled: #{new_continue_with_facebook_enabled}
           rekognitionEnabled: #{new_rekognition_enabled}
+          commentingEnabled: #{new_commenting_enabled}
         ) {
           id
           siteName
@@ -39,6 +42,7 @@ describe 'updateAdminSettings Mutation', type: :request do
           continueWithGoogleEnabled
           continueWithFacebookEnabled
           rekognitionEnabled
+          commentingEnabled
         }
       }
     GQL
@@ -51,6 +55,7 @@ describe 'updateAdminSettings Mutation', type: :request do
     Setting.continue_with_google_enabled = continue_with_google_enabled
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
     Setting.rekognition_enabled = rekognition_enabled
+    Setting.commenting_enabled = commenting_enabled
   end
 
   context 'when the user is not logged in' do
@@ -98,6 +103,7 @@ describe 'updateAdminSettings Mutation', type: :request do
         expect(Setting.continue_with_google_enabled).to eq(new_continue_with_google_enabled)
         expect(Setting.continue_with_facebook_enabled).to eq(new_continue_with_facebook_enabled)
         expect(Setting.rekognition_enabled).to eq(new_rekognition_enabled)
+        expect(Setting.commenting_enabled).to eq(new_commenting_enabled)
       end
 
       it 'returns the updated admin settings' do
@@ -113,7 +119,8 @@ describe 'updateAdminSettings Mutation', type: :request do
           'siteTrackingCode' => new_site_tracking_code,
           'continueWithGoogleEnabled' => new_continue_with_google_enabled,
           'continueWithFacebookEnabled' => new_continue_with_facebook_enabled,
-          'rekognitionEnabled' => new_rekognition_enabled
+          'rekognitionEnabled' => new_rekognition_enabled,
+          'commentingEnabled' => new_commenting_enabled
         )
       end
     end

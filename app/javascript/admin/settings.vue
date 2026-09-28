@@ -91,6 +91,26 @@
               </div>
             </div>
           </div>
+          <h3 class="title is-5 mt-5 mb-0">Comments</h3>
+          <hr class="mt-2 mb-4" />
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Commenting</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="commentingEnabled" />
+                    Enabled
+                  </label>
+                </div>
+                <p class="help">
+                  Kill switch for user comments. Existing comments stay visible either way.
+                </p>
+              </div>
+            </div>
+          </div>
           <h3 class="title is-5 mt-5 mb-0">Rekognition</h3>
           <hr class="mt-2 mb-4" />
           <div class="field is-horizontal">
@@ -159,6 +179,7 @@ const newSiteTrackingCode = ref(null);
 const newContinueWithGoogleEnabled = ref(null);
 const newContinueWithFacebookEnabled = ref(null);
 const newRekognitionEnabled = ref(null);
+const newCommentingEnabled = ref(null);
 const showReloadButton = ref(false);
 
 const ADMIN_SETTINGS_QUERY = gql`
@@ -171,6 +192,7 @@ const ADMIN_SETTINGS_QUERY = gql`
       continueWithGoogleEnabled
       continueWithFacebookEnabled
       rekognitionEnabled
+      commentingEnabled
     }
   }
 `;
@@ -213,6 +235,12 @@ const rekognitionEnabled = computed({
     newRekognitionEnabled.value = value;
   },
 });
+const commentingEnabled = computed({
+  get: () => result.value?.adminSettings.commentingEnabled,
+  set: (value) => {
+    newCommentingEnabled.value = value;
+  },
+});
 
 const {
   mutate: submit,
@@ -227,6 +255,7 @@ const {
       $continueWithGoogleEnabled: Boolean!
       $continueWithFacebookEnabled: Boolean!
       $rekognitionEnabled: Boolean!
+      $commentingEnabled: Boolean!
     ) {
       updateAdminSettings(
         siteName: $siteName
@@ -235,6 +264,7 @@ const {
         continueWithGoogleEnabled: $continueWithGoogleEnabled
         continueWithFacebookEnabled: $continueWithFacebookEnabled
         rekognitionEnabled: $rekognitionEnabled
+        commentingEnabled: $commentingEnabled
       ) {
         id
         siteName
@@ -243,6 +273,7 @@ const {
         continueWithGoogleEnabled
         continueWithFacebookEnabled
         rekognitionEnabled
+        commentingEnabled
       }
     }
   `,
@@ -269,6 +300,10 @@ const {
         newRekognitionEnabled.value !== null
           ? newRekognitionEnabled.value
           : rekognitionEnabled.value,
+      commentingEnabled:
+        newCommentingEnabled.value !== null
+          ? newCommentingEnabled.value
+          : commentingEnabled.value,
     },
   }),
 );

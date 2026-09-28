@@ -6,11 +6,13 @@ module Queries
     type Types::AlbumType, null: true
     description 'Find an album by ID'
 
+    extras [:lookahead]
+
     argument :id, ID, 'ID of the album', required: true
 
-    def resolve(id:)
+    def resolve(lookahead:, id:)
       base = Pundit.policy_scope(current_user, Album.unscoped)
-      album = base.friendly.find(id)
+      album = with_comments(base, lookahead).friendly.find(id)
       authorize(album, :show?)
       record_impression(album)
       album

@@ -29,6 +29,7 @@ class Setting < RailsSettings::Base
   field :continue_with_google_enabled, default: "0", type: :boolean
   field :continue_with_facebook_enabled, default: "0", type: :boolean
   field :rekognition_enabled, default: "1", type: :boolean
+  field :commenting_enabled, default: "1", type: :boolean
   field :mailer_from_name, default: ENV['MAILER_FROM_NAME'] || "Photonia", type: :string
   field :mailer_from_address, default: ENV['MAILER_FROM_ADDRESS'] || "mailer@photonia.io", type: :string
   field :google_client_id, default: ENV['GOOGLE_CLIENT_ID'] || "", type: :string, readonly: true

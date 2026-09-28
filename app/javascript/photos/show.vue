@@ -64,7 +64,15 @@
                 @edit-thumbnail="startThumbnailEdit"
               />
 
-              <PhotoComments :photo="photo" :loading="loading" @refresh="refreshPhoto" />
+              <PhotoInfobox>
+                <template #header>Comments</template>
+                <CommentsSection
+                  :commentable="photo"
+                  commentable-type="Photo"
+                  :loading="loading"
+                  @refresh="refreshPhoto"
+                />
+              </PhotoInfobox>
 
               <div class="columns equal-height-columns">
                 <div class="column is-half">
@@ -422,7 +430,7 @@ import PhotoDescriptionEditable from "./photo-description-editable.vue";
 import PhotoManagement from "./photo-management.vue";
 import PhotoInfo from "./photo-info.vue";
 import PhotoInfobox from "./photo-infobox.vue";
-import PhotoComments from "./photo-comments.vue";
+import CommentsSection from "@/shared/comments/comments-section.vue";
 import SmallNavigationButton from "@/photos/small-navigation-button.vue";
 import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";

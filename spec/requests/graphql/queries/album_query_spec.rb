@@ -392,3 +392,50 @@ describe 'unknown album slug' do
     expect(parsed.dig('data', 'album')).to be_nil
   end
 end
+
+describe 'comments field' do
+  include Devise::Test::IntegrationHelpers
+  include_context 'with auth actors'
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
+  let(:album) { create(:album, user: owner) }
+
+  let(:query) do
+    <<~GQL
+      query {
+        album(id: "#{album.slug}") {
+          comments {
+            id
+            author { id displayName }
+            canEdit
+            canDelete
+            replies { id }
+          }
+        }
+      }
+    GQL
+  end
+
+  it 'returns only top-level comments, with replies nested underneath' do
+    parent = create(:comment, commentable: album, user: owner)
+    reply = create(:comment, commentable: album, user: stranger, parent: parent)
+
+    post_query
+    comments = data_dig(response, 'album', 'comments')
+
+    expect(comments.pluck('id')).to contain_exactly(parent.serial_number.to_s)
+    expect(comments.first['replies'].pluck('id')).to contain_exactly(reply.serial_number.to_s)
+  end
+
+  it "sets canDelete but not canEdit for the album's owner" do
+    create(:comment, commentable: album, user: stranger)
+    sign_in(owner)
+
+    post_query
+    comment = data_dig(response, 'album', 'comments').first
+
+    expect(comment['canEdit']).to be false
+    expect(comment['canDelete']).to be true
+  end
+end

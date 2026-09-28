@@ -47,6 +47,21 @@ RSpec.describe 'Albums' do
       end
     end
 
+    describe 'GET /albums/{slug} comments' do
+      let(:author) { create(:user, display_name: 'Jane Doe') }
+      let(:replier) { create(:user, display_name: 'Bob') }
+      let!(:parent) { create(:comment, commentable: album, user: author, body: 'Great album') }
+      let!(:reply) { create(:comment, commentable: album, user: replier, parent: parent) }
+
+      it 'shows user-authored comments and their replies' do
+        get "/albums/#{album.slug}"
+        expect(response.body).to include('Jane Doe')
+        expect(response.body).to include('Great album')
+        expect(response.body).to include('Bob')
+        expect(response.body).to include(reply.body_html)
+      end
+    end
+
     describe 'GET /albums/feed' do
       it 'returns http success' do
         get '/albums/feed.xml'

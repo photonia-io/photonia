@@ -62,6 +62,10 @@ module Types
       @object.description || ''
     end
 
+    def comments
+      @object.comments.select(&:top_level?)
+    end
+
     def labels
       @object.labels.load.add_sequenced_names
     end
