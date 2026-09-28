@@ -5,8 +5,14 @@
       <hr class="mt-2 mb-4" />
       <div class="tabs">
         <ul>
-          <li :class="{ 'is-active': $route.name === 'admin-settings' }">
-            <router-link :to="{ name: 'admin-settings' }">Settings</router-link>
+          <li :class="{ 'is-active': $route.name === 'admin-general' }">
+            <router-link :to="{ name: 'admin-general' }">General</router-link>
+          </li>
+          <li :class="{ 'is-active': $route.name === 'admin-comments' }">
+            <router-link :to="{ name: 'admin-comments' }">Comments</router-link>
+          </li>
+          <li :class="{ 'is-active': $route.name === 'admin-system' }">
+            <router-link :to="{ name: 'admin-system' }">System</router-link>
           </li>
           <li
             :class="{

@@ -11,7 +11,8 @@ class AlbumsController < ApplicationController
   end
 
   def show
-    @album = Album.includes(comments: [:flickr_user, :user, { replies: %i[flickr_user user] }]).friendly.find(params[:id])
+    # TODO: restore the comments includes once album commenting is re-enabled in the view
+    @album = Album.friendly.find(params[:id])
     @pagy, @photos = pagy(@album.photos.order(:ordering))
   rescue ActiveRecord::RecordNotFound
     # 404 so search engines drop the page, but still ship the shell + JS

@@ -27,7 +27,10 @@ Rails.application.routes.draw do
   # Admin area routes
   namespace :admin do
     root to: 'settings#index'
-    resources :settings, only: %i[index]
+    # Same bare boot shell for every settings tab - Vue owns the tab content.
+    get 'general', to: 'settings#index'
+    get 'comments', to: 'settings#index'
+    get 'system', to: 'settings#index'
     resources :users, only: %i[index show]
   end
 

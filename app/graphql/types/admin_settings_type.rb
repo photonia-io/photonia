@@ -12,6 +12,8 @@ module Types
     field :continue_with_facebook_enabled, Boolean, null: false
     field :rekognition_enabled, Boolean, null: false
     field :commenting_enabled, Boolean, null: false
+    field :photo_commenting_enabled, Boolean, null: false
+    field :album_commenting_enabled, Boolean, null: false
 
     def id
       'admin-settings'

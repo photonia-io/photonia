@@ -67,7 +67,7 @@ RSpec.describe 'createComment Mutation', type: :request do
     end
   end
 
-  context 'when commenting is disabled' do
+  context 'when commenting is disabled globally' do
     let(:photo) { create(:photo, user: owner) }
     let(:query) { build_query(commentable_type: 'Photo', commentable_id: photo.slug) }
 
@@ -78,6 +78,33 @@ RSpec.describe 'createComment Mutation', type: :request do
 
     it 'returns a "Commenting is disabled" error' do
       post_mutation
+      expect(first_error_message(response)).to eq('Commenting is disabled')
+    end
+  end
+
+  context 'when photo commenting is disabled' do
+    let(:photo) { create(:photo, user: owner) }
+    let(:query) { build_query(commentable_type: 'Photo', commentable_id: photo.slug) }
+
+    before do
+      Setting.photo_commenting_enabled = false
+      sign_in(stranger)
+    end
+
+    it 'returns a "Commenting is disabled" error, even with the general switch on' do
+      post_mutation
+      expect(first_error_message(response)).to eq('Commenting is disabled')
+    end
+  end
+
+  context 'when commenting on an album with album commenting off (the default)' do
+    let(:album) { create(:album, user: owner) }
+    let(:query) { build_query(commentable_type: 'Album', commentable_id: album.slug) }
+
+    before { sign_in(stranger) }
+
+    it 'returns a "Commenting is disabled" error, even with the general switch on' do
+      expect { post_mutation }.not_to change(Comment, :count)
       expect(first_error_message(response)).to eq('Commenting is disabled')
     end
   end
@@ -129,7 +156,10 @@ RSpec.describe 'createComment Mutation', type: :request do
     let(:album) { create(:album, user: owner) }
     let(:query) { build_query(commentable_type: 'Album', commentable_id: album.slug) }
 
-    before { sign_in(stranger) }
+    before do
+      Setting.album_commenting_enabled = true
+      sign_in(stranger)
+    end
 
     it 'creates the comment on the album' do
       expect { post_mutation }.to change(Comment, :count).by(1)

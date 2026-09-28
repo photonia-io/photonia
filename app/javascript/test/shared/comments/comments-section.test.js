@@ -68,7 +68,11 @@ function mountSection(props = {}) {
 
 beforeEach(() => {
   mutationCalls.length = 0;
-  window.settings = { commenting_enabled: true };
+  window.settings = {
+    commenting_enabled: true,
+    photo_commenting_enabled: true,
+    album_commenting_enabled: true,
+  };
   modalRoot = document.createElement("div");
   modalRoot.id = "modal-root";
   document.body.appendChild(modalRoot);
@@ -119,8 +123,8 @@ describe("CommentsSection", () => {
       expect(link.props().to).toEqual({ name: "users-sign-in" });
     });
 
-    it("shows neither the form nor the sign-in prompt when commenting is disabled", async () => {
-      window.settings = { commenting_enabled: false };
+    it("shows neither the form nor the sign-in prompt when commenting is disabled globally", async () => {
+      window.settings = { commenting_enabled: false, photo_commenting_enabled: true, album_commenting_enabled: true };
       mountSection();
       const userStore = useUserStore();
       userStore.signedIn = true;
@@ -128,6 +132,33 @@ describe("CommentsSection", () => {
 
       expect(wrapper.find("textarea").exists()).toBe(false);
       expect(wrapper.text()).not.toContain("Sign in");
+    });
+
+    it("hides the form on a photo when photo commenting is off, even with the global switch on", async () => {
+      window.settings = { commenting_enabled: true, photo_commenting_enabled: false, album_commenting_enabled: true };
+      mountSection({ commentableType: "Photo" });
+      useUserStore().signedIn = true;
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("textarea").exists()).toBe(false);
+    });
+
+    it("hides the form on an album when album commenting is off, even with the global switch on", async () => {
+      window.settings = { commenting_enabled: true, photo_commenting_enabled: true, album_commenting_enabled: false };
+      mountSection({ commentableType: "Album" });
+      useUserStore().signedIn = true;
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("textarea").exists()).toBe(false);
+    });
+
+    it("shows the form on a photo when album commenting is off but photo commenting is on", async () => {
+      window.settings = { commenting_enabled: true, photo_commenting_enabled: true, album_commenting_enabled: false };
+      mountSection({ commentableType: "Photo" });
+      useUserStore().signedIn = true;
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("textarea").exists()).toBe(true);
     });
 
     it("posts a new comment with the commentable's type and id", async () => {

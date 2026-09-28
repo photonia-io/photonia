@@ -19,7 +19,6 @@ class ApplicationController < ActionController::Base
       users_sign_out_path:,
       users_settings_path:,
       admin_path: admin_root_path,
-      admin_settings_path:,
       admin_users_path:,
       stats_path:,
       about_path:,
@@ -35,6 +34,8 @@ class ApplicationController < ActionController::Base
       continue_with_facebook_enabled: Setting.continue_with_facebook_enabled,
       rekognition_enabled: Setting.rekognition_enabled,
       commenting_enabled: Setting.commenting_enabled,
+      photo_commenting_enabled: Setting.photo_commenting_enabled,
+      album_commenting_enabled: Setting.album_commenting_enabled,
       google_client_id: Setting.google_client_id,
       facebook_app_id: Setting.facebook_app_id
     }.to_json

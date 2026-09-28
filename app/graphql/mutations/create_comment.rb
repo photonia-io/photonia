@@ -16,8 +16,8 @@ module Mutations
     type Types::CommentType, null: false
 
     def resolve(commentable_type:, commentable_id:, body:, parent_id: nil)
-      raise GraphQL::ExecutionError, 'Commenting is disabled' unless Setting.commenting_enabled
       raise GraphQL::ExecutionError, 'Invalid commentable type' unless COMMENTABLE_TYPES.include?(commentable_type)
+      raise GraphQL::ExecutionError, 'Commenting is disabled' unless commenting_allowed?(commentable_type)
 
       commentable = find_commentable(commentable_type, commentable_id)
       parent = find_parent(commentable, parent_id)
@@ -31,6 +31,12 @@ module Mutations
     end
 
     private
+
+    def commenting_allowed?(commentable_type)
+      return false unless Setting.commenting_enabled
+
+      commentable_type == 'Photo' ? Setting.photo_commenting_enabled : Setting.album_commenting_enabled
+    end
 
     def find_commentable(commentable_type, commentable_id)
       commentable_type == 'Photo' ? find_photo(commentable_id) : find_album(commentable_id)

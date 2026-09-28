@@ -30,12 +30,48 @@ RSpec.describe CommentPolicy do
       it { is_expected.not_to permit_action(:create) }
     end
 
-    context 'when commenting is disabled' do
+    context 'when commenting is disabled globally' do
       let(:current_user) { create(:user) }
 
       before { Setting.commenting_enabled = false }
 
       it { is_expected.not_to permit_action(:create) }
+    end
+
+    context 'when photo commenting is disabled' do
+      let(:current_user) { create(:user) }
+
+      before { Setting.photo_commenting_enabled = false }
+
+      it { is_expected.not_to permit_action(:create) }
+    end
+
+    context 'on an album' do
+      subject { described_class.new(current_user, Comment.new(commentable: album)) }
+
+      let(:album) { create(:album) }
+      let(:current_user) { create(:user) }
+
+      it 'denies by default (album commenting is off until refined)' do
+        is_expected.not_to permit_action(:create)
+      end
+
+      context 'when album commenting is enabled' do
+        before { Setting.album_commenting_enabled = true }
+
+        it { is_expected.to permit_action(:create) }
+      end
+
+      context 'when album commenting is enabled but the general switch is off' do
+        before do
+          Setting.album_commenting_enabled = true
+          Setting.commenting_enabled = false
+        end
+
+        it 'still denies - the general switch wins' do
+          is_expected.not_to permit_action(:create)
+        end
+      end
     end
 
     context 'when the commentable is a private photo the user cannot see' do

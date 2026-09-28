@@ -91,46 +91,6 @@
               </div>
             </div>
           </div>
-          <h3 class="title is-5 mt-5 mb-0">Comments</h3>
-          <hr class="mt-2 mb-4" />
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Commenting</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control">
-                  <label class="checkbox">
-                    <input type="checkbox" v-model="commentingEnabled" />
-                    Enabled
-                  </label>
-                </div>
-                <p class="help">
-                  Kill switch for user comments. Existing comments stay visible either way.
-                </p>
-              </div>
-            </div>
-          </div>
-          <h3 class="title is-5 mt-5 mb-0">Rekognition</h3>
-          <hr class="mt-2 mb-4" />
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Automatic tagging</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control">
-                  <label class="checkbox">
-                    <input type="checkbox" v-model="rekognitionEnabled" />
-                    Enabled
-                  </label>
-                </div>
-                <p class="help">
-                  AWS Rekognition, billed per image. Affects new uploads only.
-                </p>
-              </div>
-            </div>
-          </div>
           <hr />
           <div class="field is-horizontal">
             <div class="field-label">
@@ -165,25 +125,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, onBeforeUnmount } from "vue";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useTitle } from "vue-page-title";
 import toaster from "../mixins/toaster";
+import { useApplicationStore } from "@/stores/application";
 
-useTitle("Admin Settings");
+useTitle("Admin - General");
+
+const applicationStore = useApplicationStore();
 
 const newSiteName = ref(null);
 const newSiteDescription = ref(null);
 const newSiteTrackingCode = ref(null);
 const newContinueWithGoogleEnabled = ref(null);
 const newContinueWithFacebookEnabled = ref(null);
-const newRekognitionEnabled = ref(null);
-const newCommentingEnabled = ref(null);
 const showReloadButton = ref(false);
 
 const ADMIN_SETTINGS_QUERY = gql`
-  query AdminSettingsQuery {
+  query AdminGeneralSettingsQuery {
     adminSettings {
       id
       siteName
@@ -191,8 +152,6 @@ const ADMIN_SETTINGS_QUERY = gql`
       siteTrackingCode
       continueWithGoogleEnabled
       continueWithFacebookEnabled
-      rekognitionEnabled
-      commentingEnabled
     }
   }
 `;
@@ -229,17 +188,31 @@ const continueWithFacebookEnabled = computed({
     newContinueWithFacebookEnabled.value = value;
   },
 });
-const rekognitionEnabled = computed({
-  get: () => result.value?.adminSettings.rekognitionEnabled,
-  set: (value) => {
-    newRekognitionEnabled.value = value;
-  },
+
+// Warns before switching tabs or navigating away with unsaved changes, via
+// the same router guard the photo/album/comment editors use. Compares
+// against the saved value, not just "was touched" - reverting a field to
+// its original value isn't an unsaved change.
+const dirty = computed(() =>
+  [
+    [newSiteName.value, result.value?.adminSettings.siteName],
+    [newSiteDescription.value, result.value?.adminSettings.siteDescription],
+    [newSiteTrackingCode.value, result.value?.adminSettings.siteTrackingCode],
+    [newContinueWithGoogleEnabled.value, result.value?.adminSettings.continueWithGoogleEnabled],
+    [newContinueWithFacebookEnabled.value, result.value?.adminSettings.continueWithFacebookEnabled],
+  ].some(([newValue, savedValue]) => newValue !== null && newValue !== savedValue),
+);
+
+watch(dirty, (isDirty) => {
+  if (isDirty) {
+    applicationStore.startEditing();
+  } else {
+    applicationStore.stopEditing();
+  }
 });
-const commentingEnabled = computed({
-  get: () => result.value?.adminSettings.commentingEnabled,
-  set: (value) => {
-    newCommentingEnabled.value = value;
-  },
+
+onBeforeUnmount(() => {
+  applicationStore.stopEditing();
 });
 
 const {
@@ -249,13 +222,11 @@ const {
 } = useMutation(
   gql`
     mutation (
-      $siteName: String!
-      $siteDescription: String!
-      $siteTrackingCode: String!
-      $continueWithGoogleEnabled: Boolean!
-      $continueWithFacebookEnabled: Boolean!
-      $rekognitionEnabled: Boolean!
-      $commentingEnabled: Boolean!
+      $siteName: String
+      $siteDescription: String
+      $siteTrackingCode: String
+      $continueWithGoogleEnabled: Boolean
+      $continueWithFacebookEnabled: Boolean
     ) {
       updateAdminSettings(
         siteName: $siteName
@@ -263,8 +234,6 @@ const {
         siteTrackingCode: $siteTrackingCode
         continueWithGoogleEnabled: $continueWithGoogleEnabled
         continueWithFacebookEnabled: $continueWithFacebookEnabled
-        rekognitionEnabled: $rekognitionEnabled
-        commentingEnabled: $commentingEnabled
       ) {
         id
         siteName
@@ -272,8 +241,6 @@ const {
         siteTrackingCode
         continueWithGoogleEnabled
         continueWithFacebookEnabled
-        rekognitionEnabled
-        commentingEnabled
       }
     }
   `,
@@ -296,19 +263,16 @@ const {
         newContinueWithFacebookEnabled.value !== null
           ? newContinueWithFacebookEnabled.value
           : continueWithFacebookEnabled.value,
-      rekognitionEnabled:
-        newRekognitionEnabled.value !== null
-          ? newRekognitionEnabled.value
-          : rekognitionEnabled.value,
-      commentingEnabled:
-        newCommentingEnabled.value !== null
-          ? newCommentingEnabled.value
-          : commentingEnabled.value,
     },
   }),
 );
 
 onDone(({ data }) => {
+  newSiteName.value = null;
+  newSiteDescription.value = null;
+  newSiteTrackingCode.value = null;
+  newContinueWithGoogleEnabled.value = null;
+  newContinueWithFacebookEnabled.value = null;
   showReloadButton.value = true;
   toaster("Settings saved");
 });

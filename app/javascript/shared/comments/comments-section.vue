@@ -104,7 +104,12 @@ const userStore = useUserStore();
 const topLevelComments = computed(() => props.commentable?.comments || []);
 // Read live, not via the mixins/settings.js snapshot, since that's captured
 // once at module-import time - before a test can set window.settings.
-const commentingEnabled = computed(() => !!window.settings?.commenting_enabled);
+const commentingEnabled = computed(() => {
+  if (!window.settings?.commenting_enabled) return false;
+  return props.commentableType === "Photo"
+    ? !!window.settings?.photo_commenting_enabled
+    : !!window.settings?.album_commenting_enabled;
+});
 const canComment = computed(() => userStore.signedIn && commentingEnabled.value);
 
 // Only one reply/edit form is open across the whole tree at a time.
