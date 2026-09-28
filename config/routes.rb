@@ -36,6 +36,7 @@ Rails.application.routes.draw do
     collection do
       get :upload
       get :organizer
+      get :search
       get :deselected
       get :feed, defaults: { format: :xml }
     end

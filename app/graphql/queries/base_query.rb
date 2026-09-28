@@ -54,5 +54,10 @@ module Queries
       context[:feed_albums] = Album.where(collapsed_in_feed: true, public_cover_photo_id: Array(photos).map(&:id))
                                    .index_by(&:public_cover_photo_id)
     end
+
+    # Escape special characters (%, _, \) for SQL LIKE queries
+    def sanitize_like(string)
+      string.gsub(/[%_\\]/) { |x| "\\#{x}" }
+    end
   end
 end
