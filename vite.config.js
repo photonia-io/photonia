@@ -18,7 +18,16 @@ export default defineConfig({
     // Allow the dev server to be reached by any Host header (e.g. accessing
     // it over the LAN by hostname instead of localhost) - otherwise Vite's
     // own dev-server host check rejects it.
-    allowedHosts: true
+    allowedHosts: true,
+    ws: {
+      // vite-plugin-ruby normally sets this itself so the HMR client uses
+      // Vite's own port instead of the page's (Rails') port - but a plugin's
+      // config() hook return value doesn't survive Vite 8's createServer
+      // resolution for server.ws, so it silently has no effect. Set it
+      // directly here instead. VITE_RUBY_PORT is set by the vite_ruby gem
+      // when it spawns this process (config/vite.json's development.port).
+      clientPort: process.env.VITE_RUBY_PORT ? Number(process.env.VITE_RUBY_PORT) : undefined
+    }
   },
   css: {
     preprocessorOptions: {
