@@ -16,6 +16,12 @@ RSpec.describe 'Photos' do
         get '/photos'
         expect(response.body).to include(photo.title)
       end
+
+      it 'lazy-loads the photo thumbnail, so it stays unfetched behind the hidden fallback' do
+        get '/photos'
+        img = Nokogiri::HTML(response.body).at_css(".boot-fallback img[alt='#{photo.title}']")
+        expect(img['loading']).to eq('lazy')
+      end
     end
 
     describe 'GET /photos?q=photo_title' do

@@ -10,7 +10,7 @@ paths:
 # Frontend
 
 - Single entrypoint `entrypoints/application.js`; `@/` and `~/` alias to `app/javascript` via `vite-plugin-ruby`. Bulma + Sass (no Tailwind), Pinia, Apollo Client 3.
-- The layout renders server HTML in `<div id="app">`, then `app.mount("#app")` replaces it. ERB views (`photos/show.html.erb`, `*_shell.html.erb`) are SEO/no-JS fallbacks, not the UI.
+- The layout renders server HTML in `<div id="app">`, then `app.mount("#app")` replaces it. ERB views (`photos/show.html.erb`, `*_shell.html.erb`) are SEO/no-JS fallbacks, not the UI. The fallback markup sits in `.boot-fallback`, hidden by inline CSS from `layouts/_boot_shell.html.erb` (and a `.boot-loader` spinner shown instead) until `mount` wipes both; a `<noscript>` block re-reveals the fallback for no-JS visitors.
 - SEO `<head>` tags (canonical, robots, description, JSON-LD) are rendered once in `layouts/application.html.erb` via helpers in `ApplicationHelper`; a view overrides them with `content_for(:canonical_url/:meta_description/:robots/:structured_data)`. `canonical_url` keeps only content-bearing query params (`page`, `q` - see `CANONICAL_ALLOWED_PARAMS`); anything else (`?inAlbum=`, etc.) is view state and gets dropped. Auth-gated/non-content pages (`upload`, `organizer`, `sort`, `users/*`, `stats`, `admin/*`) set `noindex, follow`; tag pages are `noindex` and out of the sitemap entirely (low-value/duplicate).
 - Queries: ``useQuery(gql`${gql_queries.photos_show}`)``; mutations are inline `gql` literals.
 - An Apollo afterware link picks the refreshed JWT from the `Authorization` response header. Don't rename the `signIn`/`signOut`/`continueWith*` operations — JWT dispatch matches on them.

@@ -14,6 +14,8 @@
 
     <%= render partial: 'layouts/opengraph' if @photo %>
 
+    <%= render partial: 'layouts/boot_shell' %>
+
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'application' %>
 
@@ -39,17 +41,20 @@
 
   <body>
     <div id='app'>
-      <nav>
-        <ul>
-          <li><a href="<%= root_path %>"><%= Setting.site_name %></a></li>
-          <li><a href="<%= photos_path %>">Photos</a></li>
-          <li><a href="<%= albums_path %>">Albums</a></li>
-          <li><a href="<%= tags_path %>">Tags</a></li>
-        </ul>
-      </nav>
-      <section>
-        <%= yield %>
-      </section>
+      <div class="boot-loader" role="status" aria-label="Loading"></div>
+      <div class="boot-fallback">
+        <nav>
+          <ul>
+            <li><a href="<%= root_path %>"><%= Setting.site_name %></a></li>
+            <li><a href="<%= photos_path %>">Photos</a></li>
+            <li><a href="<%= albums_path %>">Albums</a></li>
+            <li><a href="<%= tags_path %>">Tags</a></li>
+          </ul>
+        </nav>
+        <section>
+          <%= yield %>
+        </section>
+      </div>
     </div>
     <div id='modal-root'></div>
   </body>

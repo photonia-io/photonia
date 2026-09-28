@@ -1,0 +1,65 @@
+<%# Hides the ERB fallback and shows a themed loader until Vue mounts and replaces #app. %>
+<%= javascript_tag nonce: true do %>
+  try {
+    var stored = localStorage.getItem('userColorScheme');
+    var scheme = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', scheme);
+  } catch (e) {}
+<% end %>
+<style>
+  html, body {
+    background: var(--bulma-scheme-main, #fff);
+    color: var(--bulma-text, #404654);
+  }
+
+  html[data-theme="dark"], html[data-theme="dark"] body {
+    background: var(--bulma-scheme-main, #14161a);
+    color: var(--bulma-text, #abb1bf);
+  }
+
+  html[data-theme="dark"] .boot-loader::after {
+    border-color: var(--bulma-text-weak, #9199ac);
+    border-top-color: transparent;
+  }
+
+  .boot-fallback { display: none; }
+
+  .boot-loader {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: boot-loader-fade-in 0.2s ease-out 0.3s forwards;
+  }
+
+  .boot-loader::after {
+    content: "";
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 3px solid var(--bulma-text-weak, #69748c);
+    border-top-color: transparent;
+    animation: boot-loader-spin 0.8s linear infinite;
+  }
+
+  @keyframes boot-loader-fade-in {
+    to { opacity: 1; }
+  }
+
+  @keyframes boot-loader-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boot-loader { animation-duration: 0.01ms; animation-delay: 0s; opacity: 1; }
+    .boot-loader::after { animation-duration: 2s; }
+  }
+</style>
+<noscript>
+  <style>
+    .boot-fallback { display: block; }
+    .boot-loader { display: none; }
+  </style>
+</noscript>
