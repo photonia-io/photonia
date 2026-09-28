@@ -42,4 +42,24 @@ describe 'tag Query' do
     expect(response_tag['name']).to eq(tag.name)
     expect(response_tag['photos']['collection'].size).to eq(photos.size)
   end
+
+  context 'when one of the tagged photos is hidden from the feed by a collapsed album' do
+    let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+
+    before do
+      cover = create(:photo, privacy: 'public')
+      album.photos << cover
+      album.photos << photos.first
+      album.maintenance
+    end
+
+    it 'still lists it' do
+      expect(photos.first.reload.hidden_from_feed).to be(true)
+
+      post_query
+
+      ids = response.parsed_body.dig('data', 'tag', 'photos', 'collection').map { |p| p['id'] }
+      expect(ids).to include(photos.first.slug)
+    end
+  end
 end

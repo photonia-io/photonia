@@ -13,6 +13,7 @@
 #  flickr_json              :jsonb
 #  flickr_original          :string
 #  flickr_photopage         :string
+#  hidden_from_feed         :boolean          default(FALSE), not null
 #  image_data               :jsonb
 #  impressions_count        :integer          default(0), not null
 #  labeled_at               :datetime
@@ -39,10 +40,11 @@
 #
 # Indexes
 #
-#  index_photos_on_exif                  (exif) USING gin
-#  index_photos_on_rekognition_response  (rekognition_response) USING gin
-#  index_photos_on_slug                  (slug) UNIQUE
-#  index_photos_on_user_id               (user_id)
+#  index_photos_on_exif                      (exif) USING gin
+#  index_photos_on_posted_at_and_id_in_feed  (posted_at,id) WHERE (hidden_from_feed = false)
+#  index_photos_on_rekognition_response      (rekognition_response) USING gin
+#  index_photos_on_slug                      (slug) UNIQUE
+#  index_photos_on_user_id                   (user_id)
 #
 # Foreign Keys
 #

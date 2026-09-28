@@ -16,6 +16,7 @@ module Types
     field :exif_f_number, Float, 'F number', null: true
     field :exif_focal_length, Float, 'Focal length', null: true
     field :exif_iso, Integer, 'ISO', null: true
+    field :feed_album, AlbumType, 'The collapsed album this photo stands in for on the photo feed', null: true
     field :height, Integer, 'Height of the photo in pixels', null: true
     field :id, String, 'ID of the photo', null: false
     field :impressions_count, Integer, 'Number of impressions', null: true
@@ -72,6 +73,14 @@ module Types
       @object.tags.rekognition(true)
     end
 
+    # hidden_from_feed only means "excluded from list-type surfaces" (the
+    # paginated grid, the homepage's latest photo, the RSS feed) - global
+    # prev/next is plain chronological order, same as before #907. This isn't
+    # a gap: the consecutive-photos constraint on a collapsed album (see
+    # Album#feed_gap_photo) guarantees no other photo was posted between its
+    # members, so an interior hidden photo's true neighbors are, by
+    # construction, other members of the same album - a correct in-album
+    # carousel for free, with no special-casing and no dead end to avoid.
     def previous_photo
       base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
       base.where('posted_at < ? OR (posted_at = ? AND id < ?)', @object.posted_at, @object.posted_at, @object.id)
@@ -150,6 +159,10 @@ module Types
 
     def can_edit
       Pundit.policy(context[:current_user], @object)&.edit?
+    end
+
+    def feed_album
+      context[:feed_albums]&.[](@object.id)
     end
 
     def ordering

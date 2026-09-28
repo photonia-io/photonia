@@ -18,11 +18,11 @@ import SelectOrCreateAlbum from "../../albums/select-or-create-album.vue";
 const payload = {
   currentUser: {
     albums: [
-      { id: "72157636194982077", title: "A Ridiculously Long Album Title", photosCount: 7 },
-      { id: "72157636187887063", title: "Test Album (two albums per photo)", photosCount: 7 },
-      { id: "72157636185931555", title: "Fredy", photosCount: 16 },
-      { id: "72157607411295448", title: "September snow", photosCount: 16 },
-      { id: "72157600407568654", title: "My Cats", photosCount: 25 },
+      { id: "72157636194982077", title: "A Ridiculously Long Album Title", photosCount: 7, collapsedInFeed: false },
+      { id: "72157636187887063", title: "Test Album (two albums per photo)", photosCount: 7, collapsedInFeed: false },
+      { id: "72157636185931555", title: "Fredy", photosCount: 16, collapsedInFeed: false },
+      { id: "72157607411295448", title: "September snow", photosCount: 16, collapsedInFeed: false },
+      { id: "72157600407568654", title: "My Cats", photosCount: 25, collapsedInFeed: false },
     ],
     albumsWithPhotos: [
       { id: "72157600407568654", containedPhotosCount: 1 },
@@ -79,5 +79,22 @@ describe("SelectOrCreateAlbum", () => {
   it("passes the photo ids to the query", () => {
     mountSelect();
     expect(queryState.variables.photoIds.value).toEqual(["80769840532"]);
+  });
+
+  it("leaves out a collapsed album, even if the photo is missing from it", () => {
+    const wrapper = mountSelect(
+      { photos: [{ id: "a" }] },
+      {
+        currentUser: {
+          albums: [
+            { id: "collapsed", title: "Race Day", photosCount: 312, collapsedInFeed: true },
+            { id: "normal", title: "Best of 2026", photosCount: 4, collapsedInFeed: false },
+          ],
+          albumsWithPhotos: [],
+        },
+      },
+    );
+
+    expect(optionValues(wrapper)).toEqual(["normal"]);
   });
 });

@@ -13,7 +13,7 @@ class PhotosController < ApplicationController
     photos = if params[:q].present?
                Photo.search(params[:q])
              else
-               Photo.order(posted_at: :desc)
+               Photo.where(hidden_from_feed: false).order(posted_at: :desc)
              end
     @pagy, @photos = pagy(photos)
   end
@@ -33,7 +33,7 @@ class PhotosController < ApplicationController
   end
 
   def feed
-    @photos = Photo.order(posted_at: :desc).limit(30)
+    @photos = Photo.where(hidden_from_feed: false).order(posted_at: :desc).limit(30)
     respond_to do |format|
       format.xml
     end

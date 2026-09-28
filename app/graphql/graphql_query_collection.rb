@@ -18,6 +18,11 @@ class GraphqlQueryCollection
             width
             height
           }
+          feedAlbum {
+            id
+            title
+            photosCount
+          }
         }
         randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
           collection {
@@ -80,6 +85,8 @@ class GraphqlQueryCollection
           canEdit
           privacy
           privatizablePhotosCount
+          collapsedInFeed
+          collapseBlocker
         }
       }
     GQL
@@ -141,6 +148,11 @@ class GraphqlQueryCollection
             title
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
             canEdit
+            feedAlbum {
+              id
+              title
+              photosCount
+            }
           }
           metadata {
             totalPages

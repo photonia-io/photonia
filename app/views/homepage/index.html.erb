@@ -6,18 +6,35 @@
   )
 %>
 <div>
-  <h1>Latest photo</h1>
-  <a href="<%= photo_path(@latest_photo) %>">
-    <img src="<%= @latest_photo.image_url(:extralarge) %>" />
-  </a>
-  <div>
+  <% if @latest_photo_feed_album %>
+    <h1>Latest album</h1>
+    <a href="<%= album_path(@latest_photo_feed_album) %>">
+      <img src="<%= @latest_photo.image_url(:extralarge) %>" />
+    </a>
     <div>
-      <a href="<%= photo_path(@latest_photo) %>"><span><%= @latest_photo.title %></span></a>
+      <div>
+        <a href="<%= album_path(@latest_photo_feed_album) %>">
+          <span><%= @latest_photo_feed_album.title %> (<%= @latest_photo_feed_album.public_photos_count %> photos)</span>
+        </a>
+      </div>
+      <div>
+        <a href="<%= photos_path %>">See all photos...</a>
+      </div>
     </div>
+  <% else %>
+    <h1>Latest photo</h1>
+    <a href="<%= photo_path(@latest_photo) %>">
+      <img src="<%= @latest_photo.image_url(:extralarge) %>" />
+    </a>
     <div>
-      <a href="<%= photos_path %>">See all photos...</a>
+      <div>
+        <a href="<%= photo_path(@latest_photo) %>"><span><%= @latest_photo.title %></span></a>
+      </div>
+      <div>
+        <a href="<%= photos_path %>">See all photos...</a>
+      </div>
     </div>
-  </div>
+  <% end %>
 </div>
 <hr>
 <div>

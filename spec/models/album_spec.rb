@@ -5,6 +5,7 @@
 # Table name: albums
 #
 #  id                       :bigint           not null, primary key
+#  collapsed_in_feed        :boolean          default(FALSE), not null
 #  description              :text
 #  description_html         :text
 #  flickr_impressions_count :integer          default(0), not null
@@ -269,6 +270,120 @@ RSpec.describe Album do
           expect(album.public_cover_photo_id).to eq(album.photos.first.id)
         end
       end
+    end
+  end
+
+  describe 'feed visibility (collapsed_in_feed)' do
+    let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+    let(:cover) { create(:photo, privacy: 'public') }
+    let(:other) { create(:photo, privacy: 'public') }
+
+    before do
+      album.photos << cover
+      album.photos << other
+      album.maintenance
+    end
+
+    it 'unhides the album\'s photos when it is destroyed' do
+      album.destroy
+
+      expect(other.reload.hidden_from_feed).to be(false)
+    end
+
+    it 'moves visibility to the new cover when the cover changes' do
+      album.update!(user_cover_photo_id: other.id)
+      album.maintenance
+
+      expect(cover.reload.hidden_from_feed).to be(true)
+      expect(other.reload.hidden_from_feed).to be(false)
+    end
+  end
+
+  describe '#feed_gap_photo' do
+    let(:now) { Time.zone.now.change(usec: 0) }
+    let(:album) { create(:album, sorting_type: 'manual') }
+
+    it 'is nil for a genuinely consecutive set of photos' do
+      first = create(:photo, posted_at: now)
+      last = create(:photo, posted_at: now + 1.hour)
+      album.photos << first
+      album.photos << last
+
+      expect(album.feed_gap_photo).to be_nil
+    end
+
+    it 'finds the photo posted in between that is not a member' do
+      first = create(:photo, posted_at: now)
+      outlier = create(:photo, posted_at: now + 30.minutes, title: 'Outlier')
+      last = create(:photo, posted_at: now + 1.hour)
+      album.photos << first
+      album.photos << last
+
+      expect(album.feed_gap_photo).to eq(outlier)
+    end
+
+    it 'counts a private gap photo as a violation, not just public ones' do
+      first = create(:photo, posted_at: now)
+      outlier = create(:photo, posted_at: now + 30.minutes, privacy: 'private')
+      last = create(:photo, posted_at: now + 1.hour)
+      album.photos << first
+      album.photos << last
+
+      expect(album.feed_gap_photo).to eq(outlier)
+    end
+
+    it 'counts a friends-and-family gap photo as a violation' do
+      first = create(:photo, posted_at: now)
+      outlier = create(:photo, posted_at: now + 30.minutes, privacy: 'friends_and_family')
+      last = create(:photo, posted_at: now + 1.hour)
+      album.photos << first
+      album.photos << last
+
+      expect(album.feed_gap_photo).to eq(outlier)
+    end
+
+    it 'uses private/F&F member photos when computing the bounds' do
+      first = create(:photo, posted_at: now, privacy: 'private')
+      outlier = create(:photo, posted_at: now + 30.minutes)
+      last = create(:photo, posted_at: now + 1.hour, privacy: 'friends_and_family')
+      album.photos << first
+      album.photos << last
+
+      expect(album.feed_gap_photo).to eq(outlier)
+    end
+
+    it 'is nil when the album has no photos at all' do
+      expect(album.feed_gap_photo).to be_nil
+    end
+  end
+
+  describe '#collapse_blocker' do
+    let(:album) { create(:album, sorting_type: 'manual') }
+
+    it 'explains that a public photo is needed when there are none' do
+      album.photos << create(:photo, privacy: 'private')
+      album.maintenance
+
+      expect(album.collapse_blocker).to eq('Add at least one public photo before collapsing this album')
+    end
+
+    it 'reports a non-consecutive album when there is a gap' do
+      now = Time.zone.now.change(usec: 0)
+      first = create(:photo, privacy: 'public', posted_at: now)
+      create(:photo, posted_at: now + 30.minutes)
+      last = create(:photo, privacy: 'public', posted_at: now + 1.hour)
+      album.photos << first
+      album.photos << last
+      album.maintenance
+
+      expect(album.collapse_blocker).to eq("Can't collapse: the photos of this album were not posted consecutively")
+    end
+
+    it 'is nil for a genuinely consecutive album with a public photo' do
+      album.photos << create(:photo, privacy: 'public')
+      album.maintenance
+
+      expect(album.collapse_blocker).to be_nil
     end
   end
 

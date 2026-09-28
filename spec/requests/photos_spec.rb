@@ -52,6 +52,36 @@ RSpec.describe 'Photos' do
     end
   end
 
+  context 'when a photo is hidden from the feed by a collapsed album' do
+    let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+    let!(:cover) { create(:photo, title: 'Race Cover Photo', image_data: TestData.image_data) }
+    let!(:hidden) { create(:photo, title: 'Race Bystander Photo', image_data: TestData.image_data) }
+
+    before do
+      album.photos << cover
+      album.photos << hidden
+      album.maintenance
+    end
+
+    describe 'GET /photos' do
+      it 'shows the cover but not the hidden photo' do
+        get '/photos'
+
+        expect(response.body).to include(cover.title)
+        expect(response.body).not_to include(hidden.title)
+      end
+    end
+
+    describe 'GET /photos/feed' do
+      it 'shows the cover but not the hidden photo' do
+        get '/photos/feed.xml'
+
+        expect(response.body).to include(cover.title)
+        expect(response.body).not_to include(hidden.title)
+      end
+    end
+  end
+
   context 'when the photo is private' do
     let!(:private_photo) { create(:photo, :private) }
 

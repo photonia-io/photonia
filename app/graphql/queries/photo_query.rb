@@ -28,12 +28,17 @@ module Queries
 
       photo =
         if fetch_type == 'latest'
-          photo_query.order(posted_at: :desc).first
+          photo_query.where(hidden_from_feed: false).order(posted_at: :desc).first
         else
           photo_query.friendly.find(id)
         end
 
       raise GraphQL::ExecutionError, 'Photo not found' unless photo
+
+      # Only the homepage's "latest" spotlight is feed-like; a direct by_id
+      # lookup (the photo page) never gets a feed_album, even for this same
+      # photo.
+      populate_feed_albums([photo]) if fetch_type == 'latest'
 
       authorize(photo, :show?)
       record_impression(photo)

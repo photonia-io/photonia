@@ -104,4 +104,14 @@ const updateTitle = () => {
 .editable {
   flex-grow: 1;
 }
+
+/* Bulma's .level-item defaults to flex-shrink: 0, so as the album header's
+   own level-item this h1 would refuse to shrink and push the Album Settings
+   button off the row on desktop when the title is long. min-width: 0 is
+   needed too - see show.vue for why is-flex-shrink-1 alone isn't enough. */
+h1.title.level-item {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 </style>

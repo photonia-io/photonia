@@ -33,5 +33,16 @@ module Queries
       collection.define_singleton_method(:limit_value) { count }
       collection.define_singleton_method(:total_count) { count }
     end
+
+    # Maps each of the given photos to the collapsed album it's the public
+    # cover of, so PhotoType#feed_album can render it as a stand-in for the
+    # whole album without an N+1 query. Callers that show a list of photos
+    # (or spotlight a single one) as a chronological feed call this; anything
+    # that isn't feed-like (search, tags, a direct photo lookup) never does,
+    # so feed_album stays null there.
+    def populate_feed_albums(photos)
+      context[:feed_albums] = Album.where(collapsed_in_feed: true, public_cover_photo_id: Array(photos).map(&:id))
+                                   .index_by(&:public_cover_photo_id)
+    end
   end
 end

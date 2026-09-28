@@ -12,6 +12,7 @@ module Types
     field :delete_photos, mutation: Mutations::DeletePhotos, description: 'Delete photos'
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
     field :reset_photo_taken_at, mutation: Mutations::ResetPhotoTakenAt, description: 'Reset photo date taken to the EXIF or upload date'
+    field :set_album_collapsed_in_feed, mutation: Mutations::SetAlbumCollapsedInFeed, description: 'Set whether an album collapses to a single entry on the photo feed'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'
     field :set_photo_license, mutation: Mutations::SetPhotoLicense, description: 'Set photo license'

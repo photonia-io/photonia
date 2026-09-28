@@ -198,4 +198,37 @@ describe("PhotoItem", () => {
       expect(push).not.toHaveBeenCalled();
     });
   });
+
+  describe("when the photo stands in for a collapsed album (feedAlbum)", () => {
+    const feedAlbumPhoto = {
+      ...nonEditablePhoto,
+      feedAlbum: { id: "race-day", title: "Race Day", photosCount: 312 },
+    };
+
+    it("links to the album instead of the photo", () => {
+      const { wrapper } = mountPhotoItem({ photo: feedAlbumPhoto });
+
+      expect(photoLinks(wrapper)).toEqual([
+        { name: "albums-show", params: { id: "race-day" } },
+      ]);
+    });
+
+    it("shows the album title and a photo-count badge", () => {
+      const { wrapper } = mountPhotoItem({ photo: feedAlbumPhoto });
+
+      expect(wrapper.text()).toContain("Race Day");
+      expect(wrapper.text()).toContain("312");
+    });
+
+    it("still links to the album for a selectable card", () => {
+      const { wrapper } = mountPhotoItem(
+        { photo: { ...editablePhoto, feedAlbum: feedAlbumPhoto.feedAlbum } },
+        { signedIn: true, uploader: true },
+      );
+
+      expect(photoLinks(wrapper)).toEqual([
+        { name: "albums-show", params: { id: "race-day" } },
+      ]);
+    });
+  });
 });

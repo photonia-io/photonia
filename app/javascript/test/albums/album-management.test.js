@@ -18,6 +18,14 @@ const privacyModal = () =>
   body()
     .findAll(".modal")
     .find((modal) => modal.text().includes("Change Album Privacy"));
+const collapseModal = () =>
+  body()
+    .findAll(".modal")
+    .find(
+      (modal) =>
+        modal.text().includes("Collapse Album") ||
+        modal.text().includes("Uncollapse Album"),
+    );
 
 const baseAlbum = {
   id: "some-slug",
@@ -153,6 +161,138 @@ describe("AlbumManagement", () => {
       expect(wrapper.find("#album-privacy").element.value).toBe("public");
       expect(privacyModal().classes()).not.toContain("is-active");
       expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+    });
+  });
+
+  describe("collapse album on the photo feed", () => {
+    const findCollapseButton = (wrapper) =>
+      wrapper
+        .findAll("button")
+        .find((b) => ["Collapse Album", "Uncollapse Album"].includes(b.text()));
+
+    it('shows "Collapse Album" for an uncollapsed album', () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: false },
+      });
+
+      expect(findCollapseButton(wrapper).text()).toBe("Collapse Album");
+    });
+
+    it('shows "Uncollapse Album" for a collapsed album', () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: true },
+      });
+
+      expect(findCollapseButton(wrapper).text()).toBe("Uncollapse Album");
+    });
+
+    it("opens a confirmation modal instead of emitting right away", async () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: false },
+      });
+
+      await findCollapseButton(wrapper).trigger("click");
+
+      expect(collapseModal().classes()).toContain("is-active");
+      expect(wrapper.emitted("setAlbumCollapsedInFeed")).toBeUndefined();
+    });
+
+    it("emits nothing and closes on cancel", async () => {
+      const { wrapper, applicationStore } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: false },
+      });
+
+      await findCollapseButton(wrapper).trigger("click");
+      await collapseModal().find(".is-info").trigger("click");
+
+      expect(wrapper.emitted("setAlbumCollapsedInFeed")).toBeUndefined();
+      expect(collapseModal().classes()).not.toContain("is-active");
+      expect(applicationStore.navigationShortcutsEnabled).toBe(true);
+    });
+
+    it("emits setAlbumCollapsedInFeed with collapsed: true on confirm", async () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: false },
+      });
+
+      await findCollapseButton(wrapper).trigger("click");
+      await collapseModal().find(".is-warning").trigger("click");
+
+      expect(wrapper.emitted("setAlbumCollapsedInFeed")[0][0]).toEqual({
+        id: baseAlbum.id,
+        collapsed: true,
+      });
+      expect(collapseModal().classes()).not.toContain("is-active");
+    });
+
+    it("emits collapsed: false when uncollapsing", async () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: true },
+      });
+
+      await findCollapseButton(wrapper).trigger("click");
+      await collapseModal().find(".is-warning").trigger("click");
+
+      expect(wrapper.emitted("setAlbumCollapsedInFeed")[0][0]).toEqual({
+        id: baseAlbum.id,
+        collapsed: false,
+      });
+    });
+
+    it("warns that a non-public album won't show in the feed yet", async () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, privacy: "private", collapsedInFeed: false },
+      });
+
+      await findCollapseButton(wrapper).trigger("click");
+
+      expect(collapseModal().text()).toContain("isn't Public");
+    });
+
+    it("does not show the non-public warning for a public album", async () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, privacy: "public", collapsedInFeed: false },
+      });
+
+      await findCollapseButton(wrapper).trigger("click");
+
+      expect(collapseModal().text()).not.toContain("isn't Public");
+    });
+
+    it("disables Collapse and shows why when the album has a collapseBlocker", () => {
+      const { wrapper } = mountAlbumManagement({
+        album: {
+          ...baseAlbum,
+          collapsedInFeed: false,
+          collapseBlocker: "Can't collapse: the photos of this album were not posted consecutively",
+        },
+      });
+
+      expect(findCollapseButton(wrapper).attributes("disabled")).toBeDefined();
+      expect(wrapper.text()).toContain(
+        "Can't collapse: the photos of this album were not posted consecutively",
+      );
+    });
+
+    it("enables Collapse and shows no note when there is no collapseBlocker", () => {
+      const { wrapper } = mountAlbumManagement({
+        album: { ...baseAlbum, collapsedInFeed: false, collapseBlocker: null },
+      });
+
+      expect(findCollapseButton(wrapper).attributes("disabled")).toBeUndefined();
+    });
+
+    it("never disables Uncollapse, even if collapseBlocker is set", () => {
+      const { wrapper } = mountAlbumManagement({
+        album: {
+          ...baseAlbum,
+          collapsedInFeed: true,
+          collapseBlocker: "Can't collapse: the photos of this album were not posted consecutively",
+        },
+      });
+
+      expect(findCollapseButton(wrapper).attributes("disabled")).toBeUndefined();
+      expect(wrapper.text()).not.toContain("were not posted consecutively");
     });
   });
 });

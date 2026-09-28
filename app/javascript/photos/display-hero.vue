@@ -28,10 +28,7 @@
         </div>
 
         <template v-if="photo.extralargeImageUrl">
-          <router-link
-            v-if="isHomepage"
-            :to="{ name: 'photos-show', params: { id: photo.id } }"
-          >
+          <router-link v-if="isHomepage" :to="heroRoute">
             <img
               :src="photo.extralargeImageUrl"
               :srcset="imageSrcset"
@@ -70,12 +67,22 @@
           <div class="level p-2">
             <div class="level-left pl-3">
               <p class="is-size-4">
-                Latest photo:
-                <router-link
-                  :to="{ name: 'photos-show', params: { id: photo.id } }"
-                >
-                  {{ photo.title }}
-                </router-link>
+                <template v-if="photo.feedAlbum">
+                  Latest album:
+                  <router-link :to="heroRoute">
+                    {{ photo.feedAlbum.title }}
+                  </router-link>
+                  <span class="tag is-dark is-small icon-text ml-2 feed-album-count">
+                    <span class="icon"><i class="fas fa-images"></i></span>
+                    <span>{{ photo.feedAlbum.photosCount }}</span>
+                  </span>
+                </template>
+                <template v-else>
+                  Latest photo:
+                  <router-link :to="heroRoute">
+                    {{ photo.title }}
+                  </router-link>
+                </template>
               </p>
             </div>
             <div class="level-right has-text-right pr-3">
@@ -130,6 +137,16 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["highlightLabel", "unHighlightLabel"]);
+
+// On the homepage, a photo.feedAlbum means this photo is a collapsed album's
+// cover standing in for it - link to the album instead. Off the homepage
+// (the photo page itself), a direct photo lookup never carries feedAlbum,
+// so this always resolves to the photo there regardless.
+const heroRoute = computed(() =>
+  props.isHomepage && props.photo.feedAlbum
+    ? { name: "albums-show", params: { id: props.photo.feedAlbum.id } }
+    : { name: "photos-show", params: { id: props.photo.id } },
+);
 
 const applicationStore = useApplicationStore();
 
@@ -425,6 +442,12 @@ const showLabels = computed(() => {
 
 .hero {
   position: relative;
+}
+
+// A small tag next to the overlay's is-size-4 text otherwise sits on its own
+// baseline, reading as vertically off against the much taller text around it.
+.feed-album-count {
+  vertical-align: middle;
 }
 
 #label-list {

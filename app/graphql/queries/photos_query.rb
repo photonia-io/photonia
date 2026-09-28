@@ -41,7 +41,7 @@ module Queries
         if query.present?
           base.search(query)
         else
-          base.order(posted_at: :desc)
+          base.where(hidden_from_feed: false).order(posted_at: :desc)
         end
 
       pagy, photos = context[:pagy].call(
@@ -49,6 +49,7 @@ module Queries
         page:
       )
       add_pagination_methods(photos, pagy)
+      populate_feed_albums(photos) if query.blank?
       photos
     end
 

@@ -176,5 +176,92 @@ describe 'photo Query' do
         'extralargeImageUrl' => photo.image_url(:extralarge)
       )
     end
+
+    context 'when the actual latest photo is hidden by a collapsed album' do
+      let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+      let(:cover) { create(:photo, posted_at: photo.posted_at - 1.hour) }
+      let(:hidden_latest) { create(:photo, posted_at: photo.posted_at + 1.hour) }
+
+      before do
+        album.photos << cover
+        album.photos << hidden_latest
+        album.maintenance
+      end
+
+      it 'skips it and returns the latest visible photo' do
+        post_query
+        response_photo = response.parsed_body['data']['photo']
+
+        expect(response_photo['id']).to eq(photo.slug.to_s)
+      end
+    end
+
+    context 'when the latest photo is a collapsed album\'s cover' do
+      let(:album) { create(:album, sorting_type: 'manual', collapsed_in_feed: true) }
+      let(:cover) { create(:photo, posted_at: photo.posted_at + 1.hour) }
+      let(:other) { create(:photo, posted_at: photo.posted_at + 30.minutes) }
+
+      let(:query) do
+        <<~GQL
+          query {
+            photo(fetchType: "latest") {
+              id
+              feedAlbum { id title photosCount }
+            }
+          }
+        GQL
+      end
+
+      before do
+        album.photos << cover
+        album.photos << other
+        album.maintenance
+      end
+
+      it 'carries feedAlbum, standing in for the album' do
+        post_query
+        response_photo = response.parsed_body['data']['photo']
+
+        expect(response_photo['id']).to eq(cover.slug.to_s)
+        expect(response_photo['feedAlbum']).to include(
+          'id' => album.slug.to_s,
+          'title' => album.title,
+          'photosCount' => 2
+        )
+      end
+
+      it 'has no feedAlbum when that same photo is looked up by id' do
+        post '/graphql', params: {
+          query: <<~GQL
+            query {
+              photo(id: "#{cover.slug}") {
+                id
+                feedAlbum { id }
+              }
+            }
+          GQL
+        }
+        response_photo = response.parsed_body['data']['photo']
+
+        expect(response_photo['feedAlbum']).to be_nil
+      end
+    end
+
+    it 'has no feedAlbum for an ordinary latest photo' do
+      post '/graphql', params: {
+        query: <<~GQL
+          query {
+            photo(fetchType: "latest") {
+              id
+              feedAlbum { id }
+            }
+          }
+        GQL
+      }
+      response_photo = response.parsed_body['data']['photo']
+
+      expect(response_photo['id']).to eq(photo.slug.to_s)
+      expect(response_photo['feedAlbum']).to be_nil
+    end
   end
 end

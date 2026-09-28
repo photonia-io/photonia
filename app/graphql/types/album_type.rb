@@ -20,6 +20,8 @@ module Types
     end
 
     field :can_edit, Boolean, 'Whether the current user can edit the album', null: false
+    field :collapse_blocker, String, 'Why this album cannot currently collapse on the feed, or null if it can (editors only)', null: true
+    field :collapsed_in_feed, Boolean, 'Whether the album shows as a single entry (its cover) on the photo feed', null: false
     field :contained_photos_count, Integer, 'Number of photos (from the provided list) contained in the album', null: false
     field :cover_photo, PhotoType, 'Cover photo of the album', null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, 'Creation datetime of the album', null: false
@@ -91,6 +93,12 @@ module Types
       return nil unless Pundit.policy(context[:current_user], @object)&.update?
 
       @object.non_private_photos.count
+    end
+
+    def collapse_blocker
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.collapse_blocker
     end
 
     def previous_photo_in_album(photo_id:)
