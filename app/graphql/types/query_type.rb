@@ -20,6 +20,7 @@ module Types
     field :photos_by_ids, resolver: Queries::PhotosByIdsQuery, description: 'Find photos by ID (slug), skipping unknown or inaccessible ones'
     field :photo_search, resolver: Queries::PhotoSearchQuery, description: 'Advanced photo search with filters, sort, and pagination'
     field :related_tags, resolver: Queries::RelatedTagsQuery, description: 'Suggest related tags based on co-occurrence'
+    field :search_suggestions, resolver: Queries::SearchSuggestionsQuery, description: 'Suggestions for the navbar search box dropdown'
     field :tag, resolver: Queries::TagQuery, description: 'Find a tag by ID'
     field :tags, resolver: Queries::TagsQuery, description: 'Find tags'
     field :timezones, resolver: Queries::TimezonesQuery, description: 'List of timezones'
