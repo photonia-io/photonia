@@ -11,6 +11,7 @@ paths:
 
 - Single entrypoint `entrypoints/application.js`; `@/` and `~/` alias to `app/javascript` via `vite-plugin-ruby`. Bulma + Sass (no Tailwind), Pinia, Apollo Client 3.
 - The layout renders server HTML in `<div id="app">`, then `app.mount("#app")` replaces it. ERB views (`photos/show.html.erb`, `*_shell.html.erb`) are SEO/no-JS fallbacks, not the UI.
+- SEO `<head>` tags (canonical, robots, description, JSON-LD) are rendered once in `layouts/application.html.erb` via helpers in `ApplicationHelper`; a view overrides them with `content_for(:canonical_url/:meta_description/:robots/:structured_data)`. `canonical_url` keeps only content-bearing query params (`page`, `q` - see `CANONICAL_ALLOWED_PARAMS`); anything else (`?inAlbum=`, etc.) is view state and gets dropped. Auth-gated/non-content pages (`upload`, `organizer`, `sort`, `users/*`, `stats`, `admin/*`) set `noindex, follow`; tag pages are `noindex` and out of the sitemap entirely (low-value/duplicate).
 - Queries: ``useQuery(gql`${gql_queries.photos_show}`)``; mutations are inline `gql` literals.
 - An Apollo afterware link picks the refreshed JWT from the `Authorization` response header. Don't rename the `signIn`/`signOut`/`continueWith*` operations — JWT dispatch matches on them.
 - Node: CI and prod pin **24 LTS**. Stay on Vitest 5+ (older Vitest let Node 25+'s inert `localStorage`/`sessionStorage` shadow happy-dom's).

@@ -1,6 +1,6 @@
 // Single source of truth for the license picker (photo licenses and the
 // user's default) and for how a license value is displayed. Keep this in
-// sync with License::VALUES in app/models/license.rb.
+// sync with License::VALUES and License::URLS in app/models/license.rb.
 export const ALL_RIGHTS_RESERVED = "All Rights Reserved";
 
 export const LICENSE_OPTIONS = [

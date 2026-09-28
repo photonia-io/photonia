@@ -23,9 +23,9 @@ class PhotosController < ApplicationController
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
   rescue ActiveRecord::RecordNotFound
-    # Show shell page even if photo is not found (e.g., private photo)
-    # Vue + GraphQL will hydrate it with real data (after proper auth)
-    render :show_shell
+    # 404 so search engines drop the page, but still ship the shell + JS
+    # bundle so Vue + GraphQL can hydrate it for a signed-in owner.
+    render :show_shell, status: :not_found
   end
 
   def upload

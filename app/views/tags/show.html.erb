@@ -1,11 +1,12 @@
 <% content_for(:page_title, "Tag: #{@tag.name}" + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
+<% content_for(:robots, 'noindex, follow') %>
 <h1>Tag: <%= @tag.name %></h1>
 <hr>
 <div>
   <% @photos.each do |photo| %>
     <div>
       <a href="<%= photo_path(photo) %>">
-        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" />
+        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" alt="<%= photo.title %>" />
         <%= photo.title %>
       </a>
     </div>

@@ -9,7 +9,7 @@
   <% if @latest_photo_feed_album %>
     <h1>Latest album</h1>
     <a href="<%= album_path(@latest_photo_feed_album) %>">
-      <img src="<%= @latest_photo.image_url(:extralarge) %>" />
+      <img src="<%= @latest_photo.image_url(:extralarge) %>" alt="<%= @latest_photo.alt_text %>" />
     </a>
     <div>
       <div>
@@ -24,7 +24,7 @@
   <% else %>
     <h1>Latest photo</h1>
     <a href="<%= photo_path(@latest_photo) %>">
-      <img src="<%= @latest_photo.image_url(:extralarge) %>" />
+      <img src="<%= @latest_photo.image_url(:extralarge) %>" alt="<%= @latest_photo.alt_text %>" />
     </a>
     <div>
       <div>
@@ -42,7 +42,7 @@
     <div>
       <h1>Random photo</h1>
       <a href="<%= photo_path(@random_photo) %>">
-        <img src="<%= @random_photo.image_url(:large) %>" />
+        <img src="<%= @random_photo.image_url(:large) %>" alt="<%= @random_photo.alt_text %>" />
         <%= @random_photo.title %>
       </a>
     </div>

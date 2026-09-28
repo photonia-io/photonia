@@ -6,6 +6,7 @@ module Types
     description 'A Photo'
 
     field :albums, [AlbumType], 'Albums the photo belongs to', null: true
+    field :alt_text, String, 'Accessible/SEO alt text for the photo image', null: false
     field :can_edit, Boolean, 'Whether the user can edit the photo', null: false
     field :comments, [CommentType], 'Comments on the photo', null: true
     field :description, String, 'Description', null: false

@@ -1,7 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
     <title><%= (yield(:page_title) + " - " unless yield(:page_title).blank?).to_s + Setting.site_name %></title>
+
+    <link rel="canonical" href="<%= canonical_url %>">
+    <% if content_for(:robots).present? %>
+      <meta name="robots" content="<%= yield(:robots) %>">
+    <% end %>
+    <meta name="description" content="<%= meta_description %>">
 
     <%= render partial: 'layouts/favicon' %>
 
@@ -16,6 +23,7 @@
     <%= Setting.site_tracking_code.html_safe %>
 
     <%= yield(:autodiscovery_link) %>
+    <%= yield(:structured_data) %>
 
     <%= javascript_tag nonce: true do %>
       window.settings = <%= @settings.html_safe %>

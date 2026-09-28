@@ -49,6 +49,60 @@ RSpec.describe 'Photos' do
         get "/photos/#{photo.slug}"
         expect(response).to have_http_status(:success)
       end
+
+      it 'has lang and charset on the document' do
+        get "/photos/#{photo.slug}"
+        expect(response.body).to include('<html lang="en">')
+        expect(response.body).to include('<meta charset="utf-8">')
+      end
+
+      it 'has a canonical link to the photo URL' do
+        get "/photos/#{photo.slug}"
+        expect(response.body).to include(%(<link rel="canonical" href="http://www.example.com/photos/#{photo.slug}">))
+      end
+
+      it 'drops non-content query params from the canonical link' do
+        get "/photos/#{photo.slug}", params: { inAlbum: 'some-album' }
+        expect(response.body).to include(%(<link rel="canonical" href="http://www.example.com/photos/#{photo.slug}">))
+      end
+
+      it 'has no robots meta tag' do
+        get "/photos/#{photo.slug}"
+        expect(response.body).not_to include('name="robots"')
+      end
+
+      it 'includes ImageObject structured data' do
+        get "/photos/#{photo.slug}"
+        json_ld = response.body[%r{<script type="application/ld\+json">(.*?)</script>}m, 1]
+        data = JSON.parse(json_ld)
+        expect(data['@type']).to eq('ImageObject')
+        expect(data['contentUrl']).to be_present
+      end
+    end
+
+    context 'when the photo has no description' do
+      let!(:undescribed_photo) { create(:photo, description: '') }
+
+      it 'falls back to a description built from the title' do
+        get "/photos/#{undescribed_photo.slug}"
+        expect(response.body).to include(%(<meta name="description" content="#{undescribed_photo.title}.))
+      end
+    end
+  end
+
+  context 'when the photo does not exist' do
+    describe 'GET /photos/{slug}' do
+      it 'returns 404' do
+        get '/photos/does-not-exist'
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'GET /photos?q=...' do
+    it 'has a noindex robots meta tag on search results' do
+      get '/photos?q=anything'
+      expect(response.body).to include('name="robots" content="noindex, follow"')
     end
   end
 
@@ -86,9 +140,9 @@ RSpec.describe 'Photos' do
     let!(:private_photo) { create(:photo, :private) }
 
     describe 'GET /photos/{slug}' do
-      it 'returns http success' do
+      it 'returns 404' do
         get "/photos/#{private_photo.slug}"
-        expect(response).to have_http_status(:success)
+        expect(response).to have_http_status(:not_found)
       end
 
       it 'does not contain the photo' do

@@ -35,6 +35,16 @@ RSpec.describe 'Albums' do
         get "/albums/#{album.slug}"
         expect(response.body).to include(album.title)
       end
+
+      it 'has a canonical link to the album URL' do
+        get "/albums/#{album.slug}"
+        expect(response.body).to include(%(<link rel="canonical" href="http://www.example.com/albums/#{album.slug}">))
+      end
+
+      it 'has no robots meta tag' do
+        get "/albums/#{album.slug}"
+        expect(response.body).not_to include('name="robots"')
+      end
     end
 
     describe 'GET /albums/feed' do
@@ -46,6 +56,19 @@ RSpec.describe 'Albums' do
       it 'contains the album' do
         get '/albums/feed.xml'
         expect(response.body).to include(album.title)
+      end
+    end
+  end
+
+  context 'when an album spans multiple pages' do
+    let(:album) { create(:album) }
+
+    before { album.photos = create_list(:photo, 21) }
+
+    describe 'GET /albums/{slug}?page=2' do
+      it 'self-references the canonical link including the page param' do
+        get "/albums/#{album.slug}", params: { page: 2 }
+        expect(response.body).to include(%(<link rel="canonical" href="http://www.example.com/albums/#{album.slug}?page=2">))
       end
     end
   end
@@ -68,9 +91,9 @@ RSpec.describe 'Albums' do
     end
 
     describe 'GET /albums/{slug}' do
-      it 'returns http success' do
+      it 'returns 404' do
         get "/albums/#{private_album.slug}"
-        expect(response).to have_http_status(:success)
+        expect(response).to have_http_status(:not_found)
       end
 
       it 'does not contain the album' do
@@ -81,6 +104,15 @@ RSpec.describe 'Albums' do
       it 'has a generic <title>' do
         get "/albums/#{private_album.slug}"
         expect(response.body).to include('<title>Album - Photonia</title>')
+      end
+    end
+  end
+
+  context 'when the album does not exist' do
+    describe 'GET /albums/{slug}' do
+      it 'returns 404' do
+        get '/albums/does-not-exist'
+        expect(response).to have_http_status(:not_found)
       end
     end
   end

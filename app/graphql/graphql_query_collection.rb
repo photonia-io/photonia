@@ -8,6 +8,7 @@ class GraphqlQueryCollection
         latestPhoto: photo(fetchType: "latest") {
           id
           title
+          altText
           largeImageUrl: imageUrl(type: "large")
           largeDimensions: imageDimensions(type: "large") {
             width
@@ -168,6 +169,7 @@ class GraphqlQueryCollection
         photo(id: $id) {
           id
           title
+          altText
           description
           descriptionHtml
           largeImageUrl: imageUrl(type: "large")

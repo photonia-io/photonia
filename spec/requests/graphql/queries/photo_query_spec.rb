@@ -21,6 +21,7 @@ describe 'photo Query' do
           photo(id: #{photo.slug}) {
             id
             title
+            altText
             description
             descriptionHtml
             largeImageUrl: imageUrl(type: "large")
@@ -78,6 +79,7 @@ describe 'photo Query' do
       expect(response_photo).to include(
         'id' => photo.slug.to_s,
         'title' => photo.title,
+        'altText' => photo.alt_text,
         'description' => photo.description,
         'descriptionHtml' => photo.description_html
       )
