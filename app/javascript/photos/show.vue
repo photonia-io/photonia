@@ -253,6 +253,7 @@
                             album.previousPhotoInAlbum
                               .intelligentOrSquareThumbnailImageUrl
                           "
+                          :alt="album.previousPhotoInAlbum.title"
                           class="image is-fullwidth mb-2"
                         />
                         <span
@@ -295,6 +296,7 @@
                             album.nextPhotoInAlbum
                               .intelligentOrSquareThumbnailImageUrl
                           "
+                          :alt="album.nextPhotoInAlbum.title"
                           class="image is-fullwidth mb-2"
                         />
                         <span

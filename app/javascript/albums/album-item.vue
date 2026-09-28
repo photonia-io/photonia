@@ -6,6 +6,7 @@
           album.coverPhoto && album.coverPhoto.intelligentOrSquareMediumImageUrl
         "
         :src="album.coverPhoto.intelligentOrSquareMediumImageUrl"
+        :alt="album.title"
         class="image is-fullwidth album-item"
       />
       <ImagePlaceholder v-else />

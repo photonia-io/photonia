@@ -1,12 +1,13 @@
 <% content_for(:page_title, 'Photos' + (@pagy.page == 1 ? '' : " - Page #{@pagy.page}")) %>
 <% content_for(:autodiscovery_link, auto_discovery_link_tag(:rss, feed_photos_url(format: :xml), title: Setting.site_name + ' - Photos RSS')) %>
+<% content_for(:robots, 'noindex, follow') if params[:q].present? %>
 <h1>Photos</h1>
 <hr>
 <div>
   <% @photos.each do |photo| %>
     <div>
       <a href="<%= photo_path(photo) %>">
-        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" />
+        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" alt="<%= photo.title %>" />
         <%= photo.title.presence || '(no title)' %>
       </a>
     </div>

@@ -2,6 +2,7 @@
   <img
     v-if="photo.intelligentOrSquareMediumImageUrl"
     :src="photo.intelligentOrSquareMediumImageUrl"
+    :alt="photo.title"
     class="image is-fullwidth image-item"
   />
   <ImagePlaceholder

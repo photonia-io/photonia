@@ -18,6 +18,7 @@
             />
             <img
               src="@/assets/photonia-logo-light.png"
+              :alt="settings.site_name"
               width="156"
               height="24"
             />
@@ -155,6 +156,7 @@ import { ref, watch } from "vue";
 import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "@/stores/user";
 import { useRoute, useRouter } from "vue-router";
+import settings from "@/mixins/settings";
 
 const router = useRouter();
 const applicationStore = useApplicationStore();

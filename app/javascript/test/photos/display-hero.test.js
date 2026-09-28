@@ -130,6 +130,20 @@ describe("DisplayHero", () => {
       );
     });
 
+    it("uses the photo's altText for the image alt attribute", () => {
+      const wrapper = mountDisplayHero({
+        photo: { ...portraitPhoto, altText: "Photo of mountain, lake" },
+      });
+      expect(wrapper.find("img").attributes("alt")).toBe(
+        "Photo of mountain, lake",
+      );
+    });
+
+    it("falls back to the title when altText is missing", () => {
+      const wrapper = mountDisplayHero({ photo: portraitPhoto });
+      expect(wrapper.find("img").attributes("alt")).toBe(portraitPhoto.title);
+    });
+
     it("wraps the image in a router-link on the homepage", () => {
       const wrapper = mountDisplayHero({
         photo: portraitPhoto,

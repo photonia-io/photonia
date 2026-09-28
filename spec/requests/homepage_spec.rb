@@ -33,7 +33,14 @@ RSpec.describe 'Homepage' do
         expect(response.body).to include(album.title)
         expect(response.body).to include('2 photos')
         expect(response.body).to include(album_path(album))
-        expect(response.body).not_to include('Race Bystander')
+
+        # Scoped to the "latest" block: the hidden photo can still
+        # legitimately appear elsewhere on the page (it's a valid pick for
+        # the Random Photo section - hidden_from_feed only governs
+        # feed-like listings), so we only assert it's not shown as if it
+        # were the latest photo/album.
+        latest_block = Nokogiri::HTML(response.body).at_css('#latest').text
+        expect(latest_block).not_to include('Race Bystander')
       end
     end
   end

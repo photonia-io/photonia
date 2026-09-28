@@ -143,6 +143,27 @@ RSpec.describe Photo do
       end
     end
 
+    describe '#alt_text' do
+      let(:rekognition_tagging_source) { TaggingSource.find_by(name: 'Rekognition') }
+
+      it 'uses the title when it is descriptive' do
+        photo = create(:photo, title: 'Sunset over the harbor')
+        expect(photo.alt_text).to eq('Sunset over the harbor')
+      end
+
+      it 'falls back to Rekognition tags when the title is a camera filename' do
+        photo = create(:photo, title: 'DSC_0465')
+        rekognition_tagging_source.tag(photo, with: 'boat,water,sky', on: :tags)
+
+        expect(photo.alt_text).to eq('Photo of boat, water, and sky')
+      end
+
+      it 'falls back to the filename title when there are no Rekognition tags' do
+        photo = create(:photo, title: 'IMG_1234')
+        expect(photo.alt_text).to eq('IMG_1234')
+      end
+    end
+
     describe '#exif_from_file' do
       let(:photo_with_exif) { build_stubbed(:photo, image: File.open('spec/support/images/zell-am-see-with-exif.jpg')) }
       let(:photo_without_exif) { build_stubbed(:photo, image: File.open('spec/support/images/zell-am-see-without-exif.jpg')) }

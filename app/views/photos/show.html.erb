@@ -1,18 +1,21 @@
 <% content_for(:page_title, @photo.title) %>
+<% content_for(:canonical_url, photo_url(@photo)) %>
+<% content_for(:meta_description, photo_meta_description(@photo, tags: @tags, rekognition_tags: @rekognition_tags)) %>
+<% content_for(:structured_data, photo_structured_data(@photo)) %>
 <div>
   <h1><%= @photo.title.presence || '(no title)' %></h1>
   <% if @photo.prev %>
     <div>
       <a href="<%= photo_path(@photo.prev) %>">
         Previous
-        <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>">
+        <img src="<%= @photo.prev.image_url(:thumbnail_intelligent).presence || @photo.prev.image_url(:thumbnail_square) %>" alt="<%= @photo.prev.title %>">
       </a>
     </div>
   <% end %>
   <% if @photo.next %>
     <div>
       <a href="<%= photo_path(@photo.next) %>">
-        <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>">
+        <img src="<%= @photo.next.image_url(:thumbnail_intelligent).presence || @photo.next.image_url(:thumbnail_square) %>" alt="<%= @photo.next.title %>">
         Next
       </a>
     </div>
@@ -21,7 +24,7 @@
 <hr>
 <div>
   <div>
-    <img src="<%= @photo.image_url(:large) %>" />
+    <img src="<%= @photo.image_url(:large) %>" alt="<%= @photo.alt_text %>" />
     <% if @photo.description_html.presence %>
       <h2>Description</h2>
       <div>
@@ -45,7 +48,7 @@
           <div>
           <% if (prev_photo = @photo.prev_in_album(album)) %>
             <a href="<%= photo_path(prev_photo) %>">
-              <img src="<%= prev_photo.image_url(:thumbnail_intelligent).presence || prev_photo.image_url(:thumbnail_square) %>">
+              <img src="<%= prev_photo.image_url(:thumbnail_intelligent).presence || prev_photo.image_url(:thumbnail_square) %>" alt="<%= prev_photo.title %>">
               Previous
             </a>
           <% end %>
@@ -53,7 +56,7 @@
         <div>
           <% if (next_photo = @photo.next_in_album(album)) %>
             <a href="<%= photo_path(next_photo) %>">
-              <img src="<%= next_photo.image_url(:thumbnail_intelligent).presence || next_photo.image_url(:thumbnail_square) %>">
+              <img src="<%= next_photo.image_url(:thumbnail_intelligent).presence || next_photo.image_url(:thumbnail_square) %>" alt="<%= next_photo.title %>">
               Next
             </a>
           <% end %>

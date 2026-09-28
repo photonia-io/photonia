@@ -7,7 +7,7 @@
     <div>
       <a href="<%= album_path(album) %>">
         <% if cover_photo_url = album.public_cover_photo&.image_url(:medium_intelligent).presence || album.public_cover_photo&.image_url(:medium_square) %>
-          <img src="<%= cover_photo_url %>" />
+          <img src="<%= cover_photo_url %>" alt="<%= album.title %>" />
         <% end %>
         <%= album.title %>
       </a> (<%= album.public_photos_count %> <%= album.public_photos_count.size == 1 ? 'photo' : 'photos' %>)

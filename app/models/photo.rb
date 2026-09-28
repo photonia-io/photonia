@@ -72,6 +72,10 @@ class Photo < ApplicationRecord
 
   MIN_TAKEN_AT_YEAR = 1826
 
+  # Camera/scanner default filenames (DSC_0465, IMG_1234, P7130695, ...) kept
+  # as titles by the Flickr import - not descriptive, so not useful as alt text.
+  FILENAME_TITLE_PATTERN = /\A[A-Z_]{1,5}[_-]?\d{4,}\z/i
+
   is_impressionable counter_cache: true, unique: :session_hash
 
   extend FriendlyId
@@ -449,6 +453,17 @@ class Photo < ApplicationRecord
 
   def public?
     privacy == 'public'
+  end
+
+  # A camera-filename title ("DSC_0465") isn't useful alt text, so fall back
+  # to the Rekognition tags when there are any, else the title regardless.
+  def alt_text
+    return title if title.present? && title !~ FILENAME_TITLE_PATTERN
+
+    rekognition_tag_names = tags.rekognition(true).limit(5).pluck(:name)
+    return "Photo of #{rekognition_tag_names.to_sentence}" if rekognition_tag_names.any?
+
+    title.presence || 'Photo'
   end
 
   private

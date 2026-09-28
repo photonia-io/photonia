@@ -1,5 +1,12 @@
 <% page_suffix = (@pagy && @pagy.page != 1) ? " - Page #{@pagy.page}" : "" %>
 <% content_for(:page_title, "Album: #{@album.title}#{page_suffix}") %>
+<% content_for(:canonical_url, canonical_url(album_path(@album))) %>
+<%
+  album_description = @album.description.presence ?
+    strip_tags(@album.description_html) :
+    "Album: #{@album.title}. #{@album.public_photos_count} #{@album.public_photos_count == 1 ? 'photo' : 'photos'}."
+%>
+<% content_for(:meta_description, album_description) %>
 
 <h1>Album: <%= @album.title %></h1>
 <hr>
@@ -11,7 +18,7 @@
   <% (@photos || []).each do |photo| %>
     <div>
       <a href="<%= photo_path(photo) %>">
-        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" />
+        <img src="<%= photo.image_url(:medium_intelligent).presence || photo.image_url(:medium_square) %>" alt="<%= photo.title %>" />
         <%= photo.title %>
       </a>
     </div>

@@ -14,6 +14,7 @@
       <span v-if="props.direction === 'left'">Previous</span>
       <img
         :src="props.photo.intelligentOrSquareThumbnailImageUrl"
+        :alt="props.photo.title"
         class="is-24x24 ml-3"
         :class="[
           'image',
