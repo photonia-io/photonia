@@ -5,7 +5,7 @@
     auto_discovery_link_tag(:rss, feed_albums_url(format: :xml), title: Setting.site_name + ' - Albums RSS')
   )
 %>
-<div>
+<div id="latest">
   <% if @latest_photo_feed_album %>
     <h1>Latest album</h1>
     <a href="<%= album_path(@latest_photo_feed_album) %>">
