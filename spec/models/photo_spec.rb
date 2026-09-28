@@ -44,6 +44,7 @@
 #  index_photos_on_posted_at_and_id_in_feed  (posted_at,id) WHERE (hidden_from_feed = false)
 #  index_photos_on_rekognition_response      (rekognition_response) USING gin
 #  index_photos_on_slug                      (slug) UNIQUE
+#  index_photos_on_tsv                       (tsv) USING gin
 #  index_photos_on_user_id                   (user_id)
 #
 # Foreign Keys

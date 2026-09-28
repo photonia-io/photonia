@@ -1215,6 +1215,13 @@ CREATE INDEX index_impressions_on_user_id ON public.impressions USING btree (use
 
 
 --
+-- Name: index_labels_on_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_labels_on_name ON public.labels USING btree (name);
+
+
+--
 -- Name: index_labels_on_photo_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1247,6 +1254,13 @@ CREATE INDEX index_photos_on_rekognition_response ON public.photos USING gin (re
 --
 
 CREATE UNIQUE INDEX index_photos_on_slug ON public.photos USING btree (slug);
+
+
+--
+-- Name: index_photos_on_tsv; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_photos_on_tsv ON public.photos USING gin (tsv);
 
 
 --
@@ -1585,6 +1599,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260928142237'),
 ('20260928141128'),
 ('20260928135705'),
 ('20260928074255'),
