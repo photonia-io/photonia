@@ -173,6 +173,12 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   align-items: center;
 }
 
+// .navbar is its own stacking context, so no z-index inside it (e.g. the
+// search box's dropdown) can outrank the hero's #label-list (100) otherwise.
+.navbar {
+  --bulma-navbar-z: 150;
+}
+
 // Keeps the last grid row clear of the fixed-bottom selection bar
 // (shared/selection-bar.vue) while it's visible.
 .has-selection-bar {
