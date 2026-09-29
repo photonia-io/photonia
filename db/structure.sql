@@ -565,6 +565,38 @@ ALTER SEQUENCE public.search_queries_id_seq OWNED BY public.search_queries.id;
 
 
 --
+-- Name: search_terms; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.search_terms (
+    id bigint NOT NULL,
+    term character varying NOT NULL,
+    photos_count integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: search_terms_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.search_terms_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: search_terms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.search_terms_id_seq OWNED BY public.search_terms.id;
+
+
+--
 -- Name: settings; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -866,6 +898,13 @@ ALTER TABLE ONLY public.search_queries ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: search_terms id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.search_terms ALTER COLUMN id SET DEFAULT nextval('public.search_terms_id_seq'::regclass);
+
+
+--
 -- Name: settings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1017,6 +1056,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 ALTER TABLE ONLY public.search_queries
     ADD CONSTRAINT search_queries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: search_terms search_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.search_terms
+    ADD CONSTRAINT search_terms_pkey PRIMARY KEY (id);
 
 
 --
@@ -1320,6 +1367,13 @@ CREATE INDEX index_search_queries_on_user_id ON public.search_queries USING btre
 
 
 --
+-- Name: index_search_terms_on_term; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_search_terms_on_term ON public.search_terms USING btree (term text_pattern_ops);
+
+
+--
 -- Name: index_settings_on_var; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1599,6 +1653,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260928165133'),
 ('20260928142237'),
 ('20260928141128'),
 ('20260928135705'),

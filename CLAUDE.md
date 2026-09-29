@@ -38,7 +38,7 @@ System specs run with the suite through Cuprite and need a local Chrome/Chromium
 
 Fresh setup: `sudo apt install libpq-dev libexif-dev libvips`, `bundle install && yarn install`, `bin/rails db:schema:load`, then `bin/rails db:seed` (**required**: seeds Roles + TaggingSources). No registration UI — create the admin with `bin/rails users:create\[me@example.com,password\]` and `users:make_admin\[me@example.com\]` (escape brackets in zsh).
 
-`lib/tasks/` is the ops surface: `flickr:import*`, `photos:add_derivatives`, `albums:maintenance`, `rekognition:tag_batch`, `related_tags:precompute`, `users:*`.
+`lib/tasks/` is the ops surface: `flickr:import*`, `photos:add_derivatives`, `albums:maintenance`, `rekognition:tag_batch`, `related_tags:precompute`, `search_terms:precompute`, `users:*`.
 
 Deploy: `kamal deploy -d production`, then **always publish a GitHub release** — see `.claude/rules/deployment.md`.
 

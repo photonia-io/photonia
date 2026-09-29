@@ -213,6 +213,26 @@ class GraphqlQueryCollection
         }
       }
     GQL
+    search_suggestions: <<-GQL.squish,
+      query SearchSuggestionsQuery($query: String, $limit: Int) {
+        searchSuggestions(query: $query, limit: $limit) {
+          searches {
+            text
+            count
+          }
+          terms {
+            text
+            count
+          }
+          photos {
+            id
+            title
+            intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
+          }
+          recent
+        }
+      }
+    GQL
     photos_show: <<-GQL.squish,
       query PhotosShowQuery($id: ID!) {
         photo(id: $id) {
