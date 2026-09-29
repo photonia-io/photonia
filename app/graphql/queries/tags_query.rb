@@ -42,11 +42,6 @@ module Queries
                            .where('name LIKE ?', "#{sanitize_like(query)}%")
     end
 
-    def sanitize_like(string)
-      # Escape special characters (%, _, \) for SQL LIKE queries
-      string.gsub(/[%_\\]/) { |x| "\\#{x}" }
-    end
-
     def fetch_tags(type, order, limit)
       method = tag_methods[order]
       return unless method

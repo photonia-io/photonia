@@ -212,6 +212,57 @@ describe 'photos Query' do
     end
   end
 
+  describe '#710 matching albums and tags above the results' do
+    subject(:post_query) { post '/graphql', params: { query: } }
+
+    let(:query) do
+      <<~GQL
+        query {
+          matchingAlbums: albums(mode: "simple", query: "lake", limit: 8) {
+            collection { id title }
+          }
+          matchingTags: tags(query: "lake", limit: 12) {
+            id
+            name
+          }
+        }
+      GQL
+    end
+
+    it 'returns albums matching the query' do
+      photo = create(:photo)
+      album = create(:album, title: 'Lake trip')
+      album.photos << photo
+      album.maintenance
+
+      post_query
+
+      titles = response.parsed_body.dig('data', 'matchingAlbums', 'collection').map { |a| a['title'] }
+      expect(titles).to eq(['Lake trip'])
+    end
+
+    it "hides a private album's match from a visitor" do
+      photo = create(:photo, privacy: 'private')
+      album = create(:album, title: 'Lake trip', privacy: 'private')
+      album.photos << photo
+      album.maintenance
+
+      post_query
+
+      expect(response.parsed_body.dig('data', 'matchingAlbums', 'collection')).to be_empty
+    end
+
+    it 'returns tags matching the query' do
+      photo = create(:photo)
+      TaggingSource.find_by(name: 'Flickr').tag(photo, with: 'lake,mountains', on: :tags)
+
+      post_query
+
+      names = response.parsed_body.dig('data', 'matchingTags').map { |t| t['name'] }
+      expect(names).to eq(['lake'])
+    end
+  end
+
   context 'when using the simple mode' do
     subject(:post_query) { post '/graphql', params: { query: } }
 
