@@ -25,6 +25,16 @@ export function resolveSelectionContext(route) {
         key: `albums-show:${route.params.id}`,
         param: route.params.id,
       };
+    case "photos-search": {
+      // Excludes page, like photos-index, so a selection gathers across
+      // pages of the same search and resets when the filters change.
+      const { page, ...filters } = route.query;
+      return {
+        type: "photos-search",
+        key: `photos-search:${JSON.stringify(filters)}`,
+        param: null,
+      };
+    }
     default:
       return { type: null, key: null, param: null };
   }

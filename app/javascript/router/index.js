@@ -111,6 +111,11 @@ export function createAppRouter(pinia) {
       beforeEnter: [redirectIfNotSignedIn, redirectIfUnauthorized("uploader")],
     },
     {
+      path: settings.photos_path + "/search",
+      name: "photos-search",
+      component: () => import("../photos/search.vue"),
+    },
+    {
       path: settings.stats_path,
       name: "stats-index",
       component: () => import("../stats/index.vue"),
@@ -144,6 +149,12 @@ export function createAppRouter(pinia) {
         from.name === "photos-show" &&
         to.params.id === from.params.id;
       if (sameShownPhoto) return false;
+
+      // Submitting a search only changes the query string on the page
+      // we're already looking at - don't yank the user back to the top of
+      // a long filter form, away from the results they just asked for.
+      const sameSearch = to.name === "photos-search" && from.name === "photos-search";
+      if (sameSearch) return false;
 
       return new Promise((resolve, reject) => {
         setTimeout(() => {

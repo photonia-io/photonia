@@ -142,6 +142,15 @@
                 <p class="control">
                   <input type="submit" class="button" value="Search" />
                 </p>
+                <p class="control">
+                  <router-link
+                    :to="{ name: 'photos-search', query: query ? { q: query } : {} }"
+                    class="button"
+                    title="Advanced search"
+                  >
+                    <span class="icon"><i class="fas fa-sliders-h"></i></span>
+                  </router-link>
+                </p>
               </div>
             </form>
           </div>
