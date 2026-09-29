@@ -61,13 +61,13 @@ module Queries
                 .map { |term| Suggestion.new(term.term, term.photos_count) }
     end
 
+    # Same full-text search the plain navbar search (/photos?q=) runs -
+    # Photo.search against the tsv column, ranked by relevance - rather than
+    # a one-off LIKE against the title alone.
     def matching_photos(prefix)
       return [] if prefix.blank?
 
-      Pundit.policy_scope(current_user, Photo.unscoped)
-            .where('title ILIKE ?', "%#{sanitize_like(prefix)}%")
-            .order(Arel.sql('impressions_count DESC'))
-            .limit(PHOTO_LIMIT)
+      Pundit.policy_scope(current_user, Photo.unscoped).search(prefix).limit(PHOTO_LIMIT)
     end
 
     # Only offered when there's nothing typed yet - once there's a prefix,

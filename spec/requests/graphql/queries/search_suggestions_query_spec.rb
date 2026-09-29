@@ -95,15 +95,23 @@ describe 'searchSuggestions Query' do
   end
 
   describe 'photos' do
-    let(:query) { query_for(query: 'lak') }
+    let(:query) { query_for(query: 'lake') }
 
-    it 'suggests a matching photo title' do
+    it 'suggests a matching photo title via the same full-text search as /photos?q=' do
       match = create(:photo, title: 'A lake at dawn')
       create(:photo, title: 'Something else')
 
       post_query
 
       expect(suggestions['photos'].pluck('id')).to contain_exactly(match.slug)
+    end
+
+    it 'does not match a bare partial-word prefix, mirroring the real search (no LIKE)' do
+      create(:photo, title: 'A lake at dawn')
+
+      post '/graphql', params: { query: query_for(query: 'lak') }
+
+      expect(response.parsed_body.dig('data', 'searchSuggestions', 'photos')).to be_empty
     end
 
     it "hides a private photo's title from a stranger" do
