@@ -21,7 +21,8 @@ class GraphqlController < ApplicationController
       sign_out: method(:sign_out),
       authorize: method(:authorize),
       pagy: method(:pagy),
-      impressionist: method(:impressionist)
+      impressionist: method(:impressionist),
+      record_search: method(:record_search)
     }
     result = PhotoniaSchema.execute(query, variables:, context:, operation_name:)
     render json: result
@@ -32,6 +33,10 @@ class GraphqlController < ApplicationController
   end
 
   private
+
+  def record_search(query:, results_count:, filters: nil)
+    SearchQuery.record(query:, filters:, results_count:, user: current_user, session_hash:)
+  end
 
   # Handle variables in form data, JSON body, or a blank value
   def prepare_variables(variables_param)

@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 describe 'photos Query' do
+  include Devise::Test::IntegrationHelpers
+
   context 'when using the paginated mode' do
     describe 'paging' do
       subject(:post_query) { post '/graphql', params: { query: } }
@@ -148,6 +150,64 @@ describe 'photos Query' do
 
         ids = data['collection'].map { |p| p['id'] }
         expect(ids).to eq([match_photo.slug])
+      end
+
+      it 'records the search in a search_queries row with the query, results_count, and session_hash' do
+        expect { post_query }.to change(SearchQuery, :count).by(1)
+
+        search_query = SearchQuery.last
+        expect(search_query.query).to eq('Lake')
+        expect(search_query.results_count).to eq(1)
+        expect(search_query.session_hash).to be_present
+        expect(search_query.filters).to be_nil
+        expect(search_query.user).to be_nil
+      end
+
+      it 'sets the user on the recorded search when signed in' do
+        user = create(:user)
+        sign_in(user)
+
+        post_query
+
+        expect(SearchQuery.last.user).to eq(user)
+      end
+    end
+
+    describe 'recording (unrecorded cases)' do
+      subject(:post_query) { post '/graphql', params: { query: } }
+
+      before { create_list(:photo, 2) }
+
+      context 'when there is no query (the plain photo list)' do
+        let(:query) do
+          <<~GQL
+            query {
+              photos(page: 1) {
+                collection { id }
+              }
+            }
+          GQL
+        end
+
+        it 'does not create a search_queries row' do
+          expect { post_query }.not_to change(SearchQuery, :count)
+        end
+      end
+
+      context 'when paging past page 1 of a search' do
+        let(:query) do
+          <<~GQL
+            query {
+              photos(page: 2, query: "photo") {
+                collection { id }
+              }
+            }
+          GQL
+        end
+
+        it 'does not create a search_queries row' do
+          expect { post_query }.not_to change(SearchQuery, :count)
+        end
       end
     end
   end

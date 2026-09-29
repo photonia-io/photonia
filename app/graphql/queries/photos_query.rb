@@ -50,6 +50,7 @@ module Queries
       )
       add_pagination_methods(photos, pagy)
       populate_feed_albums(photos) if query.blank?
+      record_search(query:, results_count: pagy.count, page:)
       photos
     end
 
