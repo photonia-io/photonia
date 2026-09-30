@@ -129,21 +129,7 @@
             </span>
           </div>
           <div class="navbar-item">
-            <form @submit.prevent="doSearch">
-              <div class="field has-addons">
-                <p class="control">
-                  <input
-                    type="text"
-                    class="input"
-                    placeholder="Find a photo"
-                    v-model="query"
-                  />
-                </p>
-                <p class="control">
-                  <input type="submit" class="button" value="Search" />
-                </p>
-              </div>
-            </form>
+            <search-box />
           </div>
         </div>
       </div>
@@ -152,25 +138,14 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useApplicationStore } from "@/stores/application";
 import { useUserStore } from "@/stores/user";
-import { useRoute, useRouter } from "vue-router";
 import settings from "@/mixins/settings";
+import SearchBox from "@/shared/search-box.vue";
 
-const router = useRouter();
 const applicationStore = useApplicationStore();
 const userStore = useUserStore();
 
 const showNavigation = ref(false);
-const query = ref("");
-
-watch(useRoute(), (route) => {
-  query.value = route.query.q;
-});
-
-function doSearch() {
-  const routeQuery = query.value ? { q: query.value } : {};
-  router.push({ name: "photos-index", query: routeQuery });
-}
 </script>

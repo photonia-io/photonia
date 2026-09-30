@@ -44,6 +44,7 @@
 #  index_photos_on_posted_at_and_id_in_feed  (posted_at,id) WHERE (hidden_from_feed = false)
 #  index_photos_on_rekognition_response      (rekognition_response) USING gin
 #  index_photos_on_slug                      (slug) UNIQUE
+#  index_photos_on_tsv                       (tsv) USING gin
 #  index_photos_on_user_id                   (user_id)
 #
 # Foreign Keys
@@ -239,24 +240,24 @@ class Photo < ApplicationRecord
     end
   end
 
-  def exif_from_file_json
+  def exif_from_file_hash
     # we need to clean up the strings in the hash because they might contain
-    # invalid UTF-8 characters and those will cause the to_json method to fail
-    exif_from_file.to_h.force_encoding_to_iso_8859_1.to_json
+    # invalid UTF-8 characters and those will cause storage as jsonb to fail
+    exif_from_file.to_h.force_encoding_to_iso_8859_1
   end
 
   def exif
     unless self[:exif]
       self[:exif] = if exif_from_file
-                      exif_from_file_json
+                      exif_from_file_hash
                     else
-                      { error: 'EXIF Not Readable' }.to_json
+                      { 'error' => 'EXIF Not Readable' }
                     end
       # if this is a new record, we only want to set the exif field
       # if it's not a new record, we want to save it to cache the exif
       save(validate: false) if persisted?
     end
-    JSON.parse(self[:exif])
+    self[:exif].is_a?(String) ? JSON.parse(self[:exif]) : self[:exif]
   end
 
   def exif_exists?

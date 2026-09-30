@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ref } from "vue";
+import { createPinia, setActivePinia } from "pinia";
 
-const { push, routeRef } = vi.hoisted(() => ({
+const { push, replace, routeRef } = vi.hoisted(() => ({
   push: vi.fn(),
+  replace: vi.fn(),
   routeRef: { current: {} },
 }));
 
 vi.mock("vue-router", () => ({
   useRoute: () => routeRef.current,
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, replace }),
 }));
 
 import {
@@ -26,18 +28,25 @@ const album = {
 
 const photoIn = (albums) => ref({ id: "photo-2", albums });
 
-// `inAlbum` is the album slug currently being navigated, if any
-function setup({ inAlbum, albums = [album] } = {}) {
+// `inAlbum` is the album slug currently being navigated, if any; `lightbox`
+// puts ?lightbox=1 on the route, as if the lightbox were open.
+function setup({ inAlbum, lightbox, albums = [album] } = {}) {
+  const query = {};
+  if (inAlbum) query.inAlbum = inAlbum;
+  if (lightbox) query.lightbox = lightbox;
+
   routeRef.current = {
     params: { id: "photo-2" },
-    query: inAlbum ? { inAlbum } : {},
+    query,
   };
+  setActivePinia(createPinia());
 
   return useAlbumNavigation(photoIn(albums));
 }
 
 beforeEach(() => {
   push.mockClear();
+  replace.mockClear();
 });
 
 describe("useAlbumNavigation", () => {
@@ -118,6 +127,30 @@ describe("useAlbumNavigation", () => {
       setup().navigateToPhoto(null);
 
       expect(push).not.toHaveBeenCalled();
+    });
+
+    // While the lightbox is open, a step must land as a single new history
+    // entry carrying its own ?lightbox= - see use-lightbox-route.js.
+    it("steps within the lightbox instead of pushing, when it's open", async () => {
+      setup({ inAlbum: "sunset-trip", lightbox: "1" }).navigateToPhoto({
+        id: "photo-9",
+      });
+
+      expect(replace).toHaveBeenCalledWith({
+        name: "photos-show",
+        params: { id: "photo-9" },
+        query: { inAlbum: "sunset-trip" },
+      });
+      expect(push).not.toHaveBeenCalled();
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(push).toHaveBeenCalledWith({
+        name: "photos-show",
+        params: { id: "photo-9" },
+        query: { inAlbum: "sunset-trip", lightbox: "1" },
+      });
     });
   });
 

@@ -6,3 +6,6 @@
     precompute_related_tags:
       cron: "10 3 * * *" # 3:10 AM
       class: PrecomputeRelatedTagsJob
+    precompute_search_terms:
+      cron: "20 3 * * *" # 3:20 AM
+      class: PrecomputeSearchTermsJob

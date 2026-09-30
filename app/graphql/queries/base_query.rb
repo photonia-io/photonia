@@ -21,6 +21,16 @@ module Queries
       context[:impressionist].call(object, 'graphql', unique: [:session_hash])
     end
 
+    # Logs a submitted search for suggestions/analytics. Only page 1 (or
+    # unpaginated) requests are recorded, so paging never duplicates a row,
+    # and only searches with a query or filters (never the plain photo list).
+    def record_search(query:, results_count:, page:, filters: nil)
+      return unless page.nil? || page == 1
+      return unless query.present? || filters.present?
+
+      context[:record_search]&.call(query:, results_count:, filters:)
+    end
+
     def add_pagination_methods(collection, pagy)
       collection.define_singleton_method(:total_pages) { pagy.pages }
       collection.define_singleton_method(:current_page) { pagy.page }
@@ -61,6 +71,11 @@ module Queries
     def populate_feed_albums(photos)
       context[:feed_albums] = Album.where(collapsed_in_feed: true, public_cover_photo_id: Array(photos).map(&:id))
                                    .index_by(&:public_cover_photo_id)
+    end
+
+    # Escape special characters (%, _, \) for SQL LIKE queries
+    def sanitize_like(string)
+      string.gsub(/[%_\\]/) { |x| "\\#{x}" }
     end
   end
 end

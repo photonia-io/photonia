@@ -17,6 +17,7 @@
 #
 # Indexes
 #
+#  index_labels_on_name      (name)
 #  index_labels_on_photo_id  (photo_id)
 #
 # Foreign Keys

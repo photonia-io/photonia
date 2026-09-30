@@ -1,10 +1,23 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount, RouterLinkStub } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { nextTick } from "vue";
+import { nextTick, reactive } from "vue";
+
+const { push, replace, back, routeRef } = vi.hoisted(() => ({
+  push: vi.fn(),
+  replace: vi.fn(),
+  back: vi.fn(),
+  routeRef: { current: null },
+}));
+
+vi.mock("vue-router", () => ({
+  useRoute: () => routeRef.current,
+  useRouter: () => ({ push, replace, back }),
+}));
 
 import DisplayHero from "../../photos/display-hero.vue";
 import PhotoLightbox from "../../photos/photo-lightbox.vue";
+import { useApplicationStore } from "../../stores/application";
 
 const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
@@ -52,6 +65,13 @@ function mountDisplayHero(props = {}) {
 }
 
 describe("DisplayHero", () => {
+  beforeEach(() => {
+    routeRef.current = reactive({ path: "/photos/test", query: {} });
+    push.mockClear();
+    replace.mockClear();
+    back.mockClear();
+  });
+
   afterEach(() => {
     mountedWrapper?.unmount();
     mountedWrapper = undefined;
@@ -280,6 +300,108 @@ describe("DisplayHero", () => {
       lightbox.vm.$emit("close");
       await nextTick();
       expect(img.element.style.visibility).toBe("visible");
+    });
+  });
+
+  describe("lightbox URL", () => {
+    it("pushes ?lightbox=1 onto the URL when clicked, keeping other params", async () => {
+      routeRef.current.path = "/photos/landscape-slug";
+      routeRef.current.query = { inAlbum: "trip" };
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+
+      await wrapper.find("img").trigger("click");
+
+      expect(push).toHaveBeenCalledWith({
+        path: "/photos/landscape-slug",
+        query: { inAlbum: "trip", lightbox: "1" },
+      });
+    });
+
+    it("opens on mount when the URL already carries ?lightbox=1, with no initial src", async () => {
+      routeRef.current.query = { lightbox: "1" };
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+      await nextTick();
+
+      const lightbox = wrapper.findComponent(PhotoLightbox);
+      expect(lightbox.props("isOpen")).toBe(true);
+      expect(lightbox.props("initialSrc")).toBeNull();
+    });
+
+    it("ignores ?lightbox=1 on the homepage", async () => {
+      routeRef.current.query = { lightbox: "1" };
+      const wrapper = mountDisplayHero({
+        photo: landscapePhoto,
+        isHomepage: true,
+      });
+      await nextTick();
+
+      expect(wrapper.findComponent(PhotoLightbox).props("isOpen")).toBe(false);
+    });
+
+    it("closes on its own, without navigating again, when the URL drops the param (the back button)", async () => {
+      routeRef.current.query = { lightbox: "1" };
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+      await nextTick();
+      expect(wrapper.findComponent(PhotoLightbox).props("isOpen")).toBe(true);
+
+      routeRef.current.query = {};
+      await nextTick();
+      await nextTick();
+
+      expect(wrapper.findComponent(PhotoLightbox).props("isOpen")).toBe(false);
+      expect(back).not.toHaveBeenCalled();
+      expect(replace).not.toHaveBeenCalled();
+    });
+
+    it("closes via router.back() when it was opened by a click", async () => {
+      routeRef.current.path = "/photos/landscape-slug";
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+
+      await wrapper.find("img").trigger("click");
+      // The push above is mocked, so mirror what it would have landed as.
+      routeRef.current.query = { lightbox: "1" };
+      await nextTick();
+
+      wrapper.findComponent(PhotoLightbox).vm.$emit("close");
+      await nextTick();
+
+      expect(back).toHaveBeenCalledOnce();
+      expect(replace).not.toHaveBeenCalled();
+    });
+
+    it("closes via router.replace(), dropping the param, when opened directly from a URL", async () => {
+      routeRef.current.path = "/photos/landscape-slug";
+      routeRef.current.query = { lightbox: "1", inAlbum: "trip" };
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+      await nextTick();
+
+      wrapper.findComponent(PhotoLightbox).vm.$emit("close");
+      await nextTick();
+
+      expect(replace).toHaveBeenCalledWith({
+        path: "/photos/landscape-slug",
+        query: { inAlbum: "trip" },
+      });
+      expect(back).not.toHaveBeenCalled();
+    });
+
+    it("does not play the close animation while a lightbox step is landing", async () => {
+      routeRef.current.query = { lightbox: "1" };
+      const wrapper = mountDisplayHero({ photo: landscapePhoto });
+      await nextTick();
+      const applicationStore = useApplicationStore();
+
+      // The step's own replace() lands first, transiently lightbox-less.
+      applicationStore.lightboxStepping = true;
+      routeRef.current.query = {};
+      await nextTick();
+      expect(wrapper.findComponent(PhotoLightbox).props("isOpen")).toBe(true);
+
+      // Then its push() lands, restoring the param.
+      applicationStore.lightboxStepping = false;
+      routeRef.current.query = { lightbox: "1" };
+      await nextTick();
+      expect(wrapper.findComponent(PhotoLightbox).props("isOpen")).toBe(true);
     });
   });
 

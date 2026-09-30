@@ -29,6 +29,12 @@
         </div>
       </div>
 
+      <p class="mb-4">
+        <router-link :to="{ name: 'photos-search', query: { album: album.id } }">
+          Search within this album
+        </router-link>
+      </p>
+
       <hr class="mt-2 mb-4" />
       <AlbumDescriptionEditable
         v-if="canEditAlbum"

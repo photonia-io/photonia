@@ -52,6 +52,7 @@ class User < ApplicationRecord
 
   has_many :photos, dependent: :destroy
   has_many :comments, dependent: :destroy
+  has_many :search_queries, dependent: :nullify
   has_many :flickr_user_claims, dependent: :destroy
   has_many :claimed_flickr_users, class_name: 'FlickrUser', foreign_key: 'claimed_by_user_id', dependent: :nullify, inverse_of: :claimed_by_user
   has_and_belongs_to_many :roles

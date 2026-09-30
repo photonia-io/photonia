@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 describe 'photos Query' do
+  include Devise::Test::IntegrationHelpers
+
   context 'when using the paginated mode' do
     describe 'paging' do
       subject(:post_query) { post '/graphql', params: { query: } }
@@ -149,6 +151,115 @@ describe 'photos Query' do
         ids = data['collection'].map { |p| p['id'] }
         expect(ids).to eq([match_photo.slug])
       end
+
+      it 'records the search in a search_queries row with the query, results_count, and session_hash' do
+        expect { post_query }.to change(SearchQuery, :count).by(1)
+
+        search_query = SearchQuery.last
+        expect(search_query.query).to eq('Lake')
+        expect(search_query.results_count).to eq(1)
+        expect(search_query.session_hash).to be_present
+        expect(search_query.filters).to be_nil
+        expect(search_query.user).to be_nil
+      end
+
+      it 'sets the user on the recorded search when signed in' do
+        user = create(:user)
+        sign_in(user)
+
+        post_query
+
+        expect(SearchQuery.last.user).to eq(user)
+      end
+    end
+
+    describe 'recording (unrecorded cases)' do
+      subject(:post_query) { post '/graphql', params: { query: } }
+
+      before { create_list(:photo, 2) }
+
+      context 'when there is no query (the plain photo list)' do
+        let(:query) do
+          <<~GQL
+            query {
+              photos(page: 1) {
+                collection { id }
+              }
+            }
+          GQL
+        end
+
+        it 'does not create a search_queries row' do
+          expect { post_query }.not_to change(SearchQuery, :count)
+        end
+      end
+
+      context 'when paging past page 1 of a search' do
+        let(:query) do
+          <<~GQL
+            query {
+              photos(page: 2, query: "photo") {
+                collection { id }
+              }
+            }
+          GQL
+        end
+
+        it 'does not create a search_queries row' do
+          expect { post_query }.not_to change(SearchQuery, :count)
+        end
+      end
+    end
+  end
+
+  describe '#710 matching albums and tags above the results' do
+    subject(:post_query) { post '/graphql', params: { query: } }
+
+    let(:query) do
+      <<~GQL
+        query {
+          matchingAlbums: albums(mode: "simple", query: "lake", limit: 8) {
+            collection { id title }
+          }
+          matchingTags: tags(query: "lake", limit: 12) {
+            id
+            name
+          }
+        }
+      GQL
+    end
+
+    it 'returns albums matching the query' do
+      photo = create(:photo)
+      album = create(:album, title: 'Lake trip')
+      album.photos << photo
+      album.maintenance
+
+      post_query
+
+      titles = response.parsed_body.dig('data', 'matchingAlbums', 'collection').map { |a| a['title'] }
+      expect(titles).to eq(['Lake trip'])
+    end
+
+    it "hides a private album's match from a visitor" do
+      photo = create(:photo, privacy: 'private')
+      album = create(:album, title: 'Lake trip', privacy: 'private')
+      album.photos << photo
+      album.maintenance
+
+      post_query
+
+      expect(response.parsed_body.dig('data', 'matchingAlbums', 'collection')).to be_empty
+    end
+
+    it 'returns tags matching the query' do
+      photo = create(:photo)
+      TaggingSource.find_by(name: 'Flickr').tag(photo, with: 'lake,mountains', on: :tags)
+
+      post_query
+
+      names = response.parsed_body.dig('data', 'matchingTags').map { |t| t['name'] }
+      expect(names).to eq(['lake'])
     end
   end
 

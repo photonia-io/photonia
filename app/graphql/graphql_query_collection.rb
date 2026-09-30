@@ -174,7 +174,7 @@ class GraphqlQueryCollection
       }
     GQL
     photos_index: <<-GQL.squish,
-      query PhotosIndexQuery($page: Int, $query: String) {
+      query PhotosIndexQuery($page: Int, $query: String, $hasQuery: Boolean!) {
         photos(page: $page, query: $query) {
           collection {
             id
@@ -193,6 +193,75 @@ class GraphqlQueryCollection
             currentPage
             limitValue
           }
+        }
+        matchingAlbums: albums(mode: "simple", query: $query, limit: 8) @include(if: $hasQuery) {
+          collection {
+            id
+            title
+            photosCount
+            coverPhoto {
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            }
+          }
+        }
+        matchingTags: tags(query: $query, limit: 12) @include(if: $hasQuery) {
+          id
+          name
+        }
+      }
+    GQL
+    photos_search: <<-GQL.squish,
+      query PhotoSearchQuery($filters: PhotoSearchFiltersInput!, $sort: PhotoSortField, $direction: SortDirection, $page: Int) {
+        photoSearch(filters: $filters, sort: $sort, direction: $direction, page: $page) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            canEdit
+            privacy
+          }
+          metadata {
+            totalPages
+            totalCount
+            currentPage
+            limitValue
+          }
+        }
+      }
+    GQL
+    photos_search_options: <<-GQL.squish,
+      query PhotoSearchOptionsQuery {
+        cameras {
+          make
+          model
+          friendlyName
+          count
+        }
+        albums(mode: "simple", limit: 200) {
+          collection {
+            id
+            title
+          }
+        }
+      }
+    GQL
+    search_suggestions: <<-GQL.squish,
+      query SearchSuggestionsQuery($query: String, $limit: Int) {
+        searchSuggestions(query: $query, limit: $limit) {
+          searches {
+            text
+            count
+          }
+          terms {
+            text
+            count
+          }
+          photos {
+            id
+            title
+            intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
+          }
+          recent
         }
       }
     GQL

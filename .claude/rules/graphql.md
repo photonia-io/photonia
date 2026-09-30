@@ -8,7 +8,8 @@ paths:
 
 # GraphQL
 
-- `GraphqlController` injects bound methods into context: `{ current_user:, sign_in:, sign_out:, authorize:, pagy:, impressionist: }`. Resolvers call `context[:authorize].call(record, :update?)` and `context[:pagy].call(relation, page:)` — no globals. Authorization is per-resolver/per-field.
+- `GraphqlController` injects bound methods into context: `{ current_user:, sign_in:, sign_out:, authorize:, pagy:, impressionist:, record_search: }`. Resolvers call `context[:authorize].call(record, :update?)` and `context[:pagy].call(relation, page:)` — no globals. Authorization is per-resolver/per-field.
+- `Queries::BaseQuery#record_search` logs a submitted search to `search_queries` (#1101): only page 1/unpaginated, only when a query or filters are present. One row per network request; Apollo's `cache-first` means a repeated identical search is a cache hit, never a duplicate row.
 - `PhotoniaSchema` rescues `ActiveRecord::RecordNotFound` **and** `Pundit::NotAuthorizedError` into the same `NOT_FOUND` — unauthorized and missing must stay indistinguishable.
 - New mutations go in `app/graphql/mutations/` as classes. ~8 legacy ones are still inline fields on `Types::MutationType`.
 - Shared query strings: `graphql_query_collection.rb`, exposed via `ApplicationController#set_gql_queries` → `window.gql_queries`. Route paths: `ApplicationController#set_settings` → `window.settings`.

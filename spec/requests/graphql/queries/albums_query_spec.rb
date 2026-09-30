@@ -59,4 +59,44 @@ RSpec.describe 'albums Query' do
       expect(response.parsed_body['data']['albums']['collection'].length).to eq(album_count)
     end
   end
+
+  describe 'simple mode' do
+    subject(:post_query) { post '/graphql', params: { query: } }
+
+    let(:query) do
+      <<~GQL
+        query {
+          albums(mode: "simple", query: "lake", limit: 5) {
+            collection { id title }
+          }
+        }
+      GQL
+    end
+
+    it 'filters by title prefix, ordered by title' do
+      photo = create(:photo)
+      matching = [create(:album, title: 'Lake trip'), create(:album, title: 'Lake house')]
+      not_matching = create(:album, title: 'Mountains')
+      [*matching, not_matching].each do |album|
+        album.photos << photo
+        album.maintenance
+      end
+
+      post_query
+
+      titles = response.parsed_body.dig('data', 'albums', 'collection').map { |a| a['title'] }
+      expect(titles).to eq(['Lake house', 'Lake trip'])
+    end
+
+    it 'hides a private album with no public photos from a visitor' do
+      photo = create(:photo, privacy: 'private')
+      album = create(:album, title: 'Lake trip', privacy: 'private')
+      album.photos << photo
+      album.maintenance
+
+      post_query
+
+      expect(response.parsed_body.dig('data', 'albums', 'collection')).to be_empty
+    end
+  end
 end

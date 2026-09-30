@@ -44,6 +44,7 @@
 #  index_photos_on_posted_at_and_id_in_feed  (posted_at,id) WHERE (hidden_from_feed = false)
 #  index_photos_on_rekognition_response      (rekognition_response) USING gin
 #  index_photos_on_slug                      (slug) UNIQUE
+#  index_photos_on_tsv                       (tsv) USING gin
 #  index_photos_on_user_id                   (user_id)
 #
 # Foreign Keys
@@ -183,7 +184,7 @@ RSpec.describe Photo do
       let(:exif_data) { { 'test' => 'test'.dup } } # .dup so we don't get a frozen string error
       let(:error_hash) { { 'error' => 'EXIF Not Readable' } }
       let(:photo_with_nil_exif) { build_stubbed(:photo, exif: nil) }
-      let(:photo_with_exif) { build_stubbed(:photo, exif: exif_data.to_json) }
+      let(:photo_with_exif) { build_stubbed(:photo, exif: exif_data) }
 
       before do
         allow(photo_with_nil_exif).to receive(:save)
@@ -199,14 +200,14 @@ RSpec.describe Photo do
       it 'sets and returns exif data when #exif_from_file returns data' do
         allow(photo_with_nil_exif).to receive(:exif_from_file).and_return(exif_data)
 
-        expect { photo_with_nil_exif.exif }.to change { photo_with_nil_exif.read_attribute(:exif) }.from(nil).to(exif_data.to_json)
+        expect { photo_with_nil_exif.exif }.to change { photo_with_nil_exif.read_attribute(:exif) }.from(nil).to(exif_data)
         expect(photo_with_nil_exif.exif).to eq(exif_data)
       end
 
       it 'sets and returns error hash when #exif_from_file returns nil' do
         allow(photo_with_nil_exif).to receive(:exif_from_file).and_return(nil)
 
-        expect { photo_with_nil_exif.exif }.to change { photo_with_nil_exif.read_attribute(:exif) }.from(nil).to(error_hash.to_json)
+        expect { photo_with_nil_exif.exif }.to change { photo_with_nil_exif.read_attribute(:exif) }.from(nil).to(error_hash)
         expect(photo_with_nil_exif.exif).to eq(error_hash)
       end
 
@@ -220,6 +221,21 @@ RSpec.describe Photo do
 
       it 'returns the existing exif data when already set' do
         expect(photo_with_exif.exif).to eq(exif_data)
+      end
+
+      it 'parses a legacy JSON-string exif value (rows not yet normalized, #1101)' do
+        photo = build_stubbed(:photo, exif: exif_data.to_json)
+        expect(photo.exif).to eq(exif_data)
+      end
+    end
+
+    describe '#exif_from_file_hash' do
+      it 'strips NUL bytes from string values, since jsonb rejects them' do
+        photo = build_stubbed(:photo)
+        exif_double = instance_double(Exif::Data, to_h: { 'exif' => { 'new_cfa_pattern' => "\x02\x00\x02\x00".dup } })
+        allow(photo).to receive(:exif_from_file).and_return(exif_double)
+
+        expect(photo.exif_from_file_hash.dig('exif', 'new_cfa_pattern')).to eq("\x02\x02")
       end
     end
 
@@ -236,6 +252,24 @@ RSpec.describe Photo do
       it 'returns false when #exif returns an error hash' do
         allow(photo).to receive(:exif).and_return(error_hash)
         expect(photo.exif_exists?).to be false
+      end
+    end
+
+    describe '#exif_f_number and #exif_focal_length' do
+      let(:photo) { build_stubbed(:photo) }
+
+      it 'parses an "a/b" rational string correctly, rather than truncating it (#1101)' do
+        allow(photo).to receive(:exif).and_return({ 'exif' => { 'fnumber' => '14/5', 'focal_length' => '70/1' } })
+
+        expect(photo.exif_f_number).to eq(2.8)
+        expect(photo.exif_focal_length).to eq(70.0)
+      end
+
+      it 'falls back to #to_f for a plain numeric string' do
+        allow(photo).to receive(:exif).and_return({ 'exif' => { 'fnumber' => '2.8', 'focal_length' => '103/25' } })
+
+        expect(photo.exif_f_number).to eq(2.8)
+        expect(photo.exif_focal_length).to eq(4.12)
       end
     end
 
@@ -281,7 +315,7 @@ RSpec.describe Photo do
       end
 
       it 'logs and falls back when EXIF data exists but has no date field' do
-        photo = build_stubbed(:photo, slug: 'abc', exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        photo = build_stubbed(:photo, slug: 'abc', exif: { 'exif' => {}, 'ifd0' => {} })
         allow(Rails.logger).to receive(:error)
 
         photo.populate_exif_fields
@@ -291,7 +325,7 @@ RSpec.describe Photo do
       end
 
       it 'logs and falls back, rather than raising, when the exif or ifd0 section is entirely missing' do
-        photo = build_stubbed(:photo, slug: 'abc', exif: { 'gps' => {} }.to_json)
+        photo = build_stubbed(:photo, slug: 'abc', exif: { 'gps' => {} })
         allow(Rails.logger).to receive(:error)
 
         expect { photo.populate_exif_fields }.not_to raise_error
@@ -301,7 +335,7 @@ RSpec.describe Photo do
       end
 
       it 'logs and falls back when the EXIF date is not parseable' do
-        photo = build_stubbed(:photo, slug: 'abc', exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} }.to_json)
+        photo = build_stubbed(:photo, slug: 'abc', exif: { 'exif' => { 'date_time_original' => 'not-a-real-date' }, 'ifd0' => {} })
         allow(Rails.logger).to receive(:error)
 
         photo.populate_exif_fields
@@ -311,7 +345,7 @@ RSpec.describe Photo do
       end
 
       it 'logs the file id for a new upload that has no slug yet' do
-        photo = build(:photo, image_data: TestData.image_data, exif: { 'exif' => {}, 'ifd0' => {} }.to_json)
+        photo = build(:photo, image_data: TestData.image_data, exif: { 'exif' => {}, 'ifd0' => {} })
         allow(Rails.logger).to receive(:error)
 
         photo.populate_exif_fields
