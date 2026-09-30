@@ -5,3 +5,14 @@ flag_management:
 
 comment:
   layout: "condensed_header, diff, flags, files"
+
+coverage:
+  status:
+    project:
+      # Compare each flag against its own history; a combined total would
+      # drop once when JS coverage was first counted.
+      default: false
+      ruby:
+        flags: [ruby]
+      javascript:
+        flags: [javascript]
