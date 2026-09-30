@@ -98,6 +98,7 @@
 
     <!-- Lightbox -->
     <PhotoLightbox
+      ref="lightbox"
       :photo="photo"
       :loading="loading"
       :is-open="lightboxOpen"
@@ -114,6 +115,7 @@ import DisplayLabel from "./display-label.vue";
 import LabelListItem from "./label-list-item.vue";
 import PhotoLightbox from "./photo-lightbox.vue";
 import { useApplicationStore } from "@/stores/application";
+import { useLightboxRoute } from "@/mixins/use-lightbox-route";
 
 const props = defineProps({
   photo: {
@@ -155,9 +157,43 @@ const applicationStore = useApplicationStore();
 const lightboxOpen = ref(false);
 const lightboxInitialSrc = ref(null);
 const heroImage = ref(null);
+const lightbox = ref(null);
 
 // Measured live, so closing after next/prev targets the current photo.
 const heroImageRect = () => heroImage.value?.getBoundingClientRect() ?? null;
+
+// Unreachable on the homepage: the hero there links straight to the
+// photo/album instead of opening the lightbox (see the template above).
+const {
+  lightboxRequested,
+  openLightboxRoute,
+  acknowledgeLightboxFromUrl,
+  leaveLightboxRoute,
+} = useLightboxRoute();
+const lightboxParamActive = computed(
+  () => !props.isHomepage && lightboxRequested.value,
+);
+
+watch(
+  lightboxParamActive,
+  (requested) => {
+    if (requested && !lightboxOpen.value) {
+      // A direct load or the forward button: nothing of ours pushed this.
+      acknowledgeLightboxFromUrl();
+      lightboxInitialSrc.value = heroImage.value?.currentSrc || null;
+      lightboxOpen.value = true;
+    } else if (
+      !requested &&
+      lightboxOpen.value &&
+      !applicationStore.lightboxStepping
+    ) {
+      // Back already changed the URL; play the same shrink animation a
+      // button close would, rather than yanking the lightbox away.
+      lightbox.value?.close();
+    }
+  },
+  { immediate: true },
+);
 
 // Image loading state
 const imageLoading = ref(true);
@@ -228,10 +264,14 @@ const imageSizes = computed(
 const openLightbox = (event) => {
   lightboxInitialSrc.value = event.currentTarget.currentSrc || null;
   lightboxOpen.value = true;
+  openLightboxRoute();
 };
 
 const closeLightbox = () => {
   lightboxOpen.value = false;
+  // Absent when this close followed the back button - it already dropped
+  // the param, so there's nothing left to undo.
+  if (lightboxParamActive.value) leaveLightboxRoute();
 };
 
 const onImageLoad = () => {

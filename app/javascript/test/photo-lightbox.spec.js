@@ -100,6 +100,50 @@ describe("PhotoLightbox", () => {
       expect(applicationStore.navigationShortcutsEnabled).toBe(true);
     });
   });
+
+  // display-hero.vue calls this directly to play the same shrink animation
+  // for a lightbox closed by the back button.
+  describe("exposed close()", () => {
+    it("emits close", async () => {
+      await wrapper.vm.close();
+      expect(wrapper.emitted().close).toBeTruthy();
+    });
+
+    it("is a no-op while a close is already in flight", async () => {
+      const first = wrapper.vm.close();
+      const second = wrapper.vm.close();
+      await Promise.all([first, second]);
+
+      expect(wrapper.emitted().close).toHaveLength(1);
+    });
+  });
+
+  // Leaving the page (e.g. a lightbox route closed by two quick backs)
+  // otherwise left the body unscrollable and a stray keydown listener.
+  it("restores body scrolling and the keydown listener if unmounted while open", () => {
+    expect(document.body.style.overflow).toBe("hidden");
+
+    wrapper.unmount();
+
+    expect(document.body.style.overflow).toBe("");
+  });
+
+  // A lightbox route (?lightbox=) can mount already open - a direct load or
+  // the forward button - not just flip open after mounting closed. The
+  // beforeEach above mounts with isOpen: true from the start, so these
+  // cover that path specifically.
+  describe("mounting already open", () => {
+    it("locks body scrolling from the first render", () => {
+      expect(document.body.style.overflow).toBe("hidden");
+    });
+
+    it("lets Escape close it from the first render", async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      await nextTick();
+
+      expect(wrapper.emitted().close).toBeTruthy();
+    });
+  });
 });
 
 // 3:2, like most photos: in happy-dom's 1024x768 viewport the frame is

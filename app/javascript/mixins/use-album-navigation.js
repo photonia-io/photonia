@@ -1,5 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useLightboxRoute } from "./use-lightbox-route";
 
 // Inputs that hold no typed text. A checkbox keeps focus after a click - the
 // "Display labels on the photo" one does - so treating it as typing would kill
@@ -37,6 +38,7 @@ export function isTypingTarget(target) {
 export function useAlbumNavigation(photo) {
   const route = useRoute();
   const router = useRouter();
+  const { lightboxRequested, stepInLightbox } = useLightboxRoute();
 
   const inAlbumId = computed(() => route.query.inAlbum || null);
 
@@ -55,11 +57,19 @@ export function useAlbumNavigation(photo) {
   const navigateToPhoto = (target) => {
     if (!target) return;
 
-    router.push({
+    const location = {
       name: "photos-show",
       params: { id: target.id },
       query: navigationQuery.value,
-    });
+    };
+
+    // While the lightbox is open, keep it open on the photo stepped to -
+    // see stepInLightbox.
+    if (lightboxRequested.value) {
+      stepInLightbox(location);
+    } else {
+      router.push(location);
+    }
   };
 
   const albumRoute = (album) => ({
@@ -93,6 +103,7 @@ export function useAlbumNavigation(photo) {
     inAlbumId,
     navigatingAlbum,
     navigationQuery,
+    lightboxRequested,
     navigateToPhoto,
     albumRoute,
     startNavigatingAlbum,

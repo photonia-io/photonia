@@ -160,6 +160,11 @@ const hiResLoading = ref(false);
 // True while the close (shrink) animation is playing.
 const closing = ref(false);
 
+// Guards close() itself against a second concurrent call (e.g. the back
+// button and a click on the close button in the same instant) - closing
+// above only covers the case where there's an animation to run.
+let closeInFlight = false;
+
 // Touch handling
 const lastTouchDistance = ref(0);
 const touchStartPos = ref({ x: 0, y: 0 });
@@ -179,10 +184,20 @@ const imageStyle = computed(() => ({
 
 // Methods
 const close = async () => {
-  resetZoom();
-  await playCloseAnimation();
-  emit("close");
+  if (closeInFlight) return;
+  closeInFlight = true;
+  try {
+    resetZoom();
+    await playCloseAnimation();
+    emit("close");
+  } finally {
+    closeInFlight = false;
+  }
 };
+
+// Lets display-hero.vue play this same close animation for a lightbox route
+// closed by the back button, rather than the URL just yanking it away.
+defineExpose({ close });
 
 const handleOverlayClick = (event) => {
   if (event.target === event.currentTarget) {
@@ -256,6 +271,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   if (props.isOpen) applicationStore.enableNavigationShortcuts();
+  // Navigating away while still open (e.g. the close animation's history
+  // step landing on a different page) would otherwise leave these stuck.
+  document.removeEventListener("keydown", handleKeydown);
+  document.body.style.overflow = "";
 });
 
 // No zoom reset here: this also fires on the hi-res swap, mid-zoom.
@@ -627,7 +646,9 @@ const handleKeydown = (event) => {
   showControls();
 };
 
-// Add/remove keyboard listener
+// Add/remove keyboard listener. immediate: a lightbox route (?lightbox=)
+// can mount already open - a direct load or the forward button - and this
+// setup must run then too, not just on a later isOpen flip.
 watch(
   () => props.isOpen,
   (newValue) => {
@@ -644,6 +665,7 @@ watch(
       document.body.style.overflow = "";
     }
   },
+  { immediate: true },
 );
 </script>
 

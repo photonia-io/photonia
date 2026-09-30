@@ -22,6 +22,18 @@ export const useApplicationStore = defineStore("application", () => {
     localStorage.getItem("showLabelsOnHero") === "true",
   );
 
+  // True once the app has pushed the current ?lightbox= route itself (a
+  // click, or a next/prev step - see use-lightbox-route.js), so closing it
+  // can call router.back() to undo that push cleanly. False for a lightbox
+  // opened straight from a shared/forwarded URL, which has nothing of ours
+  // to go back to.
+  const lightboxOpenedByPush = ref(false);
+
+  // True for the instant a next/prev step is swapping the lightbox route's
+  // history entry, so display-hero's closing-animation watcher ignores the
+  // URL being momentarily lightbox-less between the replace and the push.
+  const lightboxStepping = ref(false);
+
   function enableNavigationShortcuts() {
     navigationShortcutsEnabled.value = true;
   }
@@ -86,6 +98,8 @@ export const useApplicationStore = defineStore("application", () => {
     colorScheme,
     setUserColorScheme,
     showLabelsOnHero,
+    lightboxOpenedByPush,
+    lightboxStepping,
     signOut,
 
     // navigation confirmation modal

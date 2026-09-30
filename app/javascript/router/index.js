@@ -3,6 +3,7 @@ import settings from "../mixins/settings";
 import toaster from "../mixins/toaster";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "../stores/application";
+import { onlyLightboxToggled } from "../mixins/use-lightbox-route";
 
 export function createAppRouter(pinia) {
   const userStore = useUserStore(pinia);
@@ -165,6 +166,10 @@ export function createAppRouter(pinia) {
   });
 
   router.beforeEach((to, from) => {
+    // Opening/closing the lightbox only toggles ?lightbox= on the photo
+    // already being shown - never worth an "are you sure" prompt.
+    if (onlyLightboxToggled(to, from)) return;
+
     // Will trigger when editing a photo or album's details
     if (applicationStore.editing) {
       applicationStore.openNavigationModal(
