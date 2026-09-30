@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, watch } from "vue";
+import { computed, defineAsyncComponent, inject, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
@@ -108,11 +108,13 @@ import titleHelper from "../mixins/title-helper";
 import { descriptionHtmlHelper } from "../mixins/description-helper";
 
 // components
-import AlbumTitleEditable from "./album-title-editable.vue";
-import AlbumDescriptionEditable from "./album-description-editable.vue";
-import AlbumManagement from "./album-management.vue";
 import PhotoItem from "@/shared/photo-item.vue";
 import Pagination from "@/shared/pagination.vue";
+
+// Only ever rendered for someone who can edit this album - see #1096.
+const AlbumTitleEditable = defineAsyncComponent(() => import("./album-title-editable.vue"));
+const AlbumDescriptionEditable = defineAsyncComponent(() => import("./album-description-editable.vue"));
+const AlbumManagement = defineAsyncComponent(() => import("./album-management.vue"));
 // TODO: re-enable once album commenting is ready - see the commented-out
 // Comments section in the template below.
 // import CommentsSection from "@/shared/comments/comments-section.vue";

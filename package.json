@@ -15,7 +15,6 @@
     "graphql": "^16.14.2",
     "graphql-tag": "^2.12.7",
     "marked": "^16.4.2",
-    "moment": "2.31.0",
     "pinia": "^3.0.4",
     "sass": "^1.105.0",
     "typescript": "^5.9.3",

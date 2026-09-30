@@ -71,15 +71,20 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import gql from "graphql-tag";
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "@/stores/user";
 import { useModal } from "@/mixins/use-modal";
 import toaster from "@/mixins/toaster";
 import CommentItem from "./comment-item.vue";
-import CommentForm from "./comment-form.vue";
-import ClaimFlickrUserModal from "@/photos/claim-flickr-user-modal.vue";
+
+// Both only ever render for a signed-in user (showNewCommentForm,
+// openClaimModal's callers) - see #1096.
+const CommentForm = defineAsyncComponent(() => import("./comment-form.vue"));
+const ClaimFlickrUserModal = defineAsyncComponent(
+  () => import("@/photos/claim-flickr-user-modal.vue"),
+);
 
 const props = defineProps({
   commentable: {

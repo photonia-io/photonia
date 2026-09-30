@@ -90,11 +90,14 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import moment from "moment";
+import { computed, defineAsyncComponent } from "vue";
 import { useUserStore } from "@/stores/user";
+import { formatDateTime } from "@/helpers/format-date.js";
 import CommentAvatar from "./comment-avatar.vue";
-import CommentForm from "./comment-form.vue";
+
+// Only ever rendered while editing/replying, which needs a signed-in user
+// with comment.canEdit/canReply - see #1096.
+const CommentForm = defineAsyncComponent(() => import("./comment-form.vue"));
 
 const props = defineProps({
   comment: {
@@ -163,9 +166,8 @@ const toggleReply = () => {
   }
 };
 
-const format = "dddd, MMMM Do YYYY, H:mm";
 function momentFormat(date) {
-  return moment(date).format(format);
+  return formatDateTime(new Date(date), "full");
 }
 </script>
 
