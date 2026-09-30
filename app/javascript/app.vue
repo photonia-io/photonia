@@ -4,7 +4,7 @@
     <RouterView></RouterView>
     <Footer></Footer>
   </div>
-  <SelectionBar />
+  <SelectionBar v-if="selectionStore.count > 0" />
   <teleport to="#modal-root">
     <div
       :class="['modal', applicationStore.navModalActive ? 'is-active' : null]"
@@ -33,15 +33,20 @@
 <script setup>
 import Navigation from "./navigation.vue";
 import Footer from "./footer.vue";
-import SelectionBar from "@/shared/selection-bar.vue";
 
 import { useApplicationStore } from "@/stores/application";
 import { useSelectionStore } from "@/stores/selection";
-import { onMounted, onUnmounted, watch } from "vue";
+import { defineAsyncComponent, onMounted, onUnmounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+// Only uploaders can ever select anything (see photo-item.vue's canSelect),
+// so nobody else needs this chunk - see #1096.
+const SelectionBar = defineAsyncComponent(
+  () => import("@/shared/selection-bar.vue"),
+);
 
 const applicationStore = useApplicationStore();
 const { colorScheme } = storeToRefs(applicationStore);
