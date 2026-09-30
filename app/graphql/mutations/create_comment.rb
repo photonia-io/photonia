@@ -27,6 +27,7 @@ module Mutations
       raise GraphQL::ExecutionError, comment.errors.full_messages.join(', ') unless comment.save
 
       notify_owner(comment, commentable)
+      notify_parent_author(comment, commentable)
       comment
     end
 
@@ -54,6 +55,18 @@ module Mutations
       return if comment.user_id == commentable.user_id
 
       UserMailer.with(comment:).new_comment.deliver_later
+    end
+
+    # Notify the parent comment's author of a reply, unless they're the replier
+    # themselves, are disabled, or already got notify_owner's email above.
+    def notify_parent_author(comment, commentable)
+      parent_author = comment.parent&.user
+      return if parent_author.blank?
+      return if parent_author.id == comment.user_id
+      return if parent_author.id == commentable.user_id
+      return if parent_author.disabled?
+
+      UserMailer.with(comment:).comment_reply.deliver_later
     end
   end
 end

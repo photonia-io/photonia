@@ -9,6 +9,10 @@
   <li><strong>Flickr Profile:</strong> <a href="<%= h @flickr_user.profileurl %>"><%= h @flickr_user.profileurl %></a></li>
 </ul>
 
+<p>
+  You can now edit or delete any comments this Flickr user posted on Photonia.
+</p>
+
 <% if @claim&.automatic? %>
 <p>
   You can now remove the verification code from your Flickr profile description.

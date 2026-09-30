@@ -43,6 +43,14 @@ RSpec.describe FlickrUserClaimService do
         expect(flickr_user.reload.claimed_by_user).to eq(user)
       end
 
+      it 'transfers ownership of the flickr user\'s unowned comments to the claimer' do
+        comment = create(:comment, :with_flickr_user, :with_photo, user: nil, flickr_user: flickr_user)
+
+        service.verify_automatic_claim(claim)
+
+        expect(comment.reload.user).to eq(user)
+      end
+
       it 'sends email to admins' do
         admin # ensure admin exists
 
@@ -228,6 +236,14 @@ RSpec.describe FlickrUserClaimService do
         ).and_return(double(flickr_claim_approved: double(deliver_later: true)))
 
         service.approve_claim(claim)
+      end
+
+      it 'transfers ownership of the flickr user\'s unowned comments to the claimer' do
+        comment = create(:comment, :with_flickr_user, :with_photo, user: nil, flickr_user: flickr_user)
+
+        service.approve_claim(claim)
+
+        expect(comment.reload.user).to eq(user)
       end
     end
 
