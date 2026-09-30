@@ -10,7 +10,7 @@
   <div>
     <%= comment.body_html.html_safe %>
   </div>
-  <% if comment.replies.any? %>
+  <% if comment.top_level? && comment.replies.any? %>
     <ul>
       <% comment.replies.each do |reply| %>
         <%= render 'comments/comment', comment: reply %>

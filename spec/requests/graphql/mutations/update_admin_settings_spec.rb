@@ -138,6 +138,30 @@ describe 'updateAdminSettings Mutation', type: :request do
         )
       end
 
+      context 'when a field is explicitly set to null' do
+        let(:query) do
+          <<~GQL
+            mutation {
+              updateAdminSettings(commentingEnabled: null) {
+                id
+                commentingEnabled
+              }
+            }
+          GQL
+        end
+
+        it 'rejects the mutation and leaves the setting untouched' do
+          post_mutation
+
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err&.dig('message')).to include('commenting_enabled')
+          expect(json.dig('data', 'updateAdminSettings')).to be_nil
+          expect(Setting.commenting_enabled).to eq(commenting_enabled)
+        end
+      end
+
       context 'when only one field is provided' do
         let(:query) do
           <<~GQL

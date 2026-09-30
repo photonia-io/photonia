@@ -28,6 +28,10 @@ module Mutations
 
     def resolve(**provided)
       authorize(Setting, :update?)
+
+      nulls = FIELDS.select { |field| provided.key?(field) && provided[field].nil? }
+      raise GraphQL::ExecutionError, "Null not allowed for: #{nulls.join(', ')}" if nulls.any?
+
       FIELDS.each { |field| Setting.public_send("#{field}=", provided[field]) if provided.key?(field) }
       Setting
     end
