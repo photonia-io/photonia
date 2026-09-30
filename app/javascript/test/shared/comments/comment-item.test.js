@@ -1,9 +1,14 @@
 import { describe, it, expect, afterEach, beforeEach } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 
 import CommentItem from "../../../shared/comments/comment-item.vue";
 import { useUserStore } from "../../../stores/user";
+
+// CommentItem loads this as defineAsyncComponent() (see #1096) - importing
+// it statically here means it's already resolved by the time a test mounts
+// CommentItem, so a single flushPromises() is enough to render it.
+import "../../../shared/comments/comment-form.vue";
 
 let wrapper;
 
@@ -148,15 +153,17 @@ describe("CommentItem", () => {
     expect(wrapper.emitted()["request-delete"][0]).toEqual([comment]);
   });
 
-  it("switches to an edit form when editTargetId matches, showing the current body", () => {
+  it("switches to an edit form when editTargetId matches, showing the current body", async () => {
     mountItem({ comment: baseComment({ id: "7", body: "Original text", canEdit: true }), editTargetId: "7" });
+    await flushPromises();
 
     expect(wrapper.find(".content").exists()).toBe(false);
     expect(wrapper.find("textarea").element.value).toBe("Original text");
   });
 
-  it("shows a reply form when replyTargetId matches this comment", () => {
+  it("shows a reply form when replyTargetId matches this comment", async () => {
     mountItem({ comment: baseComment({ id: "9" }), replyTargetId: "9" });
+    await flushPromises();
 
     const textareas = wrapper.findAll("textarea");
     expect(textareas.length).toBeGreaterThan(0);

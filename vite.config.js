@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import RubyPlugin from 'vite-plugin-ruby'
 import vue from '@vitejs/plugin-vue'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     RubyPlugin(),
     vue()
@@ -14,6 +14,11 @@ export default defineConfig({
       checks: { bundlerTimings: false }
     }
   },
+  define: command === 'build' ? {
+    // @apollo/client gates its dev-only code (invariant messages, devtools
+    // hooks) on this - unset, it all ships to production. See #1096.
+    'globalThis.__DEV__': 'false'
+  } : {},
   server: {
     // Allow the dev server to be reached by any Host header (e.g. accessing
     // it over the LAN by hostname instead of localhost) - otherwise Vite's
@@ -44,4 +49,4 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom'
   }
-})
+}))

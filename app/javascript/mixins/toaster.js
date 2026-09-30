@@ -1,5 +1,4 @@
 import * as bulmaToast from 'bulma-toast'
-import 'animate.css'
 
 const toaster = (message, type = 'is-success') => {
   bulmaToast.toast(

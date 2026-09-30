@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mount, RouterLinkStub } from "@vue/test-utils";
+import { mount, RouterLinkStub, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 
 vi.mock("../../../mixins/toaster", () => ({ default: vi.fn() }));
@@ -23,6 +23,12 @@ vi.mock("@vue/apollo-composable", () => ({
 import CommentsSection from "../../../shared/comments/comments-section.vue";
 import { useUserStore } from "../../../stores/user";
 import toaster from "../../../mixins/toaster";
+
+// CommentsSection loads this as defineAsyncComponent() (see #1096) -
+// importing it statically here means it's already resolved by the time a
+// test mounts CommentsSection, so a single flushPromises() is enough to
+// render it.
+import "../../../shared/comments/comment-form.vue";
 
 const [createCall, updateCall, deleteCall] = [0, 1, 2];
 
@@ -108,7 +114,7 @@ describe("CommentsSection", () => {
     it("is shown when signed in and commenting is enabled", async () => {
       mountSection();
       useUserStore().signedIn = true;
-      await wrapper.vm.$nextTick();
+      await flushPromises();
 
       expect(wrapper.find("textarea").exists()).toBe(true);
     });
@@ -156,7 +162,7 @@ describe("CommentsSection", () => {
       window.settings = { commenting_enabled: true, photo_commenting_enabled: true, album_commenting_enabled: false };
       mountSection({ commentableType: "Photo" });
       useUserStore().signedIn = true;
-      await wrapper.vm.$nextTick();
+      await flushPromises();
 
       expect(wrapper.find("textarea").exists()).toBe(true);
     });
@@ -165,7 +171,7 @@ describe("CommentsSection", () => {
       mountSection({ commentable: { id: "photo-1", comments: [] } });
       const userStore = useUserStore();
       userStore.signedIn = true;
-      await wrapper.vm.$nextTick();
+      await flushPromises();
 
       await wrapper.find("textarea").setValue("A new comment");
       await wrapper.find("button.is-primary").trigger("click");
@@ -201,6 +207,7 @@ describe("CommentsSection", () => {
 
       const editLink = wrapper.findAll(".comment-actions a").find((a) => a.text() === "Edit");
       await editLink.trigger("click");
+      await flushPromises();
 
       await wrapper.find("textarea").setValue("Updated body");
       await wrapper.find("button.is-primary").trigger("click");

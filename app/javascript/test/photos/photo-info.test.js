@@ -1,9 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mount, DOMWrapper } from "@vue/test-utils";
+import { mount, DOMWrapper, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 
 import PhotoInfo from "../../photos/photo-info.vue";
 import { useApplicationStore } from "../../stores/application";
+
+// PhotoInfo loads these as defineAsyncComponent() (see #1096) - importing
+// them statically here means the module is already resolved by the time a
+// test mounts PhotoInfo, so a single flushPromises() after mount is enough
+// to let the async component render instead of racing the dynamic import.
+import "../../photos/taken-at-modal.vue";
+import "../../photos/license-modal.vue";
 
 // Both modals are teleported to #modal-root, outside the component's own
 // DOM tree, so they must be queried through the document body rather than
@@ -363,6 +370,7 @@ describe("PhotoInfo", () => {
   describe("Date Taken modal wiring", () => {
     it("opens the modal when the date is clicked", async () => {
       const { wrapper } = mountPhotoInfo();
+      await flushPromises();
       await wrapper.find(".taken-at-trigger").trigger("click");
 
       expect(
@@ -372,6 +380,7 @@ describe("PhotoInfo", () => {
 
     it("emits updateTakenAt with the id when the modal saves", async () => {
       const { wrapper } = mountPhotoInfo();
+      await flushPromises();
       await wrapper.find(".taken-at-trigger").trigger("click");
 
       await body()
@@ -391,6 +400,7 @@ describe("PhotoInfo", () => {
           takenAtInfo: { ...basePhoto.takenAtInfo, source: "user" },
         },
       });
+      await flushPromises();
       await wrapper.find(".taken-at-trigger").trigger("click");
 
       const resetButton = body()
@@ -405,6 +415,7 @@ describe("PhotoInfo", () => {
 
     it("returns focus to the trigger on close", async () => {
       const { wrapper } = mountPhotoInfo();
+      await flushPromises();
       const trigger = wrapper.find(".taken-at-trigger");
       await trigger.trigger("click");
       await wrapper.vm.$nextTick();
@@ -419,6 +430,7 @@ describe("PhotoInfo", () => {
 
     it("stays open after saving, since show.vue owns the mutation result", async () => {
       const { wrapper } = mountPhotoInfo();
+      await flushPromises();
       await wrapper.find(".taken-at-trigger").trigger("click");
 
       await body()
@@ -430,6 +442,7 @@ describe("PhotoInfo", () => {
 
     it("exposes closeTakenAtModal for show.vue to call once the mutation succeeds", async () => {
       const { wrapper } = mountPhotoInfo();
+      await flushPromises();
       const trigger = wrapper.find(".taken-at-trigger");
       await trigger.trigger("click");
       expect(takenAtModal().classes()).toContain("is-active");
@@ -491,6 +504,7 @@ describe("PhotoInfo", () => {
       const { wrapper } = mountPhotoInfo({
         photo: { ...basePhoto, license: "CC BY 4.0" },
       });
+      await flushPromises();
       await wrapper.find(".license-trigger").trigger("click");
 
       expect(licenseModal().classes()).toContain("is-active");
@@ -500,6 +514,7 @@ describe("PhotoInfo", () => {
       const { wrapper } = mountPhotoInfo({
         photo: { ...basePhoto, license: "CC BY-SA 4.0" },
       });
+      await flushPromises();
       await wrapper.find(".license-trigger").trigger("click");
 
       const checked = licenseModal().find(
@@ -512,6 +527,7 @@ describe("PhotoInfo", () => {
       const { wrapper } = mountPhotoInfo({
         photo: { ...basePhoto, license: "CC BY 4.0" },
       });
+      await flushPromises();
       await wrapper.find(".license-trigger").trigger("click");
 
       const cc0Radio = licenseModal().find(
@@ -530,6 +546,7 @@ describe("PhotoInfo", () => {
       const { wrapper } = mountPhotoInfo({
         photo: { ...basePhoto, license: "CC BY 4.0" },
       });
+      await flushPromises();
       await wrapper.find(".license-trigger").trigger("click");
 
       await licenseModal().find(".button.is-primary").trigger("click");
@@ -541,6 +558,7 @@ describe("PhotoInfo", () => {
       const { wrapper } = mountPhotoInfo({
         photo: { ...basePhoto, license: "CC BY 4.0" },
       });
+      await flushPromises();
       const trigger = wrapper.find(".license-trigger");
       await trigger.trigger("click");
 
@@ -553,6 +571,7 @@ describe("PhotoInfo", () => {
       const { wrapper, applicationStore } = mountPhotoInfo({
         photo: { ...basePhoto, license: "CC BY 4.0" },
       });
+      await flushPromises();
       await wrapper.find(".license-trigger").trigger("click");
 
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));

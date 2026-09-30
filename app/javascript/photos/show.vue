@@ -408,7 +408,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, inject } from "vue";
+import { ref, computed, defineAsyncComponent, onMounted, onBeforeUnmount, inject } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@vue/apollo-composable";
@@ -425,9 +425,6 @@ import {
 import { useModal } from "@/mixins/use-modal";
 
 // components
-import PhotoTitleEditable from "./photo-title-editable.vue";
-import PhotoDescriptionEditable from "./photo-description-editable.vue";
-import PhotoManagement from "./photo-management.vue";
 import PhotoInfo from "./photo-info.vue";
 import PhotoInfobox from "./photo-infobox.vue";
 import CommentsSection from "@/shared/comments/comments-section.vue";
@@ -436,11 +433,17 @@ import DisplayHero from "./display-hero.vue";
 import SidebarHeader from "./sidebar-header.vue";
 import LabelListItem from "@/photos/label-list-item.vue";
 import Tag from "@/tags/tag.vue";
-import RemoveTag from "@/tags/remove-tag.vue";
 import Empty from "@/empty.vue";
-import PhotoTagInput from "./photo-tag-input.vue";
-import AddToAlbumButton from "@/shared/buttons/add-to-album.vue";
-import ThumbnailEditor from "./thumbnail-editor.vue";
+
+// Only ever rendered for someone who can edit this photo (canEditPhoto) or
+// while the thumbnail editor is open - see #1096.
+const PhotoTitleEditable = defineAsyncComponent(() => import("./photo-title-editable.vue"));
+const PhotoDescriptionEditable = defineAsyncComponent(() => import("./photo-description-editable.vue"));
+const PhotoManagement = defineAsyncComponent(() => import("./photo-management.vue"));
+const RemoveTag = defineAsyncComponent(() => import("@/tags/remove-tag.vue"));
+const PhotoTagInput = defineAsyncComponent(() => import("./photo-tag-input.vue"));
+const AddToAlbumButton = defineAsyncComponent(() => import("@/shared/buttons/add-to-album.vue"));
+const ThumbnailEditor = defineAsyncComponent(() => import("./thumbnail-editor.vue"));
 
 // route & router
 const route = useRoute();

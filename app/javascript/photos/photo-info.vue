@@ -152,6 +152,7 @@
     </div>
   </teleport>
   <TakenAtModal
+    v-if="canEdit"
     :active="takenAtModalActive"
     :taken-at-info="photo.takenAtInfo"
     :scanned="photo.scanned"
@@ -160,6 +161,7 @@
     @close="handleTakenAtModalClose"
   />
   <LicenseModal
+    v-if="canEdit"
     :active="licenseModalActive"
     :license="photo.license"
     @save="handleLicenseSave"
@@ -168,14 +170,16 @@
 </template>
 
 <script setup>
-import { computed, ref, toRefs } from "vue";
+import { computed, defineAsyncComponent, ref, toRefs } from "vue";
 import { useModal } from "../mixins/use-modal.js";
 import PhotoInfobox from "./photo-infobox.vue";
 import SidebarHeader from "./sidebar-header.vue";
-import TakenAtModal from "./taken-at-modal.vue";
-import LicenseModal from "./license-modal.vue";
 import { licenseDisplay as getLicenseDisplay } from "../shared/licenses.js";
-import moment from "moment";
+import { formatDateTime } from "../helpers/format-date.js";
+
+// Only ever opened via the canEdit-gated buttons above - see #1096.
+const TakenAtModal = defineAsyncComponent(() => import("./taken-at-modal.vue"));
+const LicenseModal = defineAsyncComponent(() => import("./license-modal.vue"));
 
 const props = defineProps({
   photo: {
@@ -207,33 +211,32 @@ const showLicenseInfoModal = () => {
   licenseInfoModalActive.value = true;
 };
 
-const format = "dddd, MMMM Do YYYY, H:mm";
 function momentFormat(date) {
-  return moment(date).format(format);
+  return formatDateTime(new Date(date), "full");
 }
 
-// Builds a local moment from the taken_at components directly, rather than
+// Builds a local date from the taken_at components directly, rather than
 // parsing an ISO string, so no timezone shifting can happen for a partial date.
 function formatTakenAt(info) {
   if (!info) return "";
 
-  const local = moment({
-    year: info.year,
-    month: (info.month ?? 1) - 1,
-    day: info.day ?? 1,
-    hour: info.hour ?? 0,
-    minute: info.minute ?? 0,
-  });
+  const local = new Date(
+    info.year,
+    (info.month ?? 1) - 1,
+    info.day ?? 1,
+    info.hour ?? 0,
+    info.minute ?? 0,
+  );
 
   switch (info.precision) {
     case "year":
-      return local.format("YYYY");
+      return formatDateTime(local, "year");
     case "month":
-      return local.format("MMMM YYYY");
+      return formatDateTime(local, "month");
     case "day":
-      return local.format("dddd, MMMM Do YYYY");
+      return formatDateTime(local, "day");
     default:
-      return local.format(format);
+      return formatDateTime(local, "full");
   }
 }
 

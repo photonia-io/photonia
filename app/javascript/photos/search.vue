@@ -552,4 +552,15 @@ watch(
   overflow: hidden;
   min-height: 0;
 }
+
+/* This page is the only user of Bulma's .fixed-grid/.grid/.cell, which
+   otherwise costs a large chunk of CSS for column-count breakpoints and
+   per-cell row/column spans this form never uses - a plain 2-column grid
+   covers every instance here. See #1096. */
+.fixed-grid.has-2-cols > .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
 </style>

@@ -18,6 +18,15 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
+  # Nothing else in front of Puma compresses responses: kamal-proxy doesn't,
+  # and Vite doesn't emit .gz companions for ActionDispatch::Static to serve.
+  # Limited to JS/CSS - GraphQL and the SEO/no-JS ERB fallback pages are
+  # small enough that gzipping them isn't worth the CPU. Must sit before
+  # Static (not just appended with `use`, which lands after it) - Static
+  # returns public/vite/assets/* straight away without reaching anything
+  # added later in the stack.
+  config.middleware.insert_before ActionDispatch::Static, Rack::Deflater, include: %w[text/javascript text/css]
+
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 

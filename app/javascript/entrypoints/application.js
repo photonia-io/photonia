@@ -139,13 +139,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Start Sentry
 
   if (import.meta.env.PROD) {
+    // Session Replay isn't enabled here (no replaysSessionSampleRate /
+    // replaysOnErrorSampleRate), so Sentry.replayIntegration() would only
+    // bundle rrweb for nothing - see #1096.
     Sentry.init({
       app,
       dsn: settings.sentry_dsn,
-      integrations: [
-        Sentry.browserTracingIntegration({ router }),
-        Sentry.replayIntegration(),
-      ],
+      integrations: [Sentry.browserTracingIntegration({ router })],
       tracesSampleRate: settings.sentry_sample_rate,
       tracePropagationTargets: ["photos.rusiczki.net", /^\//],
     });
