@@ -137,6 +137,28 @@ RSpec.describe User do
     end
   end
 
+  describe '#public_name' do
+    it 'prefers display_name' do
+      user = build(:user, display_name: 'Jane Doe', first_name: 'Jane', last_name: 'Smith')
+      expect(user.public_name).to eq('Jane Doe')
+    end
+
+    it 'falls back to first and last name' do
+      user = build(:user, display_name: nil, first_name: 'Jane', last_name: 'Smith')
+      expect(user.public_name).to eq('Jane Smith')
+    end
+
+    it 'falls back to just the first name when there is no last name' do
+      user = build(:user, display_name: nil, first_name: 'Jane', last_name: nil)
+      expect(user.public_name).to eq('Jane')
+    end
+
+    it 'falls back to Anonymous when no names are set' do
+      user = build(:user, display_name: nil, first_name: nil, last_name: nil)
+      expect(user.public_name).to eq('Anonymous')
+    end
+  end
+
   describe '#has_role?' do
     let(:user) { create(:user) }
 

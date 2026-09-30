@@ -13,6 +13,9 @@ describe 'updateAdminSettings Mutation', type: :request do
   let(:continue_with_google_enabled) { false }
   let(:continue_with_facebook_enabled) { false }
   let(:rekognition_enabled) { true }
+  let(:commenting_enabled) { true }
+  let(:photo_commenting_enabled) { true }
+  let(:album_commenting_enabled) { false }
 
   let(:new_site_name) { 'New Photonia' }
   let(:new_site_description) { 'A new photo gallery' }
@@ -20,6 +23,9 @@ describe 'updateAdminSettings Mutation', type: :request do
   let(:new_continue_with_google_enabled) { true }
   let(:new_continue_with_facebook_enabled) { true }
   let(:new_rekognition_enabled) { false }
+  let(:new_commenting_enabled) { false }
+  let(:new_photo_commenting_enabled) { false }
+  let(:new_album_commenting_enabled) { true }
 
   let(:query) do
     <<~GQL
@@ -31,6 +37,9 @@ describe 'updateAdminSettings Mutation', type: :request do
           continueWithGoogleEnabled: #{new_continue_with_google_enabled}
           continueWithFacebookEnabled: #{new_continue_with_facebook_enabled}
           rekognitionEnabled: #{new_rekognition_enabled}
+          commentingEnabled: #{new_commenting_enabled}
+          photoCommentingEnabled: #{new_photo_commenting_enabled}
+          albumCommentingEnabled: #{new_album_commenting_enabled}
         ) {
           id
           siteName
@@ -39,6 +48,9 @@ describe 'updateAdminSettings Mutation', type: :request do
           continueWithGoogleEnabled
           continueWithFacebookEnabled
           rekognitionEnabled
+          commentingEnabled
+          photoCommentingEnabled
+          albumCommentingEnabled
         }
       }
     GQL
@@ -51,6 +63,9 @@ describe 'updateAdminSettings Mutation', type: :request do
     Setting.continue_with_google_enabled = continue_with_google_enabled
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
     Setting.rekognition_enabled = rekognition_enabled
+    Setting.commenting_enabled = commenting_enabled
+    Setting.photo_commenting_enabled = photo_commenting_enabled
+    Setting.album_commenting_enabled = album_commenting_enabled
   end
 
   context 'when the user is not logged in' do
@@ -98,6 +113,9 @@ describe 'updateAdminSettings Mutation', type: :request do
         expect(Setting.continue_with_google_enabled).to eq(new_continue_with_google_enabled)
         expect(Setting.continue_with_facebook_enabled).to eq(new_continue_with_facebook_enabled)
         expect(Setting.rekognition_enabled).to eq(new_rekognition_enabled)
+        expect(Setting.commenting_enabled).to eq(new_commenting_enabled)
+        expect(Setting.photo_commenting_enabled).to eq(new_photo_commenting_enabled)
+        expect(Setting.album_commenting_enabled).to eq(new_album_commenting_enabled)
       end
 
       it 'returns the updated admin settings' do
@@ -113,8 +131,62 @@ describe 'updateAdminSettings Mutation', type: :request do
           'siteTrackingCode' => new_site_tracking_code,
           'continueWithGoogleEnabled' => new_continue_with_google_enabled,
           'continueWithFacebookEnabled' => new_continue_with_facebook_enabled,
-          'rekognitionEnabled' => new_rekognition_enabled
+          'rekognitionEnabled' => new_rekognition_enabled,
+          'commentingEnabled' => new_commenting_enabled,
+          'photoCommentingEnabled' => new_photo_commenting_enabled,
+          'albumCommentingEnabled' => new_album_commenting_enabled
         )
+      end
+
+      context 'when a field is explicitly set to null' do
+        let(:query) do
+          <<~GQL
+            mutation {
+              updateAdminSettings(commentingEnabled: null) {
+                id
+                commentingEnabled
+              }
+            }
+          GQL
+        end
+
+        it 'rejects the mutation and leaves the setting untouched' do
+          post_mutation
+
+          json = response.parsed_body
+          err = json['errors']&.first
+
+          expect(err&.dig('message')).to include('commenting_enabled')
+          expect(json.dig('data', 'updateAdminSettings')).to be_nil
+          expect(Setting.commenting_enabled).to eq(commenting_enabled)
+        end
+      end
+
+      context 'when only one field is provided' do
+        let(:query) do
+          <<~GQL
+            mutation {
+              updateAdminSettings(commentingEnabled: #{new_commenting_enabled}) {
+                id
+                commentingEnabled
+              }
+            }
+          GQL
+        end
+
+        it 'updates only that field, leaving the others untouched' do
+          post_mutation
+
+          expect(Setting.commenting_enabled).to eq(new_commenting_enabled)
+          expect(Setting.site_name).to eq(site_name)
+          expect(Setting.site_description).to eq(site_description)
+          expect(Setting.site_tracking_code).to eq(site_tracking_code)
+          expect(Setting.continue_with_google_enabled).to eq(continue_with_google_enabled)
+          expect(Setting.continue_with_facebook_enabled).to eq(continue_with_facebook_enabled)
+          expect(Setting.rekognition_enabled).to eq(rekognition_enabled)
+          expect(Setting.photo_commenting_enabled).to eq(photo_commenting_enabled)
+          expect(Setting.album_commenting_enabled).to eq(album_commenting_enabled)
+        end
       end
     end
   end

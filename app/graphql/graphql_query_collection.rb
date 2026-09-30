@@ -2,6 +2,32 @@
 
 # This is a collection of all the GQL queries to be shared between Rails and the Vue app
 class GraphqlQueryCollection
+  # Shared by photos_show and albums_show below, and exposed as comment_fields
+  # for the Vue mutations to reuse the same selection set.
+  COMMENT_FIELDS = <<~GQL.squish
+    id
+    body
+    bodyHtml
+    bodyEdited
+    bodyLastEditedAt
+    createdAt
+    canEdit
+    canDelete
+    author {
+      id
+      displayName
+    }
+    flickrUser {
+      nsid
+      username
+      realname
+      profileurl
+      iconfarm
+      iconserver
+      claimable
+    }
+  GQL
+
   COLLECTION = {
     homepage_index: <<~GQL.squish,
       query HomepageQuery {
@@ -88,6 +114,12 @@ class GraphqlQueryCollection
           privatizablePhotosCount
           collapsedInFeed
           collapseBlocker
+          comments {
+            #{COMMENT_FIELDS}
+            replies {
+              #{COMMENT_FIELDS}
+            }
+          }
         }
       }
     GQL
@@ -285,21 +317,10 @@ class GraphqlQueryCollection
             intelligentOrSquareThumbnailImageUrl: imageUrl(type: "thumbnail")
           }
           comments {
-            id
-            body
-            bodyHtml
-            bodyEdited
-            bodyLastEditedAt
-            flickrUser {
-              nsid
-              username
-              realname
-              profileurl
-              iconfarm
-              iconserver
-              claimable
+            #{COMMENT_FIELDS}
+            replies {
+              #{COMMENT_FIELDS}
             }
-            createdAt
           }
           albums {
             id
@@ -358,7 +379,7 @@ class GraphqlQueryCollection
         }
       }
     GQL
-    photos_processing: <<-GQL.squish
+    photos_processing: <<-GQL.squish,
       query PhotosProcessingQuery($ids: [ID!]!) {
         photosByIds(ids: $ids) {
           id
@@ -368,6 +389,7 @@ class GraphqlQueryCollection
         }
       }
     GQL
+    comment_fields: COMMENT_FIELDS
   }.freeze
 
   # Removed from above as it was not used

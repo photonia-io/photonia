@@ -86,6 +86,31 @@ RSpec.describe 'Photos' do
       end
     end
 
+    describe 'GET /photos/{slug} comments' do
+      let(:author) { create(:user, display_name: 'Jane Doe') }
+      let(:replier) { create(:user, display_name: 'Bob') }
+      let!(:parent) { create(:comment, commentable: photo, user: author, body: 'Nice shot') }
+      let!(:reply) { create(:comment, commentable: photo, user: replier, parent: parent) }
+      let!(:flickr_comment) { create(:comment, :with_flickr_user, commentable: photo, user: nil) }
+
+      it 'shows user-authored comments by display name' do
+        get "/photos/#{photo.slug}"
+        expect(response.body).to include('Jane Doe')
+        expect(response.body).to include('Nice shot')
+      end
+
+      it 'shows the reply nested under its parent' do
+        get "/photos/#{photo.slug}"
+        expect(response.body).to include('Bob')
+        expect(response.body).to include(reply.body_html)
+      end
+
+      it 'still shows Flickr-imported comments by their Flickr identity' do
+        get "/photos/#{photo.slug}"
+        expect(response.body).to include(flickr_comment.flickr_user.realname)
+      end
+    end
+
     context 'when the photo has no description' do
       let!(:undescribed_photo) { create(:photo, description: '') }
 

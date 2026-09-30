@@ -82,7 +82,7 @@ class Album < ApplicationRecord
 
   belongs_to :user
   has_many :albums_photos, dependent: :destroy, inverse_of: :album
-  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :comments, -> { order(created_at: :asc) }, as: :commentable, dependent: :destroy, inverse_of: :commentable
   has_many :photos, through: :albums_photos
   belongs_to :public_cover_photo, class_name: 'Photo', optional: true
   belongs_to :user_cover_photo, class_name: 'Photo', optional: true

@@ -13,6 +13,9 @@ describe 'adminSettings Query' do
   let(:continue_with_google_enabled) { true }
   let(:continue_with_facebook_enabled) { true }
   let(:rekognition_enabled) { true }
+  let(:commenting_enabled) { true }
+  let(:photo_commenting_enabled) { true }
+  let(:album_commenting_enabled) { false }
 
   let(:query) do
     <<~GQL
@@ -25,6 +28,9 @@ describe 'adminSettings Query' do
           continueWithGoogleEnabled
           continueWithFacebookEnabled
           rekognitionEnabled
+          commentingEnabled
+          photoCommentingEnabled
+          albumCommentingEnabled
         }
       }
     GQL
@@ -37,6 +43,9 @@ describe 'adminSettings Query' do
     Setting.continue_with_google_enabled = continue_with_google_enabled
     Setting.continue_with_facebook_enabled = continue_with_facebook_enabled
     Setting.rekognition_enabled = rekognition_enabled
+    Setting.commenting_enabled = commenting_enabled
+    Setting.photo_commenting_enabled = photo_commenting_enabled
+    Setting.album_commenting_enabled = album_commenting_enabled
   end
 
   context 'when the user is not logged in' do
@@ -88,7 +97,10 @@ describe 'adminSettings Query' do
           'siteTrackingCode' => site_tracking_code,
           'continueWithGoogleEnabled' => continue_with_google_enabled,
           'continueWithFacebookEnabled' => continue_with_facebook_enabled,
-          'rekognitionEnabled' => rekognition_enabled
+          'rekognitionEnabled' => rekognition_enabled,
+          'commentingEnabled' => commenting_enabled,
+          'photoCommentingEnabled' => photo_commenting_enabled,
+          'albumCommentingEnabled' => album_commenting_enabled
         )
       end
     end

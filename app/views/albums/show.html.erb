@@ -28,3 +28,21 @@
 <hr>
 
 <%== pagy_bulma_nav(@pagy) if @pagy.present? %>
+
+<%# TODO: album commenting needs more refinement before it's shown here.
+    Setting.album_commenting_enabled already gates the backend/API off by
+    default; re-enable this block (and the includes in AlbumsController#show)
+    once the UI is ready. %>
+<% if false %>
+  <h3>Comments</h3>
+  <% top_level_comments = @album.comments.select(&:top_level?) %>
+  <% if top_level_comments.any? %>
+    <ul>
+      <% top_level_comments.each do |comment| %>
+        <%= render 'comments/comment', comment: comment %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p>No comments yet.</p>
+  <% end %>
+<% end %>

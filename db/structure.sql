@@ -158,7 +158,8 @@ CREATE TABLE public.comments (
     body text,
     body_html text,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    parent_id bigint
 );
 
 
@@ -1192,6 +1193,20 @@ CREATE INDEX index_comments_on_flickr_user_id ON public.comments USING btree (fl
 
 
 --
+-- Name: index_comments_on_parent_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_comments_on_parent_id ON public.comments USING btree (parent_id);
+
+
+--
+-- Name: index_comments_on_serial_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_comments_on_serial_number ON public.comments USING btree (serial_number);
+
+
+--
 -- Name: index_comments_on_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1575,6 +1590,14 @@ ALTER TABLE ONLY public.flickr_user_claims
 
 
 --
+-- Name: comments fk_rails_31554e7034; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT fk_rails_31554e7034 FOREIGN KEY (parent_id) REFERENCES public.comments(id);
+
+
+--
 -- Name: related_tags fk_rails_3e066e44b2; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1654,6 +1677,7 @@ SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
 ('20260928165133'),
+('20260928152844'),
 ('20260928142237'),
 ('20260928141128'),
 ('20260928135705'),

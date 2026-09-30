@@ -5,6 +5,8 @@ module Queries
   class BaseQuery < GraphQL::Schema::Resolver
     null false
 
+    COMMENT_INCLUDES = { comments: [:user, :flickr_user, :versions, { replies: %i[user flickr_user versions] }] }.freeze
+
     private
 
     def authorize(record, action)
@@ -42,6 +44,22 @@ module Queries
       collection.define_singleton_method(:current_page) { 1 }
       collection.define_singleton_method(:limit_value) { count }
       collection.define_singleton_method(:total_count) { count }
+    end
+
+    # Preloads comments (and one level of replies) for a single commentable,
+    # and precomputes context[:user_has_claim] once for every FlickrUserType
+    # under it, instead of querying per comment (see FlickrUserType#claimable).
+    def with_comments(relation, lookahead)
+      return relation unless lookahead.selects?(:comments)
+
+      comments_selection = lookahead.selection(:comments)
+      if comments_selection.selection(:flickr_user).selects?(:claimable) ||
+         comments_selection.selection(:replies).selection(:flickr_user).selects?(:claimable)
+        context[:user_has_claim] =
+          current_user ? FlickrUserClaim.exists?(user_id: current_user.id, status: %w[pending approved]) : false
+      end
+
+      relation.includes(COMMENT_INCLUDES)
     end
 
     # Maps each of the given photos to the collapsed album it's the public

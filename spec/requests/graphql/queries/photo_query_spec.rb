@@ -267,3 +267,97 @@ describe 'photo Query' do
     end
   end
 end
+
+describe 'comments field' do
+  include Devise::Test::IntegrationHelpers
+  include_context 'with auth actors'
+
+  subject(:post_query) { post '/graphql', params: { query: query } }
+
+  let(:photo) { create(:photo, user: owner) }
+
+  let(:query) do
+    <<~GQL
+      query {
+        photo(id: #{photo.slug}) {
+          comments {
+            id
+            author { id displayName }
+            canEdit
+            canDelete
+            replies {
+              id
+              author { id displayName }
+            }
+          }
+        }
+      }
+    GQL
+  end
+
+  it 'returns only top-level comments, with replies nested underneath' do
+    parent = create(:comment, commentable: photo, user: owner)
+    reply = create(:comment, commentable: photo, user: stranger, parent: parent)
+    other_top_level = create(:comment, :with_flickr_user, commentable: photo, user: nil)
+
+    post_query
+    comments = data_dig(response, 'photo', 'comments')
+
+    expect(comments.pluck('id')).to contain_exactly(parent.serial_number.to_s, other_top_level.serial_number.to_s)
+
+    parent_data = comments.find { |c| c['id'] == parent.serial_number.to_s }
+    expect(parent_data['replies'].pluck('id')).to contain_exactly(reply.serial_number.to_s)
+    expect(parent_data['replies'].first['author']).to eq('id' => stranger.slug, 'displayName' => stranger.public_name)
+  end
+
+  it 'exposes no email on the author, unlike UserType' do
+    create(:comment, commentable: photo, user: owner)
+
+    post_query
+    comment = data_dig(response, 'photo', 'comments').first
+
+    expect(comment['author']).to eq('id' => owner.slug, 'displayName' => owner.public_name)
+  end
+
+  it 'has a null author for a Flickr-only comment' do
+    create(:comment, :with_flickr_user, commentable: photo, user: nil)
+
+    post_query
+    comment = data_dig(response, 'photo', 'comments').first
+
+    expect(comment['author']).to be_nil
+  end
+
+  it 'sets canEdit/canDelete for the author' do
+    create(:comment, commentable: photo, user: stranger)
+    sign_in(stranger)
+
+    post_query
+    comment = data_dig(response, 'photo', 'comments').first
+
+    expect(comment['canEdit']).to be true
+    expect(comment['canDelete']).to be true
+  end
+
+  it "sets canDelete but not canEdit for the photo's owner" do
+    create(:comment, commentable: photo, user: stranger)
+    sign_in(owner)
+
+    post_query
+    comment = data_dig(response, 'photo', 'comments').first
+
+    expect(comment['canEdit']).to be false
+    expect(comment['canDelete']).to be true
+  end
+
+  it 'sets neither for a stranger' do
+    create(:comment, commentable: photo, user: owner)
+    sign_in(create(:user))
+
+    post_query
+    comment = data_dig(response, 'photo', 'comments').first
+
+    expect(comment['canEdit']).to be false
+    expect(comment['canDelete']).to be false
+  end
+end

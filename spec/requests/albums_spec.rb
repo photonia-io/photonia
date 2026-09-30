@@ -47,6 +47,10 @@ RSpec.describe 'Albums' do
       end
     end
 
+    # TODO: album commenting is disabled in the view pending refinement (see
+    # AlbumsController#show and albums/show.html.erb) - no comments coverage here
+    # until it's re-enabled.
+
     describe 'GET /albums/feed' do
       it 'returns http success' do
         get '/albums/feed.xml'

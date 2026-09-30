@@ -11,6 +11,7 @@ class AlbumsController < ApplicationController
   end
 
   def show
+    # TODO: restore the comments includes once album commenting is re-enabled in the view
     @album = Album.friendly.find(params[:id])
     @pagy, @photos = pagy(@album.photos.order(:ordering))
   rescue ActiveRecord::RecordNotFound

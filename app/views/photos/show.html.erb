@@ -67,18 +67,11 @@
     <% end %>
 
     <h3>Comments</h3>
-    <% if @photo.comments.any? %>
+    <% top_level_comments = @photo.comments.select(&:top_level?) %>
+    <% if top_level_comments.any? %>
       <ul>
-        <% @photo.comments.each do |comment| %>
-          <li>
-            <div>
-              <a href="<%= comment.flickr_user.profileurl %>"><%= comment.flickr_user.realname || comment.flickr_user.username || comment.flickr_user.nsid %></a>
-              <span><%= comment.created_at.strftime('%B %e, %Y %l:%M %p') %></span>
-            </div>
-            <div>
-              <%= comment.body_html.html_safe %>
-            </div>
-          </li>
+        <% top_level_comments.each do |comment| %>
+          <%= render 'comments/comment', comment: comment %>
         <% end %>
       </ul>
     <% else %>

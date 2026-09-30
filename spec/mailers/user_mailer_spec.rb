@@ -57,4 +57,58 @@ RSpec.describe UserMailer, type: :mailer do
       expect(mail.body.encoded).to include('denied')
     end
   end
+
+  describe 'new_comment' do
+    let(:owner) { create(:user) }
+    let(:commenter) { create(:user, display_name: 'Jane Doe') }
+    let(:mail) { UserMailer.with(comment: comment).new_comment }
+
+    context 'when the commentable is a photo' do
+      let(:photo) { create(:photo, user: owner, title: 'Sunset') }
+      let(:comment) { create(:comment, commentable: photo, user: commenter, body: 'Lovely shot') }
+
+      it 'renders the headers' do
+        expect(mail.subject).to eq('New comment on your photo: Sunset')
+        expect(mail.to).to eq([owner.email])
+      end
+
+      it 'renders the body' do
+        expect(mail.body.encoded).to include('Jane Doe')
+        expect(mail.body.encoded).to include('Lovely shot')
+        expect(mail.body.encoded).to include(photo_url(photo))
+      end
+    end
+
+    context 'when the commentable is an album' do
+      let(:album) { create(:album, user: owner, title: 'Vacation') }
+      let(:comment) { create(:comment, commentable: album, user: commenter, body: 'Great album') }
+
+      it 'renders the headers' do
+        expect(mail.subject).to eq('New comment on your album: Vacation')
+      end
+
+      it 'renders the body' do
+        expect(mail.body.encoded).to include('Great album')
+        expect(mail.body.encoded).to include(album_url(album))
+      end
+    end
+
+    context 'when the commentable has no title' do
+      let(:photo) { create(:photo, user: owner, title: nil, description: 'A photo') }
+      let(:comment) { create(:comment, commentable: photo, user: commenter) }
+
+      it 'falls back to "untitled"' do
+        expect(mail.subject).to eq('New comment on your photo: untitled')
+      end
+    end
+
+    context 'when the commentable is private' do
+      let(:photo) { create(:photo, user: owner, privacy: :private, title: 'Hidden') }
+      let(:comment) { create(:comment, commentable: photo, user: commenter) }
+
+      it 'still resolves the commentable and its owner' do
+        expect(mail.to).to eq([owner.email])
+      end
+    end
+  end
 end

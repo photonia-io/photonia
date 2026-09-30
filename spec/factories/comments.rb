@@ -14,17 +14,21 @@
 #  updated_at       :datetime         not null
 #  commentable_id   :bigint           not null
 #  flickr_user_id   :bigint
+#  parent_id        :bigint
 #  user_id          :bigint
 #
 # Indexes
 #
 #  index_comments_on_commentable     (commentable_type,commentable_id)
 #  index_comments_on_flickr_user_id  (flickr_user_id)
+#  index_comments_on_parent_id       (parent_id)
+#  index_comments_on_serial_number   (serial_number) UNIQUE
 #  index_comments_on_user_id         (user_id)
 #
 # Foreign Keys
 #
 #  fk_rails_...  (flickr_user_id => flickr_users.id)
+#  fk_rails_...  (parent_id => comments.id)
 #  fk_rails_...  (user_id => users.id)
 #
 FactoryBot.define do
@@ -42,6 +46,10 @@ FactoryBot.define do
 
     trait :with_album do
       commentable { create(:album) }
+    end
+
+    trait :reply do
+      parent { create(:comment, commentable: commentable) }
     end
   end
 end
