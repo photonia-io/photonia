@@ -646,7 +646,9 @@ const handleKeydown = (event) => {
   showControls();
 };
 
-// Add/remove keyboard listener
+// Add/remove keyboard listener. immediate: a lightbox route (?lightbox=)
+// can mount already open - a direct load or the forward button - and this
+// setup must run then too, not just on a later isOpen flip.
 watch(
   () => props.isOpen,
   (newValue) => {
@@ -663,6 +665,7 @@ watch(
       document.body.style.overflow = "";
     }
   },
+  { immediate: true },
 );
 </script>
 

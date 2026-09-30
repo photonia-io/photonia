@@ -962,10 +962,12 @@ const handleKeyDown = (event) => {
   if (isTypingTarget(event.target)) return;
 
   // The lightbox disables navigationShortcutsEnabled (it owns Escape/zoom
-  // instead), but photo prev/next is still meant to work while it's open.
+  // instead), but photo prev/next is still meant to work while it's open -
+  // unless shortcuts are ALSO suspended for an unrelated reason (editing a
+  // title/description, which doesn't block clicking the hero to open it).
   if (
     applicationStore.navigationShortcutsEnabled === true ||
-    lightboxRequested.value
+    (lightboxRequested.value && !applicationStore.editing)
   ) {
     if (event.key === "ArrowLeft") {
       navigateToPreviousPhoto();

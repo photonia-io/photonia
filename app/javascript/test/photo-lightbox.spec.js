@@ -120,16 +120,29 @@ describe("PhotoLightbox", () => {
 
   // Leaving the page (e.g. a lightbox route closed by two quick backs)
   // otherwise left the body unscrollable and a stray keydown listener.
-  it("restores body scrolling and the keydown listener if unmounted while open", async () => {
-    // The isOpen watcher that sets this isn't `immediate`, so toggle it
-    // rather than relying on the initial isOpen: true from mount.
-    await wrapper.setProps({ isOpen: false });
-    await wrapper.setProps({ isOpen: true });
+  it("restores body scrolling and the keydown listener if unmounted while open", () => {
     expect(document.body.style.overflow).toBe("hidden");
 
     wrapper.unmount();
 
     expect(document.body.style.overflow).toBe("");
+  });
+
+  // A lightbox route (?lightbox=) can mount already open - a direct load or
+  // the forward button - not just flip open after mounting closed. The
+  // beforeEach above mounts with isOpen: true from the start, so these
+  // cover that path specifically.
+  describe("mounting already open", () => {
+    it("locks body scrolling from the first render", () => {
+      expect(document.body.style.overflow).toBe("hidden");
+    });
+
+    it("lets Escape close it from the first render", async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      await nextTick();
+
+      expect(wrapper.emitted().close).toBeTruthy();
+    });
   });
 });
 
