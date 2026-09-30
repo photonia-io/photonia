@@ -29,6 +29,7 @@ Tests must never be rewritten against behaviour the user hasn't signed off on.
 overmind s -N -f Procfile.dev   # dev: rails s + bin/vite dev + sidekiq
 bundle exec rspec [path[:line]] # Ruby suite
 yarn test:run                   # Vitest (Yarn 4 via Corepack, not npm)
+yarn test:coverage              # Vitest + coverage (CI; Codecov flags: ruby / javascript)
 bundle exec rubocop             # not enforced in CI (lint job commented out)
 ```
 

@@ -1,0 +1,7 @@
+flag_management:
+  default_rules:
+    # CI skips rspec or vitest when a PR can't affect it; reuse the parent's report
+    carryforward: true
+
+comment:
+  layout: "condensed_header, diff, flags, files"

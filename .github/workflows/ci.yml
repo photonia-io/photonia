@@ -26,6 +26,7 @@ jobs:
           filters: |
             workflow: &workflow
               - .github/workflows/ci.yml
+              - codecov.yml
             js_build: &js_build
               - package.json
               - yarn.lock
@@ -108,6 +109,8 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           slug: photonia-io/photonia
+          files: coverage/coverage.xml
+          flags: ruby
 
   vitest:
     needs: changes
@@ -126,7 +129,13 @@ jobs:
       - name: Install Node packages
         run: yarn install --immutable
       - name: Run vitest
-        run: yarn test:run
+        run: yarn test:coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          slug: photonia-io/photonia
+          files: coverage/vitest/cobertura-coverage.xml
+          flags: javascript
 
   # lint:
   #   runs-on: ubuntu-latest
