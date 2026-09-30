@@ -19,7 +19,12 @@ class PhotosController < ApplicationController
   end
 
   def show
-    @photo = Photo.includes(comments: [:flickr_user, :user, { replies: %i[flickr_user user] }]).friendly.find(params[:id])
+    @photo = Photo.includes(comments: %i[flickr_user user]).friendly.find(params[:id])
+    # Replies are comments too; preload their replies only for top-level ones.
+    ActiveRecord::Associations::Preloader.new(
+      records: @photo.comments.select(&:top_level?),
+      associations: { replies: %i[flickr_user user] }
+    ).call
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
   rescue ActiveRecord::RecordNotFound
