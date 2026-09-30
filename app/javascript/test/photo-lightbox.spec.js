@@ -100,6 +100,37 @@ describe("PhotoLightbox", () => {
       expect(applicationStore.navigationShortcutsEnabled).toBe(true);
     });
   });
+
+  // display-hero.vue calls this directly to play the same shrink animation
+  // for a lightbox closed by the back button.
+  describe("exposed close()", () => {
+    it("emits close", async () => {
+      await wrapper.vm.close();
+      expect(wrapper.emitted().close).toBeTruthy();
+    });
+
+    it("is a no-op while a close is already in flight", async () => {
+      const first = wrapper.vm.close();
+      const second = wrapper.vm.close();
+      await Promise.all([first, second]);
+
+      expect(wrapper.emitted().close).toHaveLength(1);
+    });
+  });
+
+  // Leaving the page (e.g. a lightbox route closed by two quick backs)
+  // otherwise left the body unscrollable and a stray keydown listener.
+  it("restores body scrolling and the keydown listener if unmounted while open", async () => {
+    // The isOpen watcher that sets this isn't `immediate`, so toggle it
+    // rather than relying on the initial isOpen: true from mount.
+    await wrapper.setProps({ isOpen: false });
+    await wrapper.setProps({ isOpen: true });
+    expect(document.body.style.overflow).toBe("hidden");
+
+    wrapper.unmount();
+
+    expect(document.body.style.overflow).toBe("");
+  });
 });
 
 // 3:2, like most photos: in happy-dom's 1024x768 viewport the frame is

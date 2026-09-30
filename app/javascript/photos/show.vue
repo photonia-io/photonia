@@ -916,6 +916,7 @@ const showAlbumBrowser = computed(
 const {
   inAlbumId,
   navigationQuery,
+  lightboxRequested,
   navigateToPhoto,
   albumRoute,
   startNavigatingAlbum,
@@ -960,7 +961,12 @@ const handleKeyDown = (event) => {
   if (event.ctrlKey || event.metaKey || event.altKey) return;
   if (isTypingTarget(event.target)) return;
 
-  if (applicationStore.navigationShortcutsEnabled === true) {
+  // The lightbox disables navigationShortcutsEnabled (it owns Escape/zoom
+  // instead), but photo prev/next is still meant to work while it's open.
+  if (
+    applicationStore.navigationShortcutsEnabled === true ||
+    lightboxRequested.value
+  ) {
     if (event.key === "ArrowLeft") {
       navigateToPreviousPhoto();
     } else if (event.key === "ArrowRight") {
