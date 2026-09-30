@@ -2,16 +2,117 @@
 
 @use "sass:list";
 
-@use "bulma/sass" with (
-  $box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1),
+// Bulma loaded module-by-module instead of the full `bulma/sass` barrel, so
+// unused components/helpers (breadcrumb, menu, panel, file upload, skeleton,
+// the CSS-grid module, and most of all the full has-text-*/has-background-*
+// color-shade helpers) never compile - see #1096 for the audit of what's
+// actually used. Every Bulma file only @uses its own ../utilities/*, so
+// cherry-picking like this needs no extra wiring beyond the two variables
+// this app has always configured, each at the one file that declares it.
+@use "bulma/sass/base/minireset";
+@use "bulma/sass/base/generic";
+@use "bulma/sass/base/animations";
+
+@use "bulma/sass/elements/block";
+@use "bulma/sass/elements/box" with (
+  $box-shadow: 0.1em 0.1em 0.1em 0.1em rgba(0, 0, 0, 0.1)
+);
+@use "bulma/sass/elements/button";
+@use "bulma/sass/elements/content";
+@use "bulma/sass/elements/delete";
+@use "bulma/sass/elements/icon";
+@use "bulma/sass/elements/image";
+@use "bulma/sass/elements/notification";
+@use "bulma/sass/elements/progress";
+@use "bulma/sass/elements/table";
+@use "bulma/sass/elements/tag";
+@use "bulma/sass/elements/title";
+
+@use "bulma/sass/form/shared";
+@use "bulma/sass/form/input-textarea";
+@use "bulma/sass/form/checkbox-radio";
+@use "bulma/sass/form/select";
+@use "bulma/sass/form/tools";
+
+@use "bulma/sass/components/card";
+@use "bulma/sass/components/dropdown";
+@use "bulma/sass/components/message";
+@use "bulma/sass/components/modal";
+@use "bulma/sass/components/navbar";
+@use "bulma/sass/components/pagination";
+@use "bulma/sass/components/tabs";
+
+// Only .columns/.column - the CSS-grid module (.grid/.fixed-grid/.cell) is
+// used on one page (photos/search.vue), which carries a few lines of plain
+// grid CSS instead of the column-count/cell-span breakpoint machinery that
+// module compiles to for every column count up to 12.
+@use "bulma/sass/grid/columns";
+
+@use "bulma/sass/layout/container";
+@use "bulma/sass/layout/footer";
+@use "bulma/sass/layout/hero";
+@use "bulma/sass/layout/level";
+@use "bulma/sass/layout/media";
+@use "bulma/sass/layout/section" with (
   $section-padding: 3rem 0.75rem
 );
+
+@use "bulma/sass/helpers/flexbox";
+@use "bulma/sass/helpers/other";
+@use "bulma/sass/helpers/position";
+@use "bulma/sass/helpers/spacing";
+@use "bulma/sass/helpers/typography";
+@use "bulma/sass/helpers/visibility";
+
+@use "bulma/sass/utilities/initial-variables" as bulma-iv;
+@use "bulma/sass/utilities/css-variables" as bulma-cv;
+@use "bulma/sass/themes/light" as bulma-light;
+@use "bulma/sass/themes/dark" as bulma-dark;
+@use "bulma/sass/themes/setup" as bulma-setup;
 
 @use "bulma-block-list/src/block-list";
 
 @use "bulma-divider" with (
   $divider-margin-size: 0.75rem
 );
+
+// Bulma's own themes/_index.scss emits the light theme a second time under
+// `@media (prefers-color-scheme: light)` and a third time under
+// `[data-theme=light], .theme-light` - both fully redundant here, since the
+// bare :root block below already carries the light values unconditionally,
+// and app.vue always sets data-theme explicitly once JS runs (see
+// _boot_shell.html.erb). Only the dark variants need a selector of their
+// own; the system-theme (prefers-color-scheme) dark block is the no-JS/
+// pre-boot-script fallback. See #1096.
+#{bulma-iv.$variables-host} {
+  @include bulma-light.light-theme;
+  @include bulma-setup.setup-theme;
+}
+
+@include bulma-cv.system-theme($name: "dark") {
+  @include bulma-dark.dark-theme;
+}
+
+@include bulma-cv.bulma-theme($name: "dark") {
+  @include bulma-dark.dark-theme;
+  @include bulma-setup.setup-theme;
+}
+
+// helpers/color.scss isn't loaded (it's ~340 of Bulma's ~1000 helper lines,
+// almost all of it shade variants - "-05" through "-100" - nothing here
+// uses), which drops these two the app does use. Hand-written to match
+// Bulma's own generated rule, same --bulma-{name}-{h,s,l} vars. See #1096.
+.has-text-link {
+  color: hsl(var(--bulma-link-h), var(--bulma-link-s), var(--bulma-link-l)) !important;
+}
+
+.has-text-danger {
+  color: hsl(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-l)) !important;
+}
+
+.has-background {
+  background-color: var(--bulma-background);
+}
 
 // Bulma's `is-light` variants are broken on a dark page, in two separate ways.
 //
@@ -203,4 +304,55 @@ $is-light-colors: "text", "primary", "link", "info", "success", "warning",
   gap: 0.375rem;
   font-size: 0.75rem;
   color: var(--bulma-text-weak);
+}
+
+// A hand-rolled stand-in for the 4 animate.css classes mixins/toaster.js
+// asks bulma-toast for (animate__animated/faster/fadeInRight/fadeOutRight) -
+// the only ones it ever uses - instead of bundling the whole library. See
+// #1096.
+.animate__animated {
+  animation-duration: 1s;
+  animation-fill-mode: both;
+}
+
+.animate__faster {
+  animation-duration: 0.5s;
+}
+
+.animate__fadeInRight {
+  animation-name: toast-fade-in-right;
+}
+
+.animate__fadeOutRight {
+  animation-name: toast-fade-out-right;
+}
+
+@keyframes toast-fade-in-right {
+  from {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes toast-fade-out-right {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate__animated {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

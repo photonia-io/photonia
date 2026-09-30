@@ -7,7 +7,6 @@
     "@apollo/client": "^3.14.1",
     "@sentry/vue": "10.45.0",
     "@vue/apollo-composable": "^4.2.2",
-    "animate.css": "^4.1.1",
     "bulma": "^1.0.4",
     "bulma-block-list": "1.1.0",
     "bulma-toast": "^2.4.4",

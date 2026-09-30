@@ -858,13 +858,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"animate.css@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "animate.css@npm:4.1.1"
-  checksum: 10c0/28fcf5a5f502e4c12186846d22aa1cd63b835955160a97116930c78bff8a89135aa5c57f94010252a29456ada7cfc8ed8791cac02521ec6402befaf883937159
-  languageName: node
-  linkType: hard
-
 "ansi-regex@npm:^5.0.1":
   version: 5.0.1
   resolution: "ansi-regex@npm:5.0.1"
@@ -2003,7 +1996,6 @@ __metadata:
     "@vue/apollo-composable": "npm:^4.2.2"
     "@vue/compiler-dom": "npm:^3.5.43"
     "@vue/test-utils": "npm:^2.5.1"
-    animate.css: "npm:^4.1.1"
     bulma: "npm:^1.0.4"
     bulma-block-list: "npm:1.1.0"
     bulma-toast: "npm:^2.4.4"
