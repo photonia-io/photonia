@@ -4,6 +4,16 @@ require 'rails_helper'
 
 RSpec.describe 'Homepage' do
   describe 'GET /' do
+    it 'exposes the homepage section toggles to the SPA' do
+      create(:photo, image_data: TestData.image_data)
+      Setting.homepage_hidden_gems_enabled = false
+
+      get '/'
+
+      expect(response.body).to include('&quot;hidden_gems&quot;:false').or include('"hidden_gems":false')
+      expect(response.body).to match(/(&quot;|")stats(&quot;|"):true/)
+    end
+
     context 'when the latest photo is an ordinary one' do
       let!(:photo) { create(:photo, image_data: TestData.image_data) }
 

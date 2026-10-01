@@ -84,6 +84,44 @@ describe 'adminSettings Query' do
     context 'when the user is an admin' do
       let(:user) { create(:user, admin: true) }
 
+      describe 'homepage settings' do
+        let(:query) do
+          <<~GQL
+            query {
+              adminSettings {
+                homepageStatsEnabled
+                homepageTagsEnabled
+                homepageSpotlightAlbumId
+                spotlightAlbumChoices { id title }
+              }
+            }
+          GQL
+        end
+
+        def public_album(title, privacy: 'public')
+          create(:album, title:, privacy:).tap do |album|
+            album.photos << create(:photo, privacy:)
+            album.maintenance
+          end
+        end
+
+        it 'returns the toggles (all on by default) and the album picker choices, by title' do
+          zebra = public_album('Zebra')
+          apple = public_album('Apple')
+          public_album('Secret', privacy: 'private')
+          Setting.homepage_tags_enabled = false
+
+          post_query
+
+          data = response.parsed_body.dig('data', 'adminSettings')
+          expect(data).to include('homepageStatsEnabled' => true, 'homepageTagsEnabled' => false,
+                                  'homepageSpotlightAlbumId' => '')
+          expect(data['spotlightAlbumChoices']).to eq(
+            [{ 'id' => apple.slug, 'title' => 'Apple' }, { 'id' => zebra.slug, 'title' => 'Zebra' }]
+          )
+        end
+      end
+
       it 'returns admin settings' do
         post_query
 

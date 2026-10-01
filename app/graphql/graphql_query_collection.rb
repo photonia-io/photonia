@@ -30,7 +30,18 @@ class GraphqlQueryCollection
 
   COLLECTION = {
     homepage_index: <<~GQL.squish,
-      query HomepageQuery {
+      query HomepageQuery(
+        $latestAlbums: Boolean!
+        $spotlight: Boolean!
+        $onThisDay: Boolean!
+        $thisMonth: Boolean!
+        $popular: Boolean!
+        $hiddenGems: Boolean!
+        $recentlyCommented: Boolean!
+        $recentComments: Boolean!
+        $stats: Boolean!
+        $tags: Boolean!
+      ) {
         latestPhoto: photo(fetchType: "latest") {
           id
           title
@@ -51,17 +62,143 @@ class GraphqlQueryCollection
             photosCount
           }
         }
-        randomPhotos: photos(mode: "simple", fetchType: "random", limit: 4) {
+        latestPhotos: photos(mode: "simple", fetchType: "feed", offset: 1, limit: 5) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            feedAlbum {
+              id
+              title
+              photosCount
+            }
+          }
+        }
+        latestAlbums: albums(mode: "simple", order: "newest", limit: 5) @include(if: $latestAlbums) {
+          collection {
+            id
+            title
+            photosCount
+            coverPhoto {
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            }
+          }
+        }
+        albumSpotlight @include(if: $spotlight) {
+          id
+          title
+          descriptionHtml
+          photosCount
+          photos {
+            collection {
+              id
+              title
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            }
+          }
+        }
+        onThisDay: photos(mode: "simple", fetchType: "on_this_day", limit: 5) @include(if: $onThisDay) {
+          collection {
+            id
+            title
+            takenAt
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+          }
+        }
+        thisMonth: photos(mode: "simple", fetchType: "this_month", limit: 5) @include(if: $thisMonth) {
+          collection {
+            id
+            title
+            takenAt
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+          }
+        }
+        trending: photos(mode: "simple", fetchType: "trending", limit: 5) @include(if: $popular) {
           collection {
             id
             title
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
-        mostUsedTags: tags(type: "user", order: "most_used", limit: 60) {
+        mostViewed: photos(mode: "simple", fetchType: "most_viewed", limit: 5) @include(if: $popular) {
+          collection {
+            id
+            title
+            impressionsCount
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+          }
+        }
+        hiddenGems: photos(mode: "simple", fetchType: "least_viewed", limit: 5) @include(if: $hiddenGems) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+          }
+        }
+        recentComments(limit: 5) @include(if: $recentComments) {
+            id
+            snippet
+            authorName
+            createdAt
+            commentsCount
+            photo {
+              id
+              title
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            }
+            album {
+              id
+              title
+              coverPhoto {
+                intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+              }
+            }
+          }
+        recentlyCommented: recentComments(limit: 5, distinct: true) @include(if: $recentlyCommented) {
+            id
+            snippet
+            authorName
+            createdAt
+            commentsCount
+            photo {
+              id
+              title
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            }
+            album {
+              id
+              title
+              coverPhoto {
+                intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+              }
+            }
+          }
+        homepageStats @include(if: $stats) {
+          photosCount
+          albumsCount
+          viewsCount
+          firstYear
+          lastYear
+          years {
+            year
+            count
+          }
+        }
+        mostUsedTags: tags(type: "user", order: "most_used", limit: 15) @include(if: $tags) {
           id
           name
           taggingsCount
+        }
+      }
+    GQL
+    homepage_random_photos: <<~GQL.squish,
+      query HomepageRandomPhotosQuery {
+        randomPhotos: photos(mode: "simple", fetchType: "random", limit: 5) {
+          collection {
+            id
+            title
+            intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+          }
         }
       }
     GQL

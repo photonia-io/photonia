@@ -1,29 +1,51 @@
 <template>
-  <h2 class="title is-3 mb-2">Random Photos</h2>
-  <hr class="mt-0 mb-3" />
-  <div class="columns is-multiline">
-    <div v-for="photo in photos" class="column is-half">
-      <router-link :to="{ name: 'photos-show', params: { id: photo.id } }">
-        <img
-          v-if="photo.intelligentOrSquareMediumImageUrl"
-          :src="photo.intelligentOrSquareMediumImageUrl"
-          :alt="photo.title"
-          class="image is-fullwidth"
-        />
-        <ImagePlaceholder v-else />
-        {{ photo.title }}
-      </router-link>
-    </div>
-  </div>
+  <SectionRow v-if="showing" title="Random Photos" :loading="busy">
+    <template #actions>
+      <button
+        type="button"
+        class="button is-small"
+        :class="{ 'is-loading': busy }"
+        :disabled="busy"
+        @click="shuffle"
+      >
+        Shuffle
+      </button>
+    </template>
+    <HomeTile
+      v-for="photo in photos"
+      :key="photo.id"
+      :to="{ name: 'photos-show', params: { id: photo.id } }"
+      :title="photo.title"
+      :image-url="photo.intelligentOrSquareMediumImageUrl"
+    />
+  </SectionRow>
 </template>
 
 <script setup>
-import ImagePlaceholder from "@/shared/image-placeholder.vue";
+import { computed, ref } from "vue";
+import gql from "graphql-tag";
+import { useQuery } from "@vue/apollo-composable";
 
-const props = defineProps({
-  photos: {
-    type: Array,
-    required: true,
-  },
-});
+import SectionRow from "./section-row.vue";
+import HomeTile from "./home-tile.vue";
+
+const { result, loading, refetch } = useQuery(
+  gql`${gql_queries.homepage_random_photos}`,
+);
+
+const photos = computed(() => result.value?.randomPhotos?.collection ?? []);
+
+// refetch() doesn't reliably flip `loading`, so track the shuffle ourselves.
+const shuffling = ref(false);
+const busy = computed(() => loading.value || shuffling.value);
+const showing = computed(() => busy.value || photos.value.length > 0);
+
+const shuffle = async () => {
+  shuffling.value = true;
+  try {
+    await refetch();
+  } finally {
+    shuffling.value = false;
+  }
+};
 </script>

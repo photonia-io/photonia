@@ -334,6 +334,166 @@ describe 'photos Query' do
       end
     end
 
+    context 'when fetchType is feed' do
+      let(:query) do
+        <<~GQL
+          query {
+            photos(mode: "simple", fetchType: "feed", offset: 1, limit: 2) {
+              collection {
+                id
+                feedAlbum { id photosCount }
+              }
+            }
+          }
+        GQL
+      end
+
+      before { Photo.unscoped.destroy_all }
+
+      it 'skips hidden photos, orders newest first and applies the offset' do
+        newest = create(:photo, posted_at: 1.day.ago)
+        second = create(:photo, posted_at: 2.days.ago)
+        third = create(:photo, posted_at: 3.days.ago)
+        create(:photo, posted_at: 1.hour.ago, hidden_from_feed: true)
+        create(:photo, posted_at: 4.days.ago)
+
+        post_query
+
+        ids = response.parsed_body['data']['photos']['collection'].map { |p| p['id'] }
+        expect(ids).to eq([second.slug, third.slug])
+        expect(ids).not_to include(newest.slug)
+      end
+
+      it 'marks the cover of a collapsed album with feedAlbum' do
+        album = create(:album, sorting_type: 'manual', collapsed_in_feed: true)
+        cover = create(:photo, posted_at: 2.days.ago)
+        album.photos << cover
+        album.photos << create(:photo, posted_at: 2.days.ago)
+        album.maintenance
+        create(:photo, posted_at: 1.day.ago)
+
+        post_query
+
+        collection = response.parsed_body['data']['photos']['collection']
+        expect(collection.first).to include('id' => cover.slug, 'feedAlbum' => include('id' => album.slug, 'photosCount' => 2))
+      end
+    end
+
+    describe 'taken-date fetch types' do
+      include ActiveSupport::Testing::TimeHelpers
+
+      around { |example| travel_to(Time.zone.local(2026, 10, 15, 12)) { example.run } }
+
+      before { Photo.unscoped.destroy_all }
+
+      def taken_photo(taken_at, source: 'user', precision: 'minute', approximate: false, **attrs)
+        create(:photo, **attrs).tap do |photo|
+          photo.update_columns(taken_at:, taken_at_source: source, taken_at_precision: precision,
+                               taken_at_approximate: approximate)
+        end
+      end
+
+      def fetch_ids(fetch_type)
+        post '/graphql', params: {
+          query: %(query { photos(mode: "simple", fetchType: "#{fetch_type}") { collection { id } } })
+        }
+        response.parsed_body['data']['photos']['collection'].map { |p| p['id'] }
+      end
+
+      describe 'on_this_day' do
+        it 'returns photos taken on today\'s month and day in earlier years only' do
+          match = taken_photo(Time.zone.local(2019, 10, 15, 9))
+          taken_photo(Time.zone.local(2026, 10, 15, 9))
+          taken_photo(Time.zone.local(2019, 10, 16, 9))
+          taken_photo(Time.zone.local(2019, 11, 15, 9))
+
+          expect(fetch_ids('on_this_day')).to eq([match.slug])
+        end
+
+        it 'skips unknown-source, approximate, month-precision and non-public photos' do
+          taken_photo(Time.zone.local(2019, 10, 15), source: 'unknown')
+          taken_photo(Time.zone.local(2019, 10, 15), approximate: true)
+          taken_photo(Time.zone.local(2019, 10, 15), precision: 'month')
+          taken_photo(Time.zone.local(2019, 10, 15), privacy: 'private')
+
+          expect(fetch_ids('on_this_day')).to be_empty
+        end
+      end
+
+      describe 'this_month' do
+        it 'returns this month in any year, but not today\'s date in earlier years' do
+          other_day = taken_photo(Time.zone.local(2019, 10, 3))
+          month_only = taken_photo(Time.zone.local(2018, 10, 15), precision: 'month')
+          this_year = taken_photo(Time.zone.local(2026, 10, 3))
+          today_this_year = taken_photo(Time.zone.local(2026, 10, 15))
+          taken_photo(Time.zone.local(2019, 10, 15))
+          taken_photo(Time.zone.local(2019, 9, 3))
+
+          expect(fetch_ids('this_month')).to contain_exactly(
+            other_day.slug, month_only.slug, this_year.slug, today_this_year.slug
+          )
+        end
+      end
+    end
+
+    describe 'view-based fetch types' do
+      before { Photo.unscoped.destroy_all }
+
+      def fetch_ids(fetch_type, limit: nil)
+        args = limit ? ", limit: #{limit}" : ''
+        post '/graphql', params: {
+          query: %(query { photos(mode: "simple", fetchType: "#{fetch_type}"#{args}) { collection { id } } })
+        }
+        response.parsed_body['data']['photos']['collection'].map { |p| p['id'] }
+      end
+
+      def view(photo, at: Time.current)
+        Impression.create!(impressionable_type: 'Photo', impressionable_id: photo.id, created_at: at)
+      end
+
+      describe 'trending' do
+        it 'ranks by impressions in the last 7 days, ignoring older ones and non-public photos' do
+          popular = create(:photo)
+          modest = create(:photo)
+          stale = create(:photo)
+          hidden = create(:photo, privacy: 'private')
+          3.times { view(popular) }
+          view(modest)
+          5.times { view(stale, at: 8.days.ago) }
+          4.times { view(hidden) }
+
+          expect(fetch_ids('trending')).to eq([popular.slug, modest.slug])
+        end
+
+        it 'is empty when nothing was viewed this week' do
+          create(:photo)
+
+          expect(fetch_ids('trending')).to be_empty
+        end
+      end
+
+      describe 'most_viewed' do
+        it 'orders by local plus Flickr views' do
+          low = create(:photo, impressions_count: 1, flickr_impressions_count: 2)
+          high = create(:photo, impressions_count: 5, flickr_impressions_count: 100)
+          mid = create(:photo, impressions_count: 50, flickr_impressions_count: 0)
+
+          expect(fetch_ids('most_viewed')).to eq([high.slug, mid.slug, low.slug])
+        end
+      end
+
+      describe 'least_viewed' do
+        it 'draws only from the least viewed photos' do
+          stub_const('Queries::PhotosQuery::HIDDEN_GEMS_POOL', 2)
+          gems = [create(:photo, impressions_count: 0), create(:photo, impressions_count: 1)]
+          create(:photo, impressions_count: 500)
+          create(:photo, flickr_impressions_count: 900)
+
+          expect(fetch_ids('least_viewed')).to match_array(gems.map(&:slug))
+        end
+      end
+    end
+
     context 'when limit exceeds maximum allowed limit' do
       # We're requesting 6 photos because for tests the SIMPLE_MODE_MAX_LIMIT is set 5
       # Normally SIMPLE_MODE_MAX_LIMIT is 100

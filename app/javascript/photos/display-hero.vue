@@ -64,9 +64,16 @@
             :key="label.id"
           />
         </div>
-        <div v-if="isHomepage && photo.id" class="overlay">
-          <div class="level p-2">
-            <div class="level-left pl-3">
+      </div>
+    </div>
+
+    <!-- Full-width bar over the bottom of the hero; its content lines up with
+         the page content below (same wrapper classes as the sections) -->
+    <div v-if="showCaption" class="hero-caption">
+      <div class="section-pt-pb-0">
+        <div class="container">
+          <div class="level">
+            <div class="level-left">
               <p class="is-size-4">
                 <template v-if="photo.feedAlbum">
                   Latest album:
@@ -86,7 +93,7 @@
                 </template>
               </p>
             </div>
-            <div class="level-right has-text-right pr-3">
+            <div class="level-right">
               <router-link :to="{ name: 'photos-index' }" class="button">
                 See all photos...
               </router-link>
@@ -145,6 +152,9 @@ const emit = defineEmits(["highlightLabel", "unHighlightLabel"]);
 // cover standing in for it - link to the album instead. Off the homepage
 // (the photo page itself), a direct photo lookup never carries feedAlbum,
 // so this always resolves to the photo there regardless.
+// The caption row (latest photo/album title + button) is homepage-only
+const showCaption = computed(() => props.isHomepage && !!props.photo.id);
+
 const heroRoute = computed(() =>
   props.isHomepage && props.photo.feedAlbum
     ? { name: "albums-show", params: { id: props.photo.feedAlbum.id } }
@@ -454,18 +464,6 @@ const showLabels = computed(() => {
   }
 }
 
-// Both of these used to inherit the photo's box for free, back when the
-// wrapper was the photo box. It's full-width now, so they have to take the
-// photo's geometry themselves to stay aligned to the image.
-.overlay {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  @include photo-box(var(--target-ratio), var(--target-width));
-}
-
 // Positioned so the Rekognition label boxes inside, which are placed in
 // percentages, resolve against the photo rather than the full-width wrapper.
 // pointer-events: none so the overlay (which covers the whole photo, not just
@@ -485,7 +483,32 @@ const showLabels = computed(() => {
   position: relative;
 }
 
-// A small tag next to the overlay's is-size-4 text otherwise sits on its own
+// Translucent bar over the bottom of the hero, edge to edge. The content
+// inside is aligned with the page content by the wrapper classes in the template.
+.hero-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.5rem 0;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+// Bulma only stacks .level below 769px
+@media (max-width: 768px) {
+  .hero-caption .level-right {
+    margin-top: 0.5rem;
+  }
+}
+
+// Bulma's default link blue is unreadable on the dark bar.
+.hero-caption a:not(.button) {
+  color: inherit;
+  text-decoration: underline;
+}
+
+// A small tag next to the caption's is-size-4 text otherwise sits on its own
 // baseline, reading as vertically off against the much taller text around it.
 .feed-album-count {
   vertical-align: middle;

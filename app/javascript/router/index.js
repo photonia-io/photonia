@@ -94,6 +94,11 @@ export function createAppRouter(pinia) {
           component: () => import("../admin/general.vue"),
         },
         {
+          path: "homepage",
+          name: "admin-homepage",
+          component: () => import("../admin/homepage.vue"),
+        },
+        {
           path: "comments",
           name: "admin-comments",
           component: () => import("../admin/comments.vue"),

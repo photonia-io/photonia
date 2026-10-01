@@ -1,24 +1,21 @@
 <template>
-  <h2 class="title is-3 mb-2">Most used tags</h2>
-  <hr class="mt-0 mb-3"/>
-  <div class="field is-grouped is-grouped-multiline">
-    <TagWithCount
-      v-for="tag in tags"
-      :tag="tag"
-      :key="tag.id"
-    />
-  </div>
-  <router-link :to="{ name: 'tags-index' }" class="button">See tags page...</router-link>
+  <SectionRow
+    title="Most used tags"
+    :to="{ name: 'tags-index' }"
+    link-label="See tags page..."
+    :grid="false"
+  >
+    <div class="field is-grouped is-grouped-multiline">
+      <TagWithCount v-for="tag in tags" :tag="tag" :key="tag.id" />
+    </div>
+  </SectionRow>
 </template>
 
-<script>
-  import TagWithCount from '../tag-with-count.vue'
+<script setup>
+import SectionRow from "./section-row.vue";
+import TagWithCount from "../tag-with-count.vue";
 
-  export default {
-    name: 'MostUsedTags',
-    components: {
-      TagWithCount
-    },
-    props: [ 'tags' ]
-  }
+defineProps({
+  tags: { type: Array, required: true },
+});
 </script>
