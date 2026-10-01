@@ -27,10 +27,12 @@ defineProps({
 
 const targetTitle = (comment) => (comment.photo || comment.album).title;
 
+const highlight = (comment) => ({ highlightComment: comment.id });
+
 const targetRoute = (comment) =>
   comment.photo
-    ? { name: "photos-show", params: { id: comment.photo.id } }
-    : { name: "albums-show", params: { id: comment.album.id } };
+    ? { name: "photos-show", params: { id: comment.photo.id }, query: highlight(comment) }
+    : { name: "albums-show", params: { id: comment.album.id }, query: highlight(comment) };
 
 const thumbnail = (comment) =>
   comment.photo

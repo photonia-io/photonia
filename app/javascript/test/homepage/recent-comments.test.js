@@ -50,8 +50,16 @@ describe("RecentComments", () => {
       .findAllComponents(RouterLinkStub)
       .map((link) => link.props("to"));
 
-    expect(routes).toContainEqual({ name: "photos-show", params: { id: "a-photo" } });
-    expect(routes).toContainEqual({ name: "albums-show", params: { id: "an-album" } });
+    expect(routes).toContainEqual({
+      name: "photos-show",
+      params: { id: "a-photo" },
+      query: { highlightComment: "1" },
+    });
+    expect(routes).toContainEqual({
+      name: "albums-show",
+      params: { id: "an-album" },
+      query: { highlightComment: "2" },
+    });
   });
 
   it("uses the album's cover as its thumbnail", () => {

@@ -196,7 +196,11 @@ describe("Homepage sections", () => {
 
     expect(row.text()).toContain("1 comment");
     expect(row.text()).toContain("4 comments");
-    expect(routesIn(row)).toContainEqual({ name: "albums-show", params: { id: "an-album" } });
+    expect(routesIn(row)).toContainEqual({
+      name: "albums-show",
+      params: { id: "an-album" },
+      query: { highlightComment: "2" },
+    });
     expect(row.findAll("img").map((img) => img.attributes("src"))).toEqual(["p1.jpg", "c.jpg"]);
   });
 

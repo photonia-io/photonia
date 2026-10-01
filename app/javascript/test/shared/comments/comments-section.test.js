@@ -3,6 +3,7 @@ import { mount, RouterLinkStub, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 
 vi.mock("../../../mixins/toaster", () => ({ default: vi.fn() }));
+vi.mock("vue-router", () => ({ useRoute: () => ({ path: "/photos/photo-1", query: {} }) }));
 
 // Captures each useMutation() call in the order comments-section.vue makes
 // them: createComment, updateComment, deleteComment.

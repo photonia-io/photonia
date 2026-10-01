@@ -18,7 +18,7 @@ class UserMailer < ApplicationMailer
     @author_name = @comment.user.public_name
     @commentable_kind = @commentable.model_name.human.downcase
     @commentable_title = @commentable.title.presence || 'untitled'
-    @url = polymorphic_url(@commentable)
+    @url = polymorphic_url(@commentable, highlightComment: @comment.serial_number)
     mail to: @commentable.user.email, subject: "New comment on your #{@commentable_kind}: #{@commentable_title}"
   end
 end
