@@ -8,6 +8,9 @@
           <li :class="{ 'is-active': $route.name === 'admin-general' }">
             <router-link :to="{ name: 'admin-general' }">General</router-link>
           </li>
+          <li :class="{ 'is-active': $route.name === 'admin-homepage' }">
+            <router-link :to="{ name: 'admin-homepage' }">Homepage</router-link>
+          </li>
           <li :class="{ 'is-active': $route.name === 'admin-comments' }">
             <router-link :to="{ name: 'admin-comments' }">Comments</router-link>
           </li>

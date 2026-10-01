@@ -6,7 +6,7 @@
   />
   <section class="section-pt-pb-0">
     <div class="container">
-      <StatsLine :stats="result?.homepageStats" />
+      <StatsLine v-if="enabled.stats" :stats="result?.homepageStats" />
 
       <SectionRow
         v-if="loading || latestPhotos.length"
@@ -30,7 +30,7 @@
       </SectionRow>
 
       <SectionRow
-        v-if="loading || latestAlbums.length"
+        v-if="enabled.latest_albums && (loading || latestAlbums.length)"
         :loading="loading"
         title="Latest albums"
         :to="{ name: 'albums-index' }"
@@ -46,7 +46,9 @@
         />
       </SectionRow>
 
-      <RandomPhotos />
+      <AlbumSpotlight v-if="enabled.album_spotlight" :album="spotlightAlbum" :loading="loading" />
+
+      <RandomPhotos v-if="enabled.random" />
 
       <!-- Below the always-present rows: these only appear when there's a match -->
       <SectionRow v-if="onThisDay.length" title="On this day">
@@ -105,7 +107,7 @@
 
       <RecentComments v-if="recentComments.length" :comments="recentComments" />
 
-      <YearLinks v-if="years.length" :years="years" />
+      <YearLinks v-if="enabled.years && years.length" :years="years" />
 
       <MostUsedTags
         v-if="result && result.mostUsedTags"
@@ -126,6 +128,7 @@
   import SectionRow from './section-row.vue'
   import HomeTile from './home-tile.vue'
   import StatsLine from './stats-line.vue'
+  import AlbumSpotlight from './album-spotlight.vue'
   import RandomPhotos from './random-photos.vue'
   import YearLinks from './year-links.vue'
   import RecentComments from './recent-comments.vue'
@@ -133,7 +136,29 @@
 
   useTitle('')
 
-  const { result, loading } = useQuery(gql`${gql_queries.homepage_index}`)
+  // Sections the admin has switched off (admin > Homepage) are neither shown
+  // nor queried. Anything not mentioned in the settings counts as on.
+  const SECTIONS = [
+    'stats', 'latest_albums', 'album_spotlight', 'random', 'on_this_day', 'this_month',
+    'popular', 'hidden_gems', 'recently_commented', 'recent_comments', 'years', 'tags',
+  ]
+  const flags = window.settings?.homepage ?? {}
+  const enabled = Object.fromEntries(SECTIONS.map((section) => [section, flags[section] !== false]))
+
+  const { result, loading } = useQuery(gql`${gql_queries.homepage_index}`, {
+    latestAlbums: enabled.latest_albums,
+    spotlight: enabled.album_spotlight,
+    onThisDay: enabled.on_this_day,
+    thisMonth: enabled.this_month,
+    popular: enabled.popular,
+    hiddenGems: enabled.hidden_gems,
+    recentlyCommented: enabled.recently_commented,
+    recentComments: enabled.recent_comments,
+    stats: enabled.stats || enabled.years,
+    tags: enabled.tags,
+  })
+
+  const spotlightAlbum = computed(() => result.value?.albumSpotlight ?? null)
 
   const latestPhotos = computed(() => result.value?.latestPhotos?.collection ?? [])
   const latestAlbums = computed(() => result.value?.latestAlbums?.collection ?? [])

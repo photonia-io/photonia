@@ -36,6 +36,7 @@ class ApplicationController < ActionController::Base
       commenting_enabled: Setting.commenting_enabled,
       photo_commenting_enabled: Setting.photo_commenting_enabled,
       album_commenting_enabled: Setting.album_commenting_enabled,
+      homepage: Setting.homepage_sections,
       google_client_id: Setting.google_client_id,
       facebook_app_id: Setting.facebook_app_id
     }.to_json

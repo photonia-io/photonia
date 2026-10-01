@@ -15,6 +15,17 @@ module Types
     field :photo_commenting_enabled, Boolean, null: false
     field :album_commenting_enabled, Boolean, null: false
 
+
+    Setting::HOMEPAGE_SECTIONS.each do |section|
+      field :"homepage_#{section}_enabled", Boolean, "Show the #{section.to_s.humanize.downcase} section on the homepage", null: false
+    end
+    field :homepage_spotlight_album_id, String, 'Slug of the spotlighted album, blank for the latest album', null: false
+    field :spotlight_album_choices, [AlbumType], 'Albums that can be spotlighted on the homepage', null: false
+
+    def spotlight_album_choices
+      Album.where('albums.public_photos_count > 0').order(:title)
+    end
+
     def id
       'admin-settings'
     end

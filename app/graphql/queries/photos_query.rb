@@ -88,22 +88,26 @@ module Queries
     # Photos with a real capture date (not the upload-date fallback of an
     # unknown source) taken on today's month and day in an earlier year.
     def taken_on_this_day(base)
-      taken_in_earlier_years(base, %w[day minute])
+      known_taken_dates(base, %w[day minute])
+        .where('EXTRACT(YEAR FROM photos.taken_at) < ?', today.year)
         .where('EXTRACT(MONTH FROM photos.taken_at) = ? AND EXTRACT(DAY FROM photos.taken_at) = ?', today.month, today.day)
     end
 
-    # Same month in an earlier year, excluding today's day so it never
-    # repeats the on-this-day list.
+    # Same month in any year, this one included. Today's date in earlier
+    # years is left out so it never repeats the on-this-day list.
     def taken_this_month(base)
-      taken_in_earlier_years(base, %w[month day minute])
+      known_taken_dates(base, %w[month day minute])
         .where('EXTRACT(MONTH FROM photos.taken_at) = ?', today.month)
-        .where('EXTRACT(DAY FROM photos.taken_at) IS DISTINCT FROM ? OR photos.taken_at_precision = ?', today.day, 'month')
+        .where(<<~SQL.squish, today.year, today.day, 'month')
+          NOT (EXTRACT(YEAR FROM photos.taken_at) < ?
+               AND EXTRACT(DAY FROM photos.taken_at) = ?
+               AND photos.taken_at_precision <> ?)
+        SQL
     end
 
-    def taken_in_earlier_years(base, precisions)
+    def known_taken_dates(base, precisions)
       base.where(taken_at_approximate: false, taken_at_precision: precisions)
           .where.not(taken_at_source: 'unknown')
-          .where('EXTRACT(YEAR FROM photos.taken_at) < ?', today.year)
     end
 
     def today

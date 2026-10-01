@@ -30,7 +30,18 @@ class GraphqlQueryCollection
 
   COLLECTION = {
     homepage_index: <<~GQL.squish,
-      query HomepageQuery {
+      query HomepageQuery(
+        $latestAlbums: Boolean!
+        $spotlight: Boolean!
+        $onThisDay: Boolean!
+        $thisMonth: Boolean!
+        $popular: Boolean!
+        $hiddenGems: Boolean!
+        $recentlyCommented: Boolean!
+        $recentComments: Boolean!
+        $stats: Boolean!
+        $tags: Boolean!
+      ) {
         latestPhoto: photo(fetchType: "latest") {
           id
           title
@@ -63,7 +74,7 @@ class GraphqlQueryCollection
             }
           }
         }
-        latestAlbums: albums(mode: "simple", order: "newest", limit: 5) {
+        latestAlbums: albums(mode: "simple", order: "newest", limit: 5) @include(if: $latestAlbums) {
           collection {
             id
             title
@@ -73,7 +84,20 @@ class GraphqlQueryCollection
             }
           }
         }
-        onThisDay: photos(mode: "simple", fetchType: "on_this_day", limit: 5) {
+        albumSpotlight @include(if: $spotlight) {
+          id
+          title
+          descriptionHtml
+          photosCount
+          photos {
+            collection {
+              id
+              title
+              intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
+            }
+          }
+        }
+        onThisDay: photos(mode: "simple", fetchType: "on_this_day", limit: 5) @include(if: $onThisDay) {
           collection {
             id
             title
@@ -81,7 +105,7 @@ class GraphqlQueryCollection
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
-        thisMonth: photos(mode: "simple", fetchType: "this_month", limit: 5) {
+        thisMonth: photos(mode: "simple", fetchType: "this_month", limit: 5) @include(if: $thisMonth) {
           collection {
             id
             title
@@ -89,14 +113,14 @@ class GraphqlQueryCollection
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
-        trending: photos(mode: "simple", fetchType: "trending", limit: 5) {
+        trending: photos(mode: "simple", fetchType: "trending", limit: 5) @include(if: $popular) {
           collection {
             id
             title
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
-        mostViewed: photos(mode: "simple", fetchType: "most_viewed", limit: 5) {
+        mostViewed: photos(mode: "simple", fetchType: "most_viewed", limit: 5) @include(if: $popular) {
           collection {
             id
             title
@@ -104,14 +128,14 @@ class GraphqlQueryCollection
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
-        hiddenGems: photos(mode: "simple", fetchType: "least_viewed", limit: 5) {
+        hiddenGems: photos(mode: "simple", fetchType: "least_viewed", limit: 5) @include(if: $hiddenGems) {
           collection {
             id
             title
             intelligentOrSquareMediumImageUrl: imageUrl(type: "medium")
           }
         }
-        recentComments(limit: 5) {
+        recentComments(limit: 5) @include(if: $recentComments) {
             id
             snippet
             authorName
@@ -130,7 +154,7 @@ class GraphqlQueryCollection
               }
             }
           }
-        recentlyCommented: recentComments(limit: 5, distinct: true) {
+        recentlyCommented: recentComments(limit: 5, distinct: true) @include(if: $recentlyCommented) {
             id
             snippet
             authorName
@@ -149,7 +173,7 @@ class GraphqlQueryCollection
               }
             }
           }
-        homepageStats {
+        homepageStats @include(if: $stats) {
           photosCount
           albumsCount
           viewsCount
@@ -160,7 +184,7 @@ class GraphqlQueryCollection
             count
           }
         }
-        mostUsedTags: tags(type: "user", order: "most_used", limit: 15) {
+        mostUsedTags: tags(type: "user", order: "most_used", limit: 15) @include(if: $tags) {
           id
           name
           taggingsCount

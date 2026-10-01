@@ -7,6 +7,7 @@ module Types
 
     field :admin_settings, resolver: Queries::AdminSettingsQuery, description: 'Get admin settings'
     field :album, resolver: Queries::AlbumQuery, description: 'Find an album by ID'
+    field :album_spotlight, resolver: Queries::AlbumSpotlightQuery, description: 'The album spotlighted on the homepage'
     field :albums, resolver: Queries::AlbumsQuery, description: 'Find all albums by page'
     field :cameras, resolver: Queries::CamerasQuery, description: 'List cameras used by visible photos'
     field :current_user, resolver: Queries::CurrentUserQuery, description: 'Get the current user'

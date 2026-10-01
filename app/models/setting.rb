@@ -33,6 +33,21 @@ class Setting < RailsSettings::Base
   field :photo_commenting_enabled, default: "1", type: :boolean
   # Off by default: album commenting needs more refinement before it's live.
   field :album_commenting_enabled, default: "0", type: :boolean
+
+  # Homepage sections that can be switched off (the latest feed always shows).
+  # The spotlight album is a slug; blank means the latest album.
+  HOMEPAGE_SECTIONS = %i[
+    stats latest_albums album_spotlight random on_this_day this_month popular
+    hidden_gems recently_commented recent_comments years tags
+  ].freeze
+
+  HOMEPAGE_SECTIONS.each { |section| field :"homepage_#{section}_enabled", default: "1", type: :boolean }
+  field :homepage_spotlight_album_id, default: "", type: :string
+
+  def self.homepage_sections
+    HOMEPAGE_SECTIONS.index_with { |section| public_send(:"homepage_#{section}_enabled") }
+  end
+
   field :mailer_from_name, default: ENV['MAILER_FROM_NAME'] || "Photonia", type: :string
   field :mailer_from_address, default: ENV['MAILER_FROM_ADDRESS'] || "mailer@photonia.io", type: :string
   field :google_client_id, default: ENV['GOOGLE_CLIENT_ID'] || "", type: :string, readonly: true

@@ -421,14 +421,17 @@ describe 'photos Query' do
       end
 
       describe 'this_month' do
-        it 'returns earlier years of this month, excluding today\'s day and this year' do
+        it 'returns this month in any year, but not today\'s date in earlier years' do
           other_day = taken_photo(Time.zone.local(2019, 10, 3))
           month_only = taken_photo(Time.zone.local(2018, 10, 15), precision: 'month')
+          this_year = taken_photo(Time.zone.local(2026, 10, 3))
+          today_this_year = taken_photo(Time.zone.local(2026, 10, 15))
           taken_photo(Time.zone.local(2019, 10, 15))
-          taken_photo(Time.zone.local(2026, 10, 3))
           taken_photo(Time.zone.local(2019, 9, 3))
 
-          expect(fetch_ids('this_month')).to contain_exactly(other_day.slug, month_only.slug)
+          expect(fetch_ids('this_month')).to contain_exactly(
+            other_day.slug, month_only.slug, this_year.slug, today_this_year.slug
+          )
         end
       end
     end

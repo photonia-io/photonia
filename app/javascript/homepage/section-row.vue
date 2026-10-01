@@ -1,7 +1,7 @@
 <template>
   <section class="home-section mb-5">
     <div class="home-section-header">
-      <h2 class="title is-3 mb-2">{{ title }}</h2>
+      <h2 class="title is-3 mb-0">{{ title }}</h2>
       <div class="home-section-actions">
         <slot name="actions" />
         <router-link v-if="to" :to="to" class="button is-small">
@@ -10,6 +10,7 @@
       </div>
     </div>
     <hr class="mt-0 mb-3" />
+    <slot name="intro" />
     <div :class="{ 'home-row': grid }">
       <template v-if="loading">
         <div v-for="n in skeletonCount" :key="n" class="home-skeleton">
@@ -38,9 +39,10 @@ defineProps({
 <style scoped lang="scss">
 .home-section-header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
+  padding-bottom: 0.75rem;
 }
 
 .home-section-actions {
