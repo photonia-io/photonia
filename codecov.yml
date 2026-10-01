@@ -1,0 +1,18 @@
+flag_management:
+  default_rules:
+    # CI skips rspec or vitest when a PR can't affect it; reuse the parent's report
+    carryforward: true
+
+comment:
+  layout: "condensed_header, diff, flags, files"
+
+coverage:
+  status:
+    project:
+      # Compare each flag against its own history; a combined total would
+      # drop once when JS coverage was first counted.
+      default: false
+      ruby:
+        flags: [ruby]
+      javascript:
+        flags: [javascript]

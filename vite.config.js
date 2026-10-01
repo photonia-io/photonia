@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import RubyPlugin from 'vite-plugin-ruby'
 import vue from '@vitejs/plugin-vue'
@@ -47,6 +48,13 @@ export default defineConfig(({ command }) => ({
   },
   test: {
     globals: true,
-    environment: 'happy-dom'
+    environment: 'happy-dom',
+    coverage: {
+      provider: 'v8',
+      include: ['**/*.{js,vue}'],
+      exclude: ['**/*.test.js', '**/*.spec.js'],
+      reporter: ['text-summary', 'cobertura'],
+      reportsDirectory: resolve(import.meta.dirname, 'coverage/vitest')
+    }
   }
 }))
