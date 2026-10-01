@@ -76,21 +76,20 @@
   $divider-margin-size: 0.75rem
 );
 
-// Bulma's own themes/_index.scss emits the light theme a second time under
-// `@media (prefers-color-scheme: light)` and a third time under
-// `[data-theme=light], .theme-light` - both fully redundant here, since the
-// bare :root block below already carries the light values unconditionally,
-// and app.vue always sets data-theme explicitly once JS runs (see
-// _boot_shell.html.erb). Only the dark variants need a selector of their
-// own; the system-theme (prefers-color-scheme) dark block is the no-JS/
-// pre-boot-script fallback. See #1096.
+// Bulma's own themes/_index.scss emits the light theme two more times (under
+// `@media (prefers-color-scheme: light)` and `[data-theme=light]`), redundant
+// with the bare :root block below. The system-dark fallback must skip an
+// explicit light choice though, or a dark OS can't switch to light. See
+// #1096, #1170.
 #{bulma-iv.$variables-host} {
   @include bulma-light.light-theme;
   @include bulma-setup.setup-theme;
 }
 
-@include bulma-cv.system-theme($name: "dark") {
-  @include bulma-dark.dark-theme;
+@media (prefers-color-scheme: dark) {
+  #{bulma-iv.$variables-host}:not([data-theme="light"]):not(.theme-light) {
+    @include bulma-dark.dark-theme;
+  }
 }
 
 @include bulma-cv.bulma-theme($name: "dark") {
