@@ -110,6 +110,28 @@ describe 'tags Query', type: :request do
     end
   end
 
+  describe 'without limit when there are more tags than the default' do
+    let(:query) { 'query { tags { id } }' }
+
+    before { stub_const('Queries::TagsQuery::DEFAULT_LIMIT', 3) }
+
+    it 'caps the result at the default limit' do
+      post_query
+      expect(data_dig(response, 'tags').size).to eq(3)
+    end
+  end
+
+  describe 'with limit above the maximum' do
+    let(:query) { 'query { tags(limit: 50) { id } }' }
+
+    before { stub_const('Queries::TagsQuery::MAX_LIMIT', 2) }
+
+    it 'clamps the result to the maximum' do
+      post_query
+      expect(data_dig(response, 'tags').size).to eq(2)
+    end
+  end
+
   describe 'with query parameter for user tags' do
     let(:query) do
       <<~GQL

@@ -1,7 +1,7 @@
 <template>
   <section class="home-section mb-5">
     <div class="home-section-header">
-      <h2 class="title is-3 mb-0">{{ title }}</h2>
+      <h2 :class="`title is-${titleSize} mb-0`">{{ title }}</h2>
       <div class="home-section-actions">
         <slot name="actions" />
         <router-link v-if="to" :to="to" class="button is-small">
@@ -26,6 +26,7 @@
 <script setup>
 defineProps({
   title: { type: String, required: true },
+  titleSize: { type: Number, default: 3 },
   to: { type: Object, default: null },
   linkLabel: { type: String, default: "See all..." },
   // false for free-form content (e.g. tag chips) instead of the tile row

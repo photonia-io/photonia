@@ -36,3 +36,13 @@ describe("SectionRow", () => {
     expect(wrapper.find("a").text()).toBe("See all albums...");
   });
 });
+
+describe("SectionRow title size", () => {
+  it("defaults to the large homepage heading", () => {
+    expect(mountRow().find("h2").classes()).toContain("is-3");
+  });
+
+  it("uses the given size", () => {
+    expect(mountRow({ titleSize: 5 }).find("h2").classes()).toContain("is-5");
+  });
+});
