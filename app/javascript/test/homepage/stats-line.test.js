@@ -56,6 +56,12 @@ describe("StatsLine", () => {
     ]);
   });
 
+  it("leaves the year span out when no photo has a date", () => {
+    expect(
+      textOf({ photosCount: 0, albumsCount: 0, firstYear: null, lastYear: null, viewsCount: 0 }),
+    ).toBe("0 photos \u25c6 0 albums");
+  });
+
   it("keeps an empty line while the stats are loading", () => {
     const wrapper = mountLine(null);
 

@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
 
+import toaster from "../../mixins/toaster";
 vi.mock("../../mixins/toaster", () => ({ default: vi.fn() }));
 vi.mock("vue-page-title", () => ({ useTitle: vi.fn() }));
 
@@ -35,10 +36,16 @@ const savedSettings = () => ({
 
 const adminSettingsResult = ref(savedSettings());
 const mutate = vi.fn();
+let doneHandler;
+let errorHandler;
 
 vi.mock("@vue/apollo-composable", () => ({
   useQuery: () => ({ result: adminSettingsResult }),
-  useMutation: () => ({ mutate, onDone: () => {}, onError: () => {} }),
+  useMutation: () => ({
+    mutate,
+    onDone: (callback) => (doneHandler = callback),
+    onError: (callback) => (errorHandler = callback),
+  }),
 }));
 
 import AdminHomepage from "../../admin/homepage.vue";
@@ -55,6 +62,7 @@ const mountHomepage = () => {
 
 beforeEach(() => {
   mutate.mockClear();
+  toaster.mockClear();
   adminSettingsResult.value = savedSettings();
 });
 
@@ -123,5 +131,38 @@ describe("Admin Homepage settings", () => {
     );
     expect(variables.homepageLatestAlbumsEnabled).toBe(false);
     expect(variables.homepageSpotlightAlbumId).toBe("lake-trip");
+  });
+
+  it("confirms a save and offers to reload the application", async () => {
+    mountHomepage();
+    expect(wrapper.text()).not.toContain("Reload Application");
+
+    doneHandler();
+    await wrapper.vm.$nextTick();
+
+    expect(toaster).toHaveBeenCalledWith("Settings saved");
+    expect(wrapper.text()).toContain("Reload Application");
+  });
+
+  it("reloads the application from the reload button", async () => {
+    const originalLocation = window.location;
+    delete window.location;
+    window.location = { href: "" };
+    mountHomepage();
+    doneHandler();
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find("button.is-warning").trigger("click");
+
+    expect(window.location).toBe("/");
+    window.location = originalLocation;
+  });
+
+  it("reports a failed save", () => {
+    mountHomepage();
+
+    errorHandler(new Error("boom"));
+
+    expect(toaster).toHaveBeenCalledWith("Error saving settings", "is-danger");
   });
 });
