@@ -103,6 +103,14 @@ RSpec.describe User do
     end
   end
 
+  describe '#token' do
+    it 'returns a JWT identifying the user' do
+      user = create(:user)
+      payload = JWT.decode(user.token, nil, false).first
+      expect(payload['sub']).to eq(user.id.to_s)
+    end
+  end
+
   describe 'serial number setting' do
     it 'sets the serial number before validation' do
       user = build(:user)
