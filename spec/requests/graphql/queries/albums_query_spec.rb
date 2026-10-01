@@ -88,6 +88,30 @@ RSpec.describe 'albums Query' do
       expect(titles).to eq(['Lake house', 'Lake trip'])
     end
 
+    it 'returns the newest albums first when ordered by newest' do
+      photo = create(:photo)
+      albums = [create(:album, title: 'B old', created_at: 3.days.ago),
+                create(:album, title: 'A newest', created_at: 1.day.ago),
+                create(:album, title: 'C middle', created_at: 2.days.ago)]
+      albums.each do |album|
+        album.photos << photo
+        album.maintenance
+      end
+
+      post '/graphql', params: {
+        query: <<~GQL
+          query {
+            albums(mode: "simple", order: "newest", limit: 2) {
+              collection { title }
+            }
+          }
+        GQL
+      }
+
+      titles = response.parsed_body.dig('data', 'albums', 'collection').map { |a| a['title'] }
+      expect(titles).to eq(['A newest', 'C middle'])
+    end
+
     it 'hides a private album with no public photos from a visitor' do
       photo = create(:photo, privacy: 'private')
       album = create(:album, title: 'Lake trip', privacy: 'private')

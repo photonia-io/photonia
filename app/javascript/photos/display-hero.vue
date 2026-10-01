@@ -485,6 +485,12 @@ const showLabels = computed(() => {
   position: relative;
 }
 
+// Bulma's default link blue is unreadable on the dark overlay.
+.overlay a:not(.button) {
+  color: inherit;
+  text-decoration: underline;
+}
+
 // A small tag next to the overlay's is-size-4 text otherwise sits on its own
 // baseline, reading as vertically off against the much taller text around it.
 .feed-album-count {

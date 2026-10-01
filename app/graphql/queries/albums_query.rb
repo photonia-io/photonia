@@ -16,14 +16,15 @@ module Queries
     # Simple mode arguments
     argument :query, String, 'Filter by title (prefix match). Applies to the simple mode.', required: false
     argument :limit, Integer, 'Max number of results. Applies to the simple mode.', required: false
+    argument :order, String, 'Sort order ("title" or "newest"). Applies to the simple mode.', required: false, default_value: 'title'
 
     SIMPLE_MODE_MAX_LIMIT = 100
 
-    def resolve(mode: 'paginated', page: nil, query: nil, limit: nil)
+    def resolve(mode: 'paginated', page: nil, query: nil, limit: nil, order: 'title')
       if mode == 'paginated'
         paginated_albums(page)
       else
-        simple_albums(query, limit)
+        simple_albums(query, limit, order)
       end
     end
 
@@ -55,10 +56,10 @@ module Queries
       records
     end
 
-    def simple_albums(query, limit)
-      albums = visible_albums
+    def simple_albums(query, limit, order)
+      albums = visible_albums.includes(:public_cover_photo)
       albums = albums.where('title ILIKE ?', "#{sanitize_like(query)}%") if query.present?
-      albums = albums.order(:title).limit(effective_limit(limit))
+      albums = albums.order(order == 'newest' ? { created_at: :desc } : :title).limit(effective_limit(limit))
       add_dummy_pagination_methods(albums)
       albums
     end
