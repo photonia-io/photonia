@@ -197,6 +197,35 @@ RSpec.describe FlickrUserClaim do
         expect(claim.flickr_user.reload.claimed_by_user).to eq(other_user)
       end
     end
+
+    context 'comment ownership' do
+      it 'transfers unowned comments by the flickr user to the claimer' do
+        comment = create(:comment, :with_flickr_user, :with_photo, user: nil, flickr_user: claim.flickr_user)
+
+        claim.approve!
+
+        expect(comment.reload.user).to eq(claim.user)
+      end
+
+      it 'leaves comments that already have an owner alone' do
+        owner = create(:user)
+        comment = create(:comment, :with_flickr_user, :with_photo, user: owner, flickr_user: claim.flickr_user)
+
+        claim.approve!
+
+        expect(comment.reload.user).to eq(owner)
+      end
+
+      it 'lets the claimer edit and delete their newly-owned comments' do
+        comment = create(:comment, :with_flickr_user, :with_photo, user: nil, flickr_user: claim.flickr_user)
+
+        claim.approve!
+        comment.reload
+
+        expect(CommentPolicy.new(claim.user, comment).update?).to be(true)
+        expect(CommentPolicy.new(claim.user, comment).destroy?).to be(true)
+      end
+    end
   end
 
   describe '#deny!' do

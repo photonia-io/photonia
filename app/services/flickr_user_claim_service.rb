@@ -132,8 +132,11 @@ class FlickrUserClaimService
     def undo_claim(claim)
       return { success: false, error: 'Claim not found' } unless claim
 
-      # If the claim was approved, remove the claimed_by_user association
-      claim.flickr_user.update!(claimed_by_user: nil) if claim.approved?
+      if claim.approved?
+        # Undo the association and the comment ownership transfer from approve!
+        claim.flickr_user.update!(claimed_by_user: nil)
+        claim.flickr_user.comments.where(user_id: claim.user_id).update_all(user_id: nil)
+      end
 
       # Delete the claim record
       claim.destroy!

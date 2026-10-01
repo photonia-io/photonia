@@ -29,6 +29,11 @@ RSpec.describe UserMailer, type: :mailer do
       expect(mail.text_part.body.encoded).to include('remove the verification code')
     end
 
+    it 'tells the user they can now edit or delete their imported comments' do
+      expect(mail.html_part.body.encoded).to include('edit or delete')
+      expect(mail.text_part.body.encoded).to include('edit or delete')
+    end
+
     context 'when the claim was manual' do
       let(:claim) { create(:flickr_user_claim, :manual, :approved, user: user, flickr_user: flickr_user) }
 
@@ -109,6 +114,26 @@ RSpec.describe UserMailer, type: :mailer do
       it 'still resolves the commentable and its owner' do
         expect(mail.to).to eq([owner.email])
       end
+    end
+  end
+
+  describe 'comment_reply' do
+    let(:parent_author) { create(:user) }
+    let(:replier) { create(:user, display_name: 'Jane Doe') }
+    let(:photo) { create(:photo, user: create(:user), title: 'Sunset') }
+    let(:parent) { create(:comment, commentable: photo, user: parent_author, body: 'Original comment') }
+    let(:comment) { create(:comment, commentable: photo, user: replier, parent: parent, body: 'A reply') }
+    let(:mail) { UserMailer.with(comment: comment).comment_reply }
+
+    it 'renders the headers' do
+      expect(mail.subject).to eq('New reply to your comment on Sunset')
+      expect(mail.to).to eq([parent_author.email])
+    end
+
+    it 'renders the body' do
+      expect(mail.body.encoded).to include('Jane Doe')
+      expect(mail.body.encoded).to include('A reply')
+      expect(mail.body.encoded).to include(photo_url(photo))
     end
   end
 end

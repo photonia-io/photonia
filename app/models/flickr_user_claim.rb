@@ -64,6 +64,9 @@ class FlickrUserClaim < ApplicationRecord
 
       update!(status: 'approved', approved_at: Time.current)
       locked_flickr_user.update!(claimed_by_user: user)
+      # Give the claimer edit/destroy rights (CommentPolicy keys on user_id) over their
+      # imported comments. Doesn't touch comments already owned (e.g. the site owner's own).
+      locked_flickr_user.comments.where(user_id: nil).update_all(user_id: user_id)
     end
   end
 

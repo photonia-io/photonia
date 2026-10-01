@@ -101,7 +101,7 @@
                   <p>
                     <strong>Success!</strong> Your claim has been approved. You
                     can now remove the verification code from your Flickr
-                    profile.
+                    profile, and edit or delete this user's comments.
                   </p>
                 </div>
 

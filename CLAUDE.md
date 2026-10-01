@@ -4,7 +4,7 @@ Only globally relevant guidance goes here, tersely; anything specific to files o
 
 Photonia: self-hosted photo sharing. Rails 8 (Ruby 4.0.7) API + Vue 3 SPA, Postgres, Sidekiq/Redis, Shrine on S3, AWS Rekognition auto-tagging. Most photos were imported from a Flickr export.
 
-App model: the admin shares photos with the world. Visitors can sign up (Google/Facebook only, gated by a `Setting` toggle; no email/password), but that grants only the unused `registered_user` role. Uploading, editing and album management need `has_role?(:uploader)`. Commenting and favoriting are the intended reasons to sign up but don't exist yet — `Comment` records are read-only Flickr imports.
+App model: the admin shares photos with the world. Visitors can sign up (Google/Facebook only, gated by a `Setting` toggle; no email/password), but that grants only the unused `registered_user` role. Uploading, editing and album management need `has_role?(:uploader)`. Signed-up users can comment on photos/albums (gated by `Setting`) and favoriting is still unbuilt. Older `Comment` records are read-only Flickr imports, owned by a site user only if the admin imported their own comments or a visitor claimed the Flickr identity (`FlickrUserClaim`) — claim approval transfers ownership of that Flickr user's comments, granting edit/delete and reply notifications.
 
 ## Code style
 
