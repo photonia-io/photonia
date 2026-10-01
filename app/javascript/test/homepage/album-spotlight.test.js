@@ -27,9 +27,10 @@ describe("AlbumSpotlight", () => {
   it("shows the album title, description and a link to the album", () => {
     const wrapper = mountSpotlight({ album });
 
-    expect(wrapper.text()).toContain("Album Spotlight: Lake trip");
+    expect(wrapper.find("h2").text()).toBe("Album Spotlight");
+    expect(wrapper.find("h3").text()).toBe("Lake trip");
     expect(wrapper.text()).toContain("A week by the lake");
-    expect(wrapper.text()).toContain("View album (42 photos)...");
+    expect(wrapper.text()).toContain("View album...");
     expect(wrapper.findAllComponents(RouterLinkStub)[0].props("to")).toEqual({
       name: "albums-show",
       params: { id: "lake-trip" },

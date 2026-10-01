@@ -1,13 +1,19 @@
 <template>
   <SectionRow
     v-if="loading || album"
-    :title="album ? `Album Spotlight: ${album.title}` : 'Album spotlight'"
+    title="Album Spotlight"
     :to="album ? { name: 'albums-show', params: { id: album.id } } : null"
-    :link-label="`View album (${album?.photosCount ?? 0} photos)...`"
+    link-label="View album..."
     :loading="loading"
   >
-    <template v-if="album?.descriptionHtml" #intro>
-      <div class="content spotlight-description" v-html="album.descriptionHtml"></div>
+    <template #intro>
+      <!-- nbsp keeps the line's height while the album is still loading -->
+      <h3 class="title is-5 mb-2">{{ album?.title ?? "\u00a0" }}</h3>
+      <div
+        v-if="album?.descriptionHtml"
+        class="content spotlight-description"
+        v-html="album.descriptionHtml"
+      ></div>
     </template>
     <HomeTile
       v-for="photo in photos"
