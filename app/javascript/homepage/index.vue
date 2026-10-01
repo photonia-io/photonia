@@ -180,8 +180,8 @@
 
   const commentRoute = (comment) =>
     comment.photo
-      ? { name: 'photos-show', params: { id: comment.photo.id } }
-      : { name: 'albums-show', params: { id: comment.album.id } }
+      ? { name: 'photos-show', params: { id: comment.photo.id }, query: { highlightComment: comment.id } }
+      : { name: 'albums-show', params: { id: comment.album.id }, query: { highlightComment: comment.id } }
 
   const commentImage = (comment) =>
     comment.photo

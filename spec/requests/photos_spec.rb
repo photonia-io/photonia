@@ -72,6 +72,11 @@ RSpec.describe 'Photos' do
         expect(response.body).to include(%(<link rel="canonical" href="http://www.example.com/photos/#{photo.slug}">))
       end
 
+      it 'drops highlightComment from the canonical link' do
+        get "/photos/#{photo.slug}", params: { highlightComment: '123' }
+        expect(response.body).to include(%(<link rel="canonical" href="http://www.example.com/photos/#{photo.slug}">))
+      end
+
       it 'has no robots meta tag' do
         get "/photos/#{photo.slug}"
         expect(response.body).not_to include('name="robots"')

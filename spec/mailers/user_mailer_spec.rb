@@ -75,7 +75,7 @@ RSpec.describe UserMailer, type: :mailer do
       it 'renders the body' do
         expect(mail.body.encoded).to include('Jane Doe')
         expect(mail.body.encoded).to include('Lovely shot')
-        expect(mail.body.encoded).to include(photo_url(photo))
+        expect(mail.body.encoded).to include(photo_url(photo, highlightComment: comment.serial_number))
       end
     end
 
@@ -89,7 +89,7 @@ RSpec.describe UserMailer, type: :mailer do
 
       it 'renders the body' do
         expect(mail.body.encoded).to include('Great album')
-        expect(mail.body.encoded).to include(album_url(album))
+        expect(mail.body.encoded).to include(album_url(album, highlightComment: comment.serial_number))
       end
     end
 

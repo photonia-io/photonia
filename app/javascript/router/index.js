@@ -4,6 +4,7 @@ import toaster from "../mixins/toaster";
 import { useUserStore } from "../stores/user";
 import { useApplicationStore } from "../stores/application";
 import { onlyLightboxToggled } from "../mixins/use-lightbox-route";
+import { waitForElement } from "../helpers/wait-for-element";
 
 export function createAppRouter(pinia) {
   const userStore = useUserStore(pinia);
@@ -157,7 +158,14 @@ export function createAppRouter(pinia) {
   const router = createRouter({
     history: createWebHistory(),
     routes,
-    scrollBehavior(to, from, savedPosition) {
+    async scrollBehavior(to, from, savedPosition) {
+      // Comment permalinks: wait for the comments to load, then scroll to it.
+      const target = to.query.highlightComment;
+      if (target && target !== from.query.highlightComment) {
+        const el = await waitForElement(`#comment-${CSS.escape(String(target))}`);
+        if (el) return { el, behavior: "smooth", top: 80 };
+      }
+
       // Starting/stopping album navigation only changes the query string on the
       // photo we are already looking at - don't yank the page to the top.
       const sameShownPhoto =

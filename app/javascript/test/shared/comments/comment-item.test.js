@@ -1,5 +1,5 @@
-import { describe, it, expect, afterEach, beforeEach } from "vitest";
-import { mount, flushPromises } from "@vue/test-utils";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import { mount, flushPromises, RouterLinkStub } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 
 import CommentItem from "../../../shared/comments/comment-item.vue";
@@ -9,6 +9,12 @@ import { useUserStore } from "../../../stores/user";
 // it statically here means it's already resolved by the time a test mounts
 // CommentItem, so a single flushPromises() is enough to render it.
 import "../../../shared/comments/comment-form.vue";
+
+const mockRoute = vi.hoisted(() => ({ path: "/photos/a-photo", query: {} }));
+vi.mock("vue-router", () => ({ useRoute: () => mockRoute }));
+
+const toasterMock = vi.hoisted(() => vi.fn());
+vi.mock("../../../mixins/toaster", () => ({ default: toasterMock }));
 
 let wrapper;
 
@@ -34,11 +40,16 @@ function mountItem(props = {}) {
   setActivePinia(pinia);
 
   wrapper = mount(CommentItem, {
-    global: { plugins: [pinia] },
+    global: { plugins: [pinia], stubs: { RouterLink: RouterLinkStub } },
     props: { comment: baseComment(), canReply: true, ...props },
   });
   return wrapper;
 }
+
+beforeEach(() => {
+  mockRoute.query = {};
+  toasterMock.mockClear();
+});
 
 afterEach(() => {
   wrapper?.unmount();
@@ -196,5 +207,53 @@ describe("CommentItem", () => {
 
     const repliesContainer = wrapper.find(".replies");
     expect(repliesContainer.text()).not.toContain("Reply");
+  });
+
+  describe("permalinks", () => {
+    it("gives the comment and its replies anchor ids", () => {
+      mountItem({
+        comment: baseComment({ id: "7", replies: [baseComment({ id: "8" })] }),
+      });
+
+      expect(wrapper.find("#comment-7").exists()).toBe(true);
+      expect(wrapper.find("#comment-8").exists()).toBe(true);
+    });
+
+    it("links the timestamp to the comment, keeping the existing query", () => {
+      mockRoute.query = { inAlbum: "an-album" };
+      mountItem();
+
+      expect(wrapper.findComponent(RouterLinkStub).props("to")).toEqual({
+        path: "/photos/a-photo",
+        query: { inAlbum: "an-album", highlightComment: "1" },
+      });
+    });
+
+    it("copies the canonical permalink and confirms with a toast", async () => {
+      mockRoute.query = { inAlbum: "an-album" };
+      const writeText = vi.fn().mockResolvedValue();
+      vi.stubGlobal("navigator", { clipboard: { writeText } });
+      mountItem();
+
+      const copy = wrapper.findAll(".comment-actions a").find((a) => a.text() === "Copy link");
+      await copy.trigger("click");
+      await flushPromises();
+
+      expect(writeText).toHaveBeenCalledWith(
+        `${window.location.origin}/photos/a-photo?highlightComment=1`,
+      );
+      expect(toasterMock).toHaveBeenCalledWith("Link copied");
+      vi.unstubAllGlobals();
+    });
+
+    it("highlights only the targeted comment", () => {
+      mockRoute.query = { highlightComment: "8" };
+      mountItem({
+        comment: baseComment({ id: "7", replies: [baseComment({ id: "8" })] }),
+      });
+
+      expect(wrapper.find("#comment-7").classes()).not.toContain("is-target");
+      expect(wrapper.find("#comment-8").classes()).toContain("is-target");
+    });
   });
 });

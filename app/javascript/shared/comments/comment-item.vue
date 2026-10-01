@@ -1,5 +1,5 @@
 <template>
-  <div class="media">
+  <div class="media" :id="`comment-${comment.id}`" :class="{ 'is-target': isTarget }">
     <div class="media-left">
       <figure class="image is-48x48" v-if="isFlickrAuthor">
         <img :src="buddyIconUrl" :alt="authorDisplayName" class="buddy-icon" />
@@ -22,7 +22,11 @@
           <strong>{{ authorDisplayName }}</strong>
         </a>
         <strong v-else>{{ authorDisplayName }}</strong>
-        <small class="ml-2">{{ momentFormat(comment.createdAt) }}</small>
+        <small class="ml-2">
+          <router-link :to="permalinkRoute" class="permalink">{{
+            momentFormat(comment.createdAt)
+          }}</router-link>
+        </small>
         <small
           class="ml-2"
           v-if="comment.bodyEdited"
@@ -56,6 +60,7 @@
         <a v-if="canReply" @click.prevent="toggleReply">{{ isReplying ? "Cancel" : "Reply" }}</a>
         <a v-if="comment.canEdit" @click.prevent="$emit('start-edit', comment.id)">Edit</a>
         <a v-if="comment.canDelete" @click.prevent="$emit('request-delete', comment)">Delete</a>
+        <a @click.prevent="copyLink">Copy link</a>
       </div>
 
       <div v-if="isReplying" class="mt-3">
@@ -91,6 +96,8 @@
 
 <script setup>
 import { computed, defineAsyncComponent } from "vue";
+import { useRoute } from "vue-router";
+import toaster from "@/mixins/toaster";
 import { useUserStore } from "@/stores/user";
 import { formatDateTime } from "@/helpers/format-date.js";
 import CommentAvatar from "./comment-avatar.vue";
@@ -134,6 +141,22 @@ const emit = defineEmits([
 ]);
 
 const userStore = useUserStore();
+const route = useRoute();
+
+const permalinkRoute = computed(() => ({
+  path: route.path,
+  query: { ...route.query, highlightComment: props.comment.id },
+}));
+
+const isTarget = computed(
+  () => String(route.query.highlightComment) === String(props.comment.id),
+);
+
+// Canonical form: no other query params (e.g. inAlbum)
+const copyLink = () => {
+  const url = `${window.location.origin}${route.path}?highlightComment=${props.comment.id}`;
+  navigator.clipboard.writeText(url).then(() => toaster("Link copied"));
+};
 
 const isFlickrAuthor = computed(() => !!props.comment.flickrUser);
 
@@ -196,6 +219,19 @@ function momentFormat(date) {
 .comment-actions a {
   margin-right: 0.75em;
   cursor: pointer;
+}
+
+.is-target {
+  animation: comment-highlight 2s ease-out;
+}
+
+@keyframes comment-highlight {
+  from {
+    background-color: var(--bulma-warning-90, #fff6d6);
+  }
+  to {
+    background-color: transparent;
+  }
 }
 
 .replies {
