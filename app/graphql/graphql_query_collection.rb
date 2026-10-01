@@ -262,22 +262,22 @@ class GraphqlQueryCollection
     GQL
     tags_index: <<-GQL.squish,
       query TagsIndexQuery {
-        mostUsedUserTags: tags(type: "user", order: "most_used") {
+        mostUsedUserTags: tags(type: "user", order: "most_used", limit: 100) {
           id
           name
           taggingsCount
         }
-        leastUsedUserTags: tags(type: "user", order: "least_used") {
+        leastUsedUserTags: tags(type: "user", order: "least_used", limit: 100) {
           id
           name
           taggingsCount
         }
-        mostUsedMachineTags: tags(type: "machine", order: "most_used") {
+        mostUsedMachineTags: tags(type: "machine", order: "most_used", limit: 100) {
           id
           name
           taggingsCount
         }
-        leastUsedMachineTags: tags(type: "machine", order: "least_used") {
+        leastUsedMachineTags: tags(type: "machine", order: "least_used", limit: 100) {
           id
           name
           taggingsCount

@@ -3,11 +3,14 @@
 module Queries
   # Tags Query
   class TagsQuery < BaseQuery
+    DEFAULT_LIMIT = 100
+    MAX_LIMIT = 100
+
     description 'Find 100 tags'
 
     type [Types::TagType], null: false
 
-    argument :limit, Integer, 'Number of tags to be returned', required: false
+    argument :limit, Integer, 'Number of tags to be returned (default and max 100)', required: false
     argument :order, String, 'Order of tags (most used, least used, newest, oldest)', default_value: 'most_used', required: false
     argument :query, String, 'Search query for tag suggestions', required: false
     argument :type, String, 'Type of tag (user or machine)', default_value: 'user', required: false
@@ -16,7 +19,7 @@ module Queries
       tags = if query.present?
                search_tags(type, query, limit)
              else
-               fetch_tags(type, order, limit)
+               fetch_tags(type, order, limit || DEFAULT_LIMIT)
              end
       tags || raise(GraphQL::ExecutionError, 'Invalid type or order')
     end
@@ -24,7 +27,7 @@ module Queries
     private
 
     def search_tags(type, query, limit)
-      limit ||= 10
+      limit = clamp_limit(limit || 10)
       if type == 'user'
         search_user_tags(query, limit)
       elsif type == 'machine'
@@ -46,11 +49,17 @@ module Queries
       method = tag_methods[order]
       return unless method
 
+      limit = clamp_limit(limit)
+
       if type == 'user'
         ActsAsTaggableOn::Tag.send(method, limit: limit)
       elsif type == 'machine'
         ActsAsTaggableOn::Tag.send(method, rekognition: true, limit: limit)
       end
+    end
+
+    def clamp_limit(limit)
+      limit.clamp(1, MAX_LIMIT)
     end
 
     def tag_methods
