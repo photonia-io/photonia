@@ -9,9 +9,7 @@ module Queries
     argument :page, Integer, 'Page number', required: false
 
     def resolve(id:, page: nil)
-      tag = ActsAsTaggableOn::Tag.friendly.find(id)
-      record_impression(tag)
-      tag
+      ActsAsTaggableOn::Tag.friendly.find(id)
     end
   end
 end

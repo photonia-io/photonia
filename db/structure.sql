@@ -707,8 +707,7 @@ CREATE TABLE public.tags (
     updated_at timestamp without time zone,
     taggings_count integer DEFAULT 0,
     source public.tag_source DEFAULT 'photonia'::public.tag_source,
-    slug character varying,
-    impressions_count integer DEFAULT 0 NOT NULL
+    slug character varying
 );
 
 
@@ -1676,6 +1675,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261002090000'),
 ('20260928165133'),
 ('20260928152844'),
 ('20260928142237'),

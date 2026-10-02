@@ -23,9 +23,9 @@ module Queries
     private
 
     def impressionable_type(type)
-      raise GraphQL::ExecutionError, "Invalid impression type: #{type}" unless %w[Photo Tag Album].include?(type)
+      raise GraphQL::ExecutionError, "Invalid impression type: #{type}" unless %w[Photo Album].include?(type)
 
-      type == 'Tag' ? 'ActsAsTaggableOn::Tag' : type
+      type
     end
   end
 end

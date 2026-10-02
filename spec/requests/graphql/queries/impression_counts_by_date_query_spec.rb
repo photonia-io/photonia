@@ -73,6 +73,16 @@ describe 'impressionCountsByDate Query' do
         end
       end
 
+      context 'when the impressionable type is Tag' do
+        let(:impressionable_type) { 'Tag' }
+
+        it 'is no longer a valid type' do
+          sign_in_and_post_query
+
+          expect(response.parsed_body['errors'][0]['message']).to eq('Invalid impression type: Tag')
+        end
+      end
+
       context 'when the impressionable type is valid' do
         let(:photo) { create(:photo) }
 

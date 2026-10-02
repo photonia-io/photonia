@@ -32,8 +32,8 @@ describe 'tag Query' do
     GQL
   end
 
-  it 'returns the correct tag and records an impression' do
-    expect { post_query }.to change { tag.reload.impressions_count }.by(1)
+  it 'returns the correct tag without recording an impression' do
+    expect { post_query }.not_to change(Impression, :count)
 
     parsed_body = response.parsed_body
     response_tag = parsed_body['data']['tag']
