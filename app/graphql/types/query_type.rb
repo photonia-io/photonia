@@ -15,6 +15,7 @@ module Types
     field :users, resolver: Queries::UsersQuery, description: 'List all users (admin only)'
     field :homepage_stats, resolver: Queries::HomepageStatsQuery, description: 'Public archive totals and per-year photo counts'
     field :impression_counts_by_date, resolver: Queries::ImpressionCountsByDateQuery, description: 'Find impression counts by type and date range'
+    field :most_viewed_on_date, resolver: Queries::MostViewedOnDateQuery, description: 'Most viewed photos and albums on a date (admin only)'
     field :label_names, resolver: Queries::LabelNamesQuery, description: 'Find label names, prefix-matched'
     field :page, resolver: Queries::PageQuery, description: 'Find a page by ID'
     field :photo, resolver: Queries::PhotoQuery, description: 'Find a photo by ID'
