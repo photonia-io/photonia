@@ -87,4 +87,32 @@ describe("Stats", () => {
     expect(wrapper.text()).toContain("An album");
     expect(wrapper.text()).toContain("1 view");
   });
+  it("only queries the most viewed lists once a date is picked", async () => {
+    const wrapper = mountStats(mostViewedOnDate);
+    const [, variables, options] = useQuery.mock.calls[1];
+
+    expect(options().enabled).toBe(false);
+
+    chart(wrapper).props("options").onClick({}, [{ index: 0 }], {
+      data: { labels: ["2026-10-01", "2026-10-02"] },
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(variables()).toEqual({ date: "2026-10-01" });
+    expect(options().enabled).toBe(true);
+  });
+
+  it("shows a pointer cursor while hovering a date", () => {
+    const wrapper = mountStats();
+    const { onHover } = chart(wrapper).props("options");
+    const target = { style: {} };
+
+    onHover({ native: { target } }, [{ index: 0 }]);
+    expect(target.style.cursor).toBe("pointer");
+
+    onHover({ native: { target } }, []);
+    expect(target.style.cursor).toBe("default");
+
+    expect(() => onHover({}, [])).not.toThrow();
+  });
 });
