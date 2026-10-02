@@ -87,7 +87,7 @@ namespace :flickr do
     flickr_albums = flickr_albums_hash['albums']
 
     flickr_albums.each do |flickr_album|
-      album = Album.find_or_create_by(serial_number: flickr_album['id']) do |a|
+      album = Album.unscoped.find_or_create_by(serial_number: flickr_album['id']) do |a|
         a.title = flickr_album['title']
         a.description = flickr_album['description']
         a.flickr_impressions_count = flickr_album['view_count']
@@ -104,7 +104,7 @@ namespace :flickr do
       ordering = 100_000
 
       flickr_album['photos'].each do |photo_serial_number|
-        photo = Photo.find_by(serial_number: photo_serial_number)
+        photo = Photo.unscoped.find_by(serial_number: photo_serial_number)
         putc '.'
 
         next unless photo
