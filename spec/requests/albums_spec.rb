@@ -125,4 +125,27 @@ RSpec.describe 'Albums' do
       end
     end
   end
+
+  context 'when a private album has a share link' do
+    let(:private_album) { create(:album, privacy: 'private', share_mode: 'all_photos').tap(&:regenerate_share_token!) }
+
+    describe 'GET /albums/{slug}?share={token}' do
+      it 'returns 200, not 404' do
+        get "/albums/#{private_album.slug}", params: { share: private_album.share_token }
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'has a noindex, nofollow robots meta tag' do
+        get "/albums/#{private_album.slug}", params: { share: private_album.share_token }
+        expect(response.body).to include('name="robots" content="noindex, nofollow"')
+      end
+    end
+
+    describe 'GET /albums/{slug}?share=wrong' do
+      it 'still returns 404' do
+        get "/albums/#{private_album.slug}", params: { share: 'wrong-token' }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end

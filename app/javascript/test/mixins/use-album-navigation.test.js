@@ -29,11 +29,13 @@ const album = {
 const photoIn = (albums) => ref({ id: "photo-2", albums });
 
 // `inAlbum` is the album slug currently being navigated, if any; `lightbox`
-// puts ?lightbox=1 on the route, as if the lightbox were open.
-function setup({ inAlbum, lightbox, albums = [album] } = {}) {
+// puts ?lightbox=1 on the route, as if the lightbox were open; `share` is a
+// share link token for `inAlbum`.
+function setup({ inAlbum, lightbox, share, albums = [album] } = {}) {
   const query = {};
   if (inAlbum) query.inAlbum = inAlbum;
   if (lightbox) query.lightbox = lightbox;
+  if (share) query.share = share;
 
   routeRef.current = {
     params: { id: "photo-2" },
@@ -110,6 +112,17 @@ describe("useAlbumNavigation", () => {
         inAlbum: "gone-album",
       });
     });
+
+    it("carries a share token alongside the album slug", () => {
+      expect(
+        setup({ inAlbum: "sunset-trip", share: "secret" }).navigationQuery
+          .value,
+      ).toEqual({ inAlbum: "sunset-trip", share: "secret" });
+    });
+
+    it("omits the share token when not navigating an album", () => {
+      expect(setup({ share: "secret" }).navigationQuery.value).toEqual({});
+    });
   });
 
   describe("navigateToPhoto", () => {
@@ -127,6 +140,18 @@ describe("useAlbumNavigation", () => {
       setup().navigateToPhoto(null);
 
       expect(push).not.toHaveBeenCalled();
+    });
+
+    it("preserves a share token alongside the album slug", () => {
+      setup({ inAlbum: "sunset-trip", share: "secret" }).navigateToPhoto({
+        id: "photo-9",
+      });
+
+      expect(push).toHaveBeenCalledWith({
+        name: "photos-show",
+        params: { id: "photo-9" },
+        query: { inAlbum: "sunset-trip", share: "secret" },
+      });
     });
 
     // While the lightbox is open, a step must land as a single new history
@@ -265,6 +290,24 @@ describe("useAlbumNavigation", () => {
 
     it("omits the page when the position is unknown", () => {
       expect(setup().albumRoute({ id: "sunset-trip" }).query).toEqual({});
+    });
+
+    it("carries the share token for the album currently being navigated", () => {
+      const route = setup({
+        inAlbum: "sunset-trip",
+        share: "secret",
+      }).albumRoute(album);
+
+      expect(route.query).toEqual({ share: "secret" });
+    });
+
+    it("does not carry the share token for a different album", () => {
+      const route = setup({
+        inAlbum: "sunset-trip",
+        share: "secret",
+      }).albumRoute({ id: "winter-trip" });
+
+      expect(route.query).toEqual({});
     });
   });
 });

@@ -14,6 +14,8 @@
 #  privacy                  :enum             default("public")
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
+#  share_mode               :string           default("off"), not null
+#  share_token              :string
 #  slug                     :string
 #  sorting_order            :string           default("asc"), not null
 #  sorting_type             :string           default("taken_at"), not null
@@ -27,6 +29,7 @@
 # Indexes
 #
 #  index_albums_on_public_cover_photo_id  (public_cover_photo_id)
+#  index_albums_on_share_token            (share_token) UNIQUE
 #  index_albums_on_user_cover_photo_id    (user_cover_photo_id)
 #  index_albums_on_user_id                (user_id)
 #

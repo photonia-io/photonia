@@ -45,4 +45,14 @@ class ApplicationController < ActionController::Base
   def set_gql_queries
     @gql_queries = GraphqlQueryCollection::COLLECTION.to_json
   end
+
+  # Shared by AlbumsController#show and PhotosController#show: a record not
+  # visible server-side is either a real 404, or a valid share link, which
+  # ships the same empty shell but as a 200 that stays out of search results
+  # (there's no server-rendered content here either way). content_for is a
+  # view helper, so the shell template reads @robots and sets it itself.
+  def render_show_shell(shared:)
+    @robots = 'noindex, nofollow' if shared
+    render :show_shell, status: shared ? :ok : :not_found
+  end
 end

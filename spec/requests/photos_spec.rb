@@ -193,6 +193,39 @@ RSpec.describe 'Photos' do
     end
   end
 
+  context 'when a private photo is reached through an album share link' do
+    let(:private_album) { create(:album, share_mode: 'all_photos').tap(&:regenerate_share_token!) }
+    let!(:shared_private_photo) { create(:photo, privacy: 'private') }
+
+    before { private_album.photos << shared_private_photo }
+
+    describe 'GET /photos/{slug}?inAlbum={album}&share={token}' do
+      it 'returns 200, not 404' do
+        get "/photos/#{shared_private_photo.slug}", params: { inAlbum: private_album.slug, share: private_album.share_token }
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'has a noindex, nofollow robots meta tag' do
+        get "/photos/#{shared_private_photo.slug}", params: { inAlbum: private_album.slug, share: private_album.share_token }
+        expect(response.body).to include('name="robots" content="noindex, nofollow"')
+      end
+    end
+
+    describe 'GET /photos/{slug}?inAlbum={album}&share=wrong' do
+      it 'still returns 404' do
+        get "/photos/#{shared_private_photo.slug}", params: { inAlbum: private_album.slug, share: 'wrong-token' }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    describe 'GET /photos/{slug} (no inAlbum/share)' do
+      it 'still returns 404' do
+        get "/photos/#{shared_private_photo.slug}"
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'POST /photos' do
     include Devise::Test::IntegrationHelpers
 

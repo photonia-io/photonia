@@ -75,7 +75,9 @@ CREATE TABLE public.albums (
     description_html text,
     sorting_type character varying DEFAULT 'taken_at'::character varying NOT NULL,
     sorting_order character varying DEFAULT 'asc'::character varying NOT NULL,
-    collapsed_in_feed boolean DEFAULT false NOT NULL
+    collapsed_in_feed boolean DEFAULT false NOT NULL,
+    share_token character varying,
+    share_mode character varying DEFAULT 'off'::character varying NOT NULL
 );
 
 
@@ -1150,6 +1152,13 @@ CREATE INDEX index_albums_on_public_cover_photo_id ON public.albums USING btree 
 
 
 --
+-- Name: index_albums_on_share_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_albums_on_share_token ON public.albums USING btree (share_token);
+
+
+--
 -- Name: index_albums_on_user_cover_photo_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1676,6 +1685,8 @@ SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
 ('20261002090000'),
+('20261002060723'),
+('20260930120000'),
 ('20260928165133'),
 ('20260928152844'),
 ('20260928142237'),
