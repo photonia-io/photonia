@@ -69,6 +69,14 @@ describe("AlbumManagement", () => {
     modalRoot.remove();
   });
 
+  it("emits close when the panel's close button is clicked", async () => {
+    const { wrapper } = mountAlbumManagement();
+
+    await wrapper.find(".message-header .delete").trigger("click");
+
+    expect(wrapper.emitted("close")).toHaveLength(1);
+  });
+
   describe("privacy confirmation modal", () => {
     it("appears when changing a public album with photos to private", async () => {
       const { wrapper } = mountAlbumManagement({

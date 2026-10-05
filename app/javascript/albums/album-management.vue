@@ -1,174 +1,181 @@
 <template>
-  <div class="message is-warning is-smallish">
-    <div class="message-header">
-      <p>Album Management</p>
-    </div>
-    <div class="message-body">
-      <p>
-        To edit the album's title or description click / tap on the texts
-        themselves.
-      </p>
-
-      <label for="album-privacy" class="label mt-4">Album Privacy:</label>
-      <div class="select">
-        <select id="album-privacy" v-model="privacy" @change="setPrivacy">
-          <option value="public">Public</option>
-          <option value="friends_and_family">Friends & Family</option>
-          <option value="private">Private</option>
-        </select>
-      </div>
-
-      <label for="album-sorting-type" class="label mt-4">Photo Sorting:</label>
-      <div class="select is-small">
-        <select
-          id="album-sorting-type"
-          v-model="sortingType"
-          @change="updateSorting"
-        >
-          <option value="takenAt">Date Shot</option>
-          <option value="postedAt">Date Uploaded</option>
-          <option value="title">Title</option>
-          <option value="manual">Manual (custom order)</option>
-        </select>
-      </div>
-      <div class="select is-small ml-2" v-if="sortingType != 'manual'">
-        <select
-          id="album-sorting-order"
-          v-model="sortingOrder"
-          @change="updateSorting"
-        >
-          <option value="asc">{{ sortingOrderAscendingText }}</option>
-          <option value="desc">{{ sortingOrderDescendingText }}</option>
-        </select>
-      </div>
-
-      <button
-        class="button is-small ml-2"
-        @click="manageSorting"
-        v-if="sortingType == 'manual'"
-      >
-        Manage Sorting
-      </button>
-
-      <label class="label mt-4">Photo Feed:</label>
-      <div class="buttons">
+  <div>
+    <div class="message is-warning is-smallish mb-5">
+      <div class="message-header">
+        <p>Album Management</p>
         <button
-          class="button is-small"
-          :disabled="collapseDisabled"
-          @click="showCollapseModal"
-        >
-          {{ album.collapsedInFeed ? "Uncollapse Album" : "Collapse Album" }}
-        </button>
+          class="delete"
+          aria-label="close"
+          @click="emit('close')"
+        ></button>
       </div>
-      <p class="help" v-if="collapseDisabled">{{ album.collapseBlocker }}</p>
+      <div class="message-body">
+        <p>
+          To edit the album's title or description click / tap on the texts
+          themselves.
+        </p>
 
-      <div class="buttons mt-5">
-        <button class="button is-danger" @click="showConfirmationModal">
-          Delete Album
+        <label for="album-privacy" class="label mt-4">Album Privacy:</label>
+        <div class="select">
+          <select id="album-privacy" v-model="privacy" @change="setPrivacy">
+            <option value="public">Public</option>
+            <option value="friends_and_family">Friends & Family</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+
+        <label for="album-sorting-type" class="label mt-4">Photo Sorting:</label>
+        <div class="select is-small">
+          <select
+            id="album-sorting-type"
+            v-model="sortingType"
+            @change="updateSorting"
+          >
+            <option value="takenAt">Date Shot</option>
+            <option value="postedAt">Date Uploaded</option>
+            <option value="title">Title</option>
+            <option value="manual">Manual (custom order)</option>
+          </select>
+        </div>
+        <div class="select is-small ml-2" v-if="sortingType != 'manual'">
+          <select
+            id="album-sorting-order"
+            v-model="sortingOrder"
+            @change="updateSorting"
+          >
+            <option value="asc">{{ sortingOrderAscendingText }}</option>
+            <option value="desc">{{ sortingOrderDescendingText }}</option>
+          </select>
+        </div>
+
+        <button
+          class="button is-small ml-2"
+          @click="manageSorting"
+          v-if="sortingType == 'manual'"
+        >
+          Manage Sorting
         </button>
+
+        <label class="label mt-4">Photo Feed:</label>
+        <div class="buttons">
+          <button
+            class="button is-small"
+            :disabled="collapseDisabled"
+            @click="showCollapseModal"
+          >
+            {{ album.collapsedInFeed ? "Uncollapse Album" : "Collapse Album" }}
+          </button>
+        </div>
+        <p class="help" v-if="collapseDisabled">{{ album.collapseBlocker }}</p>
+
+        <div class="buttons mt-5">
+          <button class="button is-danger" @click="showConfirmationModal">
+            Delete Album
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-  <teleport to="#modal-root">
-    <div :class="['modal', modalActive ? 'is-active' : null]">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title has-text-centered">Delete Album</p>
-        </header>
-        <div class="modal-card-body">
-          <p>
-            Are you sure you want to delete this album? This will not delete the
-            photos inside the album, but the album itself will be gone forever.
-          </p>
+    <teleport to="#modal-root">
+      <div :class="['modal', modalActive ? 'is-active' : null]">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title has-text-centered">Delete Album</p>
+          </header>
+          <div class="modal-card-body">
+            <p>
+              Are you sure you want to delete this album? This will not delete the
+              photos inside the album, but the album itself will be gone forever.
+            </p>
+          </div>
+          <footer class="modal-card-foot is-justify-content-center">
+            <div class="buttons">
+              <button class="button is-danger" @click="performDelete">
+                Delete
+              </button>
+              <button class="button is-info" @click="closeConfirmationModal">
+                Cancel
+              </button>
+            </div>
+          </footer>
         </div>
-        <footer class="modal-card-foot is-justify-content-center">
-          <div class="buttons">
-            <button class="button is-danger" @click="performDelete">
-              Delete
+      </div>
+    </teleport>
+    <teleport to="#modal-root">
+      <div :class="['modal', privacyModalActive ? 'is-active' : null]">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title has-text-centered">
+              Change Album Privacy to Private
+            </p>
+          </header>
+          <div class="modal-card-body">
+            <p>
+              When you set this album to Private,
+              <strong>{{ album.privatizablePhotosCount }}</strong>
+              {{ album.privatizablePhotosCount === 1 ? "photo" : "photos" }}
+              contained in this album will also be set to Private.
+            </p>
+            <p class="mt-3">Do you want to continue?</p>
+          </div>
+          <footer class="modal-card-foot is-justify-content-center">
+            <button class="button is-warning" @click="confirmPrivacyChange">
+              Yes, set album and photos to Private
             </button>
-            <button class="button is-info" @click="closeConfirmationModal">
+            <button class="button is-info" @click="cancelPrivacyChange">
               Cancel
             </button>
+          </footer>
+        </div>
+      </div>
+    </teleport>
+    <teleport to="#modal-root">
+      <div :class="['modal', collapseModalActive ? 'is-active' : null]">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title has-text-centered">
+              {{ album.collapsedInFeed ? "Uncollapse Album" : "Collapse Album" }}
+            </p>
+          </header>
+          <div class="modal-card-body">
+            <template v-if="album.collapsedInFeed">
+              <p>
+                This album's photos will return to the photo feed individually,
+                in their normal date order.
+              </p>
+            </template>
+            <template v-else>
+              <p>
+                This album will show as a single entry on the photo feed - and
+                on the homepage too, if it's the most recent thing posted -
+                its cover photo, with the album's photo count.
+              </p>
+              <p class="mt-3">
+                Its other photos will leave the photo feed, the homepage's
+                latest photo, and the photos RSS feed. They'll stay visible in
+                the album, on tag pages, in search, and when browsing photo by
+                photo with the Previous/Next buttons.
+              </p>
+              <p class="mt-3" v-if="!isPublic">
+                This album isn't Public, so it won't show in the feed at all
+                until it is.
+              </p>
+            </template>
           </div>
-        </footer>
-      </div>
-    </div>
-  </teleport>
-  <teleport to="#modal-root">
-    <div :class="['modal', privacyModalActive ? 'is-active' : null]">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title has-text-centered">
-            Change Album Privacy to Private
-          </p>
-        </header>
-        <div class="modal-card-body">
-          <p>
-            When you set this album to Private,
-            <strong>{{ album.privatizablePhotosCount }}</strong>
-            {{ album.privatizablePhotosCount === 1 ? "photo" : "photos" }}
-            contained in this album will also be set to Private.
-          </p>
-          <p class="mt-3">Do you want to continue?</p>
+          <footer class="modal-card-foot is-justify-content-center">
+            <button class="button is-warning" @click="confirmCollapseChange">
+              {{ album.collapsedInFeed ? "Yes, uncollapse" : "Yes, collapse" }}
+            </button>
+            <button class="button is-info" @click="cancelCollapseChange">
+              Cancel
+            </button>
+          </footer>
         </div>
-        <footer class="modal-card-foot is-justify-content-center">
-          <button class="button is-warning" @click="confirmPrivacyChange">
-            Yes, set album and photos to Private
-          </button>
-          <button class="button is-info" @click="cancelPrivacyChange">
-            Cancel
-          </button>
-        </footer>
       </div>
-    </div>
-  </teleport>
-  <teleport to="#modal-root">
-    <div :class="['modal', collapseModalActive ? 'is-active' : null]">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title has-text-centered">
-            {{ album.collapsedInFeed ? "Uncollapse Album" : "Collapse Album" }}
-          </p>
-        </header>
-        <div class="modal-card-body">
-          <template v-if="album.collapsedInFeed">
-            <p>
-              This album's photos will return to the photo feed individually,
-              in their normal date order.
-            </p>
-          </template>
-          <template v-else>
-            <p>
-              This album will show as a single entry on the photo feed - and
-              on the homepage too, if it's the most recent thing posted -
-              its cover photo, with the album's photo count.
-            </p>
-            <p class="mt-3">
-              Its other photos will leave the photo feed, the homepage's
-              latest photo, and the photos RSS feed. They'll stay visible in
-              the album, on tag pages, in search, and when browsing photo by
-              photo with the Previous/Next buttons.
-            </p>
-            <p class="mt-3" v-if="!isPublic">
-              This album isn't Public, so it won't show in the feed at all
-              until it is.
-            </p>
-          </template>
-        </div>
-        <footer class="modal-card-foot is-justify-content-center">
-          <button class="button is-warning" @click="confirmCollapseChange">
-            {{ album.collapsedInFeed ? "Yes, uncollapse" : "Yes, collapse" }}
-          </button>
-          <button class="button is-info" @click="cancelCollapseChange">
-            Cancel
-          </button>
-        </footer>
-      </div>
-    </div>
-  </teleport>
+    </teleport>
+  </div>
 </template>
 
 <script setup>
@@ -191,6 +198,7 @@ const emit = defineEmits([
   "updateSorting",
   "setAlbumPrivacy",
   "setAlbumCollapsedInFeed",
+  "close",
 ]);
 const applicationStore = useApplicationStore();
 
@@ -338,6 +346,10 @@ defineExpose({ revertPrivacy });
 <style scoped>
 .message.is-smallish {
   font-size: 0.84rem;
+  /* Lets the panel shrink to 0 inside show.vue's grid-rows collapse
+     transition, instead of the grid row refusing to go below its
+     content's intrinsic height. */
+  min-height: 0;
 }
 
 .message-body {
