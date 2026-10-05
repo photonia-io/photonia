@@ -25,7 +25,7 @@
         </div>
 
         <label for="album-sorting-type" class="label mt-4">Photo Sorting:</label>
-        <div class="select is-small">
+        <div class="select">
           <select
             id="album-sorting-type"
             v-model="sortingType"
@@ -37,7 +37,7 @@
             <option value="manual">Manual (custom order)</option>
           </select>
         </div>
-        <div class="select is-small ml-2" v-if="sortingType != 'manual'">
+        <div class="select ml-2" v-if="sortingType != 'manual'">
           <select
             id="album-sorting-order"
             v-model="sortingOrder"
@@ -49,7 +49,7 @@
         </div>
 
         <button
-          class="button is-small ml-2"
+          class="button control-sized ml-2"
           @click="manageSorting"
           v-if="sortingType == 'manual'"
         >
@@ -59,7 +59,7 @@
         <label class="label mt-4">Photo Feed:</label>
         <div class="buttons">
           <button
-            class="button is-small"
+            class="button control-sized"
             :disabled="collapseDisabled"
             @click="showCollapseModal"
           >
@@ -69,7 +69,10 @@
         <p class="help" v-if="collapseDisabled">{{ album.collapseBlocker }}</p>
 
         <div class="buttons mt-5">
-          <button class="button is-danger" @click="showConfirmationModal">
+          <button
+            class="button is-danger control-sized"
+            @click="showConfirmationModal"
+          >
             Delete Album
           </button>
         </div>
@@ -352,7 +355,9 @@ defineExpose({ revertPrivacy });
   min-height: 0;
 }
 
-.message-body {
-  padding: 1em 1em;
+/* Bulma buttons use a fixed font size, while the selects inherit the
+   panel's smaller one - inherit it so both render the same size. */
+.control-sized {
+  font-size: 1em;
 }
 </style>
