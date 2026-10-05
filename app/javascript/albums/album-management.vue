@@ -69,13 +69,13 @@
         <p class="help" v-if="collapseDisabled">{{ album.collapseBlocker }}</p>
 
         <label for="album-sort-date" class="label mt-4">Album List Date:</label>
-        <input
-          id="album-sort-date"
-          type="date"
-          class="input control-sized date-input"
-          v-model="sortDate"
-        />
-        <div class="buttons mt-2">
+        <div class="sort-date-row">
+          <input
+            id="album-sort-date"
+            type="date"
+            class="input control-sized date-input"
+            v-model="sortDate"
+          />
           <button
             class="button control-sized"
             :disabled="!album.firstPhotoTakenAt"
@@ -90,6 +90,8 @@
           >
             Latest photo
           </button>
+        </div>
+        <div class="buttons mt-2">
           <button
             class="button control-sized"
             :disabled="!sortDate || sortDate === (album.sortDate || '')"
@@ -413,6 +415,13 @@ defineExpose({ revertPrivacy });
    panel's smaller one - inherit it so both render the same size. */
 .control-sized {
   font-size: 1em;
+}
+
+.sort-date-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .date-input {
