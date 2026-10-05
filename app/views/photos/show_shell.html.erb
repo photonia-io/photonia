@@ -1,3 +1,4 @@
 <%# Shell Page: Photo not available server-side (likely private). %>
 <%# Vue + GraphQL will hydrate it with real data. %>
 <% content_for(:page_title, "Photo") %>
+<% content_for(:robots, @robots) if @robots %>

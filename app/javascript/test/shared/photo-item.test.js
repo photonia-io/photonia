@@ -93,6 +93,35 @@ describe("PhotoItem", () => {
       ]);
     });
 
+    it("carries a share token alongside the album slug", () => {
+      const { wrapper } = mountPhotoItem({
+        photo: nonEditablePhoto,
+        inAlbum: true,
+        albumId: "sunset-trip",
+        share: "secret-token",
+      });
+
+      expect(photoLinks(wrapper)).toEqual([
+        {
+          name: "photos-show",
+          params: { id: "some-slug" },
+          query: { inAlbum: "sunset-trip", share: "secret-token" },
+        },
+      ]);
+    });
+
+    it("omits the share token when there is no album slug", () => {
+      const { wrapper } = mountPhotoItem({
+        photo: nonEditablePhoto,
+        inAlbum: true,
+        share: "secret-token",
+      });
+
+      expect(photoLinks(wrapper)).toEqual([
+        { name: "photos-show", params: { id: "some-slug" } },
+      ]);
+    });
+
     it("shows no checkbox even for a signed-in uploader if the photo itself is not editable", () => {
       const { wrapper } = mountPhotoItem(
         { photo: nonEditablePhoto },

@@ -70,6 +70,7 @@
                   :commentable="photo"
                   commentable-type="Photo"
                   :loading="loading"
+                  :allow-new-comment="!viaPrivateShareLink"
                   @refresh="refreshPhoto"
                 />
               </PhotoInfobox>
@@ -340,7 +341,10 @@
                         You can navigate in this album by using the
                         <strong>J</strong> / <strong>K</strong> keys
                       </p>
+                      <!-- Leaving the album drops the share token with it,
+                           which would 404 on a private photo - see shareToken. -->
                       <button
+                        v-if="!shareToken"
                         class="button is-small is-fullwidth"
                         @click="stopNavigatingAlbum()"
                       >
@@ -450,11 +454,13 @@ const route = useRoute();
 const router = useRouter();
 
 const id = computed(() => route.params.id);
+const inAlbum = computed(() => route.query.inAlbum || null);
+const share = computed(() => route.query.share || null);
 const { result, loading, refetch } = useQuery(
   gql`
     ${gql_queries.photos_show}
   `,
-  { id: id },
+  { id: id, inAlbum: inAlbum, share: share },
   { keepPreviousResult: true },
 );
 const labelHighlights = ref({});
@@ -918,6 +924,13 @@ const showingCurrentPhoto = computed(() => photo.value.id === id.value);
 
 const canEditPhoto = computed(() => userStore.signedIn && photo.value.canEdit);
 
+// A share link can open a private photo for a signed-out (or unrelated
+// signed-in) visitor - commenting would just fail server-side, so the form
+// is hidden rather than offered and rejected.
+const viaPrivateShareLink = computed(
+  () => !!share.value && photo.value.privacy !== "public",
+);
+
 // Editors always get the section, even with no albums, because it holds the
 // Add To Album button.
 const showAlbumBrowser = computed(
@@ -926,6 +939,7 @@ const showAlbumBrowser = computed(
 
 const {
   inAlbumId,
+  shareToken,
   navigationQuery,
   lightboxRequested,
   navigateToPhoto,

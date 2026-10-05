@@ -91,6 +91,8 @@
  * - `canEditAlbum` (Boolean): whether the current user can edit that album.
  * - `albumId` (String): slug of the album this grid belongs to. Distinct
  *   from `inAlbum` — when set, the photo link starts album (J/K) navigation.
+ * - `share` (String): share token for `albumId`, carried into the photo
+ *   link so a share-link visitor keeps access on the photo page.
  *
  * `photo.feedAlbum`, when present (only on the main photo feed), means this
  * card is the cover of a collapsed album: it links to the album instead of
@@ -129,6 +131,11 @@ const props = defineProps({
     default: null,
     required: false,
   },
+  share: {
+    type: String,
+    default: null,
+    required: false,
+  },
 });
 
 const emit = defineEmits(["set-cover-photo"]);
@@ -149,7 +156,14 @@ const photoRoute = computed(() => {
   return {
     name: "photos-show",
     params: { id: props.photo.id },
-    ...(props.albumId ? { query: { inAlbum: props.albumId } } : {}),
+    ...(props.albumId
+      ? {
+          query: {
+            inAlbum: props.albumId,
+            ...(props.share ? { share: props.share } : {}),
+          },
+        }
+      : {}),
   };
 });
 

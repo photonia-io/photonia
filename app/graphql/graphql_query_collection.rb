@@ -223,8 +223,8 @@ class GraphqlQueryCollection
       }
     GQL
     albums_show: <<-GQL.squish,
-      query AlbumsShowQuery($id: ID!, $page: Int) {
-        album(id: $id) {
+      query AlbumsShowQuery($id: ID!, $page: Int, $share: String) {
+        album(id: $id, share: $share) {
           id
           title
           description
@@ -248,6 +248,8 @@ class GraphqlQueryCollection
           sortingOrder
           canEdit
           privacy
+          shareMode
+          shareToken
           privatizablePhotosCount
           collapsedInFeed
           collapseBlocker
@@ -403,8 +405,8 @@ class GraphqlQueryCollection
       }
     GQL
     photos_show: <<-GQL.squish,
-      query PhotosShowQuery($id: ID!) {
-        photo(id: $id) {
+      query PhotosShowQuery($id: ID!, $inAlbum: ID, $share: String) {
+        photo(id: $id, inAlbum: $inAlbum, share: $share) {
           id
           title
           altText

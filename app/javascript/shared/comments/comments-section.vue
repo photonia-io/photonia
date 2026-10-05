@@ -30,7 +30,7 @@
         @submit="submitNewComment"
       />
     </div>
-    <p v-else-if="!userStore.signedIn && commentingEnabled">
+    <p v-else-if="!userStore.signedIn && commentingEnabled && allowNewComment">
       <router-link :to="{ name: 'users-sign-in' }">Sign in</router-link> to leave a comment.
     </p>
 
@@ -100,6 +100,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // False hides the new-comment form even for a signed-in user who could
+  // otherwise comment - e.g. viewing a private photo through a share link
+  // (commenting there would just be rejected server-side).
+  allowNewComment: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(["refresh"]);
@@ -115,7 +122,9 @@ const commentingEnabled = computed(() => {
     ? !!window.settings?.photo_commenting_enabled
     : !!window.settings?.album_commenting_enabled;
 });
-const canComment = computed(() => userStore.signedIn && commentingEnabled.value);
+const canComment = computed(
+  () => userStore.signedIn && commentingEnabled.value && props.allowNewComment,
+);
 
 // Only one reply/edit form is open across the whole tree at a time.
 const replyTargetId = ref(null);

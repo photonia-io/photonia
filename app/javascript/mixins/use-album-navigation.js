@@ -41,6 +41,9 @@ export function useAlbumNavigation(photo) {
   const { lightboxRequested, stepInLightbox } = useLightboxRoute();
 
   const inAlbumId = computed(() => route.query.inAlbum || null);
+  // Share token for inAlbumId, when browsing a private album via its share
+  // link - carried along wherever inAlbum is, so the link keeps working.
+  const shareToken = computed(() => route.query.share || null);
 
   // Null while inAlbumId is set means dormant: we navigated out of the album,
   // so the keys do nothing until we come back to a photo that is in it.
@@ -50,9 +53,14 @@ export function useAlbumNavigation(photo) {
   );
 
   // Carried through every photos-show navigation so the mode can resume.
-  const navigationQuery = computed(() =>
-    inAlbumId.value ? { inAlbum: inAlbumId.value } : {},
-  );
+  const navigationQuery = computed(() => {
+    if (!inAlbumId.value) return {};
+
+    return {
+      inAlbum: inAlbumId.value,
+      ...(shareToken.value ? { share: shareToken.value } : {}),
+    };
+  });
 
   const navigateToPhoto = (target) => {
     if (!target) return;
@@ -75,10 +83,14 @@ export function useAlbumNavigation(photo) {
   const albumRoute = (album) => ({
     name: "albums-show",
     params: { id: album.id },
-    query:
-      album.photoPositionInAlbum?.page > 1
+    query: {
+      ...(album.photoPositionInAlbum?.page > 1
         ? { page: album.photoPositionInAlbum.page }
-        : {},
+        : {}),
+      ...(shareToken.value && album.id === inAlbumId.value
+        ? { share: shareToken.value }
+        : {}),
+    },
   });
 
   const startNavigatingAlbum = (albumId) => {
@@ -101,6 +113,7 @@ export function useAlbumNavigation(photo) {
 
   return {
     inAlbumId,
+    shareToken,
     navigatingAlbum,
     navigationQuery,
     lightboxRequested,

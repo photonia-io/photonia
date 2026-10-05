@@ -22,6 +22,12 @@
             </p>
           </div>
           <div class="level-item" v-if="canEditAlbum">
+            <button class="button is-small" @click="shareModalActive = true">
+              <span class="icon"><i class="fas fa-share-alt"></i></span>
+              <span>Share</span>
+            </button>
+          </div>
+          <div class="level-item" v-if="canEditAlbum">
             <button class="button is-small" @click="showAlbumSettings = !showAlbumSettings">
               {{ showAlbumSettings ? "Hide Album Settings" : "Album Settings" }}
             </button>
@@ -29,7 +35,7 @@
         </div>
       </div>
 
-      <p class="mb-4">
+      <p class="mb-4" v-if="!shareToken">
         <router-link :to="{ name: 'photos-search', query: { album: album.id } }">
           Search within this album
         </router-link>
@@ -58,12 +64,22 @@
         @set-album-collapsed-in-feed="handleSetAlbumCollapsedInFeed"
       />
 
+      <ShareModal
+        v-if="canEditAlbum"
+        :active="shareModalActive"
+        :album="album"
+        @set-mode="handleSetAlbumShareMode"
+        @regenerate="handleRegenerateAlbumShareToken"
+        @close="shareModalActive = false"
+      />
+
       <div class="columns is-1 is-multiline" :class="{ 'mt-0': canEditAlbum }">
         <PhotoItem
           v-for="photo in album.photos?.collection"
           :photo="photo"
           :in-album="true"
           :album-id="id"
+          :share="shareToken"
           :key="photo.id"
           :can-edit-album="canEditAlbum"
           @set-cover-photo="handleSetAlbumCoverPhoto"
@@ -74,6 +90,7 @@
         v-if="album.photos?.metadata"
         :metadata="album.photos.metadata"
         :routeParams="{ id: id }"
+        :additionalQueryParams="shareToken ? { share: shareToken } : {}"
         routeName="albums-show"
       />
 
@@ -115,6 +132,7 @@ import Pagination from "@/shared/pagination.vue";
 const AlbumTitleEditable = defineAsyncComponent(() => import("./album-title-editable.vue"));
 const AlbumDescriptionEditable = defineAsyncComponent(() => import("./album-description-editable.vue"));
 const AlbumManagement = defineAsyncComponent(() => import("./album-management.vue"));
+const ShareModal = defineAsyncComponent(() => import("./share-modal.vue"));
 // TODO: re-enable once album commenting is ready - see the commented-out
 // Comments section in the template below.
 // import CommentsSection from "@/shared/comments/comments-section.vue";
@@ -130,8 +148,12 @@ useSelectionContext();
 
 const id = computed(() => route.params.id);
 const page = computed(() => parseInt(route.query.page) || 1);
+// Carried through to the album query, PhotoItem links and Pagination so a
+// visitor following a share link keeps it across the whole album.
+const shareToken = computed(() => route.query.share || null);
 
 const showAlbumSettings = ref(false);
+const shareModalActive = ref(false);
 
 const apolloClient = inject("apolloClient");
 
@@ -139,7 +161,7 @@ const { result, loading, refetch } = useQuery(
   gql`
     ${gql_queries.albums_show}
   `,
-  { id: id, page: page },
+  { id: id, page: page, share: shareToken },
   { keepPreviousResult: true },
 );
 
@@ -505,6 +527,70 @@ onSetAlbumCollapsedInFeedError((error) => {
   toaster(
     "An error occurred while updating the photo feed setting: " +
       error.message,
+    "is-danger",
+  );
+});
+
+/* Share link mode */
+const {
+  mutate: setAlbumShareModeMutation,
+  onDone: onSetAlbumShareModeDone,
+  onError: onSetAlbumShareModeError,
+} = useMutation(gql`
+  mutation ($id: String!, $mode: String!) {
+    setAlbumShareMode(id: $id, mode: $mode) {
+      id
+      shareMode
+      shareToken
+    }
+  }
+`);
+
+const handleSetAlbumShareMode = ({ id, mode }) => {
+  setAlbumShareModeMutation({ id, mode });
+};
+
+onSetAlbumShareModeDone(({ data }) => {
+  const mode = data?.setAlbumShareMode?.shareMode;
+  toaster(
+    mode === "off"
+      ? "The share link is now off"
+      : "The share link has been updated",
+  );
+});
+
+onSetAlbumShareModeError((error) => {
+  toaster(
+    "An error occurred while updating the share link: " + error.message,
+    "is-danger",
+  );
+});
+
+/* Share link regeneration */
+const {
+  mutate: regenerateAlbumShareTokenMutation,
+  onDone: onRegenerateAlbumShareTokenDone,
+  onError: onRegenerateAlbumShareTokenError,
+} = useMutation(gql`
+  mutation ($id: String!) {
+    regenerateAlbumShareToken(id: $id) {
+      id
+      shareToken
+    }
+  }
+`);
+
+const handleRegenerateAlbumShareToken = ({ id }) => {
+  regenerateAlbumShareTokenMutation({ id });
+};
+
+onRegenerateAlbumShareTokenDone(() => {
+  toaster("The share link has been regenerated; the old link no longer works");
+});
+
+onRegenerateAlbumShareTokenError((error) => {
+  toaster(
+    "An error occurred while regenerating the share link: " + error.message,
     "is-danger",
   );
 });

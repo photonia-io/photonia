@@ -14,6 +14,8 @@
 #  privacy                  :enum             default("public")
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
+#  share_mode               :string           default("off"), not null
+#  share_token              :string
 #  slug                     :string
 #  sorting_order            :string           default("asc"), not null
 #  sorting_type             :string           default("taken_at"), not null
@@ -27,6 +29,7 @@
 # Indexes
 #
 #  index_albums_on_public_cover_photo_id  (public_cover_photo_id)
+#  index_albums_on_share_token            (share_token) UNIQUE
 #  index_albums_on_user_cover_photo_id    (user_cover_photo_id)
 #  index_albums_on_user_id                (user_id)
 #
@@ -51,6 +54,15 @@ class Album < ApplicationRecord
   enum :sorting_order, {
     asc: 'asc',
     desc: 'desc'
+  }, suffix: true
+
+  # public_photos: the link opens the album, even if private, but shows only
+  # its public photos. all_photos: the link also shows private/friends &
+  # family photos. See AlbumShareAccess.
+  enum :share_mode, {
+    off: 'off',
+    public_photos: 'public_photos',
+    all_photos: 'all_photos'
   }, suffix: true
 
   is_impressionable counter_cache: true, unique: :session_hash
@@ -118,6 +130,23 @@ class Album < ApplicationRecord
     Photo.unscoped
          .where(id: albums_photos.select(:photo_id))
          .where.not(privacy: 'private')
+  end
+
+  SHARE_TOKEN_LENGTH = 24
+
+  # Issues a new share link token, invalidating the previous one. Uses
+  # update_columns (like maintenance_update) so it doesn't trigger the
+  # after_update :maintenance recount - nothing it touches affects counts.
+  def regenerate_share_token!
+    # rubocop:disable Rails/SkipsModelValidations
+    update_columns(share_token: SecureRandom.urlsafe_base64(SHARE_TOKEN_LENGTH))
+    # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  def share_token_matches?(token)
+    return false if off_share_mode? || share_token.blank? || token.blank?
+
+    ActiveSupport::SecurityUtils.secure_compare(share_token, token)
   end
 
   # The first photo (any privacy) that isn't a member of this album but was

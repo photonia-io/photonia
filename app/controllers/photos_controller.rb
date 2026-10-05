@@ -28,9 +28,7 @@ class PhotosController < ApplicationController
     @tags = @photo.tags.rekognition(false)
     @rekognition_tags = @photo.tags.rekognition(true)
   rescue ActiveRecord::RecordNotFound
-    # 404 so search engines drop the page, but still ship the shell + JS
-    # bundle so Vue + GraphQL can hydrate it for a signed-in owner.
-    render :show_shell, status: :not_found
+    render_show_shell(shared: photo_share_access.present?)
   end
 
   def upload
@@ -70,5 +68,13 @@ class PhotosController < ApplicationController
 
   def photo_params
     params.require(:photo).permit(:title, :description, :image)
+  end
+
+  def photo_share_access
+    access = AlbumShareAccess.resolve(params[:inAlbum], params[:share])
+    return nil unless access
+
+    photo = access.photo_scope.find_by(slug: params[:id])
+    access if photo && access.covers_photo?(photo)
   end
 end

@@ -14,6 +14,8 @@
 #  privacy                  :enum             default("public")
 #  public_photos_count      :integer          default(0), not null
 #  serial_number            :bigint
+#  share_mode               :string           default("off"), not null
+#  share_token              :string
 #  slug                     :string
 #  sorting_order            :string           default("asc"), not null
 #  sorting_type             :string           default("taken_at"), not null
@@ -27,6 +29,7 @@
 # Indexes
 #
 #  index_albums_on_public_cover_photo_id  (public_cover_photo_id)
+#  index_albums_on_share_token            (share_token) UNIQUE
 #  index_albums_on_user_cover_photo_id    (user_cover_photo_id)
 #  index_albums_on_user_id                (user_id)
 #
@@ -65,6 +68,57 @@ RSpec.describe Album do
       it 'returns the correct slug' do
         album = create(:album)
         expect(album.slug).to eq(album.serial_number.to_s)
+      end
+    end
+
+    describe '#regenerate_share_token!' do
+      let(:album) { create(:album) }
+
+      it 'sets a share token' do
+        expect { album.regenerate_share_token! }.to change(album, :share_token).from(nil)
+      end
+
+      it 'replaces an existing token with a different one' do
+        album.regenerate_share_token!
+        previous_token = album.share_token
+
+        album.regenerate_share_token!
+
+        expect(album.share_token).not_to eq(previous_token)
+      end
+
+      it 'does not trigger maintenance (update_columns bypasses after_update)' do
+        expect(album).not_to receive(:maintenance)
+        album.regenerate_share_token!
+      end
+    end
+
+    describe '#share_token_matches?' do
+      let(:album) { create(:album, share_mode: 'all_photos') }
+
+      before { album.regenerate_share_token! }
+
+      it 'is true for the current token' do
+        expect(album.share_token_matches?(album.share_token)).to be(true)
+      end
+
+      it 'is false for a wrong token' do
+        expect(album.share_token_matches?('wrong-token')).to be(false)
+      end
+
+      it 'is false for a blank token' do
+        expect(album.share_token_matches?(nil)).to be(false)
+        expect(album.share_token_matches?('')).to be(false)
+      end
+
+      it 'is false when share_mode is off, even with the right token' do
+        album.update_column(:share_mode, 'off') # rubocop:disable Rails/SkipsModelValidations
+        expect(album.share_token_matches?(album.share_token)).to be(false)
+      end
+
+      it 'is false when there is no token yet' do
+        album = create(:album, share_mode: 'all_photos')
+        expect(album.share_token_matches?('anything')).to be(false)
       end
     end
 

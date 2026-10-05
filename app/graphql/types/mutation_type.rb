@@ -12,11 +12,13 @@ module Types
     field :delete_album, mutation: Mutations::DeleteAlbum, description: 'Delete album'
     field :delete_comment, mutation: Mutations::DeleteComment, description: 'Delete a comment'
     field :delete_photos, mutation: Mutations::DeletePhotos, description: 'Delete photos'
+    field :regenerate_album_share_token, mutation: Mutations::RegenerateAlbumShareToken, description: "Regenerate an album's share link token"
     field :remove_tag_from_photo, mutation: Mutations::RemoveTagFromPhoto, description: 'Remove a tag from a photo'
     field :reset_photo_taken_at, mutation: Mutations::ResetPhotoTakenAt, description: 'Reset photo date taken to the EXIF or upload date'
     field :set_album_collapsed_in_feed, mutation: Mutations::SetAlbumCollapsedInFeed, description: 'Set whether an album collapses to a single entry on the photo feed'
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'
+    field :set_album_share_mode, mutation: Mutations::SetAlbumShareMode, description: "Set an album share link's mode"
     field :set_photo_license, mutation: Mutations::SetPhotoLicense, description: 'Set photo license'
     field :set_photo_privacy, mutation: Mutations::SetPhotoPrivacy, description: 'Set photo privacy'
     field :set_photo_taken_at, mutation: Mutations::SetPhotoTakenAt, description: 'Set photo date taken'

@@ -194,7 +194,16 @@ module Types
     end
 
     def albums
-      Pundit.policy_scope(context[:current_user], @object.albums.unscope(where: :privacy))
+      scoped = Pundit.policy_scope(context[:current_user], @object.albums.unscope(where: :privacy))
+
+      # A share link can cover an album this policy scope wouldn't otherwise
+      # include (a private album, for a visitor) - add it so the album
+      # sidebar and in-album navigation still work. See AlbumShareAccess.
+      share = context[:album_share]
+      return scoped unless share&.covers_photo?(@object)
+      return scoped if scoped.any? { |album| album.id == share.album.id }
+
+      scoped.to_a + [share.album]
     end
 
     def user_thumbnail

@@ -15,9 +15,7 @@ class AlbumsController < ApplicationController
     @album = Album.friendly.find(params[:id])
     @pagy, @photos = pagy(@album.photos.order(:ordering))
   rescue ActiveRecord::RecordNotFound
-    # 404 so search engines drop the page, but still ship the shell + JS
-    # bundle so Vue + GraphQL can hydrate it for a signed-in owner.
-    render :show_shell, status: :not_found
+    render_show_shell(shared: AlbumShareAccess.resolve(params[:id], params[:share]).present?)
   end
 
   def feed

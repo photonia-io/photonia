@@ -33,6 +33,9 @@ module Types
 
     field :privacy, String, 'Privacy level of the album', null: false
 
+    field :share_mode, String, "Sharing mode of the album's link: off, public_photos or all_photos (editors only)", null: true
+    field :share_token, String, "Secret token for the album's share link (editors only)", null: true
+
     field :sorting_order, String, 'Sorting order of the album', null: false
     field :sorting_type, String, 'Sorting type of the album', null: false
     field :title, String, 'Title of the album', null: false
@@ -74,8 +77,8 @@ module Types
     end
 
     def photos_count
-      # owners and admins can see the real count
-      if Pundit.policy(context[:current_user], @object)&.update?
+      # owners, admins and an all-photos share link see the real count
+      if Pundit.policy(context[:current_user], @object)&.update? || shared_all_photos?
         @object.photos_count
       else
         @object.public_photos_count
@@ -86,8 +89,24 @@ module Types
       # For editors (owner/admin), prefer the user-set cover if present,
       return editor_cover_photo if Pundit.policy(context[:current_user], @object)&.update?
 
+      # An all-photos share link may need to fall back the same way an editor
+      # would (e.g. every photo in the album is private)
+      return @object.public_cover_photo || fallback_cover_photo if shared_all_photos?
+
       # Fallback to the public cover (what visitors/non-owners see)
       @object.public_cover_photo
+    end
+
+    def share_mode
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.share_mode
+    end
+
+    def share_token
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.share_token
     end
 
     def privatizable_photos_count
@@ -109,6 +128,8 @@ module Types
       scoped_previous_photo = scoped_previous_photo(scoped_photo_ordering)
       return nil if scoped_previous_photo.nil?
 
+      return scoped_previous_photo if shared_all_photos?
+
       context[:authorize].call(scoped_previous_photo, :show?)
     end
 
@@ -118,6 +139,8 @@ module Types
 
       scoped_next_photo = scoped_next_photo(scoped_photo_ordering)
       return nil if scoped_next_photo.nil?
+
+      return scoped_next_photo if shared_all_photos?
 
       context[:authorize].call(scoped_next_photo, :show?)
     end
@@ -171,7 +194,7 @@ module Types
     end
 
     def scoped_photo_ordering(photo_id)
-      base = Pundit.policy_scope(context[:current_user], Photo.unscoped)
+      base = shared_all_photos? ? share_photo_scope : Pundit.policy_scope(context[:current_user], Photo.unscoped)
       base.friendly.find(photo_id).albums_photos.find_by(album_id: @object.id)&.ordering
     end
 
@@ -179,7 +202,21 @@ module Types
     # must not join it again: a second, unconstrained join multiplies every row
     # by the number of albums the photo belongs to.
     def scoped_album_photos
+      return share_photo_scope if shared_all_photos?
+
       Pundit.policy_scope(context[:current_user], @object.photos.unscope(where: :privacy))
+    end
+
+    # True when context[:album_share] is a valid all-photos share link for
+    # this specific album - set by AlbumQuery or PhotoQuery. See
+    # AlbumShareAccess.
+    def shared_all_photos?
+      share = context[:album_share]
+      !!(share && share.covers_album?(@object) && share.all_photos?)
+    end
+
+    def share_photo_scope
+      context[:album_share].photo_scope
     end
 
     def scoped_next_photo(current_ordering)
