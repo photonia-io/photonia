@@ -77,7 +77,8 @@ CREATE TABLE public.albums (
     sorting_order character varying DEFAULT 'asc'::character varying NOT NULL,
     collapsed_in_feed boolean DEFAULT false NOT NULL,
     share_token character varying,
-    share_mode character varying DEFAULT 'off'::character varying NOT NULL
+    share_mode character varying DEFAULT 'off'::character varying NOT NULL,
+    sort_date date
 );
 
 
@@ -1225,7 +1226,7 @@ CREATE INDEX index_comments_on_user_id ON public.comments USING btree (user_id);
 -- Name: index_flickr_user_claims_on_active_user_and_flickr_user; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_flickr_user_claims_on_active_user_and_flickr_user ON public.flickr_user_claims USING btree (user_id, flickr_user_id) WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying])::text[]));
+CREATE UNIQUE INDEX index_flickr_user_claims_on_active_user_and_flickr_user ON public.flickr_user_claims USING btree (user_id, flickr_user_id) WHERE ((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('approved'::character varying)::text]));
 
 
 --
@@ -1684,6 +1685,7 @@ ALTER TABLE ONLY public.albums_photos
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261005120000'),
 ('20261002090000'),
 ('20261002060723'),
 ('20260930120000'),

@@ -27,6 +27,13 @@ RSpec.describe 'albumSpotlight Query' do
     expect(spotlight).to eq('id' => picked.slug, 'title' => 'Picked')
   end
 
+  it 'uses sort_date over created_at when picking the newest album' do
+    public_album('Backfilled', created_at: 1.hour.ago, sort_date: 5.years.ago.to_date)
+    public_album('Recent', created_at: 2.days.ago)
+
+    expect(spotlight['title']).to eq('Recent')
+  end
+
   it 'falls back to the newest album when none is picked' do
     public_album('Older', created_at: 3.days.ago)
     newest = public_album('Newest')

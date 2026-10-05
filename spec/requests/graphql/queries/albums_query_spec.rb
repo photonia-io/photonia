@@ -60,6 +60,32 @@ RSpec.describe 'albums Query' do
     end
   end
 
+  describe 'ordering' do
+    def public_album(title, **attrs)
+      create(:album, title:, **attrs).tap do |album|
+        album.photos << create(:photo)
+        album.maintenance
+      end
+    end
+
+    let!(:recent) { public_album('Recent', created_at: 2.days.ago) }
+    let!(:backfilled) { public_album('Backfilled', created_at: 1.day.ago, sort_date: 5.years.ago.to_date) }
+
+    it 'honours sort_date in paginated mode' do
+      post '/graphql', params: { query: }
+
+      titles = response.parsed_body.dig('data', 'albums', 'collection').pluck('title')
+      expect(titles).to eq(%w[Recent Backfilled])
+    end
+
+    it 'honours sort_date in simple newest mode' do
+      post '/graphql', params: { query: 'query { albums(mode: "simple", order: "newest") { collection { title } } }' }
+
+      titles = response.parsed_body.dig('data', 'albums', 'collection').pluck('title')
+      expect(titles).to eq(%w[Recent Backfilled])
+    end
+  end
+
   describe 'simple mode' do
     subject(:post_query) { post '/graphql', params: { query: } }
 

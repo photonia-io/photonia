@@ -68,6 +68,48 @@
         </div>
         <p class="help" v-if="collapseDisabled">{{ album.collapseBlocker }}</p>
 
+        <label for="album-sort-date" class="label mt-4">Album List Date:</label>
+        <input
+          id="album-sort-date"
+          type="date"
+          class="input control-sized date-input"
+          v-model="sortDate"
+        />
+        <div class="buttons mt-2">
+          <button
+            class="button control-sized"
+            :disabled="!album.firstPhotoTakenAt"
+            @click="sortDate = album.firstPhotoTakenAt"
+          >
+            First photo
+          </button>
+          <button
+            class="button control-sized"
+            :disabled="!album.lastPhotoTakenAt"
+            @click="sortDate = album.lastPhotoTakenAt"
+          >
+            Latest photo
+          </button>
+          <button
+            class="button control-sized"
+            :disabled="!sortDate || sortDate === (album.sortDate || '')"
+            @click="saveSortDate"
+          >
+            Save
+          </button>
+          <button
+            class="button control-sized"
+            v-if="album.sortDate"
+            @click="clearSortDate"
+          >
+            Clear
+          </button>
+        </div>
+        <p class="help">
+          Where this album sits in the album list; without it, the creation
+          date is used. First / Latest photo use the date shot.
+        </p>
+
         <div class="buttons mt-5">
           <button
             class="button is-danger control-sized"
@@ -201,6 +243,7 @@ const emit = defineEmits([
   "updateSorting",
   "setAlbumPrivacy",
   "setAlbumCollapsedInFeed",
+  "setAlbumSortDate",
   "close",
 ]);
 const applicationStore = useApplicationStore();
@@ -220,6 +263,7 @@ const closeConfirmationModal = () => {
 const sortingType = ref("takenAt");
 const sortingOrder = ref("asc");
 const privacy = ref("public");
+const sortDate = ref("");
 // The privacy last confirmed by the server, so Cancel has something to revert to
 const committedPrivacy = ref("public");
 
@@ -233,6 +277,7 @@ watch(
       const p = newAlbum.privacy || "public";
       privacy.value = p;
       committedPrivacy.value = p;
+      sortDate.value = newAlbum.sortDate || "";
     }
   },
   { immediate: true },
@@ -343,6 +388,15 @@ const cancelCollapseChange = () => {
   closeCollapseModal();
 };
 
+const saveSortDate = () => {
+  emit("setAlbumSortDate", { id: props.album.id, sortDate: sortDate.value });
+};
+
+const clearSortDate = () => {
+  sortDate.value = "";
+  emit("setAlbumSortDate", { id: props.album.id, sortDate: null });
+};
+
 defineExpose({ revertPrivacy });
 </script>
 
@@ -359,5 +413,9 @@ defineExpose({ revertPrivacy });
    panel's smaller one - inherit it so both render the same size. */
 .control-sized {
   font-size: 1em;
+}
+
+.date-input {
+  width: auto;
 }
 </style>

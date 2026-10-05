@@ -17,6 +17,7 @@
 #  share_mode               :string           default("off"), not null
 #  share_token              :string
 #  slug                     :string
+#  sort_date                :date
 #  sorting_order            :string           default("asc"), not null
 #  sorting_type             :string           default("taken_at"), not null
 #  title                    :string

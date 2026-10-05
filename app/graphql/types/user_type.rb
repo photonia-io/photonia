@@ -35,7 +35,7 @@ module Types
 
     def albums
       authorize(Album, :create?)
-      Album.where(user_id: @object.id).order(created_at: :desc)
+      Album.where(user_id: @object.id).newest_first
     end
 
     def albums_with_photos(photo_ids:)

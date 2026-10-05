@@ -63,6 +63,7 @@
           @update-sorting="updateAlbumSorting"
           @set-album-privacy="handleSetAlbumPrivacy"
           @set-album-collapsed-in-feed="handleSetAlbumCollapsedInFeed"
+          @set-album-sort-date="handleSetAlbumSortDate"
           @close="showAlbumSettings = false"
         />
       </Transition>
@@ -489,6 +490,43 @@ onSetAlbumCoverPhotoDone((result) => {
 onSetAlbumCoverPhotoError((error) => {
   toaster(
     "An error occurred while setting the cover photo: " + error.message,
+    "is-danger",
+  );
+});
+
+/* Album list date */
+const {
+  mutate: setAlbumSortDateMutation,
+  onDone: onSetAlbumSortDateDone,
+  onError: onSetAlbumSortDateError,
+} = useMutation(gql`
+  mutation ($id: String!, $sortDate: ISO8601Date) {
+    setAlbumSortDate(id: $id, sortDate: $sortDate) {
+      id
+      sortDate
+    }
+  }
+`);
+
+const handleSetAlbumSortDate = ({ id, sortDate }) => {
+  setAlbumSortDateMutation({ id, sortDate });
+};
+
+onSetAlbumSortDateDone(({ data }) => {
+  toaster(
+    data?.setAlbumSortDate?.sortDate
+      ? "Album list date saved"
+      : "Album list date cleared",
+  );
+  // Album lists are cached in the old order
+  apolloClient.cache.evict({ fieldName: "albums" });
+  apolloClient.cache.evict({ fieldName: "albumSpotlight" });
+  apolloClient.cache.gc();
+});
+
+onSetAlbumSortDateError((error) => {
+  toaster(
+    "An error occurred while updating the album list date: " + error.message,
     "is-danger",
   );
 });

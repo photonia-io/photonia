@@ -17,6 +17,7 @@
 #  share_mode               :string           default("off"), not null
 #  share_token              :string
 #  slug                     :string
+#  sort_date                :date
 #  sorting_order            :string           default("asc"), not null
 #  sorting_type             :string           default("taken_at"), not null
 #  title                    :string
@@ -68,6 +69,40 @@ RSpec.describe Album do
       it 'returns the correct slug' do
         album = create(:album)
         expect(album.slug).to eq(album.serial_number.to_s)
+      end
+    end
+
+    describe '.newest_first' do
+      it 'orders by sort_date when set, else created_at, newest first' do
+        backfilled = create(:album, created_at: 1.day.ago, sort_date: 5.years.ago.to_date)
+        recent = create(:album, created_at: 2.days.ago)
+        dated_newer = create(:album, created_at: 10.years.ago, sort_date: 1.hour.ago.to_date)
+
+        expect(described_class.unscoped.newest_first.to_a).to eq([dated_newer, recent, backfilled])
+      end
+
+      it 'breaks ties by id, newest first' do
+        first = create(:album, created_at: 1.day.ago)
+        second = create(:album, created_at: first.created_at)
+
+        expect(described_class.unscoped.newest_first.to_a).to eq([second, first])
+      end
+    end
+
+    describe '#photo_taken_at_range' do
+      it 'spans the taken_at of all member photos, any privacy' do
+        album = create(:album)
+        early = Time.zone.local(2015, 3, 1, 10)
+        late = Time.zone.local(2018, 7, 9, 18)
+        album.photos << create(:photo, taken_at: late)
+        album.photos << create(:photo, taken_at: early, privacy: 'private')
+        album.photos << create(:photo, taken_at: nil)
+
+        expect(album.photo_taken_at_range).to eq([early, late])
+      end
+
+      it 'is [nil, nil] without dated photos' do
+        expect(create(:album).photo_taken_at_range).to eq([nil, nil])
       end
     end
 

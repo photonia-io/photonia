@@ -303,4 +303,58 @@ describe("AlbumManagement", () => {
       expect(wrapper.text()).not.toContain("were not posted consecutively");
     });
   });
+
+  describe("album list date", () => {
+    const findButton = (wrapper, label) =>
+      wrapper.findAll("button").find((b) => b.text() === label);
+
+    it("fills the field from the First / Latest photo shortcuts without saving", async () => {
+      const { wrapper } = mountAlbumManagement({
+        album: {
+          ...baseAlbum,
+          firstPhotoTakenAt: "2015-03-01",
+          lastPhotoTakenAt: "2018-07-09",
+        },
+      });
+
+      await findButton(wrapper, "First photo").trigger("click");
+      expect(wrapper.find("#album-sort-date").element.value).toBe("2015-03-01");
+
+      await findButton(wrapper, "Latest photo").trigger("click");
+      expect(wrapper.find("#album-sort-date").element.value).toBe("2018-07-09");
+      expect(wrapper.emitted("setAlbumSortDate")).toBeUndefined();
+    });
+
+    it("disables the shortcuts when the album has no dated photos", () => {
+      const { wrapper } = mountAlbumManagement();
+
+      expect(findButton(wrapper, "First photo").attributes("disabled")).toBeDefined();
+      expect(findButton(wrapper, "Latest photo").attributes("disabled")).toBeDefined();
+    });
+
+    it("emits the chosen date on Save", async () => {
+      const { wrapper } = mountAlbumManagement();
+
+      await wrapper.find("#album-sort-date").setValue("2019-06-15");
+      await findButton(wrapper, "Save").trigger("click");
+
+      expect(wrapper.emitted("setAlbumSortDate")[0][0]).toEqual({
+        id: "some-slug",
+        sortDate: "2019-06-15",
+      });
+    });
+
+    it("shows Clear only for a saved date and emits null", async () => {
+      const { wrapper } = mountAlbumManagement();
+      expect(findButton(wrapper, "Clear")).toBeUndefined();
+
+      await wrapper.setProps({ album: { ...baseAlbum, sortDate: "2019-06-15" } });
+      await findButton(wrapper, "Clear").trigger("click");
+
+      expect(wrapper.emitted("setAlbumSortDate")[0][0]).toEqual({
+        id: "some-slug",
+        sortDate: null,
+      });
+    });
+  });
 });

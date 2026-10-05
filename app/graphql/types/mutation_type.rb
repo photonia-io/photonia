@@ -19,6 +19,7 @@ module Types
     field :set_album_cover_photo, mutation: Mutations::SetAlbumCoverPhoto, description: 'Set album cover photo'
     field :set_album_privacy, mutation: Mutations::SetAlbumPrivacy, description: 'Set album privacy'
     field :set_album_share_mode, mutation: Mutations::SetAlbumShareMode, description: "Set an album share link's mode"
+    field :set_album_sort_date, mutation: Mutations::SetAlbumSortDate, description: "Set or clear an album's list sort date"
     field :set_photo_license, mutation: Mutations::SetPhotoLicense, description: 'Set photo license'
     field :set_photo_privacy, mutation: Mutations::SetPhotoPrivacy, description: 'Set photo privacy'
     field :set_photo_taken_at, mutation: Mutations::SetPhotoTakenAt, description: 'Set photo date taken'

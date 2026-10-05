@@ -17,6 +17,7 @@
 #  share_mode               :string           default("off"), not null
 #  share_token              :string
 #  slug                     :string
+#  sort_date                :date
 #  sorting_order            :string           default("asc"), not null
 #  sorting_type             :string           default("taken_at"), not null
 #  title                    :string
@@ -89,6 +90,9 @@ class Album < ApplicationRecord
   after_commit :refresh_photos_tsv, if: :saved_change_to_title?
 
   default_scope { where(privacy: 'public') }
+
+  # List order: sort_date (when set) stands in for created_at.
+  scope :newest_first, -> { order(Arel.sql('COALESCE(albums.sort_date, albums.created_at) DESC, albums.id DESC')) }
 
   validates :title, presence: true
 
@@ -172,6 +176,14 @@ class Album < ApplicationRecord
          .where.not(id: member_ids)
          .order(:posted_at)
          .first
+  end
+
+  # [earliest, latest] taken_at over all member photos (any privacy), or
+  # [nil, nil]. For the sort-date shortcuts, so editors only.
+  def photo_taken_at_range
+    @photo_taken_at_range ||= Photo.unscoped
+                                   .where(id: albums_photos.select(:photo_id))
+                                   .pick(Arel.sql('MIN(taken_at)'), Arel.sql('MAX(taken_at)'))
   end
 
   # Why this album can't collapse on the feed right now, or nil if it can.
