@@ -54,15 +54,18 @@
         v-if="album.descriptionHtml"
       />
 
-      <AlbumManagement
-        v-if="!loading && userStore.signedIn && album.canEdit && showAlbumSettings"
-        ref="albumManagementRef"
-        :album="album"
-        @delete-album="deleteAlbum"
-        @update-sorting="updateAlbumSorting"
-        @set-album-privacy="handleSetAlbumPrivacy"
-        @set-album-collapsed-in-feed="handleSetAlbumCollapsedInFeed"
-      />
+      <Transition name="settings-panel">
+        <AlbumManagement
+          v-if="!loading && userStore.signedIn && album.canEdit && showAlbumSettings"
+          ref="albumManagementRef"
+          :album="album"
+          @delete-album="deleteAlbum"
+          @update-sorting="updateAlbumSorting"
+          @set-album-privacy="handleSetAlbumPrivacy"
+          @set-album-collapsed-in-feed="handleSetAlbumCollapsedInFeed"
+          @close="showAlbumSettings = false"
+        />
+      </Transition>
 
       <ShareModal
         v-if="canEditAlbum"
@@ -609,5 +612,21 @@ onRegenerateAlbumShareTokenError((error) => {
 
 .level-left .title {
   overflow-wrap: anywhere;
+}
+
+/* Grid-rows collapse trick (same technique as photos/search.vue's
+   .collapse): animates from 0 to the panel's actual height without a fixed
+   max-height guess or measuring the content in JS. */
+.settings-panel-enter-active,
+.settings-panel-leave-active {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+  overflow: hidden;
+}
+
+.settings-panel-enter-from,
+.settings-panel-leave-to {
+  grid-template-rows: 0fr;
 }
 </style>
