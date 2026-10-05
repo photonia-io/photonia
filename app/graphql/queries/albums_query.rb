@@ -50,7 +50,7 @@ module Queries
 
     def paginated_albums(page)
       pagy, records = context[:pagy].call(
-        visible_albums.includes(:public_cover_photo).order(created_at: :desc), page:
+        visible_albums.includes(:public_cover_photo).newest_first, page:
       )
       add_pagination_methods(records, pagy)
       records
@@ -59,7 +59,8 @@ module Queries
     def simple_albums(query, limit, order)
       albums = visible_albums.includes(:public_cover_photo)
       albums = albums.where('title ILIKE ?', "#{sanitize_like(query)}%") if query.present?
-      albums = albums.order(order == 'newest' ? { created_at: :desc } : :title).limit(effective_limit(limit))
+      albums = (order == 'newest' ? albums.newest_first : albums.order(:title))
+      albums = albums.limit(effective_limit(limit))
       add_dummy_pagination_methods(albums)
       albums
     end

@@ -6,7 +6,7 @@ class AlbumsController < ApplicationController
 
   def index
     @pagy, @albums = pagy(
-      Album.includes(:public_cover_photo).order(created_at: :desc)
+      Album.includes(:public_cover_photo).newest_first
     )
   end
 
@@ -19,7 +19,7 @@ class AlbumsController < ApplicationController
   end
 
   def feed
-    @albums = Album.where('public_photos_count > ?', 0).includes(:public_cover_photo).order(created_at: :desc).limit(30)
+    @albums = Album.where('public_photos_count > ?', 0).includes(:public_cover_photo).newest_first.limit(30)
     respond_to do |format|
       format.xml
     end

@@ -12,7 +12,7 @@ module Queries
       visible = Album.where('albums.public_photos_count > 0')
       slug = Setting.homepage_spotlight_album_id
 
-      (visible.find_by(slug:) if slug.present?) || visible.order(created_at: :desc).first
+      (visible.find_by(slug:) if slug.present?) || visible.newest_first.first
     end
   end
 end

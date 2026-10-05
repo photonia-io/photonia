@@ -33,6 +33,10 @@ module Types
 
     field :privacy, String, 'Privacy level of the album', null: false
 
+    field :sort_date, GraphQL::Types::ISO8601Date, 'Date overriding the creation date in album list order', null: true
+    field :first_photo_taken_at, GraphQL::Types::ISO8601Date, "Earliest taken date among the album's photos (editors only)", null: true
+    field :last_photo_taken_at, GraphQL::Types::ISO8601Date, "Latest taken date among the album's photos (editors only)", null: true
+
     field :share_mode, String, "Sharing mode of the album's link: off, public_photos or all_photos (editors only)", null: true
     field :share_token, String, "Secret token for the album's share link (editors only)", null: true
 
@@ -113,6 +117,18 @@ module Types
       return nil unless Pundit.policy(context[:current_user], @object)&.update?
 
       @object.non_private_photos.count
+    end
+
+    def first_photo_taken_at
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.photo_taken_at_range.first&.to_date
+    end
+
+    def last_photo_taken_at
+      return nil unless Pundit.policy(context[:current_user], @object)&.update?
+
+      @object.photo_taken_at_range.last&.to_date
     end
 
     def collapse_blocker

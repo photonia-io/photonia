@@ -253,6 +253,9 @@ class GraphqlQueryCollection
           privatizablePhotosCount
           collapsedInFeed
           collapseBlocker
+          sortDate
+          firstPhotoTakenAt
+          lastPhotoTakenAt
           comments {
             #{COMMENT_FIELDS}
             replies {
