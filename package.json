@@ -29,7 +29,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "@vue/compiler-dom": "^3.5.43",
     "@vue/test-utils": "^2.5.1",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.4",
     "prettier": "3.6.2",
     "vite": "^8.3.4",
     "vite-plugin-ruby": "^5.2.5",
