@@ -15,9 +15,9 @@
     "graphql-tag": "^2.12.7",
     "marked": "^16.4.2",
     "pinia": "^3.0.4",
-    "sass": "^1.107.0",
+    "sass": "^1.107.1",
     "typescript": "^5.9.3",
-    "vue": "^3.5.44",
+    "vue": "^3.5.45",
     "vue-chartjs": "^5.3.4",
     "vue-draggable-plus": "^0.6.1",
     "vue-page-title": "^2.2.3",
@@ -26,14 +26,14 @@
   "version": "0.1.0",
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.10",
-    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/coverage-v8": "^5.1.0",
     "@vue/compiler-dom": "^3.5.44",
     "@vue/test-utils": "^2.5.1",
     "happy-dom": "^21.0.4",
     "prettier": "3.6.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "vite-plugin-ruby": "^5.2.6",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   },
   "scripts": {
     "test:run": "vitest run --no-color",
